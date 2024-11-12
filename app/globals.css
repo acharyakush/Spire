@@ -1,0 +1,293 @@
+@layer tailwind-base, primereact, tailwind-utilities;
+
+@layer tailwind-base {
+  @tailwind base;
+}
+
+@layer tailwind-utilities {
+  @tailwind components;
+  @tailwind utilities;
+}
+
+/* Figtree Font */
+@font-face {
+  font-family: "Figtree";
+  src: url("./fonts/figtree/figtree-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Figtree";
+  src: url("./fonts/figtree/figtree-semibold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Figtree";
+  src: url("./fonts/figtree/figtree-medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Figtree";
+  src: url("./fonts/figtree/figtree-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Fira Sans Font */
+@font-face {
+  font-family: "Fira Sans";
+  src: url("./fonts/fira-sans/fira-sans-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Fira Sans";
+  src: url("./fonts/fira-sans/fira-sans-semibold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Fira Sans";
+  src: url("./fonts/fira-sans/fira-sans-medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Fira Sans";
+  src: url("./fonts/fira-sans/fira-sans-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Geist Font */
+@font-face {
+  font-family: "Geist";
+  src: url("./fonts/geist/geist-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("./fonts/geist/geist-semibold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("./fonts/geist/geist-medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("./fonts/geist/geist-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Hind Font */
+@font-face {
+  font-family: "Hind";
+  src: url("./fonts/hind/hind-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Hind";
+  src: url("./fonts/hind/hind-semibold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Hind";
+  src: url("./fonts/hind/hind-medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Hind";
+  src: url("./fonts/hind/hind-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Inter Font */
+@font-face {
+  font-family: "Inter";
+  src: url("./fonts/inter/inter-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("./fonts/inter/inter-semibold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("./fonts/inter/inter-medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("./fonts/inter/inter-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Montserrat Font */
+@font-face {
+  font-family: "Montserrat";
+  src: url("./fonts/montserrat/montserrat-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("./fonts/montserrat/montserrat-semibold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("./fonts/montserrat/montserrat-medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("./fonts/montserrat/montserrat-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Open Sans Font */
+@font-face {
+  font-family: "Open Sans";
+  src: url("./fonts/open-sans/open-sans-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("./fonts/open-sans/open-sans-semibold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("./fonts/open-sans/open-sans-medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("./fonts/open-sans/open-sans-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Outfit Font */
+@font-face {
+  font-family: "outfit-regular";
+  src: url("./fonts/outfit/outfit-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "outfit-semibold";
+  src: url("./fonts/outfit/outfit-semibold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "outfit-medium";
+  src: url("./fonts/outfit/outfit-medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "outfit-bold";
+  src: url("./fonts/outfit/outfit-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  --spire-regular-font: "Inter";
+  --spire-header-font: "Open Sans";
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+
+    --spire-regular-font: "Inter";
+    --spire-header-font: "Open Sans";
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--spire-regular-font);
+}
+
+.index-header {
+  font-family: var(--spire-regular-font);
+  font-size: xx-large;
+}
+
+.p-icon-field {
+  width: 100%;
+}
