@@ -1,0 +1,46 @@
+"use client";
+
+const MyConstants = Object.freeze({
+  apiEndpoints: Object.freeze({
+    addActivity: "/api/add-activity",
+    authenticate: "/api/authenticate",
+  }),
+  messages: Object.freeze({
+    accessRevoked: "Your access has been revoked.",
+    addEmployee: "New employee added.",
+    adminCompanyAdded: "New admin company added.",
+    adminCompanyEdit: "Admin company edited.",
+    affiliateAdded: "Affiliate(s) added.",
+    apiCallForbidden: "Invalid API method.",
+    badRequest: "Incompatible request sent.",
+    cashFlowEntryAdded: "Cash Flow added.",
+    companyAdded: "New company added.",
+    companyEdited: "Company edited.",
+    employeeEdited: "Employee edited.",
+    filesDeleted: "File(s) deleted.",
+    governmentIdAdded: "Government ID added.",
+    inquiryAdded: "New inquiry added.",
+    inquiryClosed: "Inquiry closed.",
+    inquiryConvertedToProject: "Inquiry converted to Project.",
+    inquiryUpdated: "Inquiry updated.",
+    invoiceAdded: "New invoice added.",
+    invoiceEdited: "Invoice edited.",
+    noDataFound: "No data found.",
+    noteAdded: "New note added.",
+    noteUpdated: "Note updated.",
+    profileEdited: "Profile edited.",
+    projectEdited: "Project edited.",
+    projectDeleted: "Project deleted.",
+    quoteEdited: "Quote edited.",
+    settingsUpdated: "Settings updated.",
+    someErrorOccurred: "Something went wrong. Contact help desk.",
+    statusChanged: "Status updated.",
+    taskAdded: "New task added.",
+    taskDisabled: "Task disabled.",
+    taskEnabled: "Task enabled.",
+    taskUpdated: "Task updated.",
+    unauthorizedAccess: "Unauthorized access.",
+  }),
+});
+
+export default MyConstants;
