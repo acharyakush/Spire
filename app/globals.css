@@ -3,52 +3,50 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: "Inter";
-  src: url("./fonts/inter-variable.woff2") format("woff2");
-  font-weight: 100 900;
-  font-display: swap;
-  font-style: normal;
+	font-family: "Inter";
+	src: url("./fonts/inter-variable.woff2") format("woff2");
+	font-weight: 100 900;
+	font-display: swap;
+	font-style: normal;
 }
 
 @supports (font-variation-settings: normal) {
-  :root {
-    font-family: "Inter", sans-serif;
-    font-optical-sizing: auto;
-  }
+	:root {
+		font-family: "Inter", sans-serif;
+		font-optical-sizing: auto;
+	}
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+	--background: #ffffff;
+	--foreground: #171717;
 
-  --font-regular: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
-  --spire-regular-font: "Inter", sans-serif;
+	--font-regular: 400;
+	--font-medium: 500;
+	--font-semibold: 600;
+	--font-bold: 700;
+	--spire-regular-font: "Inter", sans-serif;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-text-size-adjust: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
-  margin: 0;
-  height: 100%;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: var(--spire-regular-font);
-  font-feature-settings: "calt" 1, /* Contextual alternates */ "cv05" 1,
-    /* Custom variation 5 */ "cv06" 1, /* Custom variation 6 */ "cv08" 1,
-    "cv11" 0, /* Custom variation 8 */ "frac" 1, /* Fractions */ "ss02" 1,
-    /* Stylistic set 2 */ "ss03" 1; /* Stylistic set 3 */
+	margin: 0;
+	height: 100%;
+	color: var(--foreground);
+	background: var(--background);
+	font-family: var(--spire-regular-font);
+	font-feature-settings: "calt" 1, /* Contextual alternates */ "cv05" 1, /* Custom variation 5 */ "cv06" 1, /* Custom variation 6 */ "cv08" 1,
+		"cv11" 0, /* Custom variation 8 */ "frac" 1, /* Fractions */ "ss02" 1, /* Stylistic set 2 */ "ss03" 1; /* Stylistic set 3 */
 }

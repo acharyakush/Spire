@@ -1,34 +1,37 @@
 {
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "editor.autoClosingBrackets": "always",
-  "editor.autoClosingQuotes": "always",
-  "editor.autoIndent": "advanced",
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
-  "editor.insertSpaces": true,
-  "editor.quickSuggestions": {
-    "other": true,
-    "comments": false,
-    "strings": true
-  },
-  "editor.suggest.snippetsPreventQuickSuggestions": false,
-  "editor.tabSize": 4,
-  "eslint.enable": true,
-  "eslint.run": "onType",
-  "eslint.validate": ["javascript", "typescript"],
-  "files.autoSave": "off",
-  "files.watcherExclude": {
-    "**/.git/objects/**": true,
-    "**/.git/subtree-cache/**": true,
-    "**/node_modules/**": true
-  },
-  "javascript.suggest.autoImports": true,
-  "prettier.semi": true,
-  "prettier.singleQuote": false,
-  "prettier.trailingComma": "all",
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"editor.autoClosingBrackets": "always",
+	"editor.autoClosingQuotes": "always",
+	"editor.autoIndent": "advanced",
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.insertSpaces": true,
+	"editor.quickSuggestions": {
+		"other": true,
+		"comments": false,
+		"strings": true
+	},
+	"editor.suggest.snippetsPreventQuickSuggestions": false,
+	"editor.tabSize": 4,
+	"files.autoSave": "off",
+	"files.watcherExclude": {
+		"**/.git/objects/**": true,
+		"**/.git/subtree-cache/**": true,
+		"**/node_modules/**": true
+	},
+	"javascript.suggest.autoImports": true,
+	"prettier.bracketSameLine": true,
+	"prettier.htmlWhitespaceSensitivity": "ignore",
+	"prettier.printWidth": 150,
+	"prettier.semi": true,
+	"prettier.singleQuote": false,
+	"prettier.singleAttributePerLine": false,
+	"prettier.trailingComma": "all",
+	"prettier.tabWidth": 4,
+	"prettier.useTabs": true
 }

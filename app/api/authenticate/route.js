@@ -1,65 +1,94 @@
+const crypto = require("crypto");
+import prisma from "@/utilities/prisma";
+
 import { SignJWT } from "jose";
-import { MyGlobal, prisma } from "@/utilities/global";
+import { NextResponse } from "next/server";
 
 const JWT_EXPIRATION = "24h";
 const JWT_SECRET = new TextEncoder().encode(process.env.NEXT_PUBLIC_SECRET_KEY);
 
-export async function POST(request, response) {
-  if (request.method !== "POST") {
-    return response
-      .status(405)
-      .json({ success: false, error: "Method Not Allowed" });
-  }
+const deobfuscate = (obfuscated) => {
+	const obfuscatedBytes = Uint8Array.from(Buffer.from(obfuscated, "base64"));
+	const secretBytes = new TextEncoder().encode(process.env.NEXT_PUBLIC_SECRET_KEY);
+	const originalBytes = new Uint8Array(obfuscatedBytes.length);
 
-  const parsedCredentials = MyGlobal.deobfuscate(request.body.credentials);
-  const { emailAddress, password } = parsedCredentials;
+	for (let i = 0; i < obfuscatedBytes.length; i++) {
+		originalBytes[i] = obfuscatedBytes[i] ^ secretBytes[i % secretBytes.length];
+	}
 
-  try {
-    let user;
-    const _emailAddress = String(emailAddress);
+	return new TextDecoder().decode(originalBytes);
+};
 
-    if (_emailAddress.split("@").at(1) === "admins.spire.com") {
-      user = await prisma.administrators.findUnique({
-        where: { email_address: emailAddress },
-      });
-    } else {
-      user = await prisma.employees.findUnique({
-        where: { email_address: emailAddress },
-      });
-    }
+const pbkdf2Async = (password, salt) => {
+	return new Promise((resolve, reject) => {
+		crypto.pbkdf2(password, salt, 100000, 64, "sha512", (err, derivedKey) => {
+			if (err) return reject(new Error("Error generating hash"));
+			resolve(derivedKey.toString("hex"));
+		});
+	});
+};
 
-    if (!user) {
-      return response
-        .status(404)
-        .json({ success: false, error: "No user found." });
-    }
+const verifyPassword = async (storedHash, password) => {
+	if (!storedHash || !password) return false;
 
-    const isPasswordValid = await MyGlobal.verifyPassword(
-      user.password,
-      password,
-    );
+	if (typeof storedHash === "string") {
+		const [salt, originalHash] = storedHash.split(":");
+		const derivedKey = await pbkdf2Async(password, salt);
 
-    if (!isPasswordValid) {
-      return response
-        .status(401)
-        .json({ success: false, error: "Invalid credentials." });
-    }
+		return originalHash === derivedKey;
+	}
+};
 
-    const token = await new SignJWT({
-      id: user.id,
-      email_address: user.email_address,
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime(JWT_EXPIRATION)
-      .sign(JWT_SECRET);
+export async function POST(request) {
+	if (request.method !== "POST") {
+		return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
+	}
 
-    return response.status(200).json({ success: true, data: { token } });
-  } catch (error) {
-    console.error(`Login failed: ${error}`);
+	try {
+		const body = await request.json();
+		const parsedCredentials = deobfuscate(body.credentials);
 
-    return response.status(500).json({
-      success: false,
-      error: "Technical glitch occurred. Please contact support desk.",
-    });
-  }
+		const { emailAddress, password } = JSON.parse(parsedCredentials);
+
+		let user;
+
+		const _emailAddress = String(emailAddress);
+
+		if (_emailAddress.split("@").at(1) === "admins.spire.com") {
+			user = await prisma.administrators.findUnique({
+				where: { email_address: emailAddress },
+			});
+		} else {
+			user = await prisma.employees.findUnique({
+				where: { email_address: emailAddress },
+			});
+		}
+
+		if (!user) {
+			return NextResponse.json({ error: "No user found." }, { status: 404 });
+		}
+
+		const isPasswordValid = await verifyPassword(user.password, password);
+
+		if (!isPasswordValid) {
+			return NextResponse.json({ error: "Invalid credentials." }, { status: 401 });
+		}
+
+		const token = await new SignJWT({ id: user.id, email_address: user.email_address })
+			.setProtectedHeader({ alg: "HS256" })
+			.setExpirationTime(JWT_EXPIRATION)
+			.sign(JWT_SECRET);
+
+		return NextResponse.json({ token, user_id: user.id }, { status: 200 });
+	} catch (error) {
+		console.error(`Login failed: ${error}`);
+
+		return NextResponse.json(
+			{
+				detailedError: error,
+				error: "Technical glitch occurred. Please contact support desk.",
+			},
+			{ status: 500 },
+		);
+	}
 }
