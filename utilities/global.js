@@ -5,10 +5,14 @@ import crypto from "crypto";
 import SecureLS from "secure-ls";
 import MyConstants from "./constants";
 
-const secureLocalStorage = new SecureLS({
-	encodingType: "aes",
-	encryptionSecret: process.env.NEXT_PUBLIC_SECRET_KEY,
-});
+let secureLocalStorage = null;
+
+if (typeof window !== "undefined") {
+	secureLocalStorage = new SecureLS({
+		encodingType: "aes",
+		encryptionSecret: process.env.NEXT_PUBLIC_SECRET_KEY,
+	});
+}
 
 export const applicationName = process.env.NEXT_PUBLIC_APPLICATION_NAME;
 export const isDevelopment = process.env.NODE_ENV !== "production";
@@ -16,7 +20,7 @@ export const isDevelopment = process.env.NODE_ENV !== "production";
 export const MyGlobal = Object.freeze({
 	async addActivity(activityData) {
 		try {
-			await axios.post(MyConstants.apiEndpoints.addActivity, JSON.stringify(activityData), {
+			await axios.post(MyConstants.API_ENDPOINTS.addActivity, JSON.stringify(activityData), {
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -84,7 +88,6 @@ export const MyGlobal = Object.freeze({
 
 					if (key && key.startsWith(applicationName)) {
 						!isDevelopment ? secureLocalStorage.remove(key) : globalThis.localStorage.removeItem(key);
-
 						i--;
 					}
 				}
@@ -94,23 +97,6 @@ export const MyGlobal = Object.freeze({
 			set: (key, value) => {
 				return !isDevelopment ? secureLocalStorage.set(key, value) : globalThis.localStorage.setItem(key, value);
 			},
-		},
-		session: {
-			doesExist: (key) => globalThis.sessionStorage.getItem(key) !== null,
-			get: (key) => globalThis.sessionStorage.getItem(key),
-			remove: (key) => globalThis.sessionStorage.removeItem(key),
-			removeAll: () => {
-				for (let i = 0; i < globalThis.sessionStorage.length; i++) {
-					const key = globalThis.sessionStorage.key(i) || "";
-
-					if (key && key.startsWith(applicationName)) {
-						globalThis.sessionStorage.removeItem(key);
-						i--;
-					}
-				}
-				globalThis.console.clear();
-			},
-			set: (key, value) => globalThis.sessionStorage.setItem(key, value),
 		},
 	},
 

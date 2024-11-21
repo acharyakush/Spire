@@ -19,6 +19,18 @@ const deobfuscate = (obfuscated) => {
 	return new TextDecoder().decode(originalBytes);
 };
 
+const obfuscate = (input) => {
+	const inputBytes = new TextEncoder().encode(input);
+	const secretBytes = new TextEncoder().encode(process.env.NEXT_PUBLIC_SECRET_KEY);
+	const obfuscatedBytes = new Uint8Array(inputBytes.length);
+
+	for (let i = 0; i < inputBytes.length; i++) {
+		obfuscatedBytes[i] = inputBytes[i] ^ secretBytes[i % secretBytes.length];
+	}
+
+	return Buffer.from(obfuscatedBytes).toString("base64");
+};
+
 const pbkdf2Async = (password, salt) => {
 	return new Promise((resolve, reject) => {
 		crypto.pbkdf2(password, salt, 100000, 64, "sha512", (err, derivedKey) => {
@@ -41,7 +53,7 @@ const verifyPassword = async (storedHash, password) => {
 
 export async function POST(request) {
 	if (request.method !== "POST") {
-		return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
+		return NextResponse.json({ text: "Method Not Allowed" }, { status: 405 });
 	}
 
 	try {
@@ -65,13 +77,13 @@ export async function POST(request) {
 		}
 
 		if (!user) {
-			return NextResponse.json({ error: "No user found." }, { status: 404 });
+			return NextResponse.json({ text: "No user found." }, { status: 404 });
 		}
 
 		const isPasswordValid = await verifyPassword(user.password, password);
 
 		if (!isPasswordValid) {
-			return NextResponse.json({ error: "Invalid credentials." }, { status: 401 });
+			return NextResponse.json({ text: "Invalid credentials." }, { status: 401 });
 		}
 
 		const token = await new SignJWT({ id: user.id, email_address: user.email_address })
@@ -79,14 +91,17 @@ export async function POST(request) {
 			.setExpirationTime(JWT_EXPIRATION)
 			.sign(JWT_SECRET);
 
-		return NextResponse.json({ token, user_id: user.id }, { status: 200 });
-	} catch (error) {
-		console.error(`Login failed: ${error}`);
+		const obfuscatedUserDetails = obfuscate(JSON.stringify({ token, user }));
 
+		return new NextResponse(obfuscatedUserDetails, {
+			headers: { "Content-Type": "text/plain" },
+			status: 200,
+		});
+	} catch (error) {
 		return NextResponse.json(
 			{
-				detailedError: error,
-				error: "Technical glitch occurred. Please contact support desk.",
+				object: error,
+				text: "Technical glitch occurred. Please contact support desk.",
 			},
 			{ status: 500 },
 		);

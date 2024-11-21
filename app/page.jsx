@@ -4,20 +4,23 @@ import dayjs from "dayjs";
 import axios from "axios";
 import MyConstants from "@/utilities/constants";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { NotificationContext } from "./layout";
 import { Button, Form, Input, Typography } from "antd";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
+import { useContext, useEffect, useState } from "react";
 import { applicationName, isDevelopment, MyGlobal } from "@/utilities/global";
 
 export default function Home() {
 	// Business Logic
 	const router = useRouter();
+
 	const { Title } = Typography;
+	const { openNotification } = useContext(NotificationContext);
 
 	const [form] = Form.useForm();
 	const [data, setData] = useState({ error: "", isLoading: false });
+
+	const signInLabel = data.isLoading ? "Signing In ..." : "Sign In";
 
 	// Functions
 	const autofill = () => {
@@ -32,11 +35,11 @@ export default function Home() {
 		const emailAddressValidation = MyGlobal.validateEmailAddress(emailAddress);
 
 		if (!emailAddress) {
-			setData((old) => ({ ...old, error: "Please enter your Spire account's email address." }));
+			openNotification("Type your Spire account's email address.", "Email Address", MyConstants.NOTIFICATION_TYPES.error);
 		} else if (emailAddressValidation.hasError) {
-			setData((old) => ({ ...old, error: emailAddressValidation.text }));
+			openNotification(emailAddressValidation.text, "Email Address", MyConstants.NOTIFICATION_TYPES.error);
 		} else if (!password) {
-			setData((old) => ({ ...old, error: "Please enter your Spire account's password." }));
+			openNotification("Type your Spire account's password.", "Password", MyConstants.NOTIFICATION_TYPES.error);
 		} else {
 			setData((old) => ({ ...old, error: "", isLoading: true }));
 
@@ -47,46 +50,57 @@ export default function Home() {
 			const body = { credentials: MyGlobal.obfuscate(jsonBody) };
 
 			try {
-				const response = await axios.post(MyConstants.apiEndpoints.authenticate, body);
+				const response = await axios.post(MyConstants.API_ENDPOINTS.authenticate, body);
 
 				if (response.status === 200) {
-					MyGlobal.Storages.local.set(`${applicationName}_user_details`, JSON.stringify(response.data));
-					MyGlobal.Storages.session.set(`${applicationName}_token`, sessionToken);
-					MyGlobal.addActivity({ activity: "Logged in.", session_id: sessionToken, user_id: response.data.user_id });
+					const userDetails = MyGlobal.deobfuscate(response.data);
+					const jsonUserDetails = JSON.parse(userDetails);
+
+					MyGlobal.Storages.local.set(`${applicationName.toLocaleLowerCase()}_user_details`, response.data);
+					MyGlobal.addActivity({ activity: "Logged in.", session_id: sessionToken, user_id: jsonUserDetails.user.id });
 
 					router.replace("/home");
 				}
 			} catch (error) {
-				console.error("Authentication failed:", error);
+				if ("response" in error) {
+					if ("object" in error.response.data) {
+						openNotification(error.response.data.object.name, "Authentication Failed", MyConstants.NOTIFICATION_TYPES.error);
+					} else {
+						openNotification(error.response.data.error, "Authentication Failed", MyConstants.NOTIFICATION_TYPES.error);
+					}
+				}
 			} finally {
 				setData((s) => ({ ...s, error: "", isLoading: false }));
 			}
 		}
 	};
 
-	const signInLabel = data.isLoading ? "Signing In ..." : "Sign In";
+	// Hooks
+	useEffect(() => {
+		MyGlobal.Storages.local.removeAll();
+	}, []);
 
 	// Main UI
 	return (
-		<div className="flex w-screen min-h-screen p-4 justify-center items-center">
-			<div className="w-1/4 p-4 shadow-sm">
-				<span className="flex w-full justify-center items-center">
-					<Title level={2} onClick={autofill}>
-						Welcome to {process.env.NEXT_PUBLIC_APPLICATION_NAME}
+		<div className="flex w-screen min-h-screen p-4 justify-center items-center bg-slate-200">
+			<div className="w-1/4 p-8 pb-4 rounded shadow-sm bg-white">
+				<div className="flex flex-col w-full pb-4 space-y-px justify-center items-center">
+					<Title className="!font-bold" onClick={autofill}>
+						{process.env.NEXT_PUBLIC_APPLICATION_NAME}
 					</Title>
-				</span>
+				</div>
 
 				<Form form={form} initialValues={{ remember: true }} layout="vertical" name="login" onFinish={authenticate}>
-					<Form.Item label="Email Address" name="email-address" rules={[{ message: data.error }]}>
-						<Input prefix={<FontAwesomeIcon icon={faEnvelope} />} variant="filled" />
+					<Form.Item label="Email Address" name="email-address">
+						<Input variant="filled" />
 					</Form.Item>
 
-					<Form.Item label="Password" name="password" rules={[{ message: data.error }]}>
-						<Input prefix={<FontAwesomeIcon icon={faLock} />} type="password" variant="filled" />
+					<Form.Item label="Password" name="password">
+						<Input.Password variant="filled" />
 					</Form.Item>
 
-					<Form.Item>
-						<Button block htmlType="submit" loading={data.isLoading} type="primary">
+					<Form.Item className="flex h-12 justify-center items-end">
+						<Button disabled={data.isLoading} htmlType="submit" loading={data.isLoading} type="primary">
 							{signInLabel}
 						</Button>
 					</Form.Item>

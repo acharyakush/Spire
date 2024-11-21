@@ -1,21 +1,35 @@
+"use client";
+
 import "./globals.css";
 import MyTheme from "@/utilities/theme";
 
-import { ConfigProvider } from "antd";
+import { createContext } from "react";
+import { ConfigProvider, notification } from "antd";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 
-export const metadata = {
-	title: "Welcome | Spire",
-	description: "Developed, owned and maintained by and for Signiix Advisors.",
-};
+export const NotificationContext = createContext({
+	openNotification: () => {},
+});
 
 export default function RootLayout({ children }) {
+	const [api, contextHolder] = notification.useNotification();
+
+	const openNotificationWithIcon = (description, message, type) => {
+		api[type]({ description, duration: 5, message, placement: "top", style: { fontFamily: "'Inter', sans-serif" } });
+	};
+
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
+			<head>
+				<title>Welcome | Spire</title>
+			</head>
 			<body>
-				<AntdRegistry>
-					<ConfigProvider theme={MyTheme}>{children}</ConfigProvider>
-				</AntdRegistry>
+				<NotificationContext.Provider value={{ openNotification: openNotificationWithIcon }}>
+					{contextHolder}
+					<AntdRegistry>
+						<ConfigProvider theme={MyTheme}>{children}</ConfigProvider>
+					</AntdRegistry>
+				</NotificationContext.Provider>
 			</body>
 		</html>
 	);
