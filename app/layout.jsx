@@ -1,35 +1,25 @@
 "use client";
 
 import "./globals.css";
-import MyTheme from "@/utilities/theme";
+import theme from "@/utilities/theme";
 
-import { createContext } from "react";
-import { ConfigProvider, notification } from "antd";
-import { AntdRegistry } from "@ant-design/nextjs-registry";
-
-export const NotificationContext = createContext({
-	openNotification: () => {},
-});
+import { SnackbarProvider } from "./providers/SnackBar";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 
 export default function RootLayout({ children }) {
-	const [api, contextHolder] = notification.useNotification();
-
-	const openNotificationWithIcon = (description, message, type) => {
-		api[type]({ description, duration: 5, message, placement: "top", style: { fontFamily: "'Inter', sans-serif" } });
-	};
-
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
 				<title>Welcome | Spire</title>
 			</head>
 			<body>
-				<NotificationContext.Provider value={{ openNotification: openNotificationWithIcon }}>
-					{contextHolder}
-					<AntdRegistry>
-						<ConfigProvider theme={MyTheme}>{children}</ConfigProvider>
-					</AntdRegistry>
-				</NotificationContext.Provider>
+				<AppRouterCacheProvider>
+					<ThemeProvider theme={theme}>
+						<CssBaseline enableColorScheme />
+						<SnackbarProvider>{children}</SnackbarProvider>
+					</ThemeProvider>
+				</AppRouterCacheProvider>
 			</body>
 		</html>
 	);

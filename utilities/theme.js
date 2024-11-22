@@ -1,9 +1,37 @@
-const MyTheme = Object.freeze({
-	token: {
-		colorPrimary: "#2b4acb",
+"use client";
+
+import { createTheme } from "@mui/material/styles";
+
+const theme = createTheme({
+	components: {
+		MuiButtonBase: {
+			defaultProps: {
+				disableRipple: true,
+			},
+		},
+		MuiFormControl: {
+			defaultProps: {
+				size: "small",
+				variant: "filled",
+			},
+		},
+		MuiInputBase: {
+			defaultProps: {
+				size: "small",
+			},
+		},
+		MuiTextField: {
+			defaultProps: {
+				size: "small",
+				variant: "filled",
+			},
+		},
+	},
+	cssVariables: true,
+	typography: {
 		fontFamily: "'Inter', sans-serif",
-		borderRadius: 4,
+		fontSize: 13,
 	},
 });
 
-export default MyTheme;
+export default theme;

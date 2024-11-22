@@ -106,14 +106,14 @@ export const MyGlobal = Object.freeze({
 		if (!_emailAddress.includes("@")) {
 			return {
 				hasError: true,
-				text: "<span>Must contain <b>@</b> symbol.</span>",
+				text: MyConstants.MESSAGES.noAtSymbolInEmailAddress,
 			};
 		}
 
 		if (!_emailAddress.includes(".")) {
 			return {
 				hasError: true,
-				text: "<span>Must contain <b>.</b> symbol.</span>",
+				text: MyConstants.MESSAGES.noPeriodSymbolInEmailAddress,
 			};
 		}
 
@@ -122,7 +122,7 @@ export const MyGlobal = Object.freeze({
 		if (!emailRegex.test(_emailAddress)) {
 			return {
 				hasError: true,
-				text: "<span>Domain must exactly be <b>spire.com</b>.</span>",
+				text: MyConstants.MESSAGES.spireDomainOnly,
 			};
 		}
 
