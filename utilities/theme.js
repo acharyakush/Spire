@@ -29,8 +29,13 @@ const theme = createTheme({
 	},
 	cssVariables: true,
 	typography: {
-		fontFamily: "'Inter', sans-serif",
-		fontSize: 13,
+		fontFamily: "'Roboto Flex', sans-serif",
+		fontSize: 14,
+		fontWeightLight: 100, // Lightest
+		fontWeightRegular: 400, // Regular
+		fontWeightMedium: 500, // Medium
+		fontWeightBold: 700, // Bold
+		fontWeightBlack: 900,
 	},
 });
 

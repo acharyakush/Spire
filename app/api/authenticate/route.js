@@ -63,7 +63,6 @@ export async function POST(request) {
 		const { emailAddress, password } = JSON.parse(parsedCredentials);
 
 		let user;
-
 		const _emailAddress = String(emailAddress);
 
 		if (_emailAddress.split("@").at(1) === "admins.spire.com") {

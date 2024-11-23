@@ -1,5 +1,6 @@
 "use client";
 
+// Imports
 import dayjs from "dayjs";
 import axios from "axios";
 import MyConstants from "@/utilities/constants";
@@ -12,6 +13,7 @@ import { applicationName, isDevelopment, MyGlobal } from "@/utilities/global";
 import { VisibilityOffRounded, VisibilityRounded } from "@mui/icons-material";
 import { FilledInput, FormControl, IconButton, InputAdornment, InputLabel, TextField, Typography } from "@mui/material";
 
+// Component
 export default function Home() {
 	// Business Logic
 	const router = useRouter();
@@ -45,7 +47,7 @@ export default function Home() {
 			const currentTimestamp = dayjs().format("hh:mm:ss a DD-MM-YYYY");
 			const sessionToken = MyGlobal.obfuscate(`${currentTimestamp}${emailAddress}${password}`);
 
-			const jsonBody = JSON.stringify({ emailAddress, password });
+			const jsonBody = JSON.stringify({ emailAddress: emailAddress.value, password: password.value });
 			const body = { credentials: MyGlobal.obfuscate(jsonBody) };
 
 			try {
@@ -55,7 +57,7 @@ export default function Home() {
 					const userDetails = MyGlobal.deobfuscate(response.data);
 					const jsonUserDetails = JSON.parse(userDetails);
 
-					MyGlobal.Storages.local.set(`${applicationName.toLocaleLowerCase()}_user_details`, response.data);
+					MyGlobal.Storages.local.set(`${applicationName.toLocaleLowerCase()}_user_details`, userDetails);
 					MyGlobal.addActivity({ activity: "Logged in.", session_id: sessionToken, user_id: jsonUserDetails.user.id });
 
 					router.replace("/home");
@@ -96,7 +98,7 @@ export default function Home() {
 		<div className="flex w-screen min-h-screen p-4 justify-center items-center bg-slate-200">
 			<div className="w-1/4 p-8 space-y-6 rounded shadow-sm bg-white">
 				<div className="flex flex-col w-full justify-center items-center">
-					<Typography className="!font-bold" onClick={autofill} variant="h3">
+					<Typography className="roboto-flex roboto-flex-w700" component="h1" onClick={autofill} variant="h3">
 						{process.env.NEXT_PUBLIC_APPLICATION_NAME}
 					</Typography>
 				</div>
@@ -135,7 +137,13 @@ export default function Home() {
 				</FormControl>
 
 				<FormControl className="flex justify-center items-center" fullWidth variant="standard">
-					<LoadingButton disabled={flags.isLoading} loading={flags.isLoading} onClick={authenticate} size="medium" variant="contained">
+					<LoadingButton
+						disabled={flags.isLoading}
+						loading={flags.isLoading}
+						onClick={authenticate}
+						size="medium"
+						sx={{ letterSpacing: "0.15rem" }}
+						variant="contained">
 						Authenticate
 					</LoadingButton>
 				</FormControl>
