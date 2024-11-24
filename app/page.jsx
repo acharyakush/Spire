@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { useSnackbar } from "./providers/SnackBar";
 import { applicationName, isDevelopment, MyGlobal } from "@/utilities/global";
 import { VisibilityOffRounded, VisibilityRounded } from "@mui/icons-material";
-import { FilledInput, FormControl, IconButton, InputAdornment, InputLabel, TextField, Typography } from "@mui/material";
+import { FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, TextField, Typography } from "@mui/material";
 
 // Component
 export default function Home() {
@@ -98,8 +98,8 @@ export default function Home() {
 		<div className="flex w-screen min-h-screen p-4 justify-center items-center bg-slate-200">
 			<div className="w-1/4 p-8 space-y-6 rounded shadow-sm bg-white">
 				<div className="flex flex-col w-full justify-center items-center">
-					<Typography className="roboto-flex roboto-flex-w700" component="h1" onClick={autofill} variant="h3">
-						{process.env.NEXT_PUBLIC_APPLICATION_NAME}
+					<Typography className="weight-700" component="h1" onClick={autofill} variant="h3">
+						{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}
 					</Typography>
 				</div>
 
@@ -117,7 +117,7 @@ export default function Home() {
 
 				<FormControl fullWidth>
 					<InputLabel htmlFor="password">Password</InputLabel>
-					<FilledInput
+					<OutlinedInput
 						autoComplete="current-password"
 						endAdornment={
 							<InputAdornment position="end">
@@ -138,11 +138,11 @@ export default function Home() {
 
 				<FormControl className="flex justify-center items-center" fullWidth variant="standard">
 					<LoadingButton
+						className="!capitalize"
 						disabled={flags.isLoading}
 						loading={flags.isLoading}
 						onClick={authenticate}
 						size="medium"
-						sx={{ letterSpacing: "0.15rem" }}
 						variant="contained">
 						Authenticate
 					</LoadingButton>

@@ -146,11 +146,11 @@ model main_projects {
 }
 
 model permissions {
-  id          Int              @id @default(autoincrement())
-  name        String           @unique(map: "name") @db.VarChar(255)
-  module      String           @db.VarChar(50)
-  type        permissions_type
-  description String?          @db.Text
+  id                 Int              @id @default(autoincrement())
+  name               String           @unique(map: "name") @db.VarChar(255)
+  module             String           @db.VarChar(50)
+  type               permissions_type
+  sidebar_visibility Boolean
 }
 
 model roles {

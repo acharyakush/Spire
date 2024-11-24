@@ -12,7 +12,7 @@ const theme = createTheme({
 		MuiFormControl: {
 			defaultProps: {
 				size: "small",
-				variant: "filled",
+				variant: "outlined",
 			},
 		},
 		MuiInputBase: {
@@ -23,13 +23,13 @@ const theme = createTheme({
 		MuiTextField: {
 			defaultProps: {
 				size: "small",
-				variant: "filled",
+				variant: "outlined",
 			},
 		},
 	},
 	cssVariables: true,
 	typography: {
-		fontFamily: "'Roboto Flex', sans-serif",
+		fontFamily: "'Inter', sans-serif",
 		fontSize: 14,
 		fontWeightLight: 100, // Lightest
 		fontWeightRegular: 400, // Regular

@@ -3,11 +3,18 @@
 @tailwind utilities;
 
 @font-face {
-	font-family: "Roboto Flex";
-	src: url("/fonts/roboto-flex-variable-font.ttf") format("truetype");
+	font-family: "Inter";
+	src: url("/fonts/inter-variable.woff2") format("woff2");
 	font-weight: 100 900;
 	font-display: swap;
 	font-style: normal;
+}
+
+@supports (font-variation-settings: normal) {
+	:root {
+		font-family: "Inter", sans-serif;
+		font-optical-sizing: auto;
+	}
 }
 
 :root {
@@ -42,7 +49,7 @@
 	--success-dark: #388e3c;
 
 	/* Typography */
-	--font-family: "Roboto Flex", sans-serif;
+	--font-family: "Inter", sans-serif;
 	--font-size: 14px;
 
 	--font-weight-light: 100;
@@ -69,57 +76,48 @@
 	-webkit-text-size-adjust: 100%;
 }
 
-/* Base class for Roboto Flex */
-.roboto-flex {
-	font-family: var(--font-family);
-	font-optical-sizing: auto;
-	font-style: normal;
-	font-variation-settings: "slnt" 0, "wdth" 100, "GRAD" 0, "XOPQ" 96, "XTRA" 468, "YOPQ" 79, "YTAS" 750, "YTDE" -203, "YTFI" 738, "YTLC" 514,
-		"YTUC" 712;
-}
-
 /* Font weight classes */
-.roboto-flex-w100 {
+.weight-100 {
 	font-weight: 100;
 	font-variation-settings: "wght" 100;
 }
 
-.roboto-flex-w200 {
+.weight-200 {
 	font-weight: 200;
 	font-variation-settings: "wght" 200;
 }
 
-.roboto-flex-w300 {
+.weight-300 {
 	font-weight: 300;
 	font-variation-settings: "wght" 300;
 }
 
-.roboto-flex-w400 {
+.weight-400 {
 	font-weight: 400;
 	font-variation-settings: "wght" 400;
 }
 
-.roboto-flex-w500 {
+.weight-500 {
 	font-weight: 500;
 	font-variation-settings: "wght" 500;
 }
 
-.roboto-flex-w600 {
+.weight-600 {
 	font-weight: 600;
 	font-variation-settings: "wght" 600;
 }
 
-.roboto-flex-w700 {
+.weight-700 {
 	font-weight: 700;
 	font-variation-settings: "wght" 700;
 }
 
-.roboto-flex-w800 {
+.weight-800 {
 	font-weight: 800;
 	font-variation-settings: "wght" 800;
 }
 
-.roboto-flex-w900 {
+.weight-900 {
 	font-weight: 900;
 	font-variation-settings: "wght" 900;
 }
@@ -136,6 +134,8 @@ body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	text-rendering: optimizeLegibility;
+	font-feature-settings: "calt" 1, /* Contextual alternates */ "cv05" 1, /* Custom variation 5 */ "cv06" 1, /* Custom variation 6 */ "cv08" 1,
+		"cv11" 0, /* Custom variation 8 */ "frac" 1, /* Fractions */ "ss02" 1, /* Stylistic set 2 */ "ss03" 1; /* Stylistic set 3 */
 }
 
 h1,
