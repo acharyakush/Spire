@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    optimizePackageImports: ["@chakra-ui/react"],
-  },
+	devIndicators: {
+		appIsrStatus: false,
+		buildActivityPosition: "bottom-right",
+	},
 };
 
 export default nextConfig;
