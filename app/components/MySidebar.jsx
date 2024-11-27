@@ -26,6 +26,7 @@ import {
 	ExpandLessRounded,
 	ExpandMoreRounded,
 	FactoryRounded,
+	GroupAddRounded,
 	LogoutRounded,
 	MultipleStopRounded,
 	PeopleAltRounded,
@@ -150,6 +151,8 @@ export default function MySidebar() {
 				return <StarRounded fontSize="small" />;
 			case "Projects":
 				return <AccountTreeRounded fontSize="small" />;
+			case "References":
+				return <GroupAddRounded fontSize="small" />;
 			case "Tasks":
 				return <PlaylistAddCheckRounded fontSize="small" />;
 		}
