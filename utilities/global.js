@@ -17,32 +17,6 @@ if (typeof window !== "undefined") {
 export const applicationName = process.env.NEXT_PUBLIC_APPLICATION_NAME;
 export const isDevelopment = process.env.NODE_ENV !== "production";
 
-export function closeSidebar() {
-	if (typeof window !== "undefined") {
-		document.documentElement.style.removeProperty("--SideNavigation-slideIn");
-		document.body.style.removeProperty("overflow");
-	}
-}
-
-export function openSidebar() {
-	if (typeof window !== "undefined") {
-		document.body.style.overflow = "hidden";
-		document.documentElement.style.setProperty("--SideNavigation-slideIn", "1");
-	}
-}
-
-export function toggleSidebar() {
-	if (typeof window !== "undefined" && typeof document !== "undefined") {
-		const slideIn = window.getComputedStyle(document.documentElement).getPropertyValue("--SideNavigation-slideIn");
-
-		if (slideIn) {
-			closeSidebar();
-		} else {
-			openSidebar();
-		}
-	}
-}
-
 export const MyGlobal = Object.freeze({
 	async addActivity(activityData) {
 		try {
@@ -54,6 +28,16 @@ export const MyGlobal = Object.freeze({
 		} catch (error) {
 			console.error("Error calling add-activity API:", error);
 		}
+	},
+
+	capitalize: (payload) => {
+		return payload == null || payload == undefined
+			? ""
+			: String(payload)
+					.toLowerCase()
+					.split(" ")
+					.map((m) => m.charAt(0).toUpperCase() + m.slice(1))
+					.join(" ");
 	},
 
 	deobfuscate(obfuscated) {
@@ -135,31 +119,6 @@ export const MyGlobal = Object.freeze({
 				return !isDevelopment ? secureLocalStorage.set(key, value) : globalThis.localStorage.setItem(key, value);
 			},
 		},
-	},
-
-	stringAvatar(name) {
-		return {
-			sx: { bgcolor: this.stringToColour(name), height: 32, width: 32 },
-			children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
-		};
-	},
-
-	stringToColour(string) {
-		let hash = 0;
-		let i;
-
-		for (i = 0; i < string.length; i += 1) {
-			hash = string.charCodeAt(i) + ((hash << 5) - hash);
-		}
-
-		let color = "#";
-
-		for (i = 0; i < 3; i += 1) {
-			const value = (hash >> (i * 8)) & 0xff;
-			color += `00${value.toString(16)}`.slice(-2);
-		}
-
-		return color;
 	},
 
 	validateEmailAddress(emailAddress) {

@@ -1,9 +1,10 @@
 "use client";
 
 // Imports
+import MyConstants from "@/utilities/constants";
+
 import { useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
-import MyConstants from "@/utilities/constants";
 
 // Component
 export default function Home() {

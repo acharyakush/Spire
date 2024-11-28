@@ -5,29 +5,29 @@ import dayjs from "dayjs";
 import axios from "axios";
 import MyConstants from "@/utilities/constants";
 
-import { LoadingButton } from "@mui/lab";
+import { Button } from "primereact/button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSnackbar } from "./providers/SnackBar";
+import { Password } from "primereact/password";
+import { InputText } from "primereact/inputtext";
+import { useToast } from "./context/ToastContext";
 import { applicationName, isDevelopment, MyGlobal } from "@/utilities/global";
-import { VisibilityOffRounded, VisibilityRounded } from "@mui/icons-material";
-import { FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, TextField, Typography } from "@mui/material";
 
 // Component
 export default function Home() {
 	// Business Logic
 	const router = useRouter();
-	const showSnackbar = useSnackbar();
+	const showToast = useToast();
 
 	const [emailAddress, setEmailAddress] = useState({ error: "", value: "" });
 	const [flags, setFlags] = useState({ isLoading: false });
-	const [password, setPassword] = useState({ value: "", show: false });
+	const [password, setPassword] = useState("");
 
 	// Functions
 	const autofill = () => {
 		if (isDevelopment) {
 			setEmailAddress((old) => ({ ...old, value: "kush@admins.spire.com" }));
-			setPassword((old) => ({ ...old, value: "acharyakush2604" }));
+			setPassword("acharyakush2604");
 		}
 	};
 
@@ -35,11 +35,11 @@ export default function Home() {
 		const emailAddressValidation = MyGlobal.validateEmailAddress(emailAddress.value);
 
 		if (!emailAddress.value) {
-			showSnackbar(MyConstants.MESSAGES.noEmailAddress, MyConstants.NOTIFICATION_TYPES.error);
+			showToast(MyConstants.MESSAGES.noEmailAddress, MyConstants.NOTIFICATION_TYPES.error);
 		} else if (emailAddressValidation.hasError) {
-			showSnackbar(emailAddressValidation.text, MyConstants.NOTIFICATION_TYPES.error);
-		} else if (!password.value) {
-			showSnackbar(MyConstants.MESSAGES.noPassword, MyConstants.NOTIFICATION_TYPES.error);
+			showToast(emailAddressValidation.text, MyConstants.NOTIFICATION_TYPES.error);
+		} else if (!password) {
+			showToast(MyConstants.MESSAGES.noPassword, MyConstants.NOTIFICATION_TYPES.error);
 		} else {
 			setEmailAddress((old) => ({ ...old, error: "" }));
 			setFlags((old) => ({ ...old, isLoading: true }));
@@ -47,7 +47,7 @@ export default function Home() {
 			const currentTimestamp = dayjs().format("hh:mm:ss a DD-MM-YYYY");
 			const sessionToken = MyGlobal.obfuscate(`${currentTimestamp}${emailAddress}${password}`);
 
-			const jsonBody = JSON.stringify({ emailAddress: emailAddress.value, password: password.value });
+			const jsonBody = JSON.stringify({ emailAddress: emailAddress.value, password });
 			const body = { credentials: MyGlobal.obfuscate(jsonBody) };
 
 			try {
@@ -65,9 +65,9 @@ export default function Home() {
 			} catch (error) {
 				if ("response" in error) {
 					if ("object" in error.response.data) {
-						showSnackbar(error.response.data.object.name, MyConstants.NOTIFICATION_TYPES.error);
+						showToast(error.response.data.object.name, MyConstants.NOTIFICATION_TYPES.error);
 					} else {
-						showSnackbar(error.response.data.error, MyConstants.NOTIFICATION_TYPES.error);
+						showToast(error.response.data.error, MyConstants.NOTIFICATION_TYPES.error);
 					}
 				}
 			} finally {
@@ -76,16 +76,12 @@ export default function Home() {
 		}
 	};
 
-	const setValues = (event) => {
-		if (event.target.id === "email-address") {
+	const setCredentials = (event) => {
+		if (event.target.id === "emailAddress") {
 			setEmailAddress((old) => ({ ...old, value: event.target.value }));
 		} else {
-			setPassword((old) => ({ ...old, value: event.target.value }));
+			setPassword(event.target.value);
 		}
-	};
-
-	const togglePasswordCharacters = () => {
-		setPassword((old) => ({ ...old, show: !password.show }));
 	};
 
 	// Hooks
@@ -95,58 +91,39 @@ export default function Home() {
 
 	// Main UI
 	return (
-		<div className="flex w-screen min-h-screen p-4 justify-center items-center bg-slate-200">
-			<div className="w-1/4 p-8 space-y-6 rounded shadow-sm bg-white">
-				<div className="flex flex-col w-full justify-center items-center">
-					<Typography className="weight-700" component="h1" onClick={autofill} variant="h3">
+		<div className="flex w-screen min-h-screen p-4 justify-center items-center">
+			<div className="flex w-1/5 space-y-6 justify-center items-center">
+				<div className="w-full p-8 space-y-6 rounded shadow-sm bg-white">
+					<div className="py-3 text-center font-semibold text-4xl" onClick={autofill}>
 						{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}
-					</Typography>
+					</div>
+
+					<div className="space-y-6">
+						<div className="flex w-full justify-center">
+							<div className="flex flex-col w-full gap-2">
+								<label htmlFor="emailAddress">Email Address</label>
+								<InputText className="w-full" id="emailAddress" onChange={setCredentials} value={emailAddress.value} />
+							</div>
+						</div>
+						<div className="flex w-full justify-center">
+							<div className="flex flex-col w-full gap-2">
+								<label htmlFor="password">Password</label>
+								<Password
+									className="w-full"
+									feedback={false}
+									inputClassName="w-full"
+									inputId="password"
+									onChange={setCredentials}
+									toggleMask
+									value={password}
+								/>
+							</div>
+						</div>
+					</div>
+					<div className="flex w-full h-14 justify-center items-end">
+						<Button className="w-full" loading={flags.isLoading} label="Sign In" onClick={authenticate} />
+					</div>
 				</div>
-
-				<TextField
-					color={emailAddress.error ? "error" : "primary"}
-					error={emailAddress.error}
-					fullWidth
-					label="Email Address"
-					id="email-address"
-					name="email-address"
-					onChange={setValues}
-					type="email"
-					value={emailAddress.value}
-				/>
-
-				<FormControl fullWidth>
-					<InputLabel htmlFor="password">Password</InputLabel>
-					<OutlinedInput
-						autoComplete="current-password"
-						endAdornment={
-							<InputAdornment position="end">
-								<IconButton onClick={togglePasswordCharacters}>
-									{password.show ? <VisibilityOffRounded /> : <VisibilityRounded />}
-								</IconButton>
-							</InputAdornment>
-						}
-						fullWidth
-						id="password"
-						label="Password"
-						name="password"
-						onChange={setValues}
-						type={password.show ? "text" : "password"}
-						value={password.value}
-					/>
-				</FormControl>
-
-				<FormControl className="flex justify-center items-center" fullWidth variant="standard">
-					<LoadingButton
-						className="!capitalize"
-						disabled={flags.isLoading}
-						loading={flags.isLoading}
-						onClick={authenticate}
-						size="medium"
-						variant="contained">
-						Authenticate
-					</LoadingButton>
-				</FormControl>
 			</div>
 		</div>
 	);

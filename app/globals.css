@@ -1,178 +1,40 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@layer tailwind-base, primereact, tailwind-utilities;
 
-@font-face {
-	font-family: "Inter";
-	src: url("/fonts/inter-variable.woff2") format("woff2");
-	font-weight: 100 900;
-	font-display: swap;
-	font-style: normal;
+@layer tailwind-base {
+	@tailwind base;
 }
 
-@supports (font-variation-settings: normal) {
-	:root {
-		font-family: "Inter", sans-serif;
-		font-optical-sizing: auto;
-	}
+@layer tailwind-utilities {
+	@tailwind components;
+	@tailwind utilities;
 }
 
 :root {
-	/* Primary Palette */
-	--primary-light: #e3f2fd;
-	--primary-main: #90caf9;
-	--primary-dark: #42a5f5;
-
-	/* Secondary Palette */
-	--secondary-light: #f3e5f5;
-	--secondary-main: #ce93d8;
-	--secondary-dark: #ab47bc;
-
-	/* Error Palette */
-	--error-light: #e57373;
-	--error-main: #f44336;
-	--error-dark: #d32f2f;
-
-	/* Warning Palette */
-	--warning-light: #ffb74d;
-	--warning-main: #ffa726;
-	--warning-dark: #f57c00;
-
-	/* Info Palette */
-	--info-light: #4fc3f7;
-	--info-main: #29b6f6;
-	--info-dark: #0288d1;
-
-	/* Success Palette */
-	--success-light: #81c784;
-	--success-main: #66bb6a;
-	--success-dark: #388e3c;
-
-	/* Typography */
 	--font-family: "Inter", sans-serif;
-	--font-size: 14px;
-
-	--font-weight-light: 100;
-	--font-weight-regular: 400;
-	--font-weight-medium: 500;
-	--font-weight-bold: 700;
-	--font-weight-black: 900;
-
-	/* Gradient Example for Typography */
-	--primary-gradient: linear-gradient(-30deg, var(--warning-dark), var(--primary-dark));
-
-	--background: #ffffff;
-	--foreground: #171717;
-
-	--font-regular: 400;
-	--font-medium: 500;
-	--font-semibold: 600;
-	--font-bold: 700;
-
-	font-synthesis: none;
-	text-rendering: optimizeLegibility;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
 	-webkit-text-size-adjust: 100%;
 }
 
-/* Font weight classes */
-.weight-100 {
-	font-weight: 100;
-	font-variation-settings: "wght" 100;
+html {
+	font-size: 14px;
 }
 
-.weight-200 {
-	font-weight: 200;
-	font-variation-settings: "wght" 200;
-}
-
-.weight-300 {
-	font-weight: 300;
-	font-variation-settings: "wght" 300;
-}
-
-.weight-400 {
-	font-weight: 400;
-	font-variation-settings: "wght" 400;
-}
-
-.weight-500 {
-	font-weight: 500;
-	font-variation-settings: "wght" 500;
-}
-
-.weight-600 {
-	font-weight: 600;
-	font-variation-settings: "wght" 600;
-}
-
-.weight-700 {
-	font-weight: 700;
-	font-variation-settings: "wght" 700;
-}
-
-.weight-800 {
-	font-weight: 800;
-	font-variation-settings: "wght" 800;
-}
-
-.weight-900 {
-	font-weight: 900;
-	font-variation-settings: "wght" 900;
-}
-
-/* Body styling */
 body {
+	background: linear-gradient(135deg, #8ae5a3, #4178be);
 	margin: 0;
 	height: 100%;
-	font-family: var(--font-family);
-	font-size: var(--font-size);
-	font-weight: var(--font-weight-regular);
-	color: var(--primary-main);
-	background: var(--primary-light);
+	font-synthesis: none;
+	font-weight: normal;
+	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	text-rendering: optimizeLegibility;
-	font-feature-settings: "calt" 1, /* Contextual alternates */ "cv05" 1, /* Custom variation 5 */ "cv06" 1, /* Custom variation 6 */ "cv08" 1,
-		"cv11" 0, /* Custom variation 8 */ "frac" 1, /* Fractions */ "ss02" 1, /* Stylistic set 2 */ "ss03" 1; /* Stylistic set 3 */
 }
 
-h1,
-h3 {
-	background: var(--primary-gradient);
-	-webkit-background-clip: text; /* Chrome, Safari, Opera */
-	-moz-background-clip: text; /* Firefox */
-	background-clip: text; /* Standard */
-	-webkit-text-fill-color: transparent;
+/* Remove thick ring outline on focus */
+.p-inputtext:focus {
+	outline: none; /* Disable the default browser outline */
+	box-shadow: none; /* Remove any additional focus effects */
 }
 
-button {
-	font-family: var(--font-family);
-	font-weight: var(--font-weight-medium);
-}
-
-/* Example usage for color variables */
-.text-primary {
-	color: var(--primary-main);
-}
-
-.text-secondary {
-	color: var(--secondary-main);
-}
-
-.text-error {
-	color: var(--error-main);
-}
-
-.text-warning {
-	color: var(--warning-main);
-}
-
-.text-info {
-	color: var(--info-main);
-}
-
-.text-success {
-	color: var(--success-main);
+.p-icon-field {
+	width: 100%;
 }

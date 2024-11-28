@@ -2,11 +2,11 @@
 
 // Imports
 import "./globals.css";
-import theme from "@/utilities/theme";
+import "primereact/resources/themes/mira/theme.css";
 
-import { SnackbarProvider } from "./providers/SnackBar";
-import { CssBaseline, ThemeProvider } from "@mui/material";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import theme from "@/utilities/theme";
+import { PrimeReactProvider } from "primereact/api";
+import { ToastProvider } from "./context/ToastContext";
 
 // Component
 export default function RootLayout({ children }) {
@@ -17,14 +17,9 @@ export default function RootLayout({ children }) {
 				<title>Welcome :: Spire</title>
 			</head>
 			<body>
-				<AppRouterCacheProvider>
-					<ThemeProvider theme={theme}>
-						<SnackbarProvider>
-							<CssBaseline enableColorScheme />
-							{children}
-						</SnackbarProvider>
-					</ThemeProvider>
-				</AppRouterCacheProvider>
+				<PrimeReactProvider value={theme}>
+					<ToastProvider>{children}</ToastProvider>
+				</PrimeReactProvider>
 			</body>
 		</html>
 	);
