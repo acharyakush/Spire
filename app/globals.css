@@ -14,12 +14,7 @@
 	-webkit-text-size-adjust: 100%;
 }
 
-html {
-	font-size: 14px;
-}
-
 body {
-	background: linear-gradient(135deg, #8ae5a3, #4178be);
 	margin: 0;
 	height: 100%;
 	font-synthesis: none;
@@ -29,12 +24,127 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
-/* Remove thick ring outline on focus */
-.p-inputtext:focus {
-	outline: none; /* Disable the default browser outline */
-	box-shadow: none; /* Remove any additional focus effects */
+html {
+	font-size: 14px;
+}
+
+.custom-menubar {
+	align-items: center;
+	background-color: #f9fafb;
+	box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+	display: flex;
+	flex-wrap: nowrap;
+	justify-content: space-between;
+	padding: 0 1rem;
+}
+
+.custom-menubar-items {
+	display: flex;
+	justify-content: center;
+	flex-grow: 1;
+	flex-wrap: nowrap;
+}
+
+.login-background {
+	background: linear-gradient(135deg, #8ae5a3, #4178be);
 }
 
 .p-icon-field {
 	width: 100%;
+}
+
+.p-inputtext:focus {
+	box-shadow: none;
+	outline: none;
+}
+
+.p-menu .p-submenu .p-menuitem-content {
+	align-items: center;
+	display: flex;
+}
+
+.p-menu .p-submenu .p-menuitem-icon {
+	margin-right: 0.5rem;
+}
+
+.p-menu .p-submenu .p-menuitem-link {
+	align-items: center;
+	display: flex;
+	justify-content: flex-start;
+	padding: 0.5rem 1rem;
+}
+
+.p-menu .p-submenu .p-menuitem-link:hover {
+	background-color: #f9fafb;
+	color: white;
+}
+
+.p-menu .p-submenu .p-menuitem-text {
+	margin-left: 0.5rem;
+}
+
+.p-menubar-root-list .p-menuitem-link {
+	white-space: normal;
+}
+
+.p-menuitem-link {
+	align-items: center;
+	display: inline-flex;
+	justify-content: center;
+	overflow: hidden;
+	padding: 0.5rem 1rem;
+	position: relative;
+	text-align: center;
+	transition: background-color 0.3s ease;
+}
+
+.p-menuitem-link:hover::after {
+	transform: scaleX(1);
+}
+
+@media (max-width: 768px) {
+	.custom-menubar {
+		flex-wrap: wrap;
+		padding: 0.5rem;
+	}
+
+	.custom-menubar-end,
+	.custom-menubar-start {
+		flex-basis: 100%;
+		text-align: center;
+	}
+
+	.custom-menubar-items {
+		flex-wrap: wrap;
+		width: 100%;
+		justify-content: flex-start;
+	}
+
+	.p-menu {
+		max-width: 100%;
+		width: auto;
+	}
+
+	.p-menubar-root-list .p-menuitem {
+		white-space: normal;
+	}
+
+	.p-menubar-root-list .p-menuitem-link {
+		width: auto;
+		min-width: 150px;
+		max-width: 200px;
+		white-space: normal;
+		overflow: hidden;
+	}
+}
+
+@media screen and (max-width: 960px) {
+	.p-menubar .p-menubar-root-list {
+		position: absolute;
+		padding: 0.5rem 0;
+		background: #ffffff;
+		border: 0 none;
+		box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+		width: auto;
+	}
 }

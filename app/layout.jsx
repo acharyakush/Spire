@@ -2,9 +2,11 @@
 
 // Imports
 import "./globals.css";
-import "primereact/resources/themes/mira/theme.css";
+import "primeicons/primeicons.css";
+import "primereact/resources/themes/lara-light-blue/theme.css";
 
 import theme from "@/utilities/theme";
+
 import { PrimeReactProvider } from "primereact/api";
 import { ToastProvider } from "./context/ToastContext";
 

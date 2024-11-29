@@ -91,25 +91,25 @@ export default function Home() {
 
 	// Main UI
 	return (
-		<div className="flex w-screen min-h-screen p-4 justify-center items-center">
+		<div className="flex w-screen min-h-screen p-4 justify-center items-center login-background">
 			<div className="flex w-1/5 space-y-6 justify-center items-center">
 				<div className="w-full p-8 space-y-6 rounded shadow-sm bg-white">
-					<div className="py-3 text-center font-semibold text-4xl" onClick={autofill}>
+					<span className="block py-3 w-full text-center font-semibold text-4xl" onClick={autofill}>
 						{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}
-					</div>
+					</span>
 
 					<div className="space-y-6">
 						<div className="flex w-full justify-center">
 							<div className="flex flex-col w-full gap-2">
 								<label htmlFor="emailAddress">Email Address</label>
-								<InputText className="w-full" id="emailAddress" onChange={setCredentials} value={emailAddress.value} />
+								<InputText className="w-full p-inputtext-sm" id="emailAddress" onChange={setCredentials} value={emailAddress.value} />
 							</div>
 						</div>
 						<div className="flex w-full justify-center">
 							<div className="flex flex-col w-full gap-2">
 								<label htmlFor="password">Password</label>
 								<Password
-									className="w-full"
+									className="w-full p-inputtext-sm"
 									feedback={false}
 									inputClassName="w-full"
 									inputId="password"

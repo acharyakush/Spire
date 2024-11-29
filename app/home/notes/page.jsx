@@ -7,5 +7,5 @@ export default function Page() {
 	// Business Logic
 
 	// Main UI
-	return <h1>Inquiries Page</h1>;
+	return <h1>Notes Page</h1>;
 }

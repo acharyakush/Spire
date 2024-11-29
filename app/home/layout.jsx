@@ -1,14 +1,14 @@
 "use client";
 
 // Imports
-import MySidebar from "../components/MySidebar";
+import AppMenuBar from "../components/AppMenuBar";
 
 // Component
 export default function HomeLayout({ children }) {
 	// Main UI
 	return (
-		<div className="flex h-screen">
-			<MySidebar />
+		<div className="h-screen">
+			<AppMenuBar />
 			<main className="flex p-4">{children}</main>
 		</div>
 	);

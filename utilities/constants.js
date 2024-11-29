@@ -79,7 +79,9 @@ const MyConstants = Object.freeze({
 		employees: "/home/employees",
 		inquiries: "/home/inquiries",
 		invoices: "/home/invoices",
+		notes: "/home/notes",
 		projects: "/home/projects",
+		references: "/home/references",
 		tasks: "/home/tasks",
 	}),
 });
