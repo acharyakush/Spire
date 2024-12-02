@@ -20,11 +20,15 @@ export const isDevelopment = process.env.NODE_ENV !== "production";
 export const MyGlobal = Object.freeze({
 	async addActivity(activityData) {
 		try {
-			await axios.post(MyConstants.API_ENDPOINTS.addActivity, JSON.stringify(activityData), {
-				headers: {
-					"Content-Type": "application/json",
+			await axios.post(
+				MyConstants.ApiEndpoints.addActivity,
+				JSON.stringify(activityData),
+				{
+					headers: {
+						"Content-Type": "application/json",
+					},
 				},
-			});
+			);
 		} catch (error) {
 			console.error("Error calling add-activity API:", error);
 		}
@@ -41,23 +45,49 @@ export const MyGlobal = Object.freeze({
 	},
 
 	deobfuscate(obfuscated) {
-		const obfuscatedBytes = Uint8Array.from(Buffer.from(obfuscated, "base64"));
-		const secretBytes = new TextEncoder().encode(process.env.NEXT_PUBLIC_SECRET_KEY);
+		const obfuscatedBytes = Uint8Array.from(
+			Buffer.from(obfuscated, "base64"),
+		);
+		const secretBytes = new TextEncoder().encode(
+			process.env.NEXT_PUBLIC_SECRET_KEY,
+		);
 		const originalBytes = new Uint8Array(obfuscatedBytes.length);
 
 		for (let i = 0; i < obfuscatedBytes.length; i++) {
-			originalBytes[i] = obfuscatedBytes[i] ^ secretBytes[i % secretBytes.length];
+			originalBytes[i] =
+				obfuscatedBytes[i] ^ secretBytes[i % secretBytes.length];
 		}
 
 		return new TextDecoder().decode(originalBytes);
 	},
 
+	async getAnyData(apiEndpoint) {
+		let result = { data: [], statusCode: 0 };
+
+		try {
+			const response = await axios.get(apiEndpoint);
+
+			result.data = response.data;
+			result.statusCode = response.status;
+		} catch (error) {
+			result.data = error;
+			result.statusCode = error.response.status;
+		}
+
+		return result;
+	},
+
 	getLoggedInUserDetails() {
-		const loggedInUserDetails = this.Storages.local.doesExist(`${applicationName.toLocaleLowerCase()}_user_details`);
+		const loggedInUserDetails = this.Storages.local.doesExist(
+			`${applicationName.toLocaleLowerCase()}_user_details`,
+		);
 
 		if (loggedInUserDetails) {
-			const userDetails = this.Storages.local.get(`${applicationName.toLocaleLowerCase()}_user_details`);
-			const parsedUserDetails = typeof userDetails === "string" && JSON.parse(userDetails);
+			const userDetails = this.Storages.local.get(
+				`${applicationName.toLocaleLowerCase()}_user_details`,
+			);
+			const parsedUserDetails =
+				typeof userDetails === "string" && JSON.parse(userDetails);
 
 			return parsedUserDetails;
 		}
@@ -73,11 +103,14 @@ export const MyGlobal = Object.freeze({
 
 	obfuscate(input) {
 		const inputBytes = new TextEncoder().encode(input);
-		const secretBytes = new TextEncoder().encode(process.env.NEXT_PUBLIC_SECRET_KEY);
+		const secretBytes = new TextEncoder().encode(
+			process.env.NEXT_PUBLIC_SECRET_KEY,
+		);
 		const obfuscatedBytes = new Uint8Array(inputBytes.length);
 
 		for (let i = 0; i < inputBytes.length; i++) {
-			obfuscatedBytes[i] = inputBytes[i] ^ secretBytes[i % secretBytes.length];
+			obfuscatedBytes[i] =
+				inputBytes[i] ^ secretBytes[i % secretBytes.length];
 		}
 
 		return Buffer.from(obfuscatedBytes).toString("base64");
@@ -85,30 +118,45 @@ export const MyGlobal = Object.freeze({
 
 	pbkdf2Async(password, salt) {
 		return new Promise((resolve, reject) => {
-			crypto.pbkdf2(password, salt, 100000, 64, "sha512", (err, derivedKey) => {
-				if (err) return reject(new Error("Error generating hash"));
-				resolve(derivedKey.toString("hex"));
-			});
+			crypto.pbkdf2(
+				password,
+				salt,
+				100000,
+				64,
+				"sha512",
+				(err, derivedKey) => {
+					if (err) return reject(new Error("Error generating hash"));
+					resolve(derivedKey.toString("hex"));
+				},
+			);
 		});
 	},
 
 	Storages: {
 		local: {
 			doesExist: (key) => {
-				return !isDevelopment ? secureLocalStorage.get(key) : globalThis.localStorage.getItem(key);
+				return !isDevelopment
+					? secureLocalStorage.get(key)
+					: globalThis.localStorage.getItem(key);
 			},
 			get: (key) => {
-				return !isDevelopment ? secureLocalStorage.get(key) : globalThis.localStorage.getItem(key);
+				return !isDevelopment
+					? secureLocalStorage.get(key)
+					: globalThis.localStorage.getItem(key);
 			},
 			remove: (key) => {
-				return !isDevelopment ? secureLocalStorage.remove(key) : globalThis.localStorage.removeItem(key);
+				return !isDevelopment
+					? secureLocalStorage.remove(key)
+					: globalThis.localStorage.removeItem(key);
 			},
 			removeAll: () => {
 				for (let i = 0; i < globalThis.localStorage.length; i++) {
 					const key = globalThis.localStorage.key(i) || "";
 
 					if (key && key.startsWith(applicationName)) {
-						!isDevelopment ? secureLocalStorage.remove(key) : globalThis.localStorage.removeItem(key);
+						!isDevelopment
+							? secureLocalStorage.remove(key)
+							: globalThis.localStorage.removeItem(key);
 						i--;
 					}
 				}
@@ -116,7 +164,9 @@ export const MyGlobal = Object.freeze({
 				globalThis.console.clear();
 			},
 			set: (key, value) => {
-				return !isDevelopment ? secureLocalStorage.set(key, value) : globalThis.localStorage.setItem(key, value);
+				return !isDevelopment
+					? secureLocalStorage.set(key, value)
+					: globalThis.localStorage.setItem(key, value);
 			},
 		},
 	},
@@ -127,23 +177,24 @@ export const MyGlobal = Object.freeze({
 		if (!_emailAddress.includes("@")) {
 			return {
 				hasError: true,
-				text: MyConstants.MESSAGES.noAtSymbolInEmailAddress,
+				text: MyConstants.Messages.noAtSymbolInEmailAddress,
 			};
 		}
 
 		if (!_emailAddress.includes(".")) {
 			return {
 				hasError: true,
-				text: MyConstants.MESSAGES.noPeriodSymbolInEmailAddress,
+				text: MyConstants.Messages.noPeriodSymbolInEmailAddress,
 			};
 		}
 
-		const emailRegex = /^[a-zA-Z0-9._%+-]+@(admins\.spire\.com|spire\.com)$/;
+		const emailRegex =
+			/^[a-zA-Z0-9._%+-]+@(admins\.spire\.com|spire\.com)$/;
 
 		if (!emailRegex.test(_emailAddress)) {
 			return {
 				hasError: true,
-				text: MyConstants.MESSAGES.spireDomainOnly,
+				text: MyConstants.Messages.spireDomainOnly,
 			};
 		}
 

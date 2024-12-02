@@ -119,14 +119,13 @@ model licenses {
 }
 
 model main_projects {
-  id            String                @id @db.VarChar(8)
-  name          String                @db.VarChar(255)
-  created_at    DateTime              @default(now()) @db.DateTime(0)
-  created_by    String                @db.VarChar(8)
-  updated_at    DateTime              @default(now()) @db.DateTime(0)
-  updated_by    String?               @db.VarChar(8)
-  update_reason String?               @db.Text
-  status        main_projects_status? @default(Active)
+  id            String      @id @db.VarChar(8)
+  name          String      @db.VarChar(255)
+  created_at    DateTime    @default(now()) @db.DateTime(0)
+  created_by    String      @db.VarChar(8)
+  updated_at    DateTime    @default(now()) @db.DateTime(0)
+  updated_by    String?     @db.VarChar(8)
+  update_reason String?     @db.Text
   inquiries     inquiries[]
 }
 
@@ -236,6 +235,12 @@ model references {
   @@index([client_id], map: "fk_client_id")
 }
 
+model statuses {
+  id       Int    @id @default(autoincrement())
+  entity   String @db.VarChar(50)
+  statuses String @db.LongText
+}
+
 enum permissions_type {
   Base
   Derived
@@ -259,15 +264,6 @@ enum administrators_gender {
   Female
   Other
   Prefer_not_to_say @map("Prefer not to say")
-}
-
-enum main_projects_status {
-  Active
-  Cancelled
-  Closed
-  Completed
-  Hold
-  Inactive
 }
 
 enum customers_subscription_type {

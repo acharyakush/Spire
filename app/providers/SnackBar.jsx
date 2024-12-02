@@ -19,16 +19,27 @@ export const SnackbarProvider = ({ children }) => {
 		setSnackbar((old) => ({ ...old, open: false }));
 	};
 
-	const showSnackbar = (message, severity = MyConstants.NOTIFICATION_TYPES.info) => {
+	const showSnackbar = (message, severity = MyConstants.ToastTypes.info) => {
 		setSnackbar({ message, open: true, severity });
 	};
 
 	return (
 		<SnackbarContext.Provider value={showSnackbar}>
 			{children}
-			<Snackbar anchorOrigin={{ vertical: "bottom", horizontal: "center" }} autoHideDuration={3000} onClose={hideSnackbar} open={snackbar.open}>
-				<Alert className="!text-sm" onClose={hideSnackbar} severity={snackbar.severity} sx={{ width: "100%" }} variant="filled">
-					<span dangerouslySetInnerHTML={{ __html: snackbar.message }} />
+			<Snackbar
+				anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+				autoHideDuration={3000}
+				onClose={hideSnackbar}
+				open={snackbar.open}>
+				<Alert
+					className="!text-sm"
+					onClose={hideSnackbar}
+					severity={snackbar.severity}
+					sx={{ width: "100%" }}
+					variant="filled">
+					<span
+						dangerouslySetInnerHTML={{ __html: snackbar.message }}
+					/>
 				</Alert>
 			</Snackbar>
 		</SnackbarContext.Provider>

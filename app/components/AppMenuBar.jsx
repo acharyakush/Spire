@@ -40,10 +40,22 @@ export default function AppMenuBar() {
 			default: "pi pi-plus",
 		};
 
-		const visibleModules = ["Dashboard", "Inquiries", "Projects", "Clients", "Affiliates", "Invoices", "Cash Flow"];
+		const visibleModules = [
+			"Dashboard",
+			"Inquiries",
+			"Projects",
+			"Clients",
+			"Affiliates",
+			"Invoices",
+			"Cash Flow",
+		];
 
-		const mainModules = modules.filter((module) => visibleModules.includes(module.name));
-		const moreModules = modules.filter((module) => !visibleModules.includes(module.name));
+		const mainModules = modules.filter((module) =>
+			visibleModules.includes(module.name),
+		);
+		const moreModules = modules.filter(
+			(module) => !visibleModules.includes(module.name),
+		);
 
 		const moreSection = {
 			label: "More",
@@ -51,7 +63,10 @@ export default function AppMenuBar() {
 				.map((module) => ({
 					label: module.name,
 					icon: icons[module.name.toLowerCase()],
-					command: () => router.push(MyConstants.PAGE_ROUTES[module.name.toLowerCase()]),
+					command: () =>
+						router.push(
+							MyConstants.PageRoutes[module.name.toLowerCase()],
+						),
 				}))
 				.sort((a, b) => a.label.localeCompare(b.label)),
 		};
@@ -59,7 +74,21 @@ export default function AppMenuBar() {
 		const menuBarModules = mainModules.map((module) => ({
 			label: module.name,
 			icon: icons[module.name.toLowerCase()],
-			command: () => router.push(MyConstants.PAGE_ROUTES[module.name.toLowerCase()]),
+			command: () => {
+				if (
+					typeof MyConstants.PageRoutes[module.name.toLowerCase()] ===
+					"object"
+				) {
+					router.push(
+						MyConstants.PageRoutes[module.name.toLowerCase()]
+							?.index,
+					);
+				} else {
+					router.push(
+						MyConstants.PageRoutes[module.name.toLowerCase()],
+					);
+				}
+			},
 		}));
 
 		menuBarModules.push(moreSection);
@@ -69,27 +98,39 @@ export default function AppMenuBar() {
 
 	const getAllPermissions = async () => {
 		try {
-			const response = await axios.get(MyConstants.API_ENDPOINTS.getPermissions);
+			const response = await axios.get(
+				MyConstants.ApiEndpoints.getAllPermissions,
+			);
 
-			const revisedModules = response.data.reduce((group, currentItem) => {
-				if (currentItem.type === "Base") {
-					group.push({ ...currentItem, children: [] });
-				} else {
-					const parent = group.find((group) => group.module === currentItem.module && group.type === "Base");
+			const revisedModules = response.data.reduce(
+				(group, currentItem) => {
+					if (currentItem.type === "Base") {
+						group.push({ ...currentItem, children: [] });
+					} else {
+						const parent = group.find(
+							(group) =>
+								group.module === currentItem.module &&
+								group.type === "Base",
+						);
 
-					if (parent) {
-						if (currentItem.sidebar_visibility) {
-							parent.children.push(currentItem);
+						if (parent) {
+							if (currentItem.sidebar_visibility) {
+								parent.children.push(currentItem);
+							}
 						}
 					}
-				}
-				return group;
-			}, []);
+					return group;
+				},
+				[],
+			);
 
 			setOtherData((old) => ({ ...old, modules: revisedModules }));
 		} catch (error) {
 			if ("response" in error) {
-				showSnackbar(error.response.data.error, MyConstants.NOTIFICATION_TYPES.error);
+				showSnackbar(
+					error.response.data.error,
+					MyConstants.ToastTypes.error,
+				);
 			}
 		}
 	};
@@ -114,14 +155,23 @@ export default function AppMenuBar() {
 	return (
 		<div className="custom-menubar">
 			<div className="custom-menubar-start">
-				<span className="w-full py-3 text-center font-semibold text-3xl">{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}</span>;
+				<span className="w-full py-3 text-center font-semibold text-2xl">
+					{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}
+				</span>
 			</div>
 			<div className="custom-menubar-items">
-				<Menubar model={generateMenuItems(otherData.modules)} style={{ border: "none" }} />
+				<Menubar
+					model={generateMenuItems(otherData.modules)}
+					style={{ border: "none" }}
+				/>
 			</div>
 			<div className="custom-menubar-end">
 				<div className="flex w-full justify-center items-center">
-					<Avatar image="https://primefaces.org/cdn/primereact/images/avatar/amyelsner.png" onClick={logout} shape="circle" />
+					<Avatar
+						image="https://primefaces.org/cdn/primereact/images/avatar/amyelsner.png"
+						onClick={logout}
+						shape="circle"
+					/>
 				</div>
 			</div>
 		</div>

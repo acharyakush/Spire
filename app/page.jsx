@@ -26,48 +26,83 @@ export default function Home() {
 	// Functions
 	const autofill = () => {
 		if (isDevelopment) {
-			setEmailAddress((old) => ({ ...old, value: "kush@admins.spire.com" }));
+			setEmailAddress((old) => ({
+				...old,
+				value: "kush@admins.spire.com",
+			}));
 			setPassword("acharyakush2604");
 		}
 	};
 
 	const authenticate = async () => {
-		const emailAddressValidation = MyGlobal.validateEmailAddress(emailAddress.value);
+		const emailAddressValidation = MyGlobal.validateEmailAddress(
+			emailAddress.value,
+		);
 
 		if (!emailAddress.value) {
-			showToast(MyConstants.MESSAGES.noEmailAddress, MyConstants.NOTIFICATION_TYPES.error);
+			showToast(
+				MyConstants.Messages.noEmailAddress,
+				MyConstants.ToastTypes.error,
+			);
 		} else if (emailAddressValidation.hasError) {
-			showToast(emailAddressValidation.text, MyConstants.NOTIFICATION_TYPES.error);
+			showToast(
+				emailAddressValidation.text,
+				MyConstants.ToastTypes.error,
+			);
 		} else if (!password) {
-			showToast(MyConstants.MESSAGES.noPassword, MyConstants.NOTIFICATION_TYPES.error);
+			showToast(
+				MyConstants.Messages.noPassword,
+				MyConstants.ToastTypes.error,
+			);
 		} else {
 			setEmailAddress((old) => ({ ...old, error: "" }));
 			setFlags((old) => ({ ...old, isLoading: true }));
 
 			const currentTimestamp = dayjs().format("hh:mm:ss a DD-MM-YYYY");
-			const sessionToken = MyGlobal.obfuscate(`${currentTimestamp}${emailAddress}${password}`);
+			const sessionToken = MyGlobal.obfuscate(
+				`${currentTimestamp}${emailAddress}${password}`,
+			);
 
-			const jsonBody = JSON.stringify({ emailAddress: emailAddress.value, password });
+			const jsonBody = JSON.stringify({
+				emailAddress: emailAddress.value,
+				password,
+			});
 			const body = { credentials: MyGlobal.obfuscate(jsonBody) };
 
 			try {
-				const response = await axios.post(MyConstants.API_ENDPOINTS.authenticate, body);
+				const response = await axios.post(
+					MyConstants.ApiEndpoints.authenticate,
+					body,
+				);
 
 				if (response.status === 200) {
 					const userDetails = MyGlobal.deobfuscate(response.data);
 					const jsonUserDetails = JSON.parse(userDetails);
 
-					MyGlobal.Storages.local.set(`${applicationName.toLocaleLowerCase()}_user_details`, userDetails);
-					MyGlobal.addActivity({ activity: "Logged in.", session_id: sessionToken, user_id: jsonUserDetails.user.id });
+					MyGlobal.Storages.local.set(
+						`${applicationName.toLocaleLowerCase()}_user_details`,
+						userDetails,
+					);
+					MyGlobal.addActivity({
+						activity: "Logged in.",
+						session_id: sessionToken,
+						user_id: jsonUserDetails.user.id,
+					});
 
 					router.replace("/home");
 				}
 			} catch (error) {
 				if ("response" in error) {
 					if ("object" in error.response.data) {
-						showToast(error.response.data.object.name, MyConstants.NOTIFICATION_TYPES.error);
+						showToast(
+							error.response.data.object.name,
+							MyConstants.ToastTypes.error,
+						);
 					} else {
-						showToast(error.response.data.error, MyConstants.NOTIFICATION_TYPES.error);
+						showToast(
+							error.response.data.error,
+							MyConstants.ToastTypes.error,
+						);
 					}
 				}
 			} finally {
@@ -94,15 +129,24 @@ export default function Home() {
 		<div className="flex w-screen min-h-screen p-4 justify-center items-center login-background">
 			<div className="flex w-1/5 space-y-6 justify-center items-center">
 				<div className="w-full p-8 space-y-6 rounded shadow-sm bg-white">
-					<span className="block py-3 w-full text-center font-semibold text-4xl" onClick={autofill}>
+					<span
+						className="block py-3 w-full text-center font-semibold text-4xl"
+						onClick={autofill}>
 						{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}
 					</span>
 
 					<div className="space-y-6">
 						<div className="flex w-full justify-center">
 							<div className="flex flex-col w-full gap-2">
-								<label htmlFor="emailAddress">Email Address</label>
-								<InputText className="w-full p-inputtext-sm" id="emailAddress" onChange={setCredentials} value={emailAddress.value} />
+								<label htmlFor="emailAddress">
+									Email Address
+								</label>
+								<InputText
+									className="w-full p-inputtext-sm"
+									id="emailAddress"
+									onChange={setCredentials}
+									value={emailAddress.value}
+								/>
 							</div>
 						</div>
 						<div className="flex w-full justify-center">
@@ -121,7 +165,12 @@ export default function Home() {
 						</div>
 					</div>
 					<div className="flex w-full h-14 justify-center items-end">
-						<Button className="w-full" loading={flags.isLoading} label="Sign In" onClick={authenticate} />
+						<Button
+							className="w-full"
+							loading={flags.isLoading}
+							label="Sign In"
+							onClick={authenticate}
+						/>
 					</div>
 				</div>
 			</div>

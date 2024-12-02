@@ -1,28 +1,14 @@
 "use client";
 
 const MyConstants = Object.freeze({
-	API_ENDPOINTS: Object.freeze({
+	ApiEndpoints: Object.freeze({
 		addActivity: "/api/add-activity",
 		authenticate: "/api/authenticate",
-		getPermissions: "/api/get-permissions",
+		getAllClients: "/api/get-all-clients",
+		getAllPermissions: "/api/get-all-permissions",
+		getAllStatuses: "/api/get-all-statuses",
 	}),
-	TABLE_HEADERS: Object.freeze({
-		inquiries: Object.freeze({
-			entryDate: "Entry Date",
-			clientId: "Client",
-			contactNumber: "Contact Number",
-			mainProjectId: "Main Project",
-			subProjectId: "Sub Project",
-			referenceId: "Reference",
-			followUps: "Follow Ups",
-			quote: "Quote",
-			status: "Status",
-			notes: "Notes",
-			createdBy: "Created By",
-			inquiryTypeId: "Inquiry Type",
-		}),
-	}),
-	MESSAGES: Object.freeze({
+	Messages: Object.freeze({
 		accessRevoked: "Your access has been revoked.",
 		addEmployee: "New employee added.",
 		adminCompanyAdded: "New admin company added.",
@@ -63,13 +49,7 @@ const MyConstants = Object.freeze({
 		taskUpdated: "Task updated.",
 		unauthorizedAccess: "Unauthorized access.",
 	}),
-	NOTIFICATION_TYPES: Object.freeze({
-		error: "error",
-		info: "info",
-		success: "success",
-		warning: "warning",
-	}),
-	PAGE_ROUTES: Object.freeze({
+	PageRoutes: Object.freeze({
 		admins: "/home/admins",
 		affiliates: "/home/affiliates",
 		cashFlow: "/home/cash-flow",
@@ -77,12 +57,45 @@ const MyConstants = Object.freeze({
 		companies: "/home/companies",
 		dashboard: "/home/dashboard",
 		employees: "/home/employees",
-		inquiries: "/home/inquiries",
+		inquiries: Object.freeze({
+			index: "/home/inquiries",
+			newInquiry: "/home/inquiries/new-inquiry",
+		}),
 		invoices: "/home/invoices",
 		notes: "/home/notes",
 		projects: "/home/projects",
 		references: "/home/references",
 		tasks: "/home/tasks",
+	}),
+	Statuses: Object.freeze({
+		inquiries: Object.freeze({
+			closed: { key: "Closed", value: "Closed" },
+			confirmed: { key: "Confirmed", value: "Confirmed" },
+			hold: { key: "Hold", value: "Hold" },
+			open: { key: "Open", value: "Open" },
+		}),
+	}),
+	TableHeaders: Object.freeze({
+		inquiries: Object.freeze({
+			entryDate: "Entry Date",
+			clientId: "Client",
+			contactNumber: "Contact Number",
+			mainProjectId: "Main Project",
+			subProjectId: "Sub Project",
+			referenceId: "Reference",
+			followUps: "Follow Ups",
+			quote: "Quote",
+			status: "Status",
+			notes: "Notes",
+			createdBy: "Created By",
+			inquiryTypeId: "Inquiry Type",
+		}),
+	}),
+	ToastTypes: Object.freeze({
+		error: "error",
+		info: "info",
+		success: "success",
+		warning: "warning",
 	}),
 });
 

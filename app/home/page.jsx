@@ -13,7 +13,7 @@ export default function Home() {
 
 	// Hooks
 	useLayoutEffect(() => {
-		router.replace(MyConstants.PAGE_ROUTES.inquiries);
+		router.replace(MyConstants.PageRoutes.inquiries.index);
 	}, []);
 
 	return null;

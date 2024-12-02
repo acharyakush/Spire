@@ -2,13 +2,12 @@
 	"[javascript]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
-	"[typescript]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
 	"editor.autoClosingBrackets": "always",
 	"editor.autoClosingQuotes": "always",
 	"editor.autoIndent": "advanced",
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.fontFamily": "'Fira Code', Consolas, 'Courier New', monospace",
+	"editor.fontLigatures": true,
 	"editor.formatOnSave": true,
 	"editor.insertSpaces": true,
 	"editor.quickSuggestions": {
@@ -18,6 +17,7 @@
 	},
 	"editor.suggest.snippetsPreventQuickSuggestions": false,
 	"editor.tabSize": 4,
+	"editor.wordWrap": "on",
 	"files.autoSave": "off",
 	"files.watcherExclude": {
 		"**/.git/objects/**": true,
@@ -27,7 +27,7 @@
 	"javascript.suggest.autoImports": true,
 	"prettier.bracketSameLine": true,
 	"prettier.htmlWhitespaceSensitivity": "ignore",
-	"prettier.printWidth": 150,
+	"prettier.printWidth": 160,
 	"prettier.semi": true,
 	"prettier.singleQuote": false,
 	"prettier.singleAttributePerLine": false,
