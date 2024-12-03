@@ -1,9 +1,11 @@
 "use client";
 
 // Imports
+import dayjs from "dayjs";
 import MyConstants from "@/utilities/constants";
 
 import { Chips } from "primereact/chips";
+import { Column } from "primereact/column";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
@@ -11,11 +13,15 @@ import { NewInquiryContext } from "../layout";
 import { MyGlobal } from "@/utilities/global";
 import { Dropdown } from "primereact/dropdown";
 import { Calendar } from "primereact/calendar";
+import { DataTable } from "primereact/datatable";
 import { InputText } from "primereact/inputtext";
 import { InputNumber } from "primereact/inputnumber";
+import { MultiSelect } from "primereact/multiselect";
 import { useToast } from "@/app/context/ToastContext";
 import { useContext, useEffect, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDiagramProject, faInfoCircle, faPlusCircle, faShapes, faUserTie } from "@fortawesome/free-solid-svg-icons";
 
 // Component
 export default function Page() {
@@ -23,50 +29,47 @@ export default function Page() {
 	const showToast = useToast();
 	const { data } = useContext(NewInquiryContext);
 
+	const statuses = typeof data?.inquiryStatuses === "string" ? JSON.parse(data?.inquiryStatuses) : [];
+
 	const [newInquiry, setNewInquiry] = useState({
-		client: { fullName: "", id: "" },
+		client: {},
 		contactNumber: "",
 		date: new Date(),
 		emailAddress: "",
 		followUps: [],
-		mainProjectId: { id: "", name: "" },
-		notes: "",
+		mainProject: {},
+		note: "",
 		quote: 2500,
-		reference: { id: "", name: "" },
-		status: MyConstants.Statuses.inquiries.open,
-		subProjectId: { id: "", name: "" },
+		reference: {},
+		status: MyConstants.Statuses.inquiries.open.value,
+		subProject: {},
 		tags: [],
 	});
 
 	const [otherData, setOtherData] = useState({
 		allClients: data?.allClients,
+		allReferences: data?.allReferences,
 		isNewClientBoxOpen: false,
-		newClient: { fullName: "", id: "" },
+		isNewReferenceBoxOpen: false,
+		isPreviewBoxOpen: false,
+		newClient: {},
+		newReference: {},
 	});
-
-	const countries = [
-		{ name: "Australia", code: "AU" },
-		{ name: "Brazil", code: "BR" },
-		{ name: "China", code: "CN" },
-		{ name: "Egypt", code: "EG" },
-		{ name: "France", code: "FR" },
-		{ name: "Germany", code: "DE" },
-		{ name: "India", code: "IN" },
-		{ name: "Japan", code: "JP" },
-		{ name: "Spain", code: "ES" },
-		{ name: "United States", code: "US" },
-	];
 
 	// Functions
 	const addNewClient = () => {
-		setOtherData((old) => ({ ...old, allClients: [...old.allClients, otherData.newClient], isNewClientBoxOpen: false, newClient: "" }));
+		setOtherData((old) => ({ ...old, allClients: [...old?.allClients, otherData.newClient], isNewClientBoxOpen: false, newClient: "" }));
+	};
+
+	const addNewReference = () => {
+		setOtherData((old) => ({ ...old, allReferences: [...old?.allReferences, otherData.newReference], isNewReferenceBoxOpen: false, newReference: "" }));
 	};
 
 	const getAllClients = async () => {
-		const response = await MyGlobal.getAnyData(MyConstants.ApiEndpoints.getAllClients);
+		const response = await MyGlobal.getAnyData(MyConstants.ApiEndpoints.getData, "clients");
 
 		if (response.statusCode == 200) {
-			setOtherData((old) => ({ ...old, allClients: response.data }));
+			setOtherData((old) => ({ ...old, allClients: response.data.at(0).data }));
 		} else {
 			if ("response" in error) {
 				if ("object" in error.response.data) {
@@ -78,26 +81,47 @@ export default function Page() {
 		}
 	};
 
+	const getInquiryPreview = () => {
+		return [
+			{
+				client: newInquiry.client.full_name,
+				contactNumber: newInquiry.contactNumber,
+				emailAddress: newInquiry.emailAddress,
+				mainProject: newInquiry.mainProject.name,
+				subProject: newInquiry.subProject.name,
+				reference: newInquiry.reference.name,
+				date: dayjs(newInquiry.date).format("DD/MM/YYYY"),
+				quote: newInquiry.quote,
+				status: newInquiry.status,
+				followUps: newInquiry.followUps.join(","),
+				note: newInquiry.note,
+				tags: newInquiry.tags.join(","),
+			},
+		];
+	};
+
 	const setNewInquiryValues = (key, value) => {
-		if (key == "client") {
-			setNewInquiry((old) => ({ ...old, client: { fullName: value?.fullName, id: value?.id } }));
-		} else if (key == "status") {
-			setNewInquiry((old) => ({ ...old, status: { key: value, value } }));
-		} else {
-			setNewInquiry((old) => ({ ...old, [key]: value }));
-		}
+		setNewInquiry((old) => ({ ...old, [key]: value }));
 	};
 
 	const setOtherDataValues = (key, value) => {
 		if (key == "newClient") {
-			const newClientName = value.trim();
-			const clientAlreadyExists = otherData.allClients.some((client) => client.fullName == newClientName);
+			const clientAlreadyExists = otherData.allClients.some((client) => client.full_name == value);
 
 			if (!clientAlreadyExists) {
-				const newClient = { fullName: MyGlobal.capitalize(newClientName), id: 0 };
+				const newClient = { full_name: MyGlobal.capitalize(value), id: 0 };
 				setOtherData((old) => ({ ...old, newClient }));
 			} else {
-				showToast(`${newClientName} already exists`, MyConstants.ToastTypes.error);
+				showToast(`${value} already exists`, MyConstants.ToastTypes.error);
+			}
+		} else if (key == "newReference") {
+			const referenceAlreadyExists = otherData.allReferences.some((reference) => reference.full_name == value);
+
+			if (!referenceAlreadyExists) {
+				const newReference = { full_name: MyGlobal.capitalize(value), id: 0 };
+				setOtherData((old) => ({ ...old, newReference }));
+			} else {
+				showToast(`${value} already exists`, MyConstants.ToastTypes.error);
 			}
 		} else {
 			setOtherData((old) => ({ ...old, [key]: value }));
@@ -108,8 +132,39 @@ export default function Page() {
 	const uiClientsList = (client) => {
 		return (
 			<div className="flex items-center">
-				<i className="w-5 mx-2 pi pi-user" />
-				<div>{client?.fullName}</div>
+				<div>{client?.full_name}</div>
+			</div>
+		);
+	};
+
+	const uiMainProjectsList = (mainProject) => {
+		return (
+			<div className="flex items-center">
+				<div>{mainProject?.name}</div>
+			</div>
+		);
+	};
+
+	const uiReferencesList = (reference) => {
+		return (
+			<div className="flex items-center">
+				<div>{reference?.full_name}</div>
+			</div>
+		);
+	};
+
+	const uiStatusesList = (status) => {
+		return (
+			<div className="flex items-center">
+				<div>{status}</div>
+			</div>
+		);
+	};
+
+	const uiSubProjectsList = (subProject) => {
+		return (
+			<div className="flex items-center">
+				<div>{subProject?.name}</div>
 			</div>
 		);
 	};
@@ -123,12 +178,82 @@ export default function Page() {
 		);
 	};
 
+	const uiNewReferenceBoxFooter = () => {
+		return (
+			<div>
+				<Button className="p-button-text" label="Cancel" onClick={() => setOtherDataValues("isNewReferenceBoxOpen", false)} size="small" />
+				<Button autoFocus label="Add" onClick={() => addNewReference()} size="small" />
+			</div>
+		);
+	};
+
+	const uiPreviewBoxFooter = () => {
+		return (
+			<div>
+				<Button className="p-button-text" label="Cancel" onClick={() => setOtherDataValues("isPreviewBoxOpen", false)} size="small" />
+				<Button autoFocus label="Add" onClick={() => addNewClient()} size="small" />
+			</div>
+		);
+	};
+
 	const uiSelectedClient = (option, props) => {
 		if (option) {
 			return (
-				<div className="flex items-center">
-					<i className="w-5 mx-2 pi pi-user" />
-					<div>{option?.fullName}</div>
+				<div className="flex space-x-2.5 justify-start items-center">
+					<FontAwesomeIcon className="text-blue-600" icon={faUserTie} />
+					<span>{option?.full_name}</span>
+				</div>
+			);
+		}
+
+		return <span>{props.placeholder}</span>;
+	};
+
+	const uiSelectedMainProject = (option, props) => {
+		if (option) {
+			return (
+				<div className="flex space-x-2.5 justify-start items-center">
+					<FontAwesomeIcon className="text-blue-600" icon={faDiagramProject} />
+					<span>{option?.name}</span>
+				</div>
+			);
+		}
+
+		return <span>{props.placeholder}</span>;
+	};
+
+	const uiSelectedReference = (option, props) => {
+		if (option) {
+			return (
+				<div className="flex space-x-2.5 justify-start items-center">
+					<FontAwesomeIcon className="text-blue-600" icon={faUserTie} />
+					<span>{option?.full_name}</span>
+				</div>
+			);
+		}
+
+		return <span>{props.placeholder}</span>;
+	};
+
+	const uiSelectedSubProject = (option, props) => {
+		if (option) {
+			return (
+				<div className="flex space-x-2.5 justify-start items-center">
+					<FontAwesomeIcon className="text-blue-600" icon={faShapes} />
+					<span>{option?.name}</span>
+				</div>
+			);
+		}
+
+		return <span>{props.placeholder}</span>;
+	};
+
+	const uiSelectedStatus = (option, props) => {
+		if (option) {
+			return (
+				<div className="flex space-x-2.5 justify-start items-center">
+					<FontAwesomeIcon className="text-blue-600" icon={faInfoCircle} size="lg" />
+					<span>{option}</span>
 				</div>
 			);
 		}
@@ -155,15 +280,20 @@ export default function Page() {
 	return (
 		<div className="flex flex-col w-full h-full justify-center items-center">
 			<Toolbar className="w-full !py-0 !bg-transparent !border-none" start={<h2>New Inquiry</h2>} />
-			<div className="flex flex-col w-1/2 space-y-10 justify-center items-center">
+			<div className="flex flex-col w-1/2 space-y-9 justify-center items-center">
 				<div className="flex w-full space-x-10 justify-center items-center">
 					<div className="flex w-full justify-center">
 						<div className="flex flex-col w-full gap-2">
-							<label htmlFor="clientsList">
+							<label className="flex w-full space-x-2.5 justify-start items-center" htmlFor="clientsList">
 								<span>Clients</span>
-								<span className="cursor-pointer pi pi-plus" onClick={() => setOtherDataValues("isNewClientBoxOpen", true)} />
+								<FontAwesomeIcon
+									className="cursor-pointer text-blue-600"
+									icon={faPlusCircle}
+									onClick={() => setOtherDataValues("isNewClientBoxOpen", true)}
+								/>
 							</label>
 							<Dropdown
+								checkmark={true}
 								className="w-full p-inputtext-sm"
 								emptyFilterMessage="No clients found."
 								emptyMessage="No clients registered."
@@ -172,7 +302,6 @@ export default function Page() {
 								itemTemplate={uiClientsList}
 								onChange={(event) => setNewInquiryValues("client", event.value)}
 								options={otherData.allClients}
-								optionValue="fullName"
 								placeholder="Select a Client"
 								showFilterClear
 								value={newInquiry.client}
@@ -193,9 +322,10 @@ export default function Page() {
 									<InputText
 										className="w-full p-inputtext-sm"
 										id="newInquiryNewClient"
-										keyfilter="alpha"
+										keyfilter={/^[A-Za-z\s]*$/}
 										onChange={(event) => setOtherDataValues("newClient", event.target.value)}
-										value={otherData.newClient.fullName}
+										validateOnly
+										value={otherData.newClient.full_name}
 									/>
 								</div>
 							</Dialog>
@@ -219,6 +349,7 @@ export default function Page() {
 							<InputText
 								className="w-full p-inputtext-sm"
 								id="clientsEmailAddress"
+								keyfilter="email"
 								onChange={(event) => setNewInquiryValues("emailAddress", event.target.value)}
 								value={newInquiry.emailAddress}
 							/>
@@ -228,54 +359,99 @@ export default function Page() {
 				<div className="flex w-full space-x-10 justify-center items-center">
 					<div className="flex w-full justify-center">
 						<div className="flex flex-col w-full gap-2">
-							<label htmlFor="mainProjectsList">Main Project</label>
+							<label htmlFor="mainProjectsList">
+								<span>Main Projects</span>
+								<span className="ml-2.5 text-sm text-gray-400">{data?.allMainProjects?.length}</span>
+							</label>
 							<Dropdown
+								checkmark={true}
 								className="w-full p-inputtext-sm"
+								emptyFilterMessage="No main projects found."
+								emptyMessage="No main projects registered."
 								filter
 								id="mainProjectsList"
+								itemTemplate={uiMainProjectsList}
 								onChange={(event) => setNewInquiryValues("mainProject", event.value)}
-								options={countries}
-								optionLabel="name"
+								options={data?.allMainProjects}
 								placeholder="Select a Main Project"
-								value={newInquiry.mainProjectId}
-								valueTemplate={uiSelectedClient}
+								showFilterClear
+								value={newInquiry.mainProject}
+								valueTemplate={uiSelectedMainProject}
 								variant="filled"
 							/>
 						</div>
 					</div>
 					<div className="flex w-full justify-center">
 						<div className="flex flex-col w-full gap-2">
-							<label htmlFor="subProjectsList">Sub Project</label>
+							<label htmlFor="subProjectsList">
+								<span>Sub Projects</span>
+								<span className="ml-2.5 text-sm text-gray-400">{data?.allSubProjects?.length}</span>
+							</label>
 							<Dropdown
+								checkmark={true}
 								className="w-full p-inputtext-sm"
+								emptyFilterMessage="No sub projects found."
+								emptyMessage="No sub projects registered."
 								filter
 								id="subProjectsList"
+								itemTemplate={uiSubProjectsList}
 								onChange={(event) => setNewInquiryValues("subProject", event.value)}
-								options={countries}
-								optionLabel="name"
+								options={data?.allSubProjects}
 								placeholder="Select a Sub Project"
-								value={newInquiry.subProjectId}
-								valueTemplate={uiSelectedClient}
+								showFilterClear
+								value={newInquiry.subProject}
+								valueTemplate={uiSelectedSubProject}
 								variant="filled"
 							/>
 						</div>
 					</div>
 					<div className="flex w-full justify-center">
 						<div className="flex flex-col w-full gap-2">
-							<label htmlFor="referenceList">Reference</label>
+							<label className="flex w-full space-x-2.5 justify-start items-center" htmlFor="referenceList">
+								<span>References</span>
+								<FontAwesomeIcon
+									className="cursor-pointer text-blue-600"
+									icon={faPlusCircle}
+									onClick={() => setOtherDataValues("isNewReferenceBoxOpen", true)}
+								/>
+							</label>
 							<Dropdown
+								checkmark={true}
 								className="w-full p-inputtext-sm"
+								emptyFilterMessage="No references found."
+								emptyMessage="No references registered."
 								filter
 								id="referenceList"
+								itemTemplate={uiReferencesList}
 								onChange={(event) => setNewInquiryValues("reference", event.value)}
-								options={countries}
-								optionLabel="label"
-								optionValue="value"
+								options={data?.allReferences}
 								placeholder="Select a Reference"
-								value={newInquiry.reference.name}
-								valueTemplate={uiSelectedClient}
+								showFilterClear
+								value={newInquiry.reference}
+								valueTemplate={uiSelectedReference}
 								variant="filled"
 							/>
+							<Dialog
+								className="w-1/4"
+								footer={uiNewReferenceBoxFooter}
+								header="New Reference"
+								onHide={() => {
+									if (!otherData.isNewReferenceBoxOpen) return;
+									setOtherDataValues("isNewReferenceBoxOpen", false);
+								}}
+								visible={otherData.isNewReferenceBoxOpen}>
+								<div className="flex flex-col w-full gap-2">
+									<label htmlFor="newInquiryNewReference">Name</label>
+									<InputText
+										className="w-full p-inputtext-sm"
+										id="newInquiryNewReference"
+										keyfilter={/^[A-Za-z\s]*$/}
+										onChange={(event) => setOtherDataValues("newReference", event.target.value)}
+										validateOnly
+										value={otherData.newReference.name}
+									/>
+								</div>
+							</Dialog>
 						</div>
 					</div>
 				</div>
@@ -306,33 +482,60 @@ export default function Page() {
 					</div>
 					<div className="flex w-full justify-center">
 						<div className="flex flex-col w-full gap-2">
-							<label htmlFor="statusList">Status</label>
+							<label htmlFor="statusList">
+								<span>Status</span>
+								<span className="ml-2.5 text-sm text-gray-400">{statuses?.length}</span>
+							</label>
 							<Dropdown
 								checkmark={true}
 								className="w-full p-inputtext-sm"
-								highlightOnSelect={false}
+								emptyMessage="No statuses registered."
 								id="statusList"
+								itemTemplate={uiStatusesList}
 								onChange={(event) => setNewInquiryValues("status", event.value)}
-								optionLabel="key"
-								options={Object.values(MyConstants.Statuses.inquiries)}
+								options={statuses}
 								placeholder="Open"
-								value={newInquiry.status.value}
+								value={newInquiry.status}
+								valueTemplate={uiSelectedStatus}
 								variant="filled"
 							/>
 						</div>
 					</div>
 				</div>
-				<div className="flex w-full space-x-10 justify-center items-center">
+				<div className="flex w-full justify-center items-center">
+					<div className="flex flex-col w-full gap-2">
+						<label htmlFor="newInquiryFollowUps">
+							<span>Follow Ups</span>
+							<span className="ml-2.5 text-sm text-gray-400">{data?.allStaff?.length}</span>
+						</label>
+						<MultiSelect
+							className="w-full p-inputtext-sm"
+							display="chip"
+							emptyFilterMessage="No staff found."
+							filter
+							maxSelectedLabels={4}
+							id="newInquiryFollowUps"
+							onChange={(event) => setNewInquiryValues("followUps", event.value)}
+							optionLabel="full_name"
+							options={data?.allStaff}
+							placeholder="Select Staff(s)"
+							resetFilterOnHide
+							value={newInquiry.followUps}
+						/>
+					</div>
+				</div>
+				<div className="flex w-full space-x-10 justify-center items-start">
 					<div className="flex w-full justify-center">
 						<div className="flex flex-col w-full gap-2">
-							<label htmlFor="newInquiryNotes">Notes</label>
+							<label htmlFor="newInquiryNote">Note</label>
 							<InputTextarea
 								autoResize
+								className="p-inputtext-sm"
 								cols={20}
-								id="newInquiryNotes"
-								onChange={(event) => setNewInquiryValues("notes", event.target.value)}
+								id="newInquiryNote"
+								onChange={(event) => setNewInquiryValues("note", event.target.value)}
 								rows={2}
-								value={newInquiry.notes}
+								value={newInquiry.note}
 								variant="filled"
 							/>
 						</div>
@@ -340,9 +543,43 @@ export default function Page() {
 					<div className="flex w-full justify-center">
 						<div className="flex flex-col w-full gap-2">
 							<label htmlFor="newInquiryTags">Tags</label>
-							<Chips onChange={(event) => setNewInquiryValues("tags", event.value)} value={newInquiry.tags} variant="filled" />
+							<div className="w-full">
+								<Chips
+									className="w-full"
+									onChange={(event) => setNewInquiryValues("tags", event.value)}
+									value={newInquiry.tags}
+									variant="filled"
+								/>
+							</div>
 						</div>
 					</div>
+				</div>
+				<div className="flex w-full justify-center items-center">
+					<Button label="Preview" onClick={() => setOtherDataValues("isPreviewBoxOpen", true)} size="small" />
+					<Dialog
+						className="w-3/4"
+						footer={uiPreviewBoxFooter}
+						header="Preview"
+						onHide={() => {
+							if (!otherData.isPreviewBoxOpen) return;
+							setOtherDataValues("isPreviewBoxOpen", false);
+						}}
+						visible={otherData.isPreviewBoxOpen}>
+						<DataTable className="w-full" stripedRows value={getInquiryPreview()}>
+							<Column field="client" header="Client" />
+							<Column field="contactNumber" header="Contact" />
+							<Column field="emailAddress" header="Email Address" />
+							<Column field="mainProject" header="Main Project" />
+							<Column field="subProject" header="Sub Project" />
+							<Column field="reference" header="Reference" />
+							<Column field="date" header="Date" />
+							<Column field="quote" header="Quote" />
+							<Column field="status" header="Status" />
+							<Column field="followUps" header="Follow Ups" />
+							<Column field="note" header="Note" />
+							<Column field="tags" header="Tags" />
+						</DataTable>
+					</Dialog>
 				</div>
 			</div>
 		</div>

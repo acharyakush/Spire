@@ -22,6 +22,7 @@ model administrators {
   id            String                @id @db.Char(2)
   first_name    String                @db.VarChar(100)
   last_name     String                @db.VarChar(100)
+  full_name     String                @db.VarChar(500)
   username      String                @unique(map: "username") @db.VarChar(50)
   email_address String                @unique(map: "email_address") @db.VarChar(100)
   password      String                @db.Text
@@ -63,6 +64,7 @@ model employees {
   administrator_id           String?                      @db.Char(2)
   first_name                 String                       @db.VarChar(100)
   last_name                  String?                      @db.VarChar(100)
+  full_name                  String                       @db.VarChar(500)
   email_address              String                       @unique(map: "email_address") @db.VarChar(255)
   password                   String                       @db.VarChar(255)
   gender                     employees_gender?

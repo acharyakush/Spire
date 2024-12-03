@@ -4,9 +4,7 @@ const MyConstants = Object.freeze({
 	ApiEndpoints: Object.freeze({
 		addActivity: "/api/add-activity",
 		authenticate: "/api/authenticate",
-		getAllClients: "/api/get-all-clients",
-		getAllPermissions: "/api/get-all-permissions",
-		getAllStatuses: "/api/get-all-statuses",
+		getData: "/api/get-data",
 	}),
 	Messages: Object.freeze({
 		accessRevoked: "Your access has been revoked.",

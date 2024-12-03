@@ -1,14 +1,14 @@
 "use client";
 
 // Imports
-import AppMenuBar from "../components/AppMenuBar";
+import AppTabBar from "../components/AppTabBar";
 
 // Component
 export default function HomeLayout({ children }) {
 	// Main UI
 	return (
 		<div className="h-screen">
-			<AppMenuBar />
+			<AppTabBar />
 			<main className="flex p-4">{children}</main>
 		</div>
 	);

@@ -28,21 +28,14 @@ export default function Page() {
 		</IconField>
 	);
 
-	const endContent = (
-		<Button icon="pi pi-plus" onClick={goToNewInquiry} size="small" />
-	);
+	const endContent = <Button label="New" onClick={goToNewInquiry} size="small" />;
 
 	const startContent = <h2>Inquiries</h2>;
 
 	// Main UI
 	return (
 		<div className="flex w-full">
-			<Toolbar
-				className="w-full !py-0"
-				start={startContent}
-				center={centerContent}
-				end={endContent}
-			/>
+			<Toolbar className="w-full !py-0" start={startContent} center={centerContent} end={endContent} />
 		</div>
 	);
 }

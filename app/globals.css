@@ -49,6 +49,19 @@ html {
 	background: linear-gradient(135deg, #8ae5a3, #4178be);
 }
 
+.p-button-label {
+	font-weight: 400 !important;
+}
+
+.p-chips-multiple-container {
+	width: 100% !important;
+}
+
+.p-dialog .p-dialog-header .p-dialog-title {
+	font-weight: 500 !important;
+	font-size: 20px !important;
+}
+
 .p-icon-field {
 	width: 100%;
 }

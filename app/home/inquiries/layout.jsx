@@ -16,63 +16,51 @@ export default function HomeLayout({ children }) {
 
 	const [data, setData] = useState({
 		allClients: [],
-		allStatuses: [],
+		allMainProjects: [],
+		allReferences: [],
+		allStaff: [],
+		allSubProjects: [],
+		inquiryStatuses: [],
 	});
 
 	// Functions
-	const getAllClients = async () => {
-		try {
-			const response = await axios.get(
-				MyConstants.ApiEndpoints.getAllClients,
-			);
-
-			if (response.status === 200) {
-				setData((old) => ({ ...old, allClients: response.data }));
-			}
-		} catch (error) {
-			if ("response" in error) {
-				if ("object" in error.response.data) {
-					showToast(
-						error.response.data.object.name,
-						MyConstants.ToastTypes.error,
-					);
-				} else {
-					showToast(
-						error.response.data.error,
-						MyConstants.ToastTypes.error,
-					);
-				}
-			}
-		}
+	const extractApiResponseDataByEntity = (entity, payload) => {
+		return payload.filter((object) => object.table == entity).at(0).data;
 	};
 
-	const getAllStatuses = async () => {
+	const getRequiredData = async () => {
 		try {
-			const response = await axios.get(
-				MyConstants.ApiEndpoints.getAllStatuses,
-			);
+			const response = await axios.get(MyConstants.ApiEndpoints.getData, {
+				params: { table: "administrators,clients,employees,main_projects,references,statuses,sub_projects" },
+			});
 
 			if (response.status === 200) {
-				const getInquiryEntity = response.data
-					.filter((status) => status.entity == "Inquiries")
-					.at(0);
+				const payload = response.data;
 
-				const inquiryStatuses = JSON.parse(getInquiryEntity.statuses);
+				const allClients = extractApiResponseDataByEntity("clients", payload);
+				const allMainProjects = extractApiResponseDataByEntity("main_projects", payload);
+				const allReferences = extractApiResponseDataByEntity("references", payload);
+				const allAdministrators = extractApiResponseDataByEntity("administrators", payload);
+				const allEmployees = extractApiResponseDataByEntity("employees", payload);
+				const allStatuses = extractApiResponseDataByEntity("statuses", payload);
+				const allSubProjects = extractApiResponseDataByEntity("sub_projects", payload);
 
-				setData((old) => ({ ...old, allStatuses: inquiryStatuses }));
+				setData((old) => ({
+					...old,
+					allClients,
+					allMainProjects,
+					allReferences,
+					allStaff: allAdministrators.concat(allEmployees),
+					allSubProjects,
+					inquiryStatuses: allStatuses.filter((status) => status.entity == "Inquiries").at(0).statuses,
+				}));
 			}
 		} catch (error) {
 			if ("response" in error) {
 				if ("object" in error.response.data) {
-					showToast(
-						error.response.data.object.name,
-						MyConstants.ToastTypes.error,
-					);
+					showToast(error.response.data.object.name, MyConstants.ToastTypes.error);
 				} else {
-					showToast(
-						error.response.data.error,
-						MyConstants.ToastTypes.error,
-					);
+					showToast(error.response.data.error, MyConstants.ToastTypes.error);
 				}
 			}
 		}
@@ -80,14 +68,9 @@ export default function HomeLayout({ children }) {
 
 	// Hooks
 	useEffect(() => {
-		getAllClients();
-		getAllStatuses();
+		getRequiredData();
 	}, []);
 
 	// Main UI
-	return (
-		<NewInquiryContext.Provider value={{ data }}>
-			{children}
-		</NewInquiryContext.Provider>
-	);
+	return <NewInquiryContext.Provider value={{ data }}>{children}</NewInquiryContext.Provider>;
 }
