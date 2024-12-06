@@ -31,7 +31,7 @@ export default function HomeLayout({ children }) {
 	const getRequiredData = async () => {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.getData, {
-				params: { table: "administrators,clients,employees,main_projects,references,statuses,sub_projects" },
+				params: { table: "administrators,clients,employees,main_projects,the_references,statuses,sub_projects" },
 			});
 
 			if (response.status === 200) {
@@ -39,7 +39,7 @@ export default function HomeLayout({ children }) {
 
 				const allClients = extractApiResponseDataByEntity("clients", payload);
 				const allMainProjects = extractApiResponseDataByEntity("main_projects", payload);
-				const allReferences = extractApiResponseDataByEntity("references", payload);
+				const allReferences = extractApiResponseDataByEntity("the_references", payload);
 				const allAdministrators = extractApiResponseDataByEntity("administrators", payload);
 				const allEmployees = extractApiResponseDataByEntity("employees", payload);
 				const allStatuses = extractApiResponseDataByEntity("statuses", payload);

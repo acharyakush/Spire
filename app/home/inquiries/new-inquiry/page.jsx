@@ -1,6 +1,7 @@
 "use client";
 
 // Imports
+import axios from "axios";
 import dayjs from "dayjs";
 import MyConstants from "@/utilities/constants";
 
@@ -49,6 +50,7 @@ export default function Page() {
 	const [otherData, setOtherData] = useState({
 		allClients: data?.allClients,
 		allReferences: data?.allReferences,
+		isAddNewInquiryLoading: false,
 		isNewClientBoxOpen: false,
 		isNewReferenceBoxOpen: false,
 		isPreviewBoxOpen: false,
@@ -59,6 +61,43 @@ export default function Page() {
 	// Functions
 	const addNewClient = () => {
 		setOtherData((old) => ({ ...old, allClients: [...old?.allClients, otherData.newClient], isNewClientBoxOpen: false, newClient: "" }));
+	};
+
+	const addNewInquiry = async () => {
+		setOtherData((old) => ({ ...old, isAddNewInquiryLoading: true }));
+
+		const body = {
+			client: newInquiry.client,
+			contactNumber: newInquiry.contactNumber,
+			date: newInquiry.date,
+			emailAddress: newInquiry.emailAddress,
+			followUps: newInquiry.followUps.map((staff) => staff.id).join(","),
+			mainProjectId: newInquiry.mainProject.id,
+			note: newInquiry.note,
+			quote: newInquiry.quote,
+			reference: newInquiry.reference,
+			status: newInquiry.status,
+			subProjectId: newInquiry.subProject.id,
+			userId: MyGlobal.getLoggedInUserDetails()?.user?.id,
+			tags: newInquiry.tags.join(","),
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.addInquiry, body);
+
+			if (response.status === 200) {
+			}
+		} catch (error) {
+			if ("response" in error) {
+				if ("object" in error.response.data) {
+					showToast(error.response.data.object.name, MyConstants.ToastTypes.error);
+				} else {
+					showToast(error.response.data.error, MyConstants.ToastTypes.error);
+				}
+			}
+		} finally {
+			setOtherData((old) => ({ ...old, isAddNewInquiryLoading: false }));
+		}
 	};
 
 	const addNewReference = () => {
@@ -89,11 +128,11 @@ export default function Page() {
 				emailAddress: newInquiry.emailAddress,
 				mainProject: newInquiry.mainProject.name,
 				subProject: newInquiry.subProject.name,
-				reference: newInquiry.reference.name,
+				reference: newInquiry.reference.full_name,
 				date: dayjs(newInquiry.date).format("DD/MM/YYYY"),
 				quote: newInquiry.quote,
 				status: newInquiry.status,
-				followUps: newInquiry.followUps.join(","),
+				followUps: newInquiry.followUps.map((item) => item.full_name).join(", "),
 				note: newInquiry.note,
 				tags: newInquiry.tags.join(","),
 			},
@@ -191,7 +230,7 @@ export default function Page() {
 		return (
 			<div>
 				<Button className="p-button-text" label="Cancel" onClick={() => setOtherDataValues("isPreviewBoxOpen", false)} size="small" />
-				<Button autoFocus label="Add" onClick={() => addNewClient()} size="small" />
+				<Button autoFocus label="Add" onClick={() => addNewInquiry()} size="small" />
 			</div>
 		);
 	};
@@ -424,7 +463,7 @@ export default function Page() {
 								id="referenceList"
 								itemTemplate={uiReferencesList}
 								onChange={(event) => setNewInquiryValues("reference", event.value)}
-								options={data?.allReferences}
+								options={otherData.allReferences}
 								placeholder="Select a Reference"
 								showFilterClear
 								value={newInquiry.reference}
@@ -565,7 +604,7 @@ export default function Page() {
 							setOtherDataValues("isPreviewBoxOpen", false);
 						}}
 						visible={otherData.isPreviewBoxOpen}>
-						<DataTable className="w-full" stripedRows value={getInquiryPreview()}>
+						<DataTable className="w-full" showGridlines size="small" stripedRows value={getInquiryPreview()}>
 							<Column field="client" header="Client" />
 							<Column field="contactNumber" header="Contact" />
 							<Column field="emailAddress" header="Email Address" />

@@ -3,6 +3,7 @@
 const MyConstants = Object.freeze({
 	ApiEndpoints: Object.freeze({
 		addActivity: "/api/add-activity",
+		addInquiry: "/api/add-inquiry",
 		authenticate: "/api/authenticate",
 		getData: "/api/get-data",
 	}),
