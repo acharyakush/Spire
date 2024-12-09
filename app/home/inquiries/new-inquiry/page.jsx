@@ -28,7 +28,7 @@ import { faDiagramProject, faInfoCircle, faPlusCircle, faShapes, faUserTie } fro
 export default function Page() {
 	// Business Logic
 	const showToast = useToast();
-	const { data } = useContext(NewInquiryContext);
+	const { data, getRequiredData } = useContext(NewInquiryContext);
 
 	const statuses = typeof data?.inquiryStatuses === "string" ? JSON.parse(data?.inquiryStatuses) : [];
 
@@ -86,6 +86,9 @@ export default function Page() {
 			const response = await axios.post(MyConstants.ApiEndpoints.addInquiry, body);
 
 			if (response.status === 200) {
+				getRequiredData();
+				setOtherDataValues("isPreviewBoxOpen", false);
+				showToast(MyConstants.Messages.inquiryAdded, MyConstants.ToastTypes.success);
 			}
 		} catch (error) {
 			if ("response" in error) {
@@ -104,31 +107,15 @@ export default function Page() {
 		setOtherData((old) => ({ ...old, allReferences: [...old?.allReferences, otherData.newReference], isNewReferenceBoxOpen: false, newReference: "" }));
 	};
 
-	const getAllClients = async () => {
-		const response = await MyGlobal.getAnyData(MyConstants.ApiEndpoints.getData, "clients");
-
-		if (response.statusCode == 200) {
-			setOtherData((old) => ({ ...old, allClients: response.data.at(0).data }));
-		} else {
-			if ("response" in error) {
-				if ("object" in error.response.data) {
-					showToast(error.response.data.object.name, MyConstants.ToastTypes.error);
-				} else {
-					showToast(error.response.data.error, MyConstants.ToastTypes.error);
-				}
-			}
-		}
-	};
-
 	const getInquiryPreview = () => {
 		return [
 			{
-				client: newInquiry.client.full_name,
+				client: newInquiry.client.name,
 				contactNumber: newInquiry.contactNumber,
 				emailAddress: newInquiry.emailAddress,
 				mainProject: newInquiry.mainProject.name,
 				subProject: newInquiry.subProject.name,
-				reference: newInquiry.reference.full_name,
+				reference: newInquiry.reference.name,
 				date: dayjs(newInquiry.date).format("DD/MM/YYYY"),
 				quote: newInquiry.quote,
 				status: newInquiry.status,
@@ -145,19 +132,19 @@ export default function Page() {
 
 	const setOtherDataValues = (key, value) => {
 		if (key == "newClient") {
-			const clientAlreadyExists = otherData.allClients.some((client) => client.full_name == value);
+			const clientAlreadyExists = otherData.allClients.some((client) => client.name == value);
 
 			if (!clientAlreadyExists) {
-				const newClient = { full_name: MyGlobal.capitalize(value), id: 0 };
+				const newClient = { name: MyGlobal.capitalize(value), id: 0 };
 				setOtherData((old) => ({ ...old, newClient }));
 			} else {
 				showToast(`${value} already exists`, MyConstants.ToastTypes.error);
 			}
 		} else if (key == "newReference") {
-			const referenceAlreadyExists = otherData.allReferences.some((reference) => reference.full_name == value);
+			const referenceAlreadyExists = otherData.allReferences.some((reference) => reference.name == value);
 
 			if (!referenceAlreadyExists) {
-				const newReference = { full_name: MyGlobal.capitalize(value), id: 0 };
+				const newReference = { name: MyGlobal.capitalize(value), id: 0 };
 				setOtherData((old) => ({ ...old, newReference }));
 			} else {
 				showToast(`${value} already exists`, MyConstants.ToastTypes.error);
@@ -171,7 +158,7 @@ export default function Page() {
 	const uiClientsList = (client) => {
 		return (
 			<div className="flex items-center">
-				<div>{client?.full_name}</div>
+				<div>{client?.name}</div>
 			</div>
 		);
 	};
@@ -187,7 +174,7 @@ export default function Page() {
 	const uiReferencesList = (reference) => {
 		return (
 			<div className="flex items-center">
-				<div>{reference?.full_name}</div>
+				<div>{reference?.name}</div>
 			</div>
 		);
 	};
@@ -240,7 +227,7 @@ export default function Page() {
 			return (
 				<div className="flex space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="text-blue-600" icon={faUserTie} />
-					<span>{option?.full_name}</span>
+					<span>{option?.name}</span>
 				</div>
 			);
 		}
@@ -266,7 +253,7 @@ export default function Page() {
 			return (
 				<div className="flex space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="text-blue-600" icon={faUserTie} />
-					<span>{option?.full_name}</span>
+					<span>{option?.name}</span>
 				</div>
 			);
 		}
@@ -302,12 +289,6 @@ export default function Page() {
 
 	// Hooks
 	useEffect(() => {
-		if (!data.allClients.length) {
-			getAllClients();
-		}
-	}, []);
-
-	useEffect(() => {
 		console.log(newInquiry);
 	}, [newInquiry]);
 
@@ -323,8 +304,11 @@ export default function Page() {
 				<div className="flex w-full space-x-10 justify-center items-center">
 					<div className="flex w-full justify-center">
 						<div className="flex flex-col w-full gap-2">
-							<label className="flex w-full space-x-2.5 justify-start items-center" htmlFor="clientsList">
-								<span>Clients</span>
+							<label className="flex w-full justify-between items-center" htmlFor="clientsList">
+								<div className="flex space-x-2.5">
+									<span>Clients</span>
+									<span className="ml-2.5 text-sm text-gray-400">{data?.allClients?.length}</span>
+								</div>
 								<FontAwesomeIcon
 									className="cursor-pointer text-blue-600"
 									icon={faPlusCircle}
@@ -364,7 +348,7 @@ export default function Page() {
 										keyfilter={/^[A-Za-z\s]*$/}
 										onChange={(event) => setOtherDataValues("newClient", event.target.value)}
 										validateOnly
-										value={otherData.newClient.full_name}
+										value={otherData.newClient.name}
 									/>
 								</div>
 							</Dialog>
@@ -446,8 +430,11 @@ export default function Page() {
 					</div>
 					<div className="flex w-full justify-center">
 						<div className="flex flex-col w-full gap-2">
-							<label className="flex w-full space-x-2.5 justify-start items-center" htmlFor="referenceList">
-								<span>References</span>
+							<label className="flex w-full justify-between items-center" htmlFor="referenceList">
+								<div className="flex space-x-2.5">
+									<span>References</span>
+									<span className="ml-2.5 text-sm text-gray-400">{data?.allReferences?.length}</span>
+								</div>
 								<FontAwesomeIcon
 									className="cursor-pointer text-blue-600"
 									icon={faPlusCircle}

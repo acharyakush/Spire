@@ -38,29 +38,29 @@ model administrators {
 }
 
 model clients {
-  id                                               String           @id @db.VarChar(8)
-  name                                             String           @db.VarChar(200)
-  affiliate_ids                                    String?          @db.VarChar(2000)
-  company_id                                       String?          @db.VarChar(8)
-  reference_id                                     String?          @db.VarChar(8)
-  address                                          String?          @db.VarChar(500)
-  contact_number                                   BigInt?
-  email_address                                    String?          @db.VarChar(200)
-  industry                                         String?          @db.VarChar(100)
-  is_confirmed                                     Boolean?         @default(false)
-  is_deleted                                       Boolean?         @default(false)
-  joined_on                                        DateTime?        @default(now()) @db.DateTime(0)
-  notes                                            String?          @db.VarChar(500)
-  rating                                           Int?             @default(0) @db.UnsignedTinyInt
-  tags                                             String?          @db.VarChar(500)
-  created_at                                       DateTime?        @default(now()) @db.DateTime(0)
-  created_by                                       String?          @db.VarChar(8)
-  updated_at                                       DateTime?        @default(now()) @db.DateTime(0)
-  updated_by                                       String?          @db.VarChar(8)
-  references_clients_reference_idToreferences      the_references?  @relation("clients_reference_idToreferences", fields: [reference_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "clients_ibfk_1")
-  companies                                        companies[]
-  projects                                         projects[]
-  the_references_the_references_client_idToclients the_references[] @relation("the_references_client_idToclients")
+  id                                          String          @id @db.VarChar(8)
+  name                                        String          @db.VarChar(200)
+  affiliate_ids                               String?         @db.VarChar(2000)
+  company_id                                  String?         @db.VarChar(8)
+  reference_id                                String?         @db.VarChar(8)
+  address                                     String?         @db.VarChar(500)
+  contact_number                              BigInt?
+  email_address                               String?         @db.VarChar(200)
+  industry                                    String?         @db.VarChar(100)
+  is_confirmed                                Boolean?        @default(false)
+  is_deleted                                  Boolean?        @default(false)
+  joined_on                                   DateTime?       @default(now()) @db.DateTime(0)
+  notes                                       String?         @db.VarChar(500)
+  rating                                      Int?            @default(0) @db.UnsignedTinyInt
+  tags                                        String?         @db.VarChar(500)
+  created_at                                  DateTime?       @default(now()) @db.DateTime(0)
+  created_by                                  String?         @db.VarChar(8)
+  updated_at                                  DateTime?       @default(now()) @db.DateTime(0)
+  updated_by                                  String?         @db.VarChar(8)
+  references_clients_reference_idToreferences the_references? @relation("clients_reference_idToreferences", fields: [reference_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "clients_ibfk_1")
+  companies                                   companies[]
+  inquiries                                   inquiries[]
+  projects                                    projects[]
 
   @@index([reference_id], map: "reference_id")
 }
@@ -150,8 +150,17 @@ model inquiries {
   created_by      String           @db.VarChar(8)
   updated_at      DateTime?        @default(now()) @db.DateTime(0)
   updated_by      String?          @db.VarChar(8)
+  clients         clients          @relation(fields: [client_id], references: [id], onUpdate: Restrict, map: "fk_inquiry_client_id")
+  main_projects   main_projects    @relation(fields: [main_project_id], references: [id], onUpdate: Restrict, map: "fk_inquiry_main_project_id")
+  the_references  the_references   @relation(fields: [reference_id], references: [id], onUpdate: Restrict, map: "fk_inquiry_reference_id")
+  sub_projects    sub_projects     @relation(fields: [sub_project_id], references: [id], onUpdate: Restrict, map: "fk_inquiry_sub_project_id")
   notes           notes[]
   projects        projects[]
+
+  @@index([client_id], map: "fk_inquiry_client_id")
+  @@index([main_project_id], map: "fk_inquiry_main_project_id")
+  @@index([reference_id], map: "fk_inquiry_reference_id")
+  @@index([sub_project_id], map: "fk_inquiry_sub_project_id")
 }
 
 model licenses {
@@ -172,13 +181,14 @@ model licenses {
 }
 
 model main_projects {
-  id            String     @id @db.VarChar(8)
-  name          String     @db.VarChar(255)
-  created_at    DateTime?  @default(now()) @db.DateTime(0)
-  created_by    String     @db.VarChar(8)
-  updated_at    DateTime?  @default(now()) @db.DateTime(0)
-  updated_by    String?    @db.VarChar(8)
-  update_reason String?    @db.Text
+  id            String      @id @db.VarChar(8)
+  name          String      @db.VarChar(255)
+  created_at    DateTime?   @default(now()) @db.DateTime(0)
+  created_by    String      @db.VarChar(8)
+  updated_at    DateTime?   @default(now()) @db.DateTime(0)
+  updated_by    String?     @db.VarChar(8)
+  update_reason String?     @db.Text
+  inquiries     inquiries[]
   projects      projects[]
 
   @@index([name], map: "name")
@@ -201,13 +211,14 @@ model statuses {
 }
 
 model sub_projects {
-  id            String     @id @db.VarChar(8)
-  name          String     @db.VarChar(255)
-  created_at    DateTime?  @default(now()) @db.DateTime(0)
-  created_by    String     @db.VarChar(8)
-  updated_at    DateTime?  @default(now()) @db.DateTime(0)
-  updated_by    String?    @db.VarChar(8)
-  update_reason String?    @db.Text
+  id            String      @id @db.VarChar(8)
+  name          String      @db.VarChar(255)
+  created_at    DateTime?   @default(now()) @db.DateTime(0)
+  created_by    String      @db.VarChar(8)
+  updated_at    DateTime?   @default(now()) @db.DateTime(0)
+  updated_by    String?     @db.VarChar(8)
+  update_reason String?     @db.Text
+  inquiries     inquiries[]
   projects      projects[]
 
   @@index([name], map: "name")
@@ -239,18 +250,16 @@ model companies {
 }
 
 model notes {
-  id         Int       @id @default(autoincrement())
-  inquiry_id String    @db.VarChar(8)
-  project_id String    @db.VarChar(8)
-  user_id    String    @db.VarChar(8)
-  content    String    @db.VarChar(1000)
-  entered_on DateTime  @default(now()) @db.DateTime(0)
-  source     String    @db.VarChar(20)
-  inquiries  inquiries @relation(fields: [inquiry_id], references: [id], onUpdate: Restrict, map: "fk_note_inquiry_id")
-  projects   projects  @relation(fields: [project_id], references: [id], onUpdate: Restrict, map: "fk_note_project_id")
+  id         Int        @id @default(autoincrement())
+  inquiry_id String?    @db.VarChar(8)
+  project_id String?    @db.VarChar(8)
+  user_id    String     @db.VarChar(8)
+  content    String     @db.VarChar(1000)
+  entered_on DateTime   @default(now()) @db.DateTime(0)
+  source     String     @db.VarChar(20)
+  inquiries  inquiries? @relation(fields: [inquiry_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_note_inquiry_id")
 
   @@index([inquiry_id], map: "fk_note_inquiry_id")
-  @@index([project_id], map: "fk_note_project_id")
 }
 
 model projects {
@@ -277,7 +286,6 @@ model projects {
   created_by            String          @db.VarChar(8)
   updated_at            DateTime        @default(now()) @db.DateTime(0)
   updated_by            String?         @db.VarChar(8)
-  notes                 notes[]
   clients               clients         @relation(fields: [client_id], references: [id], onUpdate: Restrict, map: "fk_project_client_id")
   companies             companies       @relation(fields: [company_id], references: [id], onUpdate: Restrict, map: "fk_project_company_id")
   inquiries             inquiries       @relation(fields: [inquiry_id], references: [id], onUpdate: Restrict, map: "fk_project_inquiry_id")
@@ -292,25 +300,25 @@ model projects {
 }
 
 model the_references {
-  id                                        String    @id @db.VarChar(8)
-  name                                      String    @db.VarChar(100)
-  client_id                                 String    @db.VarChar(8)
-  address                                   String?   @db.VarChar(200)
-  contact_number                            BigInt?
-  email_address                             String?   @db.VarChar(200)
-  is_deleted                                Boolean?  @default(false)
-  joined_on                                 DateTime? @default(now()) @db.DateTime(0)
-  notes                                     String?   @db.VarChar(500)
-  organization                              String?   @db.VarChar(200)
-  rating                                    Int?      @default(0) @db.UnsignedTinyInt
-  relationship                              String?   @db.VarChar(100)
-  tags                                      String?   @db.VarChar(500)
-  created_at                                DateTime? @default(now()) @db.DateTime(0)
-  created_by                                String?   @db.VarChar(8)
-  updated_at                                DateTime? @default(now()) @db.DateTime(0)
-  updated_by                                String?   @db.VarChar(8)
-  clients_clients_reference_idToreferences  clients[] @relation("clients_reference_idToreferences")
-  clients_the_references_client_idToclients clients   @relation("the_references_client_idToclients", fields: [client_id], references: [id], onUpdate: Restrict, map: "fk_reference_client_id")
+  id                                       String      @id @db.VarChar(8)
+  name                                     String      @db.VarChar(100)
+  client_id                                String      @db.VarChar(8)
+  address                                  String?     @db.VarChar(200)
+  contact_number                           BigInt?
+  email_address                            String?     @db.VarChar(200)
+  is_deleted                               Boolean?    @default(false)
+  joined_on                                DateTime?   @default(now()) @db.DateTime(0)
+  notes                                    String?     @db.VarChar(500)
+  organization                             String?     @db.VarChar(200)
+  rating                                   Int?        @default(0) @db.UnsignedTinyInt
+  relationship                             String?     @db.VarChar(100)
+  tags                                     String?     @db.VarChar(500)
+  created_at                               DateTime?   @default(now()) @db.DateTime(0)
+  created_by                               String?     @db.VarChar(8)
+  updated_at                               DateTime?   @default(now()) @db.DateTime(0)
+  updated_by                               String?     @db.VarChar(8)
+  clients_clients_reference_idToreferences clients[]   @relation("clients_reference_idToreferences")
+  inquiries                                inquiries[]
 
   @@index([client_id], map: "client_id")
 }

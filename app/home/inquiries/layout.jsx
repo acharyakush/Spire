@@ -72,5 +72,5 @@ export default function HomeLayout({ children }) {
 	}, []);
 
 	// Main UI
-	return <NewInquiryContext.Provider value={{ data }}>{children}</NewInquiryContext.Provider>;
+	return <NewInquiryContext.Provider value={{ data, getRequiredData }}>{children}</NewInquiryContext.Provider>;
 }
