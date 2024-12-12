@@ -1,0 +1,145 @@
+"use client";
+
+import dayjs from "dayjs";
+import axios from "axios";
+import MyConstants from "@/utilities/constants";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { EmailAddress, Password } from "@/components/Inputs";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
+import { applicationName, isDevelopment, MyGlobal } from "@/utilities/global";
+
+export default function Home() {
+	// Business Logic
+	const router = useRouter();
+	const emailAddressReference = useRef(null);
+	const passwordReference = useRef(null);
+
+	const [userData, setUserData] = useState({
+		emailAddress: "",
+		isLoading: false,
+		password: "",
+		revealPassword: false,
+	});
+
+	const passwordType = !userData.revealPassword ? "password" : "text";
+	const eyeIconStyle = userData.password.length ? "w-5 cursor-pointer visible" : "invisible";
+	const signInButtonLabel = userData.isLoading ? "Signing in ..." : "Sign In";
+
+	// Functions
+	const autofill = () => {
+		if (isDevelopment) {
+			setUserData((s) => ({ ...s, emailAddress: "kush@admins.spire.com", password: "acharyakush2604" }));
+		}
+	};
+
+	const authenticate = (source) => {
+		const emailAddress = source == "click" ? userData.emailAddress : emailAddressReference.current?.value;
+		const password = source == "click" ? userData.password : passwordReference.current?.value;
+
+		if (!emailAddress) {
+			MyGlobal.ShowToasts(MyConstants.ToastTypes.Error, MyConstants.Messages.NoEmailAddress);
+		} else if (!password) {
+			MyGlobal.ShowToasts(MyConstants.ToastTypes.Error, MyConstants.Messages.NoPassword);
+		} else {
+			setUserData((s) => ({ ...s, isLoading: true }));
+
+			const currentTimestamp = dayjs().format("hh:mm:ss a DD-MM-YYYY");
+			const sessionToken = Global.encrypt(`${currentTimestamp}${emailAddress}${password}`);
+
+			const jsonBody = JSON.stringify({ emailAddress, password });
+			const body = { credentials: Global.encrypt(jsonBody) };
+
+			axios
+				.post(MyConstants.ApiEndpoints.Authenticate, body)
+				.then((response) => {
+					MyGlobal.Storages.Local.set(`${applicationName.toLowerCase()}_user_details`, response.data);
+					MyGlobal.Storages.Session.set(`${applicationName.toLowerCase()}_token`, sessionToken);
+					MyGlobal.AddActivity("Logged in.");
+
+					router.replace("/home");
+				})
+				.catch((error) => MyGlobal.HandleErrors(error))
+				.finally(() => setUserData((s) => ({ ...s, isLoading: false })));
+		}
+	};
+
+	const detectKeystrokes = (event) => {
+		if (event.key == "Enter") {
+			event.preventDefault();
+			authenticate("key");
+		}
+	};
+
+	const handleInputs = (key, value) => {
+		setUserData((s) => ({ ...s, [key]: value }));
+	};
+
+	const togglePasswordCharacters = () => {
+		setUserData((s) => ({ ...s, revealPassword: !userData.revealPassword }));
+	};
+
+	// UI Components
+	const uiEye = () => {
+		if (userData.revealPassword) {
+			return <FontAwesomeIcon className="w-5 gray-text" icon={faEye} />;
+		} else {
+			return <FontAwesomeIcon className="w-5 gray-text" icon={faEyeSlash} />;
+		}
+	};
+
+	// Hooks
+	useEffect(() => {
+		document.body.setAttribute("app-theme", "light");
+		document.title = `Welcome ${String.fromCharCode(183)} ${process.env.NEXT_PUBLIC_APPLICATION_NAME}`;
+
+		MyGlobal.ClearAllUserData();
+
+		globalThis.addEventListener("keydown", detectKeystrokes);
+		return () => globalThis.removeEventListener("keydown", detectKeystrokes);
+	}, []);
+
+	// Main UI
+	return (
+		<div className="flex flex-col min-w-full min-h-screen space-y-4 justify-center items-center">
+			<main className="flex flex-col min-w-max w-1/5 px-10 py-5 space-y-2.5 justify-center items-center rounded bottom-shadow bg-white full-border">
+				<span className="login-heading">{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}</span>
+
+				<EmailAddress
+					isNew={false}
+					key={1}
+					onChange={(e) => handleInputs("emailAddress", e.target.value)}
+					reference={emailAddressReference}
+					suffix=""
+					tabIndex={1}
+					value={userData.emailAddress}
+					width="w-full"
+				/>
+
+				<Password
+					eyeIconStyle={eyeIconStyle}
+					eyeIconUi={uiEye}
+					isNew={false}
+					key={2}
+					onChange={(e) => handleInputs("password", e.target.value)}
+					reference={passwordReference}
+					toggleCharacters={togglePasswordCharacters}
+					type={passwordType}
+					value={userData.password}
+					width="w-full"
+				/>
+
+				<div className="flex w-full px-2 py-4 justify-center items-center">
+					<button className="primary-button-wide" disabled={userData.isLoading} onClick={() => authenticate("click")} tabIndex={3}>
+						{signInButtonLabel}
+					</button>
+				</div>
+			</main>
+			<footer className="flex w-full justify-center items-center">
+				<span className="text-center font-regular-12 gray-text">A Signiix Advisors Product</span>
+			</footer>
+		</div>
+	);
+}
