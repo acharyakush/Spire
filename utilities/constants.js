@@ -52,7 +52,7 @@ const MyConstants = Object.freeze({
 			GetAllInquiries: `api/inquiries/all-inquiries`,
 			Handler: `api/inquiries/handler`,
 		}),
-		LogError: `api/log-errors`,
+		ErrorLogger: `api/errorLogger`,
 		Projects: Object.freeze({
 			DeleteProject: `api/projects/delete-project`,
 			EditProject: `api/projects/edit-project`,
@@ -93,8 +93,8 @@ const MyConstants = Object.freeze({
 		InvoiceEdited: "Invoice edited.",
 		NoAtSymbolInEmailAddress: "Must contain @ symbol.",
 		NoDataFound: "No data found.",
-		NoEmailAddress: "Type your Spire account's email address.",
-		NoPassword: "Type your Spire account's password.",
+		NoEmailAddress: "Type your email address.",
+		NoPassword: "Type your password.",
 		NoPeriodSymbolInEmailAddress: "Must contain period (.) symbol.",
 		NoteAdded: "New note added.",
 		NoteUpdated: "Note updated.",
@@ -112,12 +112,22 @@ const MyConstants = Object.freeze({
 		TaskUpdated: "Task updated.",
 		UnauthorizedAccess: "Unauthorized access.",
 	}),
+	PrimaryModules: Object.freeze({
+		Dashboard: "Dashboard",
+		Inquiry: "Inquiry",
+		Projects: "Projects",
+		Clients: "Clients",
+		Affiliates: "Affiliates",
+		Admins: "Admins",
+		Invoices: "Invoices",
+		CashFlow: "Cash Flow",
+	}),
 	Statuses: Object.freeze({
 		Inquiries: Object.freeze({
-			Closed: { Key: "Closed", Value: "Closed" },
-			Confirmed: { Key: "Confirmed", Value: "Confirmed" },
-			Hold: { Key: "Hold", Value: "Hold" },
-			Open: { Key: "Open", Value: "Open" },
+			Closed: "Closed",
+			Confirmed: "Confirmed",
+			Hold: "Hold",
+			Open: "Open",
 		}),
 	}),
 	TableHeaders: Object.freeze({
@@ -141,6 +151,18 @@ const MyConstants = Object.freeze({
 		Information: "info",
 		Success: "success",
 		Warning: "warning",
+	}),
+	UserMenu: Object.freeze({
+		Activity: "Activities",
+		Employees: "Employees",
+		Profile: "Profile",
+		Settings: "Settings",
+		Storage: "Storage",
+		Logout: "Logout",
+	}),
+	UserType: Object.freeze({
+		Administrators: "Administrators",
+		Employees: "Employees",
 	}),
 });
 

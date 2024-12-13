@@ -1,0 +1,397 @@
+"use client";
+
+/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
+
+import axios from "axios";
+import MyConstants from "@/utilities/constants";
+
+import { useRouter } from "next/navigation";
+import { ErrorBoundary } from "react-error-boundary";
+import { applicationName, MyGlobal } from "@/utilities/global";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Menu, MenuButton, MenuItem, MenuItems, Switch } from "@headlessui/react";
+import { createContext, useEffect, useLayoutEffect, useState } from "react";
+import { faCog, faDatabase, faSignOut, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+
+export const DashboardContext = createContext({});
+
+export default function Home() {
+	// Business Logic
+	const router = useRouter();
+
+	const [data, setData] = useState({
+		allUsers: [],
+		isDarkModeEnabled: false,
+		isLogoutBoxOpen: false,
+		isUserMenuOpen: false,
+		modules: [],
+		selectedModule: MyConstants.PrimaryModules.Dashboard,
+		selectedModuleIndex: 0,
+		settings: [],
+		singleProjectObject: {},
+		theme: null,
+		loggedInUser: {},
+	});
+
+	const [hasMounted, setHasMounted] = useState({
+		activitiesView: false,
+		employeesView: false,
+		profileView: false,
+		settingsView: false,
+	});
+
+	// const _cashFlowSettings = data.settings?.find((record) => record.name == Constants.primaryModules.cashFlow.name)?.value;
+	// const cashFlowSettings = _cashFlowSettings ? JSON.parse(_cashFlowSettings)?.at(0) : "";
+
+	// const _projectSettings = data.settings?.find((record) => record.name == Constants.primaryModules.projects.name)?.value;
+	// const projectSettings = _projectSettings ? JSON.parse(_projectSettings)?.at(0) : "";
+
+	const designation = `${data.loggedInUser.designation || ""}`;
+	const standardName = `${data.loggedInUser.first_name || ""} ${data.loggedInUser.last_name || ""}`;
+
+	const singleTabStyle = "pt-2 pb-[0.6rem] border-b-4 whitespace-nowrap font-medium-11 primary-border-colour primary-text";
+
+	// Functions
+	const closeProjectsView = () => {
+		setData((s) => ({
+			...s,
+			selectedModuleIndex: 0,
+			selectedModule: Constants.primaryModules.dashboard.name,
+			singleProjectObject: {},
+		}));
+	};
+
+	const doPreRenderingOperations = () => {
+		document.body.setAttribute("app-theme", "light");
+
+		const initialTheme = MyGlobal.GetTheme() ?? "light";
+		const isDarkModeEnabled = MyGlobal.GetTheme() !== "light";
+
+		const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
+		colorScheme.addEventListener("change", (e) => setData((s) => ({ ...s, isDarkModeEnabled: e.matches, theme: e.matches ? "dark" : "light" })));
+
+		setData((s) => ({ ...s, isDarkModeEnabled: isDarkModeEnabled, theme: initialTheme }));
+	};
+
+	const getPermissions = async () => {
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-permissions" }));
+
+			setData((old) => ({ ...old, modules: response.data }));
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Get All Permissions");
+		}
+	};
+
+	const getSettings = async () => {
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-settings" }));
+
+			if (response.status == 200) {
+				setData((s) => ({ ...s, settings: response.data }));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Get All Staff");
+		}
+	};
+
+	const getUserData = () => {
+		if (!MyGlobal.Storages.Session.DoesExist(`${applicationName}Token`)) {
+			MyGlobal.ShowErrorToast(MyConstants.Messages.UnauthorizedAccess);
+			router.replace("/");
+		} else {
+			MyGlobal.SetUserStatus(1);
+			setData((old) => ({ ...old, loggedInUser: MyGlobal.GetLoggedInUserDetails() }));
+		}
+	};
+
+	const getUsers = async () => {
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-users" }));
+
+			if (response.status == 200) {
+				const allUsers = [];
+
+				response.data.administrators.forEach((administrator) => allUsers.push(administrator));
+				response.data.employees.forEach((employee) => allUsers.push(employee));
+
+				setData((s) => ({ ...s, allUsers }));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Get All Users");
+		}
+	};
+
+	const getUserMenuClickAction = (menuItem) => {
+		switch (menuItem) {
+			case MyConstants.UserMenu.Activity:
+				toggleActivitiesView();
+				break;
+			case MyConstants.UserMenu.Employees:
+				toggleEmployeeView();
+				break;
+			case MyConstants.UserMenu.Profile:
+				toggleProfileView();
+				break;
+			case MyConstants.UserMenu.Settings:
+				toggleSettingsView();
+				break;
+			case MyConstants.UserMenu.Logout:
+				logout();
+				break;
+		}
+	};
+
+	const getUserMenuIcons = (menuItem) => {
+		switch (menuItem) {
+			case MyConstants.UserMenu.Activity:
+				return faUserClock;
+			case MyConstants.UserMenu.Employees:
+				return faUserGroup;
+			case MyConstants.UserMenu.Profile:
+				return faUserCog;
+			case MyConstants.UserMenu.Settings:
+				return faCog;
+			case MyConstants.UserMenu.Storage:
+				return faDatabase;
+			case MyConstants.UserMenu.Logout:
+				return faSignOut;
+		}
+	};
+
+	const goToProjects = (object) => {
+		// setData((s) => ({
+		// 	...s,
+		// 	activeViewIndex: 2,
+		// 	activeView: Constants.primaryModules.projects.name,
+		// 	singleProjectObject: object,
+		// }));
+	};
+
+	const logout = () => {
+		MyGlobal.AddActivity("Logged out.");
+		MyGlobal.SetUserStatus(0);
+		MyGlobal.ClearAllUserData();
+
+		router.replace("/");
+	};
+
+	const setModule = (index, module) => {
+		setData((s) => ({ ...s, selectedModule: module.name, selectedModuleIndex: index }));
+	};
+
+	const toggleActivitiesView = () => {
+		setHasMounted((s) => ({ ...s, activitiesView: !hasMounted.activitiesView }));
+	};
+
+	const toggleEmployeeView = () => {
+		setHasMounted((s) => ({ ...s, employeesView: !hasMounted.employeesView }));
+	};
+
+	const toggleProfileView = () => {
+		setHasMounted((s) => ({ ...s, profileView: !hasMounted.profileView }));
+	};
+
+	const toggleSettingsView = () => {
+		setHasMounted((s) => ({ ...s, settingsView: !hasMounted.settingsView }));
+	};
+
+	const toggleTheme = () => {
+		setData((old) => ({ ...old, isDarkModeEnabled: !data.isDarkModeEnabled }));
+	};
+
+	// UI Components
+	const uiMain = () => {
+		if (hasMounted.activitiesView) {
+			return <Activities staff={data.allUsers} close={toggleActivitiesView} />;
+		} else if (hasMounted.employeesView) {
+			return <EmployeeManagement close={toggleEmployeeView} staffData={data.allUsers} />;
+		} else if (hasMounted.settingsView) {
+			return <Settings close={toggleSettingsView} reloadAllSettings={getSettings} settings={data.settings} staff={data.allUsers} />;
+		} else if (hasMounted.profileView) {
+			return <ProfileManagement close={toggleProfileView} payload={data.loggedInUser} />;
+		} else {
+			return <DashboardContext.Provider value={{}}>{uiSelectedModule()}</DashboardContext.Provider>;
+		}
+	};
+
+	const uiModules = () => {
+		return data.modules
+			.filter((permission) => permission.type == "Base")
+			.map((module, index) => {
+				const aesthetics = index == data.selectedModuleIndex ? "primary-border-colour primary-text" : "border-transparent gray-text";
+				const wrapper = `pt-2 pb-[0.7rem] border-b-4 whitespace-nowrap font-regular-11 ${aesthetics}`;
+
+				return (
+					<button key={index} className={wrapper} onClick={() => setModule(index, module)}>
+						{module.name}
+					</button>
+				);
+			});
+	};
+
+	const uiSelectedModule = () => {
+		// switch (data.selectedModule) {
+		// 	case Constants.primaryModules.dashboard.name:
+		// 		return (
+		// 			<ErrorBoundary
+		// 				key="ErrorBoundary_Dashboard"
+		// 				onError={(error) => Global.handleErrors(error.message, "Dashboard")}
+		// 				FallbackComponent={ErrorFallbackComponent}>
+		// 				<Dashboard goToProjects={goToProjects} projectSettings={projectSettings} />
+		// 			</ErrorBoundary>
+		// 		);
+		// 	case Constants.primaryModules.clients.name:
+		// 		return (
+		// 			<ErrorBoundary
+		// 				key="ErrorBoundary_Clients"
+		// 				onError={(error) => Global.handleErrors(error.message, "Clients")}
+		// 				FallbackComponent={ErrorFallbackComponent}>
+		// 				<Clients />
+		// 			</ErrorBoundary>
+		// 		);
+		// 	case Constants.primaryModules.inquiry.name:
+		// 		return (
+		// 			<ErrorBoundary
+		// 				key="ErrorBoundary_Inquiry"
+		// 				onError={(error) => Global.handleErrors(error.message, "Inquiry")}
+		// 				FallbackComponent={ErrorFallbackComponent}>
+		// 				<Inquiry />
+		// 			</ErrorBoundary>
+		// 		);
+		// 	case Constants.primaryModules.projects.name:
+		// 		return (
+		// 			<ErrorBoundary
+		// 				key="ErrorBoundary_Projects"
+		// 				onError={(error) => Global.handleErrors(error.message, "Projects")}
+		// 				FallbackComponent={ErrorFallbackComponent}>
+		// 				<Projects
+		// 					close={closeProjectsView}
+		// 					object={data.singleProjectObject}
+		// 					refreshSelectedTasksProject={refreshSelectedTasksProject}
+		// 					settings={projectSettings}
+		// 				/>
+		// 			</ErrorBoundary>
+		// 		);
+		// 	case Constants.primaryModules.affiliates.name:
+		// 		return (
+		// 			<ErrorBoundary
+		// 				key="ErrorBoundary_Affiliates"
+		// 				onError={(error) => Global.handleErrors(error.message, "Affiliates")}
+		// 				FallbackComponent={ErrorFallbackComponent}>
+		// 				<Affiliates />
+		// 			</ErrorBoundary>
+		// 		);
+		// 	case Constants.primaryModules.admins.name:
+		// 		return (
+		// 			<ErrorBoundary
+		// 				key="ErrorBoundary_Admins"
+		// 				onError={(error) => Global.handleErrors(error.message, "Admins")}
+		// 				FallbackComponent={ErrorFallbackComponent}>
+		// 				<Admins />
+		// 			</ErrorBoundary>
+		// 		);
+		// 	case Constants.primaryModules.invoices.name:
+		// 		return (
+		// 			<ErrorBoundary
+		// 				key="ErrorBoundary_Invoices"
+		// 				onError={(error) => Global.handleErrors(error.message, "Invoices")}
+		// 				FallbackComponent={ErrorFallbackComponent}>
+		// 				<Invoices />
+		// 			</ErrorBoundary>
+		// 		);
+		// 	case Constants.primaryModules.cashFlow.name:
+		// 		return (
+		// 			<ErrorBoundary
+		// 				key="ErrorBoundary_Cash Flow"
+		// 				onError={(error) => Global.handleErrors(error.message, "Cash Flow")}
+		// 				FallbackComponent={ErrorFallbackComponent}>
+		// 				<CashFlow settings={cashFlowSettings} />
+		// 			</ErrorBoundary>
+		// 		);
+		// }
+	};
+
+	const uiUserMenuList = () => {
+		return Object.values(MyConstants.UserMenu)
+			.filter((item) => {
+				if (data.loggedInUser.role == MyConstants.UserType.Employees) {
+					return ![MyConstants.UserMenu.Activity, MyConstants.UserMenu.Employees, MyConstants.UserMenu.Storage].includes(item);
+				} else {
+					return item;
+				}
+			})
+			.map((item, index) => {
+				return (
+					<MenuItem
+						as="div"
+						className="p-3 space-x-3 cursor-pointer font-regular-11 black-text hovered-rows"
+						key={index}
+						onClick={() => getUserMenuClickAction(item)}>
+						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons(item)} />
+						<span>{item}</span>
+					</MenuItem>
+				);
+			});
+	};
+
+	const uiUserMenu = () => {
+		return (
+			<Menu as="div" className="relative z-50 inline-block text-left">
+				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
+					<FontAwesomeIcon className="primary-text" icon={faUserCircle} size="lg" />
+				</MenuButton>
+				<MenuItems
+					anchor="bottom"
+					className="absolute w-max mt-2 divide-y divide-gray-100 rounded bottom-shadow focus:outline-none black-white-background full-border black-text">
+					<div className="flex flex-col p-2 font-medium-13">
+						<span>{standardName}</span>
+						<span className="font-regular-11 gray-text">{designation}</span>
+					</div>
+					{uiUserMenuList()}
+				</MenuItems>
+			</Menu>
+		);
+	};
+
+	// Hooks
+	useLayoutEffect(() => {
+		if (!MyGlobal.Storages.Session.DoesExist(`${applicationName}Token`)) {
+			MyGlobal.ShowErrorToast(MyConstants.Messages.UnauthorizedAccess);
+			router.replace("/");
+		} else {
+			doPreRenderingOperations();
+
+			getPermissions();
+			getUserData();
+			getSettings();
+			getUsers();
+		}
+	}, []);
+
+	useEffect(() => {
+		document.body.setAttribute("app-theme", data.theme);
+	}, [data.theme]);
+
+	useEffect(() => {
+		if (data.loggedInUser) {
+			document.title = `${standardName} ${String.fromCharCode(183)} ${applicationName}`;
+		}
+	}, [data.loggedInUser]);
+
+	// Main UI
+	return (
+		<main className="flex flex-col min-w-[1024px] h-screen rounded-t overflow-y-hidden">
+			<div className="flex w-full h-11 px-5 justify-between items-center relative shadow black-white-background">
+				<div className="flex w-full justify-start items-center">
+					<span className="dashboard-heading">{applicationName}</span>
+				</div>
+				<div className="flex w-full justify-center items-center">
+					<div className="flex space-x-6 relative">{uiModules()}</div>
+				</div>
+				<div className="flex w-full justify-end items-center">{uiUserMenu()}</div>
+			</div>
+			<div className="flex w-full h-[calc(100vh-45px)] justify-center items-center">{uiMain()}</div>
+		</main>
+	);
+}

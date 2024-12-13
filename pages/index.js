@@ -31,38 +31,47 @@ export default function Home() {
 	// Functions
 	const autofill = () => {
 		if (isDevelopment) {
-			setUserData((s) => ({ ...s, emailAddress: "kush@admins.spire.com", password: "acharyakush2604" }));
+			setUserData((s) => ({ ...s, emailAddress: "kush@admins.spire.com", password: "saa.ka.spire.2024" }));
 		}
 	};
 
-	const authenticate = (source) => {
+	const authenticate = async (source) => {
 		const emailAddress = source == "click" ? userData.emailAddress : emailAddressReference.current?.value;
 		const password = source == "click" ? userData.password : passwordReference.current?.value;
 
-		if (!emailAddress) {
-			MyGlobal.ShowToasts(MyConstants.ToastTypes.Error, MyConstants.Messages.NoEmailAddress);
+		const emailAddressValidation = MyGlobal.ValidateEmailAddress(emailAddress);
+
+		if (emailAddressValidation.hasError) {
+			MyGlobal.ShowErrorToast(emailAddressValidation.text);
 		} else if (!password) {
-			MyGlobal.ShowToasts(MyConstants.ToastTypes.Error, MyConstants.Messages.NoPassword);
+			MyGlobal.ShowErrorToast(MyConstants.Messages.NoPassword);
 		} else {
 			setUserData((s) => ({ ...s, isLoading: true }));
 
 			const currentTimestamp = dayjs().format("hh:mm:ss a DD-MM-YYYY");
-			const sessionToken = Global.encrypt(`${currentTimestamp}${emailAddress}${password}`);
+			const sessionToken = MyGlobal.Encrypt(`${currentTimestamp}${emailAddress}${password}`);
 
 			const jsonBody = JSON.stringify({ emailAddress, password });
-			const body = { credentials: Global.encrypt(jsonBody) };
+			const body = { credentials: MyGlobal.Encrypt(jsonBody) };
 
-			axios
-				.post(MyConstants.ApiEndpoints.Authenticate, body)
-				.then((response) => {
-					MyGlobal.Storages.Local.set(`${applicationName.toLowerCase()}_user_details`, response.data);
-					MyGlobal.Storages.Session.set(`${applicationName.toLowerCase()}_token`, sessionToken);
-					MyGlobal.AddActivity("Logged in.");
+			try {
+				setUserData((s) => ({ ...s, isLoading: true }));
 
-					router.replace("/home");
-				})
-				.catch((error) => MyGlobal.HandleErrors(error))
-				.finally(() => setUserData((s) => ({ ...s, isLoading: false })));
+				const response = await axios.post(MyConstants.ApiEndpoints.Authenticate, body);
+
+				MyGlobal.SetSessionToken(sessionToken);
+
+				MyGlobal.Storages.Local.Set(`${applicationName}UserDetails`, response.data);
+				MyGlobal.Storages.Session.Set(`${applicationName}Token`, sessionToken);
+
+				MyGlobal.AddActivity("Logged in.");
+
+				router.replace("/home");
+			} catch (error) {
+				MyGlobal.HandleErrors(error, "Authenticate");
+			} finally {
+				setUserData((s) => ({ ...s, isLoading: false }));
+			}
 		}
 	};
 
@@ -97,6 +106,10 @@ export default function Home() {
 
 		MyGlobal.ClearAllUserData();
 
+		// Kush Acharya => "saa.ka.spire.2024"
+		// Abhishek Gor => "saa.ag.spire.2024"
+		// Drashti Sharma => "saa.ds.spire.2024"
+
 		globalThis.addEventListener("keydown", detectKeystrokes);
 		return () => globalThis.removeEventListener("keydown", detectKeystrokes);
 	}, []);
@@ -105,7 +118,9 @@ export default function Home() {
 	return (
 		<div className="flex flex-col min-w-full min-h-screen space-y-4 justify-center items-center">
 			<main className="flex flex-col min-w-max w-1/5 px-10 py-5 space-y-2.5 justify-center items-center rounded bottom-shadow bg-white full-border">
-				<span className="login-heading">{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}</span>
+				<span className="login-heading">
+					<button onClick={autofill}>{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}</button>
+				</span>
 
 				<EmailAddress
 					isNew={false}
@@ -138,7 +153,7 @@ export default function Home() {
 				</div>
 			</main>
 			<footer className="flex w-full justify-center items-center">
-				<span className="text-center font-regular-12 gray-text">A Signiix Advisors Product</span>
+				<span className="text-center font-regular-10 gray-text">&#169; Signiix Advisors</span>
 			</footer>
 		</div>
 	);

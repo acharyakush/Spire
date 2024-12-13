@@ -303,8 +303,9 @@ export const EmailAddress = ({ isNew, isReadOnly = false, label = "Email Address
 	const colour = `font-regular-12 ${isNew ? "green-text" : "primary-text"}`;
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center`;
 	const horizontalPadding = suffix ? "pl-2" : "px-2.5";
-	const background = isReadOnly ? "light-gray-background pointer-events-none" : "black-white-background pointer-events-auto";
-	const inputWrapper = `flex w-full h-[34px] ${horizontalPadding} space-x-1 justify-start items-center rounded bottom-shadow ${background} full-border`;
+	const pointerEvents = isReadOnly ? "pointer-events-none" : "pointer-events-auto";
+
+	const inputWrapper = `flex w-full h-[34px] ${horizontalPadding} space-x-1 justify-start items-center rounded bottom-shadow light-gray-background ${pointerEvents} full-border`;
 
 	return (
 		<div className={wrapper}>
@@ -314,7 +315,7 @@ export const EmailAddress = ({ isNew, isReadOnly = false, label = "Email Address
 				<input autoComplete="off" className="inputs" onChange={onChange} readOnly={isReadOnly} ref={reference} tabIndex={tabIndex} value={value} />
 				{suffix && (
 					<span className="flex h-[34px] px-1 justify-center items-center full-border no-right-border font-regular-8 light-gray-background black-text">
-						@signiix.com
+						@spire.com
 					</span>
 				)}
 			</div>
@@ -329,7 +330,7 @@ export const Password = ({ eyeIconStyle, eyeIconUi, isNew, onChange, reference, 
 	return (
 		<div className={wrapper}>
 			<span className="flex w-full justify-start items-center font-regular-12 light-slate-gray-text">Password</span>
-			<div className="flex w-full h-[34px] px-2.5 justify-between items-center rounded bottom-shadow black-white-background full-border">
+			<div className="flex w-full h-[34px] px-2.5 justify-between items-center rounded bottom-shadow light-gray-background full-border">
 				<div className="flex w-full space-x-1 justify-start items-center">
 					<FontAwesomeIcon className={colour} icon={faLock} />
 					<input autoComplete="off" className="inputs" onChange={onChange} ref={reference} tabIndex={tabIndex} type={type} value={value} />

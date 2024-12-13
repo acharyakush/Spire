@@ -106,7 +106,7 @@ html {
 	@apply bg-[var(--web-gray-transparent-01)] m-0 p-0;
 	-moz-osx-font-smoothing: auto;
 	font-synthesis: none;
-	font-feature-settings: "cpsp" 1, /* Capital Spacing */ "frac" 1, /* Fractions */ "ss02" 1, /* Stylistic Set 2 */ "ss07" 1, /* Stylistic Set 7 */ "tnum" 1,
+	font-feature-settings: "cpsp" 1, /* Capital Spacing */ "frac" 0, /* Fractions */ "ss02" 1, /* Stylistic Set 2 */ "ss07" 1, /* Stylistic Set 7 */ "tnum" 1,
 		/* Tabular Numbers */ "zero" 1; /* Slashed Zero */
 	text-rendering: optimizeLegibility;
 	scrollbar-width: thin;
@@ -164,7 +164,7 @@ html {
 
 .dashboard-heading,
 .view-heading {
-	@apply font-semibold text-[var(--web-primary)] text-[16pt];
+	@apply font-semibold text-[var(--web-primary)] text-[16pt] uppercase;
 	font-family: var(--web-header-font);
 }
 
@@ -214,6 +214,11 @@ html {
 
 .font-medium-12 {
 	@apply text-[12pt] font-medium;
+	font-family: var(--web-font-family);
+}
+
+.font-medium-13 {
+	@apply text-[13pt] font-medium;
 	font-family: var(--web-font-family);
 }
 
@@ -345,7 +350,7 @@ html {
 }
 
 .green-button-condensed {
-	@apply bg-[var(--web-green)] border border-[var(--web-green)] flex font-normal h-[34px] justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-sm text-white;
+	@apply bg-[var(--web-green)] border border-[var(--web-green)] flex font-normal h-[34px] justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-[13px] text-white;
 	font-family: var(--web-font-family);
 }
 
@@ -355,7 +360,7 @@ html {
 }
 
 .green-button-wide {
-	@apply bg-[var(--web-green)] block border border-[var(--web-green)] font-normal h-[34px] outline-none relative rounded select-none text-sm text-white w-full;
+	@apply bg-[var(--web-green)] block border border-[var(--web-green)] font-normal h-[34px] outline-none relative rounded select-none text-[13px] text-white w-full;
 	font-family: var(--web-font-family);
 }
 
@@ -416,7 +421,7 @@ html {
 }
 
 .light-gray-button {
-	@apply bg-[var(--web-light-gray-background)] border border-[var(--web-light-gray-background)] flex font-normal h-[34px] justify-center items-center outline-none px-2.5 relative rounded select-none space-x-2.5 text-sm black-text;
+	@apply bg-[var(--web-light-gray-background)] border border-[var(--web-light-gray-background)] flex font-normal h-[34px] justify-center items-center outline-none px-2.5 relative rounded select-none space-x-2.5 text-[13px] black-text;
 	font-family: var(--web-font-family);
 }
 
@@ -502,7 +507,7 @@ html {
 }
 
 .primary-button-condensed {
-	@apply bg-[var(--web-primary)] border border-[var(--web-primary)] flex font-normal h-[34px] justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-sm text-white;
+	@apply bg-[var(--web-primary)] border border-[var(--web-primary)] flex font-normal h-[34px] justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-[13px] text-white;
 	font-family: var(--web-font-family);
 }
 
@@ -520,12 +525,12 @@ html {
 }
 
 .primary-button-normal {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-[34px] outline-none px-2 relative rounded select-none text-sm text-white;
+	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-[34px] outline-none px-2 relative rounded select-none text-[13px] text-white;
 	font-family: var(--web-font-family);
 }
 
 .primary-button-normal-2 {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal outline-none px-2 relative rounded select-none text-sm text-white;
+	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal outline-none px-2 relative rounded select-none text-[13px] text-white;
 	font-family: var(--web-font-family);
 }
 
@@ -540,7 +545,7 @@ html {
 }
 
 .primary-button-wide {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-[34px] outline-none relative rounded select-none text-sm text-white w-full;
+	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-[34px] outline-none relative rounded select-none text-[13px] text-white w-full;
 	font-family: var(--web-font-family);
 }
 
@@ -677,7 +682,7 @@ html {
 }
 
 .textarea-inputs {
-	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 resize-none text-sm black-text w-full;
+	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 resize-none text-[13px] black-text w-full;
 	font-family: var(--web-font-family);
 }
 

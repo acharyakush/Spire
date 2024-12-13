@@ -30,12 +30,12 @@ if (process.env.NEXT_PUBLIC_ENV !== "production") {
 	}
 }
 
-export const query = async (query) => {
+export const query = async (query, parameters) => {
 	let connection;
 
 	try {
 		connection = await (global.dbConnection || getConnectionPool()).getConnection();
-		const [rows] = await connection.execute(query);
+		const [rows] = await connection.execute(query, parameters);
 		return rows;
 	} catch (error) {
 		console.error("Database query error: ", error);

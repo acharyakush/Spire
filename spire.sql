@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 09, 2024 at 03:32 PM
+-- Generation Time: Dec 13, 2024 at 07:59 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -193,24 +193,9 @@ CREATE TABLE `activities` (
   `ip_address` varchar(45) NOT NULL,
   `user_agent` text NOT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `session_id` varchar(255) NOT NULL,
+  `session_token` varchar(255) NOT NULL,
   `details` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `activities`
---
-
-INSERT INTO `activities` (`id`, `user_id`, `activity`, `ip_address`, `user_agent`, `created_at`, `session_id`, `details`) VALUES
-(1, 'A3', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-05 14:46:35', 'HwBUclF+UGRxXwhIaVweRVdYQWB9WTcVOyMNIEwVezsMEg0/bVEKIzQoMDYkIkcqcAZFWw==', NULL),
-(2, 'A3', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-05 14:46:58', 'HwBUclF+Vm5xXwhIaVweRVdYQWB9WTcVOyMNIEwVezsMEg0/bVEKIzQoMDYkIkcqcAZFWw==', NULL),
-(3, 'A3', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-05 14:51:24', 'HwBUcVZ+UWRxXwhIaVweRVdYQWB9WTcVOyMNIEwVezsMEg0/bVEKIzQoMDYkIkcqcAZFWw==', NULL),
-(4, 'A3', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-06 14:15:16', 'Hw9Ud1J+UmVxXwhIaV8eRVdYQWB9WTcVOyMNIEwVezsMEg0/bVEKIzQoMDYkIkcqcAZFWw==', NULL),
-(5, 'A3', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-06 17:14:12', 'HghUd1N+U2NxXwhIaV8eRVdYQWB9WTcVOyMNIEwVezsMEg0/bVEKIzQoMDYkIkcqcAZFWw==', NULL),
-(6, 'A3', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-06 17:16:38', 'HghUd1F+UGBxXwhIaV8eRVdYQWB9WTcVOyMNIEwVezsMEg0/bVEKIzQoMDYkIkcqcAZFWw==', NULL),
-(7, 'A3', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-07 13:55:25', 'Hw9UcVJ+Um9xXwhIaV4eRVdYQWB9WTcVOyMNIEwVezsMEg0/bVEKIzQoMDYkIkcqcAZFWw==', NULL),
-(8, 'A3', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-09 14:18:18', 'Hw9Ud19+UmJxXwhIaVAeRVdYQWB9WTcVOyMNIEwVezsMEg0/bVEKIzQoMDYkIkcqcAZFWw==', NULL),
-(9, 'A3', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-09 14:19:05', 'Hw9Ud15+U2NxXwhIaVAeRVdYQWB9WTcVOyMNIEwVezsMEg0/bVEKIzQoMDYkIkcqcAZFWw==', NULL);
 
 -- --------------------------------------------------------
 
@@ -231,6 +216,7 @@ CREATE TABLE `administrators` (
   `gender` enum('Male','Female','Other','Prefer not to say') DEFAULT NULL,
   `phone_number` varchar(15) NOT NULL,
   `designation` varchar(100) NOT NULL,
+  `role` varchar(13) NOT NULL,
   `permissions` mediumtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -238,10 +224,10 @@ CREATE TABLE `administrators` (
 -- Dumping data for table `administrators`
 --
 
-INSERT INTO `administrators` (`id`, `first_name`, `last_name`, `full_name`, `username`, `email_address`, `password`, `address`, `birth_date`, `gender`, `phone_number`, `designation`, `permissions`) VALUES
-('A1', 'Drashti', 'Sharma', 'Drashti Sharma', 'DrashtiSharma', 'drashti@admins.spire.com', '0bccca92fe490584540ab07538c09229:ec533eb2bd2592ee7e5682d288be16d63cab8f799dbe99cd30fea4a421583f5b2ef26d5a3b86b602e7b64f24a01767e654b46ca18e3437adf82d579d5cdfc07e', '', '1993-10-05', 'Female', '9998733006', 'Founder, CEO', '-1'),
-('A2', 'Abhishek', 'Gor', 'Abhishek Gor', 'AbhishekGor', 'abhishek@admins.spire.com', '09100481e99086ad3caf3a7713c3b49e:653f4d886e519f11316658e8361cd3d39c257f320a2cf1a3ecd7c5b92f2b7efac0f313493f2ef2a8a16eaa112f2f81f4bf950c848093e81b8dc869af0d25fb63', '', '1993-07-13', 'Male', '8000721554', 'Founder, CEO', '-1'),
-('A3', 'Kush', 'Acharya', 'Kush Acharya', 'KushAcharya', 'kush@admins.spire.com', '733c1afcb5748d3b316ee48ca440759b:5f509fc5bea6a1a5c0cee090ef8c1e22572fb300f63bce30de8fa39c87bdfa54bd556a89227fc4f87d5d3c14f5c5b563801d88796661333b8f84e32dbf2480a9', 'AFF8, Aakansha Apartments, Jaymala Cross Roads, Isanpur, Ahmedabad, GJ - 380015', '1993-04-26', 'Male', '8780577704', 'Chief Technical Officer', '-1');
+INSERT INTO `administrators` (`id`, `first_name`, `last_name`, `full_name`, `username`, `email_address`, `password`, `address`, `birth_date`, `gender`, `phone_number`, `designation`, `role`, `permissions`) VALUES
+('A1', 'Drashti', 'Sharma', 'Drashti Sharma', 'DrashtiSharma', 'drashti@admins.spire.com', 'F5LJjzb6a7sEeK6rx62/u5eC3aQVhJFPQa5Zh0WPLhE=', '', '1993-10-05', 'Female', '9998733006', 'Founder, CEO', 'Administrator', '-1'),
+('A2', 'Abhishek', 'Gor', 'Abhishek Gor', 'AbhishekGor', 'abhishek@admins.spire.com', 'VUWKfX4Ro/NPJdv8QZHWfGBDB5iIL1GC1ZUGbeqWOUU=', '', '1993-07-13', 'Male', '8000721554', 'Founder, CEO', 'Administrator', '-1'),
+('A3', 'Kush', 'Acharya', 'Kush Acharya', 'KushAcharya', 'kush@admins.spire.com', '7SJcdDe9kjBvjuYWsvP4LZJPqnz5HVVmqjj16/MtKLM=', 'AFF8, Aakansha Apartments, Jaymala Cross Roads, Isanpur, Ahmedabad, GJ - 380015', '1993-04-26', 'Male', '8780577704', 'Chief Technical Officer', 'Administrator', '-1');
 
 -- --------------------------------------------------------
 
@@ -270,13 +256,6 @@ CREATE TABLE `clients` (
   `updated_at` datetime DEFAULT current_timestamp(),
   `updated_by` varchar(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `clients`
---
-
-INSERT INTO `clients` (`id`, `name`, `affiliate_ids`, `company_id`, `reference_id`, `address`, `contact_number`, `email_address`, `industry`, `is_confirmed`, `is_deleted`, `joined_on`, `notes`, `rating`, `tags`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
-('CN000001', 'Bhadresh Acharya', NULL, NULL, 'RF000001', NULL, NULL, NULL, NULL, 0, 0, '2024-12-09 14:19:58', NULL, 0, NULL, '2024-12-09 14:19:58', NULL, '2024-12-09 14:19:58', NULL);
 
 -- --------------------------------------------------------
 
@@ -363,8 +342,6 @@ CREATE TABLE `employees` (
   `allow_remote_working` tinyint(1) DEFAULT 0,
   `allowed_ip_addresses` varchar(200) DEFAULT NULL,
   `last_login` datetime DEFAULT current_timestamp(),
-  `skills` text DEFAULT NULL,
-  `certifications` text DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` datetime DEFAULT current_timestamp(),
   `created_by` char(8) NOT NULL,
@@ -399,13 +376,6 @@ CREATE TABLE `inquiries` (
   `updated_at` datetime DEFAULT current_timestamp(),
   `updated_by` varchar(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `inquiries`
---
-
-INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `sub_project_id`, `contact_number`, `entry_date`, `email_address`, `follow_ups`, `is_closed`, `closure_reason`, `quote`, `status`, `tags`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
-('IQ000001', 'CN000001', 'RF000001', 'MP000001', 'SP000001', 9978075347, '2024-12-09 14:19:58', 'acharyabhadresh@gmail.com', 'A1,A2,A3', 0, NULL, 2500.00, 'Open', 'very punctual,cworks reference', '2024-12-09 14:19:58', 'A3', '2024-12-09 14:19:58', NULL);
 
 -- --------------------------------------------------------
 
@@ -500,13 +470,6 @@ CREATE TABLE `notes` (
   `entered_on` datetime NOT NULL DEFAULT current_timestamp(),
   `source` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `notes`
---
-
-INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `user_id`, `content`, `entered_on`, `source`) VALUES
-(2, 'IQ000001', NULL, 'A3', 'New Client', '2024-12-09 14:19:58', 'Inquiry');
 
 -- --------------------------------------------------------
 
@@ -724,13 +687,6 @@ CREATE TABLE `the_references` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `the_references`
---
-
-INSERT INTO `the_references` (`id`, `name`, `client_id`, `address`, `contact_number`, `email_address`, `is_deleted`, `joined_on`, `notes`, `organization`, `rating`, `relationship`, `tags`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
-('RF000001', 'Yash', 'CN000001', NULL, NULL, NULL, 0, '2024-12-09 14:19:58', NULL, NULL, 0, NULL, NULL, '2024-12-09 14:19:58', NULL, '2024-12-09 14:19:58', NULL);
-
---
 -- Indexes for dumped tables
 --
 
@@ -739,7 +695,7 @@ INSERT INTO `the_references` (`id`, `name`, `client_id`, `address`, `contact_num
 --
 ALTER TABLE `activities`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `session_id` (`session_id`);
+  ADD KEY `session_token` (`session_token`);
 
 --
 -- Indexes for table `administrators`
@@ -862,7 +818,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -880,7 +836,7 @@ ALTER TABLE `licenses`
 -- AUTO_INCREMENT for table `notes`
 --
 ALTER TABLE `notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `permissions`
