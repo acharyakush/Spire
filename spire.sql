@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 13, 2024 at 07:59 PM
+-- Generation Time: Dec 14, 2024 at 07:46 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -481,55 +481,54 @@ CREATE TABLE `permissions` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `module` varchar(50) NOT NULL,
-  `type` enum('Base','Derived') DEFAULT NULL,
-  `sidebar_visibility` tinyint(1) NOT NULL
+  `type` enum('Base','Derived') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `permissions`
 --
 
-INSERT INTO `permissions` (`id`, `name`, `module`, `type`, `sidebar_visibility`) VALUES
-(1, 'Admins', 'Admins', 'Base', 1),
-(2, 'New Admin Company', 'Admins', 'Derived', 1),
-(3, 'Edit Admin Company', 'Admins', 'Derived', 0),
-(4, 'Affiliates', 'Affiliates', 'Base', 1),
-(5, 'Edit Affiliate', 'Affiliates', 'Derived', 0),
-(6, 'Delete Affiliate', 'Affiliates', 'Derived', 0),
-(7, 'Cash Flow', 'Cash Flow', 'Base', 1),
-(8, 'Edit Cash Flow', 'Cash Flow', 'Derived', 0),
-(9, 'Delete Cash Flow', 'Cash Flow', 'Derived', 0),
-(10, 'Clients', 'Clients', 'Base', 1),
-(11, 'Edit Client', 'Clients', 'Derived', 0),
-(12, 'Delete Client', 'Clients', 'Derived', 0),
-(13, 'Companies', 'Companies', 'Base', 1),
-(14, 'Edit Company', 'Companies', 'Derived', 0),
-(15, 'Delete Company', 'Companies', 'Derived', 0),
-(16, 'Dashboard', 'Dashboard', 'Base', 1),
-(17, 'Employees', 'Employees', 'Base', 1),
-(18, 'Edit Employee', 'Employees', 'Derived', 0),
-(19, 'Delete Employee ', 'Employees', 'Derived', 0),
-(20, 'Inquiries', 'Inquiry', 'Base', 1),
-(21, 'New Inquiry', 'Inquiry', 'Derived', 1),
-(22, 'Edit Inquiry', 'Inquiry', 'Derived', 0),
-(23, 'Delete Inquiry', 'Inquiry', 'Derived', 0),
-(24, 'Convert Inquiry To Project', 'Inquiry', 'Derived', 0),
-(25, 'Invoices', 'Invoices', 'Base', 1),
-(26, 'Generate Invoice', 'Invoices', 'Derived', 1),
-(27, 'Delete Invoice', 'Invoices', 'Derived', 0),
-(28, 'Projects', 'Projects', 'Base', 1),
-(29, 'Edit Project', 'Projects', 'Derived', 0),
-(30, 'Delete Project', 'Projects', 'Derived', 0),
-(31, 'Payment Received', 'Projects', 'Derived', 0),
-(32, 'References', 'References', 'Base', 1),
-(33, 'Edit Reference', 'References', 'Derived', 0),
-(34, 'Delete Reference', 'References', 'Derived', 0),
-(35, 'Tasks', 'Tasks', 'Base', 1),
-(36, 'New Task', 'Tasks', 'Derived', 1),
-(37, 'Update Task', 'Tasks', 'Derived', 0),
-(38, 'Disable Task', 'Tasks', 'Derived', 0),
-(39, 'Mark Task Completed', 'Tasks', 'Derived', 0),
-(40, 'Delete Task From Reimbursement Voucher', 'Tasks', 'Derived', 0);
+INSERT INTO `permissions` (`id`, `name`, `module`, `type`) VALUES
+(1, 'Admins', 'Admins', 'Base'),
+(2, 'New Admin Company', 'Admins', 'Derived'),
+(3, 'Edit Admin Company', 'Admins', 'Derived'),
+(4, 'Affiliates', 'Affiliates', 'Base'),
+(5, 'Edit Affiliate', 'Affiliates', 'Derived'),
+(6, 'Delete Affiliate', 'Affiliates', 'Derived'),
+(7, 'Cash Flow', 'Cash Flow', 'Base'),
+(8, 'Edit Cash Flow', 'Cash Flow', 'Derived'),
+(9, 'Delete Cash Flow', 'Cash Flow', 'Derived'),
+(10, 'Clients', 'Clients', 'Base'),
+(11, 'Edit Client', 'Clients', 'Derived'),
+(12, 'Delete Client', 'Clients', 'Derived'),
+(13, 'Companies', 'Companies', 'Base'),
+(14, 'Edit Company', 'Companies', 'Derived'),
+(15, 'Delete Company', 'Companies', 'Derived'),
+(16, 'Dashboard', 'Dashboard', 'Base'),
+(17, 'Employees', 'Employees', 'Base'),
+(18, 'Edit Employee', 'Employees', 'Derived'),
+(19, 'Delete Employee ', 'Employees', 'Derived'),
+(20, 'Inquiries', 'Inquiry', 'Base'),
+(21, 'New Inquiry', 'Inquiry', 'Derived'),
+(22, 'Edit Inquiry', 'Inquiry', 'Derived'),
+(23, 'Delete Inquiry', 'Inquiry', 'Derived'),
+(24, 'Convert Inquiry To Project', 'Inquiry', 'Derived'),
+(25, 'Invoices', 'Invoices', 'Base'),
+(26, 'Generate Invoice', 'Invoices', 'Derived'),
+(27, 'Delete Invoice', 'Invoices', 'Derived'),
+(28, 'Projects', 'Projects', 'Base'),
+(29, 'Edit Project', 'Projects', 'Derived'),
+(30, 'Delete Project', 'Projects', 'Derived'),
+(31, 'Payment Received', 'Projects', 'Derived'),
+(32, 'References', 'References', 'Base'),
+(33, 'Edit Reference', 'References', 'Derived'),
+(34, 'Delete Reference', 'References', 'Derived'),
+(35, 'Tasks', 'Tasks', 'Base'),
+(36, 'New Task', 'Tasks', 'Derived'),
+(37, 'Update Task', 'Tasks', 'Derived'),
+(38, 'Disable Task', 'Tasks', 'Derived'),
+(39, 'Mark Task Completed', 'Tasks', 'Derived'),
+(40, 'Delete Task From Reimbursement Voucher', 'Tasks', 'Derived');
 
 -- --------------------------------------------------------
 

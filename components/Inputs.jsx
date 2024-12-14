@@ -2,12 +2,15 @@
 
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
+import Tippy from "@tippyjs/react";
 import ReactDatePicker from "react-datepicker";
 
-import { Combobox } from "@headlessui/react";
+import { useContext } from "react";
 import { MyGlobal } from "@/utilities/global";
+import { DashboardContext } from "@/pages/home";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown, faCheck, faEnvelope, faLock, faMultiply } from "@fortawesome/free-solid-svg-icons";
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 
 export const ComboBox = ({
 	allowCreatingNewItem,
@@ -50,20 +53,20 @@ export const ComboBox = ({
 						<div className="relative w-full">
 							<div className="flex w-full h-[30px] px-2.5 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow black-white-background full-border">
 								<FontAwesomeIcon className={colour} icon={icon} />
-								<Combobox.Input
+								<ComboboxInput
 									autoComplete="off"
 									className="w-full p-2 font-regular-10 bg-transparent black-text outline-none"
 									displayValue={(m) => m}
 									onChange={onInputChange}
 									tabIndex={tabIndex}
 								/>
-								<Combobox.Button className="flex absolute pr-2 items-center inset-y-0 right-0 outline-none">
+								<ComboboxButton className="flex absolute pr-2 items-center inset-y-0 right-0 outline-none">
 									<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
-								</Combobox.Button>
+								</ComboboxButton>
 							</div>
-							<Combobox.Options className="absolute w-full max-h-[148px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border black-white-background">
+							<ComboboxOptions className="absolute w-full max-h-[150px] mt-1 overflow-auto divide-y rounded bottom-shadow outline-none z-50 full-border black-white-background">
 								{uiList()}
-							</Combobox.Options>
+							</ComboboxOptions>
 						</div>
 					</Combobox>
 				</div>
@@ -90,10 +93,10 @@ export const ComboBox = ({
 				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer hovered-rows ${isSelected && background}`;
 
 				return (
-					<Combobox.Option className={wrapper} key={n} value={_compareWith}>
+					<ComboboxOption className={wrapper} key={n} value={_compareWith}>
 						<span className={nameStyle}>{_displayValue}</span>
 						{isSelected && <FontAwesomeIcon className={colour} icon={faCheck} />}
-					</Combobox.Option>
+					</ComboboxOption>
 				);
 			});
 		}
@@ -197,81 +200,93 @@ export const ComboBox2 = ({
 	return uiBox();
 };
 
-// const ComboBoxWithChips = ({ compareWith, label, icon, isMenuInverted, isNew, onBlur, onItemClick, onSelectedItemClick, selectedItems, showList, toggleMenu }) => {
-// 	const { staffData } = useContext(DashboardContext);
+export const ComboBoxWithChips = ({
+	compareWith,
+	label,
+	icon,
+	isMenuInverted,
+	isNew,
+	onBlur,
+	onItemClick,
+	onSelectedItemClick,
+	selectedItems,
+	showList,
+	toggleMenu,
+}) => {
+	const { staffData } = useContext(DashboardContext);
 
-// 	const colour = isNew ? "green-text" : "primary-text";
-// 	const background = isNew ? "green-background-transparent-01" : "primary-background-transparent-01";
+	const colour = isNew ? "green-text" : "primary-text";
+	const background = isNew ? "green-background-transparent-01" : "primary-background-transparent-01";
 
-// 	const uiBox = () => {
-// 		return (
-// 			<div className="flex flex-col w-full p-2 space-y-1 relative">
-// 				<span className="font-regular-10 light-slate-gray-text">{label}</span>
-// 				<div className="flex w-full h-full px-2.5 space-x-1 justify-center items-center rounded bottom-shadow black-white-background full-border">
-// 					<FontAwesomeIcon className={colour} icon={icon} />
-// 					<div className="flex w-full h-[30px] pl-2.5 justify-between items-center relative">
-// 						<div className="flex w-full space-x-1 justify-start items-center font-regular-10 black-text">{uiSelectedItems()}</div>
-// 						<FontAwesomeIcon className="cursor-pointer gray-text" icon={faAngleDown} onClick={toggleMenu} />
-// 					</div>
-// 				</div>
-// 				<div className={showList} style={{ top: isMenuInverted ? "-155px" : "66px", zIndex: 50 }}>
-// 					{uiList()}
-// 				</div>
-// 			</div>
-// 		);
-// 	};
+	const uiBox = () => {
+		return (
+			<div className="flex flex-col w-full p-2 space-y-1 relative">
+				<span className="font-regular-10 light-slate-gray-text">{label}</span>
+				<div className="flex w-full h-full px-2.5 space-x-1 justify-center items-center rounded bottom-shadow black-white-background full-border">
+					<FontAwesomeIcon className={colour} icon={icon} />
+					<div className="flex w-full h-[30px] pl-2.5 justify-between items-center relative">
+						<div className="flex w-full space-x-1 justify-start items-center font-regular-10 black-text">{uiSelectedItems()}</div>
+						<FontAwesomeIcon className="cursor-pointer gray-text" icon={faAngleDown} onClick={toggleMenu} />
+					</div>
+				</div>
+				<div className={showList} style={{ top: isMenuInverted ? "-155px" : "66px", zIndex: 50 }}>
+					{uiList()}
+				</div>
+			</div>
+		);
+	};
 
-// 	const uiList = () => {
-// 		return staffData?.map((m, n) => {
-// 			const isSelected = selectedItems?.includes(m?.[compareWith]);
-// 			const _background = isSelected && background;
-// 			const _colour = isSelected ? colour : "black-text";
-// 			const wrapper = `flex w-full p-2 justify-between items-center cursor-pointer font-regular-10 ${_colour} ${_background} hovered-rows`;
+	const uiList = () => {
+		return staffData?.map((m, n) => {
+			const isSelected = selectedItems?.includes(m?.[compareWith]);
+			const _background = isSelected && background;
+			const _colour = isSelected ? colour : "black-text";
+			const wrapper = `flex w-full p-2 justify-between items-center cursor-pointer font-regular-10 ${_colour} ${_background} hovered-rows`;
 
-// 			return (
-// 				<span className={wrapper} key={n} onClick={() => onItemClick(m?.[compareWith])}>
-// 					<span>{m?.[compareWith]}</span>
-// 					{isSelected && <FontAwesomeIcon className={colour} icon={faCheck} />}
-// 				</span>
-// 			);
-// 		});
-// 	};
+			return (
+				<span className={wrapper} key={n} onClick={() => onItemClick(m?.[compareWith])}>
+					<span>{m?.[compareWith]}</span>
+					{isSelected && <FontAwesomeIcon className={colour} icon={faCheck} />}
+				</span>
+			);
+		});
+	};
 
-// 	const uiSelectedItems = () => {
-// 		if (selectedItems?.length) {
-// 			const wrapper = `flex py-px px-2 space-x-2 justify-between items-center rounded ${background}`;
+	const uiSelectedItems = () => {
+		if (selectedItems?.length) {
+			const wrapper = `flex py-px px-2 space-x-2 justify-between items-center rounded ${background}`;
 
-// 			if (selectedItems?.length > 5) {
-// 				return (
-// 					<Tippy allowHTML={true} content={uiTooltipUi()}>
-// 						<span className={`${wrapper} cursor-pointer`}>{selectedItems?.length} people selected</span>
-// 					</Tippy>
-// 				);
-// 			} else {
-// 				return selectedItems?.map((m, n) => {
-// 					return (
-// 						<span className={wrapper} key={n}>
-// 							<span>{m}</span>
-// 							<FontAwesomeIcon className="cursor-pointer gray-text" icon={faMultiply} onClick={() => onSelectedItemClick(m)} />
-// 						</span>
-// 					);
-// 				});
-// 			}
-// 		}
-// 	};
+			if (selectedItems?.length > 5) {
+				return (
+					<Tippy allowHTML={true} content={uiTooltipUi()}>
+						<span className={`${wrapper} cursor-pointer`}>{selectedItems?.length} people selected</span>
+					</Tippy>
+				);
+			} else {
+				return selectedItems?.map((m, n) => {
+					return (
+						<span className={wrapper} key={n}>
+							<span>{m}</span>
+							<FontAwesomeIcon className="cursor-pointer gray-text" icon={faMultiply} onClick={() => onSelectedItemClick(m)} />
+						</span>
+					);
+				});
+			}
+		}
+	};
 
-// 	const uiTooltipUi = () => {
-// 		return selectedItems?.map((m, n) => {
-// 			return (
-// 				<div className="font-regular-10 text-white">
-// 					{++n}. {m}
-// 				</div>
-// 			);
-// 		});
-// 	};
+	const uiTooltipUi = () => {
+		return selectedItems?.map((m, n) => {
+			return (
+				<div className="font-regular-10 text-white">
+					{++n}. {m}
+				</div>
+			);
+		});
+	};
 
-// 	return uiBox();
-// };
+	return uiBox();
+};
 
 export const DatePicker = ({ icon, isNew, label, onChange, tabIndex, value, width }) => {
 	const colour = isNew ? "green-text" : "primary-text";

@@ -14,8 +14,10 @@ const encryptionKey = CryptoJS.enc.Hex.parse(process.env.NEXT_PUBLIC_SECRET_KEY)
 export const applicationName = process.env.NEXT_PUBLIC_APPLICATION_NAME;
 export const isDevelopment = process.env.NODE_ENV !== "production";
 
+let permissions = [];
 let sessionToken = "";
 let userId = "";
+let fullName = "";
 
 export const MyGlobal = Object.freeze({
 	AddActivity: async (activity) => {
@@ -58,7 +60,7 @@ export const MyGlobal = Object.freeze({
 		return String(value).replace(/'/g, "''");
 	},
 
-	ExtractOnlyNumbers: (value) => {
+	ExtractNumbers: (value) => {
 		return Number(String(value).replace(/[^0-9-]/g, ""));
 	},
 
@@ -100,23 +102,6 @@ export const MyGlobal = Object.freeze({
 		}
 	},
 
-	GetAnyData: async (apiEndpoint, tableNames) => {
-		let result = { data: [], statusCode: 0 };
-
-		try {
-			const parameters = { table: tableNames };
-			const response = await axios.get(apiEndpoint, { params: parameters });
-
-			result.data = response.data;
-			result.statusCode = response.status;
-		} catch (error) {
-			result.data = error;
-			result.statusCode = error.response.status;
-		}
-
-		return result;
-	},
-
 	GetHeaders: (parameters) => {
 		if (parameters) {
 			return { maxBodyLength: Infinity, maxContentLength: Infinity, params: parameters };
@@ -138,23 +123,6 @@ export const MyGlobal = Object.freeze({
 		return initialsArray;
 	},
 
-	GetLoggedInUserDetails: () => {
-		const loggedInUserDetails = MyGlobal.Storages.Local.DoesExist(`${applicationName}UserDetails`);
-
-		if (loggedInUserDetails) {
-			const decryptedUserDetails = MyGlobal.Decrypt(loggedInUserDetails);
-			const parsedUserDetails = JSON.parse(decryptedUserDetails);
-
-			userId = parsedUserDetails.id;
-
-			return parsedUserDetails;
-		}
-	},
-
-	GetLoggedInUserId: () => {
-		return userId;
-	},
-
 	GetNumbers: (payload) => {
 		return Number(String(payload).replace(/[^0-9]/g, ""));
 	},
@@ -171,46 +139,64 @@ export const MyGlobal = Object.freeze({
 		return MyGlobal.Storages.Local.Get(`${applicationName}Theme`);
 	},
 
+	GetUserFullDetails: () => {
+		const userDetails = MyGlobal.Storages.Local.DoesExist(`${applicationName}UserDetails`);
+
+		if (userDetails) {
+			const decryptedUserDetails = MyGlobal.Decrypt(userDetails);
+			const parsedUserDetails = JSON.parse(decryptedUserDetails);
+
+			userId = parsedUserDetails.id;
+			fullName = parsedUserDetails.full_name;
+
+			return parsedUserDetails;
+		}
+	},
+
+	GetUserFullName: () => {
+		return fullName;
+	},
+
+	GetUserId: () => {
+		return userId;
+	},
+
 	HandleErrors: async (error, source) => {
 		console.error(source, error);
 
-		if (source != "Single Client Files") {
-			if ("response" in error) {
-				if ("status" in error.response) {
-					let message = "";
+		if ("response" in error) {
+			if ("status" in error.response) {
+				let message = "";
 
-					switch (error.response.status) {
-						case 400:
-							message = MyConstants.Messages.BadRequest;
-							break;
-						case 401:
-							message = MyConstants.Messages.InvalidUser;
-							break;
-						case 403:
-							message = MyConstants.Messages.AccessRevoked;
-							break;
-						case 404:
-							message = MyConstants.Messages.NoDataFound;
-							break;
-						case 500:
-							message = error.response.statusText;
-							break;
-					}
+				switch (error.response.status) {
+					case 400:
+						message = MyConstants.Messages.BadRequest;
+						break;
+					case 401:
+						message = MyConstants.Messages.InvalidUser;
+						break;
+					case 403:
+						message = MyConstants.Messages.AccessRevoked;
+						break;
+					case 404:
+						message = MyConstants.Messages.NoDataFound;
+						break;
+					case 500:
+						message = error.response.statusText;
+						break;
+				}
 
-					if (message.length) {
-						MyGlobal.ShowToasts(MyConstants.ToastTypes.Error, message);
+				if (message.length) {
+					MyGlobal.ShowToasts(MyConstants.ToastTypes.Error, message);
+				}
+
+				if (source) {
+					try {
+						await axios.post(MyConstants.ApiEndpoints.ErrorLogger, { errorText: error.response.statusText, source, userId });
+					} catch (error) {
+						console.error(error);
 					}
 				}
-			}
-		} else {
-			console.error(error);
-		}
-
-		if (source) {
-			try {
-				await axios.post(MyConstants.ApiEndpoints.ErrorLogger, { errorText: error.response.statusText, source, userId });
-			} catch (error) {
-				console.error(error);
 			}
 		}
 	},
@@ -223,6 +209,10 @@ export const MyGlobal = Object.freeze({
 	HasNumbers: (payload) => {
 		const regex = /^[0-9]+$/;
 		return regex.test(payload);
+	},
+
+	HasPermission: (permission) => {
+		return permissions.filter((object) => object.name == permission).length > 0;
 	},
 
 	HighlightText: (payload, searchString) => {
@@ -244,7 +234,19 @@ export const MyGlobal = Object.freeze({
 	},
 
 	IsUserAdministrator: () => {
-		return MyGlobal.GetLoggedInUserDetails().role == "Administrator";
+		return MyGlobal.GetUserFullDetails().role == "Administrator";
+	},
+
+	LogErrors: async (errorText, source) => {
+		try {
+			await axios.post(MyConstants.ApiEndpoints.ErrorLogger, { errorText, source, userId });
+		} catch (error) {
+			console.error(error);
+		}
+	},
+
+	SetPermission: (permission) => {
+		permissions = permission;
 	},
 
 	SetSessionToken: (token) => {
@@ -347,7 +349,7 @@ export const MyGlobal = Object.freeze({
 	},
 
 	ThousandSeparator: (payload) => {
-		const value = Global.extractOnlyNumbers(payload);
+		const value = MyGlobal.GetNumbers(payload);
 		return new Intl.NumberFormat("en-IN").format(value);
 	},
 

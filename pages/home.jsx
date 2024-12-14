@@ -3,13 +3,15 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
+import Inquiry from "@/modules/inquiry";
 import MyConstants from "@/utilities/constants";
 
 import { useRouter } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
 import { applicationName, MyGlobal } from "@/utilities/global";
+import { ErrorFallbackComponent } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Menu, MenuButton, MenuItem, MenuItems, Switch } from "@headlessui/react";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { createContext, useEffect, useLayoutEffect, useState } from "react";
 import { faCog, faDatabase, faSignOut, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
@@ -20,17 +22,18 @@ export default function Home() {
 	const router = useRouter();
 
 	const [data, setData] = useState({
+		allPermissions: [],
 		allUsers: [],
 		isDarkModeEnabled: false,
 		isLogoutBoxOpen: false,
 		isUserMenuOpen: false,
+		loggedInUser: {},
 		modules: [],
-		selectedModule: MyConstants.PrimaryModules.Dashboard,
+		selectedModule: MyConstants.Modules.Base.Dashboard,
 		selectedModuleIndex: 0,
 		settings: [],
 		singleProjectObject: {},
 		theme: null,
-		loggedInUser: {},
 	});
 
 	const [hasMounted, setHasMounted] = useState({
@@ -52,6 +55,13 @@ export default function Home() {
 	const singleTabStyle = "pt-2 pb-[0.6rem] border-b-4 whitespace-nowrap font-medium-11 primary-border-colour primary-text";
 
 	// Functions
+	const changeTheme = () => {
+		const newTheme = data.theme == "light" ? "dark" : "light";
+		MyGlobal.Storages.Local.Set("AppMode", newTheme);
+
+		setData((s) => ({ ...s, isDarkModeEnabled: !data.isDarkModeEnabled, theme: newTheme }));
+	};
+
 	const closeProjectsView = () => {
 		setData((s) => ({
 			...s,
@@ -77,7 +87,27 @@ export default function Home() {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-permissions" }));
 
-			setData((old) => ({ ...old, modules: response.data }));
+			const modules = [];
+			const getLoggedInUserData = MyGlobal.GetUserFullDetails();
+
+			response.data
+				.filter((permission) => permission.type == "Base")
+				.filter((permission) => {
+					if (getLoggedInUserData.permissions != -1) {
+						const permissions = String(getLoggedInUserData.permissions).split(",");
+						const permissionId = String(permission.id);
+
+						if (permissions.includes(permissionId)) {
+							modules.push(permission);
+						}
+					} else {
+						modules.push(permission);
+					}
+				});
+
+			MyGlobal.SetPermission(response.data);
+
+			setData((old) => ({ ...old, allPermissions: response.data, modules }));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get All Permissions");
 		}
@@ -101,24 +131,7 @@ export default function Home() {
 			router.replace("/");
 		} else {
 			MyGlobal.SetUserStatus(1);
-			setData((old) => ({ ...old, loggedInUser: MyGlobal.GetLoggedInUserDetails() }));
-		}
-	};
-
-	const getUsers = async () => {
-		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-users" }));
-
-			if (response.status == 200) {
-				const allUsers = [];
-
-				response.data.administrators.forEach((administrator) => allUsers.push(administrator));
-				response.data.employees.forEach((employee) => allUsers.push(employee));
-
-				setData((s) => ({ ...s, allUsers }));
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "Get All Users");
+			setData((old) => ({ ...old, loggedInUser: MyGlobal.GetUserFullDetails() }));
 		}
 	};
 
@@ -156,6 +169,23 @@ export default function Home() {
 				return faDatabase;
 			case MyConstants.UserMenu.Logout:
 				return faSignOut;
+		}
+	};
+
+	const getUsers = async () => {
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-users" }));
+
+			if (response.status == 200) {
+				const allUsers = [];
+
+				response.data.administrators.forEach((administrator) => allUsers.push(administrator));
+				response.data.employees.forEach((employee) => allUsers.push(employee));
+
+				setData((s) => ({ ...s, allUsers }));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Get All Users");
 		}
 	};
 
@@ -216,100 +246,98 @@ export default function Home() {
 	};
 
 	const uiModules = () => {
-		return data.modules
-			.filter((permission) => permission.type == "Base")
-			.map((module, index) => {
-				const aesthetics = index == data.selectedModuleIndex ? "primary-border-colour primary-text" : "border-transparent gray-text";
-				const wrapper = `pt-2 pb-[0.7rem] border-b-4 whitespace-nowrap font-regular-11 ${aesthetics}`;
+		return data.modules.map((module, index) => {
+			const aesthetics = index == data.selectedModuleIndex ? "primary-border-colour primary-text" : "border-transparent gray-text";
+			const wrapper = `pt-2 pb-[0.7rem] border-b-4 whitespace-nowrap font-regular-11 ${aesthetics}`;
 
-				return (
-					<button key={index} className={wrapper} onClick={() => setModule(index, module)}>
-						{module.name}
-					</button>
-				);
-			});
+			return (
+				<button key={index} className={wrapper} onClick={() => setModule(index, module)}>
+					{module.name}
+				</button>
+			);
+		});
 	};
 
 	const uiSelectedModule = () => {
-		// switch (data.selectedModule) {
-		// 	case Constants.primaryModules.dashboard.name:
-		// 		return (
-		// 			<ErrorBoundary
-		// 				key="ErrorBoundary_Dashboard"
-		// 				onError={(error) => Global.handleErrors(error.message, "Dashboard")}
-		// 				FallbackComponent={ErrorFallbackComponent}>
-		// 				<Dashboard goToProjects={goToProjects} projectSettings={projectSettings} />
-		// 			</ErrorBoundary>
-		// 		);
-		// 	case Constants.primaryModules.clients.name:
-		// 		return (
-		// 			<ErrorBoundary
-		// 				key="ErrorBoundary_Clients"
-		// 				onError={(error) => Global.handleErrors(error.message, "Clients")}
-		// 				FallbackComponent={ErrorFallbackComponent}>
-		// 				<Clients />
-		// 			</ErrorBoundary>
-		// 		);
-		// 	case Constants.primaryModules.inquiry.name:
-		// 		return (
-		// 			<ErrorBoundary
-		// 				key="ErrorBoundary_Inquiry"
-		// 				onError={(error) => Global.handleErrors(error.message, "Inquiry")}
-		// 				FallbackComponent={ErrorFallbackComponent}>
-		// 				<Inquiry />
-		// 			</ErrorBoundary>
-		// 		);
-		// 	case Constants.primaryModules.projects.name:
-		// 		return (
-		// 			<ErrorBoundary
-		// 				key="ErrorBoundary_Projects"
-		// 				onError={(error) => Global.handleErrors(error.message, "Projects")}
-		// 				FallbackComponent={ErrorFallbackComponent}>
-		// 				<Projects
-		// 					close={closeProjectsView}
-		// 					object={data.singleProjectObject}
-		// 					refreshSelectedTasksProject={refreshSelectedTasksProject}
-		// 					settings={projectSettings}
-		// 				/>
-		// 			</ErrorBoundary>
-		// 		);
-		// 	case Constants.primaryModules.affiliates.name:
-		// 		return (
-		// 			<ErrorBoundary
-		// 				key="ErrorBoundary_Affiliates"
-		// 				onError={(error) => Global.handleErrors(error.message, "Affiliates")}
-		// 				FallbackComponent={ErrorFallbackComponent}>
-		// 				<Affiliates />
-		// 			</ErrorBoundary>
-		// 		);
-		// 	case Constants.primaryModules.admins.name:
-		// 		return (
-		// 			<ErrorBoundary
-		// 				key="ErrorBoundary_Admins"
-		// 				onError={(error) => Global.handleErrors(error.message, "Admins")}
-		// 				FallbackComponent={ErrorFallbackComponent}>
-		// 				<Admins />
-		// 			</ErrorBoundary>
-		// 		);
-		// 	case Constants.primaryModules.invoices.name:
-		// 		return (
-		// 			<ErrorBoundary
-		// 				key="ErrorBoundary_Invoices"
-		// 				onError={(error) => Global.handleErrors(error.message, "Invoices")}
-		// 				FallbackComponent={ErrorFallbackComponent}>
-		// 				<Invoices />
-		// 			</ErrorBoundary>
-		// 		);
-		// 	case Constants.primaryModules.cashFlow.name:
-		// 		return (
-		// 			<ErrorBoundary
-		// 				key="ErrorBoundary_Cash Flow"
-		// 				onError={(error) => Global.handleErrors(error.message, "Cash Flow")}
-		// 				FallbackComponent={ErrorFallbackComponent}>
-		// 				<CashFlow settings={cashFlowSettings} />
-		// 			</ErrorBoundary>
-		// 		);
-		// }
+		switch (data.selectedModule) {
+			// case Constants.primaryModules.dashboard.name:
+			// 	return (
+			// 		<ErrorBoundary
+			// 			key="ErrorBoundary_Dashboard"
+			// 			onError={(error) => Global.handleErrors(error.message, "Dashboard")}
+			// 			FallbackComponent={ErrorFallbackComponent}>
+			// 			<Dashboard goToProjects={goToProjects} projectSettings={projectSettings} />
+			// 		</ErrorBoundary>
+			// 	);
+			// case Constants.primaryModules.clients.name:
+			// 	return (
+			// 		<ErrorBoundary
+			// 			key="ErrorBoundary_Clients"
+			// 			onError={(error) => Global.handleErrors(error.message, "Clients")}
+			// 			FallbackComponent={ErrorFallbackComponent}>
+			// 			<Clients />
+			// 		</ErrorBoundary>
+			// 	);
+			case MyConstants.Modules.Base.Inquiries:
+				return (
+					<ErrorBoundary
+						key="ErrorBoundary_Inquiries"
+						onError={(error) => MyGlobal.LogErrors(error.message, MyConstants.Modules.Base.Inquiries)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<Inquiry />
+					</ErrorBoundary>
+				);
+			// case Constants.primaryModules.projects.name:
+			// 	return (
+			// 		<ErrorBoundary
+			// 			key="ErrorBoundary_Projects"
+			// 			onError={(error) => Global.handleErrors(error.message, "Projects")}
+			// 			FallbackComponent={ErrorFallbackComponent}>
+			// 			<Projects
+			// 				close={closeProjectsView}
+			// 				object={data.singleProjectObject}
+			// 				refreshSelectedTasksProject={refreshSelectedTasksProject}
+			// 				settings={projectSettings}
+			// 			/>
+			// 		</ErrorBoundary>
+			// 	);
+			// case Constants.primaryModules.affiliates.name:
+			// 	return (
+			// 		<ErrorBoundary
+			// 			key="ErrorBoundary_Affiliates"
+			// 			onError={(error) => Global.handleErrors(error.message, "Affiliates")}
+			// 			FallbackComponent={ErrorFallbackComponent}>
+			// 			<Affiliates />
+			// 		</ErrorBoundary>
+			// 	);
+			// case Constants.primaryModules.admins.name:
+			// 	return (
+			// 		<ErrorBoundary
+			// 			key="ErrorBoundary_Admins"
+			// 			onError={(error) => Global.handleErrors(error.message, "Admins")}
+			// 			FallbackComponent={ErrorFallbackComponent}>
+			// 			<Admins />
+			// 		</ErrorBoundary>
+			// 	);
+			// case Constants.primaryModules.invoices.name:
+			// 	return (
+			// 		<ErrorBoundary
+			// 			key="ErrorBoundary_Invoices"
+			// 			onError={(error) => Global.handleErrors(error.message, "Invoices")}
+			// 			FallbackComponent={ErrorFallbackComponent}>
+			// 			<Invoices />
+			// 		</ErrorBoundary>
+			// 	);
+			// case Constants.primaryModules.cashFlow.name:
+			// 	return (
+			// 		<ErrorBoundary
+			// 			key="ErrorBoundary_Cash Flow"
+			// 			onError={(error) => Global.handleErrors(error.message, "Cash Flow")}
+			// 			FallbackComponent={ErrorFallbackComponent}>
+			// 			<CashFlow settings={cashFlowSettings} />
+			// 		</ErrorBoundary>
+			// 	);
+		}
 	};
 
 	const uiUserMenuList = () => {
@@ -343,7 +371,7 @@ export default function Home() {
 				</MenuButton>
 				<MenuItems
 					anchor="bottom"
-					className="absolute w-max mt-2 divide-y divide-gray-100 rounded bottom-shadow focus:outline-none black-white-background full-border black-text">
+					className="absolute w-max mt-2 divide-y rounded bottom-shadow focus:outline-none black-white-background full-border black-text">
 					<div className="flex flex-col p-2 font-medium-13">
 						<span>{standardName}</span>
 						<span className="font-regular-11 gray-text">{designation}</span>
@@ -362,10 +390,11 @@ export default function Home() {
 		} else {
 			doPreRenderingOperations();
 
-			getPermissions();
 			getUserData();
-			getSettings();
 			getUsers();
+
+			getPermissions();
+			getSettings();
 		}
 	}, []);
 
@@ -384,7 +413,7 @@ export default function Home() {
 		<main className="flex flex-col min-w-[1024px] h-screen rounded-t overflow-y-hidden">
 			<div className="flex w-full h-11 px-5 justify-between items-center relative shadow black-white-background">
 				<div className="flex w-full justify-start items-center">
-					<span className="dashboard-heading">{applicationName}</span>
+					<span className="uppercase dashboard-heading">{applicationName}</span>
 				</div>
 				<div className="flex w-full justify-center items-center">
 					<div className="flex space-x-6 relative">{uiModules()}</div>
