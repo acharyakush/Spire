@@ -14,6 +14,7 @@ const encryptionKey = CryptoJS.enc.Hex.parse(process.env.NEXT_PUBLIC_SECRET_KEY)
 export const applicationName = process.env.NEXT_PUBLIC_APPLICATION_NAME;
 export const isDevelopment = process.env.NODE_ENV !== "production";
 
+let allUsers = [];
 let permissions = [];
 let sessionToken = "";
 let userId = "";
@@ -82,13 +83,17 @@ export const MyGlobal = Object.freeze({
 		return `${dayjs(new Date()).format("YYYY")}-${dayjs(new Date()).set("year", 1)}`;
 	},
 
-	GetAnyDataFromId: (id, staff, type) => {
+	GetAllUsers: () => {
+		return allUsers;
+	},
+
+	GetAnyDataFromId: (id, type) => {
 		if (String(id).includes(",")) {
 			const names = [];
 			const idsArray = String(id).split(",");
 
 			idsArray.forEach((id) => {
-				const object = staff.filter((user) => user.id == id).at(0);
+				const object = allUsers.filter((user) => user.id == id).at(0);
 
 				if (object) {
 					names.push(object[type]);
@@ -97,7 +102,7 @@ export const MyGlobal = Object.freeze({
 
 			return names.join(", ");
 		} else {
-			const user = staff.filter((_user) => _user.id == id);
+			const user = allUsers.filter((_user) => _user.id == id);
 			return user.at(0)[type] ?? "Ex Employee";
 		}
 	},
@@ -243,6 +248,10 @@ export const MyGlobal = Object.freeze({
 		} catch (error) {
 			console.error(error);
 		}
+	},
+
+	SetAllUsers: (allUsersArray) => {
+		allUsers = allUsersArray;
 	},
 
 	SetPermission: (permission) => {

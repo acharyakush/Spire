@@ -7,15 +7,15 @@ import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
+import NewInquiry from "./NewInquiry";
 import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
+import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { DashboardContext } from "@/pages/home";
 import { TextInputNative } from "@/components/Inputs";
-import { useContext, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmallWithBackground, SpinnerBig, Tooltip, TooltipList } from "@/components/Elements";
@@ -27,20 +27,20 @@ import {
 	faFilter,
 	faMultiply,
 	faPlus,
+	faPlusCircle,
 	faSearch,
 	faSortAmountAsc,
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
-import NewInquiry from "./NewInquiry";
+import InquiryNotes from "./InquiryNotes";
 
 export default function Inquiry() {
 	// Business Logic
-	const { staffData } = useContext(DashboardContext);
-
 	const [data, setData] = useState({
-		adminCompanies: [],
-		allReferences: [],
+		allMainProjects: [],
 		allNotes: [],
+		allReferences: [],
+		allSubProjects: [],
 		clients: { all: [], confirmed: [] },
 		entryDate: { from: "", to: "" },
 		hasMounted: false,
@@ -62,11 +62,15 @@ export default function Inquiry() {
 		notes: false,
 	});
 
+	const allowConvertingToProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.ConvertInquiryToProject);
+
 	const headers = MyConstants.TableHeaders.Inquiries;
 	const thisView = MyConstants.Modules.Base.Inquiries;
 	const statuses = MyConstants.Statuses.Inquiries;
 
-	const newInquiryButton = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry) ? "block primary-button-condensed" : "hidden";
+	const newInquiryButton = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry)
+		? "block space-x-1.5 primary-button-transparent-background"
+		: "hidden";
 
 	const showFromDateClearButton = data.entryDate.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearButton = data.entryDate.to ? "cursor-pointer primary-text" : "hidden";
@@ -87,7 +91,7 @@ export default function Inquiry() {
 	const doFiltering = (query) => {
 		const filteredData = data.inquiries.mergedWithNotes.filter((inquiry) => {
 			if (query == "date") {
-				const checkDate = new Date(inquiry.date);
+				const checkDate = new Date(inquiry.entry_date);
 				const startDate = data.entryDate.from;
 				const endDate = data.entryDate.to;
 
@@ -97,45 +101,39 @@ export default function Inquiry() {
 			} else {
 				const searchTerm = data.searchTerm.toLowerCase();
 
-				const client = data.clients.confirmed.filter((client) => client.id == inquiry.client_id).at(0);
-				const clientId = !client ? inquiry.client_id : client.id;
-				const _clientId = String(clientId).toLowerCase();
+				const client = data.clients.all.filter((client) => client.id == inquiry.client_id).at(0);
+				const clientId = String(client.id).toLowerCase();
+				const clientName = String(getClientName(client.id)).toLowerCase();
 
-				const clientName = !client ? inquiry.client_name : client.name;
-				const _clientName = String(clientName).toLowerCase();
-
-				const creator = Global.getAnyDataFromId(inquiry.creator, staffData, "full_name");
-				const _creator = String(creator).toLowerCase();
+				const createdBy = MyGlobal.GetAnyDataFromId(inquiry.created_by, "full_name");
+				const _createdBy = String(createdBy).toLowerCase();
 
 				const reference = data.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0);
-				const _referenceId = String(reference.id).toLowerCase();
-				const _referenceName = String(reference.name).toLowerCase();
+				const referenceId = String(reference.id).toLowerCase();
+				const referenceName = String(getReferenceName(inquiry.reference_id)).toLowerCase();
 
-				const followUpsNames = Global.getAnyDataFromId(inquiry.follow_ups, staffData, "full_name");
+				const followUpsNames = MyGlobal.GetAnyDataFromId(inquiry.follow_ups, "full_name");
 				const followUpsInitials = getFollowUpsInitials(followUpsNames);
 
-				const inquiryId = String(inquiry.id).toLowerCase();
-				const mainProject = String(inquiry.main_project).toLowerCase();
+				const mainProject = String(getMainProjectName(inquiry.main_project_id)).toLowerCase();
 				const notes = String(inquiry.notes).toLowerCase();
 				const status = String(inquiry.status).toLowerCase();
-				const subProject = String(inquiry.sub_project).toLowerCase();
+				const subProject = String(getSubProjectName(inquiry.sub_project_id)).toLowerCase();
 
 				return (
-					inquiryId.includes(searchTerm) ||
-					_clientId.includes(searchTerm) ||
-					_clientName.includes(searchTerm) ||
-					String(inquiry.phone).includes(searchTerm) ||
+					clientId.includes(searchTerm) ||
+					clientName.includes(searchTerm) ||
+					String(inquiry.contact_number).includes(searchTerm) ||
 					mainProject.includes(searchTerm) ||
 					subProject.includes(searchTerm) ||
-					_referenceId.includes(searchTerm) ||
-					_referenceName.includes(searchTerm) ||
+					referenceId.includes(searchTerm) ||
+					referenceName.includes(searchTerm) ||
 					followUpsInitials.includes(searchTerm) ||
 					followUpsNames.includes(searchTerm) ||
 					String(inquiry.quote).includes(searchTerm) ||
 					status.includes(searchTerm) ||
 					notes.includes(searchTerm) ||
-					inquiry.creator.includes(searchTerm) ||
-					_creator.includes(searchTerm)
+					_createdBy.includes(searchTerm)
 				);
 			}
 		});
@@ -145,8 +143,17 @@ export default function Inquiry() {
 
 	const doSorting = () => {
 		return data.inquiries.api.sort((a, b) => {
+			const aClient = getClientName(a.client_id);
+			const bClient = getClientName(b.client_id);
+
+			const aCreatedBy = MyGlobal.GetAnyDataFromId(a.created_by, "full_name");
+			const bCreatedBy = MyGlobal.GetAnyDataFromId(b.created_by, "full_name");
+
 			const aEntryDate = new Date(a.entry_date);
 			const bEntryDate = new Date(b.entry_date);
+
+			const aMainProject = getMainProjectName(a.main_project_id);
+			const bMainProject = getMainProjectName(b.main_project_id);
 
 			const aNotesCount = getTotalNotesByInquiry(a.id);
 			const bNotesCount = getTotalNotesByInquiry(b.id);
@@ -154,22 +161,25 @@ export default function Inquiry() {
 			const aReference = data.allReferences.filter((reference) => reference.id == a.reference_id).at(0).name;
 			const bReference = data.allReferences.filter((reference) => reference.id == b.reference_id).at(0).name;
 
+			const aSubProject = getSubProjectName(a.sub_project_id);
+			const bSubProject = getSubProjectName(b.sub_project_id);
+
 			if (data.sort.column == headers.EntryDate && data.sort.isAscending) {
 				return aEntryDate - bEntryDate;
 			} else if (data.sort.column == headers.EntryDate && !data.sort.isAscending) {
 				return bEntryDate - aEntryDate;
 			} else if (data.sort.column == headers.Client && data.sort.isAscending) {
-				return a.client_id.localeCompare(b.client_id);
+				return aClient.localeCompare(bClient);
 			} else if (data.sort.column == headers.Client && !data.sort.isAscending) {
-				return b.client_id.localeCompare(a.client_id);
+				return bClient.localeCompare(aClient);
 			} else if (data.sort.column == headers.MainProject && data.sort.isAscending) {
-				return a.main_project.localeCompare(b.main_project);
+				return aMainProject.localeCompare(bMainProject);
 			} else if (data.sort.column == headers.MainProject && !data.sort.isAscending) {
-				return b.main_project.localeCompare(a.main_project);
+				return bMainProject.localeCompare(aMainProject);
 			} else if (data.sort.column == headers.SubProject && data.sort.isAscending) {
-				return a.sub_project.localeCompare(b.sub_project);
+				return aSubProject.localeCompare(bSubProject);
 			} else if (data.sort.column == headers.SubProject && !data.sort.isAscending) {
-				return b.sub_project.localeCompare(a.sub_project);
+				return bSubProject.localeCompare(aSubProject);
 			} else if (data.sort.column == headers.Reference && data.sort.isAscending) {
 				return aReference.localeCompare(bReference);
 			} else if (data.sort.column == headers.Reference && !data.sort.isAscending) {
@@ -191,9 +201,9 @@ export default function Inquiry() {
 			} else if (data.sort.column == headers.Notes && !data.sort.isAscending) {
 				return bNotesCount - aNotesCount;
 			} else if (data.sort.column == headers.CreatedBy && data.sort.isAscending) {
-				return a.created_by.localeCompare(b.created_by);
+				return aCreatedBy.localeCompare(bCreatedBy);
 			} else if (data.sort.column == headers.CreatedBy && !data.sort.isAscending) {
-				return b.created_by.localeCompare(a.created_by);
+				return bCreatedBy.localeCompare(aCreatedBy);
 			} else {
 				return b.id - a.id;
 			}
@@ -210,14 +220,14 @@ export default function Inquiry() {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const headers = Object.values(headers);
-		const blankRows = [{ span: headers.length, height: rowHeight, colSpan: 2 }];
+		const rowHeaders = Object.values(headers);
+		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((inquiry) => {
 			const entryDate = dayjs(inquiry.entry_date).format("DD MMM, YYYY");
 			const clientDetails = `${inquiry.client_id}\n${getClientName(inquiry.client_id)}`;
 
-			const followUps = MyGlobal.GetAnyDataFromId(inquiry.follow_ups, staffData, "full_name");
+			const followUps = MyGlobal.GetAnyDataFromId(inquiry.follow_ups, "full_name");
 			const _followUps = String(followUps).replace(",", "\n");
 
 			const referenceName = data.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0).name;
@@ -227,8 +237,8 @@ export default function Inquiry() {
 				entryDate,
 				clientDetails,
 				inquiry.contact_number,
-				inquiry.main_project_id,
-				inquiry.sub_project_id,
+				getMainProjectName(inquiry.main_project_id),
+				getSubProjectName(inquiry.sub_project_id),
 				referenceDetails,
 				_followUps,
 				inquiry.quote,
@@ -250,7 +260,7 @@ export default function Inquiry() {
 			});
 		});
 
-		headers.forEach((header) => {
+		rowHeaders.forEach((header) => {
 			dataHeaders.push({
 				align: "center",
 				alignVertical: "center",
@@ -270,13 +280,13 @@ export default function Inquiry() {
 				fontSize: 16,
 				fontWeight: "bold",
 				height: 44,
-				span: headers.length,
+				span: rowHeaders.length,
 				value: `${thisView} (${data.inquiries.api.length})`,
 			},
 		];
 
 		const finalData = [header, blankRows, dataHeaders];
-		MyGlobal.SeparateObjectsIntoArrays(_records, headers.length).forEach((row) => finalData.push(row));
+		MyGlobal.SeparateObjectsIntoArrays(_records, rowHeaders.length).forEach((row) => finalData.push(row));
 
 		writeXlsxFile(finalData, {
 			columns: columnsWidth,
@@ -287,7 +297,33 @@ export default function Inquiry() {
 	};
 
 	const getClientName = (clientId) => {
-		return data.clients.all.filter((client) => client.id == clientId).at(0).name;
+		if (data.clients.all.length) {
+			return data.clients.all.filter((client) => client.id == clientId).at(0).name;
+		} else {
+			return "";
+		}
+	};
+
+	const getFollowUpsInitials = (names) => {
+		if (names) {
+			let initials = names;
+
+			if (String(names).includes(",")) {
+				initials = MyGlobal.GetInitials(names);
+			}
+
+			return initials;
+		} else {
+			return "Ex Employee";
+		}
+	};
+
+	const getMainProjectName = (mainProjectId) => {
+		if (data.allMainProjects.length) {
+			return data.allMainProjects.filter((mainProject) => mainProject.id == mainProjectId).at(0).name;
+		} else {
+			return "";
+		}
 	};
 
 	const getInquiries = async () => {
@@ -297,7 +333,7 @@ export default function Inquiry() {
 			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetInquiries, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				getRequiredData();
+				getSupportData();
 
 				const revised = response.data.map((inquiry) => ({ ...inquiry, notes: "" }));
 				setData((old) => ({ ...old, inquiries: { api: revised, apiCopy: revised } }));
@@ -317,23 +353,11 @@ export default function Inquiry() {
 		}
 	};
 
-	const getRequiredData = async () => {
-		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.Handler, MyGlobal.GetHeaders());
-
-			if (response.status === 200) {
-				const confirmedClients = response.data.clients.filter((client) => client.is_confirmed == 1);
-
-				setData((old) => ({
-					...old,
-					adminCompanies: response.data.adminCompanies,
-					clients: { all: response.data.clients, confirmed: confirmedClients },
-					allNotes: response.data.notes,
-					allReferences: response.data.references,
-				}));
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "Inquiries => Get Required Data");
+	const getReferenceName = (referenceId) => {
+		if (data.allReferences.length) {
+			return data.allReferences.filter((reference) => reference.id == referenceId).at(0).name;
+		} else {
+			return "";
 		}
 	};
 
@@ -379,6 +403,35 @@ export default function Inquiry() {
 		}
 	};
 
+	const getSubProjectName = (subProjectId) => {
+		if (data.allSubProjects.length) {
+			return data.allSubProjects.filter((subProject) => subProject.id == subProjectId).at(0).name;
+		} else {
+			return "";
+		}
+	};
+
+	const getSupportData = async () => {
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetInquiriesSupportData, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				const confirmedClients = response.data.clients.filter((client) => client.is_confirmed == 1);
+
+				setData((old) => ({
+					...old,
+					clients: { all: response.data.clients, confirmed: confirmedClients },
+					allMainProjects: response.data.mainProjects,
+					allNotes: response.data.notes,
+					allReferences: response.data.references,
+					allSubProjects: response.data.subProjects,
+				}));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Inquiries => Get Required Data");
+		}
+	};
+
 	const getTotalNotesByInquiry = (inquiryId) => {
 		return data.allNotes.filter((note) => note.inquiry_id == inquiryId && note.source == thisView).length;
 	};
@@ -414,7 +467,7 @@ export default function Inquiry() {
 		data.inquiries.apiCopy.forEach((inquiry) => {
 			data.allNotes.forEach((_note) => {
 				if (inquiry.id == _note.inquiry_id) {
-					newArray.push({ id: _note.inquiry_id, notes: _note.note });
+					newArray.push({ id: _note.inquiry_id, notes: _note.content });
 				}
 			});
 		});
@@ -531,15 +584,16 @@ export default function Inquiry() {
 	const uiExport = () => {
 		if (data.inquiries.apiCopy.length) {
 			return (
-				<button className="primary-button-transparent-background" onClick={() => exportAsExcel()}>
+				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => exportAsExcel()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
+					<span>Export</span>
 				</button>
 			);
 		}
 	};
 
 	const uiFollowUps = (inquiry) => {
-		const getNames = MyGlobal.GetAnyDataFromId(inquiry.follow_ups, staffData, "full_name");
+		const getNames = MyGlobal.GetAnyDataFromId(inquiry.follow_ups, "full_name");
 		const singlePersonInitials = MyGlobal.GetInitials(getNames);
 		const total = String(getNames).split(",").length;
 
@@ -589,7 +643,7 @@ export default function Inquiry() {
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow black-white-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
-						className="w-20 h-6 bg-transparent outline-none font-regular-10"
+						className="w-20 h-6 bg-transparent outline-none font-medium-11"
 						dateFormat="dd-MM-YYYY"
 						dropdownMode="select"
 						endDate={data.entryDate.to}
@@ -634,7 +688,7 @@ export default function Inquiry() {
 		} else if (hasMounted.newProject) {
 			// return <NewProject adminCompanies={data.adminCompanies} allClients={data.clients.all} allInquiries={data.inquiries.api} close={toggleNewProjectBox} refresh={getInquiries} thisInquiry={data.thisInquiry} />;
 		} else if (hasMounted.notes) {
-			// return <Notes allClients={data.clients.all} allNotes={data.notes} close={toggleNotesView} thisInquiry={data.thisInquiry} />;
+			return <InquiryNotes allClients={data.clients.all} allNotes={data.allNotes} selectedInquiry={data.selectedInquiry} unmount={toggleNotesView} />;
 		} else {
 			return (
 				<>
@@ -662,7 +716,7 @@ export default function Inquiry() {
 	const uiNew = () => {
 		return (
 			<button className={newInquiryButton} onClick={() => toggleNewInquiryView()}>
-				<FontAwesomeIcon icon={faPlus} />
+				<FontAwesomeIcon icon={faPlusCircle} />
 				<span>New</span>
 			</button>
 		);
@@ -688,18 +742,17 @@ export default function Inquiry() {
 		const clientNameTextStyle = inquiry.status == statuses.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
 
 		const contactNumber = MyGlobal.HighlightText(inquiry.contact_number, data.searchTerm);
-		const mainProject = MyGlobal.HighlightText(inquiry.main_project_id, data.searchTerm);
-		const subProject = MyGlobal.HighlightText(inquiry.sub_project_id, data.searchTerm);
+		const mainProject = MyGlobal.HighlightText(getMainProjectName(inquiry.main_project_id), data.searchTerm);
+		const subProject = MyGlobal.HighlightText(getSubProjectName(inquiry.sub_project_id), data.searchTerm);
 
 		const referenceId = MyGlobal.HighlightText(inquiry.reference_id, data.searchTerm);
-		const referenceName = data.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0).name ?? referenceId;
+		const referenceName = getReferenceName(inquiry.reference_id) ?? referenceId;
 		const _referenceName = MyGlobal.HighlightText(referenceName, data.searchTerm);
 		const referenceIdAndName = `${referenceId} - ${referenceName}`;
 
-		const quote = MyGlobal.ThousandSeparator(inquiry.quote);
-		const _quote = MyGlobal.HighlightText(quote, data.searchTerm);
+		const quote = MyGlobal.HighlightText(inquiry.quote, data.searchTerm);
 
-		const createdBy = MyGlobal.GetUserFullName();
+		const createdBy = MyGlobal.GetAnyDataFromId(inquiry.created_by, "full_name");
 		const _createdBy = MyGlobal.HighlightText(createdBy, data.searchTerm);
 		const createdByIdAndName = `${inquiry.created_by} - ${createdBy}`;
 
@@ -715,17 +768,8 @@ export default function Inquiry() {
 					</Tippy>
 				</span>
 
-				<span className={`${style} cursor-help`}>
-					<Tippy allowHTML={true} disabled={String(inquiry.main_project).length <= 10} content={<Tooltip text={inquiry.main_project_id} />}>
-						<span dangerouslySetInnerHTML={{ __html: mainProject }} />
-					</Tippy>
-				</span>
-
-				<span className={`${style} cursor-help`}>
-					<Tippy allowHTML={true} disabled={String(inquiry.sub_project).length <= 10} content={<Tooltip text={inquiry.sub_project_id} />}>
-						<span dangerouslySetInnerHTML={{ __html: subProject }} />
-					</Tippy>
-				</span>
+				<span className={style} dangerouslySetInnerHTML={{ __html: mainProject }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: subProject }} />
 
 				<span className={`${style} cursor-help`}>
 					<Tippy allowHTML={true} content={<Tooltip text={referenceIdAndName} />}>
@@ -734,7 +778,7 @@ export default function Inquiry() {
 				</span>
 
 				<span className={`${style} space-x-1`}>{uiFollowUps(inquiry)}</span>
-				<span className={style} dangerouslySetInnerHTML={{ __html: _quote }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: quote }} />
 				<span className={style}>{uiStatusMenu(inquiry)}</span>
 				<span className={style}>{uiNotes(inquiry)}</span>
 
@@ -755,7 +799,7 @@ export default function Inquiry() {
 					icon={faSearch}
 					onChange={(e) => setInputs("searchTerm", e.target.value)}
 					onClearButtonClick={() => setInputs("searchTerm", "")}
-					placeholder=""
+					placeholder="Search"
 					showClearButton={showFindClearButton}
 					tabIndex={3}
 					value={data.searchTerm}
@@ -816,7 +860,7 @@ export default function Inquiry() {
 			inquiry.status,
 		)} !py-0`;
 
-		const icon = isConfirmed ? <FontAwesomeIcon icon={faBolt} size="xs" /> : <FontAwesomeIcon icon={faChevronDown} size="xs" />;
+		const icon = isConfirmed ? <FontAwesomeIcon icon={faBolt} size="sm" /> : <FontAwesomeIcon icon={faChevronDown} size="sm" />;
 
 		return (
 			<Tippy allowHTML={false} content={<Tooltip text={inquiry.closure_reason} />} disabled={inquiry.is_closed == 0 && !inquiry.closure_reason}>
@@ -874,7 +918,7 @@ export default function Inquiry() {
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow black-white-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
-						className="w-20 h-6 bg-transparent outline-none font-regular-10"
+						className="w-20 h-6 bg-transparent outline-none font-medium-11"
 						dateFormat="dd-MM-YYYY"
 						endDate={data.entryDate.to}
 						onChange={(e) => setInputs("to", e)}
@@ -925,7 +969,7 @@ export default function Inquiry() {
 	}, [data.status]);
 
 	return (
-		<div className="flex flex-col w-full h-full justify-start items-center">
+		<div className="flex flex-col w-full h-full justify-start items-center light-gray-background">
 			{uiMain()}
 
 			{hasMounted.convertToProject && (

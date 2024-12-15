@@ -4,11 +4,11 @@
 
 import axios from "axios";
 import MyConstants from "@/utilities/constants";
+import NewInquiryPreview from "./NewInquiryPreview";
 
+import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { DashboardContext } from "@/pages/home";
 import { Spinner } from "@/components/Elements";
-import { useContext, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox, ComboBox2, ComboBoxWithChips, DatePicker, EmailAddress, TextArea, TextInput } from "@/components/Inputs";
 import {
@@ -25,9 +25,8 @@ import {
 
 export default function NewInquiry({ reloadInquiries, unmount }) {
 	// Business Logic
-	const { staffData } = useContext(DashboardContext);
 
-	const [data, setData] = useState({
+	const [newInquiry, setNewInquiry] = useState({
 		client: { id: "", name: "" },
 		contactNumber: "",
 		entryDate: new Date(),
@@ -35,7 +34,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		followUps: [],
 		mainProject: { id: "", name: "" },
 		note: "",
-		quote: "",
+		quote: 2500,
 		reference: { id: "", name: "" },
 		status: MyConstants.Statuses.Inquiries.Open,
 		subProject: { id: "", name: "" },
@@ -55,7 +54,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	});
 
 	const showFollowUpsMenu = otherData.isFollowUpsMenuOpen
-		? "flex flex-col w-[99%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow black-white-background full-border"
+		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded divide-y overflow-y-auto bottom-shadow light-gray-background full-border"
 		: "hidden";
 
 	const disableAddButton = otherData.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
@@ -67,13 +66,15 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 		try {
 			const body = {
-				...data,
+				...newInquiry,
 				followUps: getFollowUpsIds(),
-				note: MyGlobal.EscapeString(data.note),
-				quote: Number(data.quote),
+				mainProjectId: newInquiry.mainProject.id,
+				note: MyGlobal.EscapeString(newInquiry.note),
+				quote: Number(newInquiry.quote),
+				userId: MyGlobal.GetUserId(),
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.Handler, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.AddInquiry, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reloadInquiries();
@@ -93,28 +94,29 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	};
 
 	const addNewClient = (client) => {
-		const copy = [...otherData.allClients];
+		const copy = [...otherData.allClients.apiCopy];
 		const name = MyGlobal.Capitalize(client);
 
-		const revisedCopy = copy.filter((client) => client.id == 0);
+		const revisedCopy = copy.filter((client) => client.id != 0);
 		revisedCopy.unshift({ id: 0, name });
 
 		handleSearch("client", "");
 
-		setData((s) => ({ ...s, client: { id: "", name } }));
-		setOtherData((s) => ({ ...s, allClients: revisedCopy }));
+		setNewInquiry((s) => ({ ...s, client: { id: 0, name } }));
+		setOtherData((s) => ({ ...s, allClients: { api: revisedCopy, apiCopy: revisedCopy } }));
 	};
 
 	const addNewReference = (reference) => {
-		const copy = [...otherData.references.apiCopy];
-		const revisedCopy = copy.filter((reference) => reference.id == 0);
+		const copy = [...otherData.allReferences.apiCopy];
 		const name = MyGlobal.Capitalize(reference);
 
+		const revisedCopy = copy.filter((reference) => reference.id != 0);
 		revisedCopy.unshift({ id: 0, name });
+
 		handleSearch("reference", "");
 
-		setData((s) => ({ ...s, reference: { id: "", name } }));
-		setOtherData((s) => ({ ...s, references: { api: revisedCopy, apiCopy: revisedCopy } }));
+		setNewInquiry((s) => ({ ...s, reference: { id: 0, name } }));
+		setOtherData((s) => ({ ...s, allReferences: { api: revisedCopy, apiCopy: revisedCopy } }));
 	};
 
 	const addSubProject = (subProject) => {
@@ -123,19 +125,21 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 		handleSearch("subProject", "");
 
-		setData((s) => ({ ...s, subProject: copy.at(0) }));
+		setNewInquiry((s) => ({ ...s, subProject: copy.at(0) }));
 		setOtherData((s) => ({ ...s, allSubProjects: { api: copy, apiCopy: copy } }));
 	};
 
 	const getFilteredClients = () => {
 		const value = String(otherData.searched.client.name);
+		let clients = otherData.allClients.apiCopy;
 
-		return otherData.allClients.apiCopy.filter((client) => {
-			if (value) {
+		if (value !== "undefined") {
+			clients = otherData.allClients.apiCopy.filter((client) => {
 				return String(client.name).toLowerCase().includes(value.toLowerCase());
-			}
-			return true;
-		});
+			});
+		}
+
+		return clients;
 	};
 
 	const getFilteredMainProjects = () => {
@@ -153,15 +157,15 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 	const getFilteredReferences = () => {
 		const value = String(otherData.searched.reference.name);
-		let subProjects = otherData.allReferences.apiCopy;
+		let references = otherData.allReferences.apiCopy;
 
 		if (value !== "undefined") {
-			subProjects = otherData.allReferences.apiCopy.filter((reference) => {
+			references = otherData.allReferences.apiCopy.filter((reference) => {
 				return String(reference.name).toLowerCase().includes(value.toLowerCase());
 			});
 		}
 
-		return subProjects;
+		return references;
 	};
 
 	const getFilteredStatuses = () => {
@@ -191,24 +195,12 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	};
 
 	const getFollowUpsIds = () => {
-		let ids = "";
-
-		data.followUps.forEach((staff, index) => {
-			const id = MyGlobal.GetIds(staff, staffData);
-
-			if (index != data.followUps.length - 1) {
-				ids += id + ",";
-			} else {
-				ids += id;
-			}
-		});
-
-		return ids;
+		return newInquiry.followUps.map((user) => user.id).join(",");
 	};
 
 	const getSupportingData = async () => {
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportingData, MyGlobal.GetHeaders());
+			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetNewInquirySupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
 				setOtherData((old) => ({
@@ -226,64 +218,66 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	};
 
 	const getSelectedClientData = () => {
-		return otherData.allClients.api.filter((client) => client.id == data.client.id).at(0);
+		return otherData.allClients.api.filter((client) => client.id == newInquiry.client.id).at(0);
 	};
 
 	const getSelectedReferenceData = () => {
-		return otherData.allMainProjects.apiCopy.filter((reference) => reference.id == data.reference.id).at(0);
+		return otherData.allReferences.apiCopy.filter((reference) => reference.id == newInquiry.reference.id).at(0);
 	};
 
 	const handleFollowUps = (selectedUser) => {
 		let revisedData = [];
-		const copy = [...data.followUps];
+		const copy = [...newInquiry.followUps];
 
 		if (copy.includes(selectedUser)) {
-			revisedData = copy.filter((user) => user != selectedUser);
+			revisedData = copy.filter((user) => user.id != selectedUser.id);
 		} else {
 			copy.push(selectedUser);
 			revisedData = copy;
 		}
 
-		setData((s) => ({ ...s, followUps: revisedData }));
+		setNewInquiry((s) => ({ ...s, followUps: revisedData }));
 	};
 
 	const handleInputs = (key, value) => {
 		if (key == "client") {
-			const client = otherData.allClients.filter((client) => client.id == value.id).at(0);
+			const client = otherData.allClients.apiCopy.filter((client) => client.id == value.id).at(0);
+			const isExistingClient = client.id !== 0;
 
-			const email = !client.is_new ? client.email : "";
-			const phone = !client.is_new ? client.phone : "";
+			const emailAddress = isExistingClient ? client.email_address : "";
+			const contactNumber = isExistingClient ? client.contact_number : "";
 
-			const referenceId = !client.is_new ? client.reference_id : "";
-			const referenceName = !client.is_new ? otherData.references.apiCopy.filter((reference) => reference.id == referenceId).at(0)?.name : "";
+			const referenceId = isExistingClient ? client.reference_id : "";
+			const referenceName = isExistingClient ? otherData.allReferences.apiCopy.filter((reference) => reference.id == referenceId).at(0)?.name : "";
 
-			if (!client.is_new) {
+			if (isExistingClient) {
 				handleSearch("client", "");
 			}
 
-			setData((s) => ({
+			setNewInquiry((s) => ({
 				...s,
 				client: { id: value.id, name: value.name },
-				email,
-				phone,
+				contactNumber,
+				emailAddress,
 				reference: { id: referenceId, name: referenceName },
 			}));
 		} else if (key == "reference") {
 			handleSearch("reference", "");
-			setData((s) => ({ ...s, reference: { id: value.id, name: value.name } }));
+			setNewInquiry((s) => ({ ...s, reference: { id: value.id, name: value.name } }));
 		} else if (key == "mainProject" || key == "subProject") {
 			handleSearch(key, "");
-			setData((s) => ({ ...s, [key]: { ...s[key], name: value } }));
-		} else if (key == "status") {
-			handleSearch(key, "");
-			setData((s) => ({ ...s, [key]: value }));
+			setNewInquiry((s) => ({ ...s, [key]: { ...s[key], id: value.id, name: value.name } }));
 		} else {
-			setData((s) => ({ ...s, [key]: value }));
+			setNewInquiry((s) => ({ ...s, [key]: value }));
 		}
 	};
 
 	const handleSearch = (key, value) => {
 		setOtherData((s) => ({ ...s, searched: { ...s.searched, [key]: { ...s.searched[key], name: value } } }));
+	};
+
+	const toggleFollowUpsMenu = () => {
+		setOtherData((s) => ({ ...s, isFollowUpsMenuOpen: !otherData.isFollowUpsMenuOpen }));
 	};
 
 	const togglePreviewBox = (value) => {
@@ -299,8 +293,8 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		return (
 			<ComboBox2
 				allowCreatingNewItem={true}
-				comparingValue1="id"
-				comparingValue2={data.client.id}
+				comparingValue1="name"
+				comparingValue2={newInquiry.client.name}
 				displayValue="name"
 				filteredData={getFilteredClients}
 				hasDataObject={true}
@@ -309,7 +303,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				isReadOnly={false}
 				label="Client"
 				onChange={(event) => handleInputs("client", event)}
-				onClick={() => addNewClient(otherData.find.client)}
+				onClick={() => addNewClient(otherData.searched.client.name)}
 				onInputChange={(event) => handleSearch("client", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.client.name}
@@ -330,7 +324,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onChange={(event) => handleInputs("contactNumber", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={2}
-				value={data.contactNumber}
+				value={newInquiry.contactNumber}
 				width="w-full"
 			/>
 		);
@@ -343,7 +337,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onChange={(event) => handleInputs("emailAddress", event.target.value)}
 				suffix=""
 				tabIndex={3}
-				value={data.emailAddress}
+				value={newInquiry.emailAddress}
 				width="w-full"
 			/>
 		);
@@ -352,16 +346,17 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	const uiFollowUps = () => {
 		return (
 			<ComboBoxWithChips
-				compareWith="full_name"
+				displayKey="full_name"
 				label="Follow Ups"
 				icon={faUserGroup}
 				isMenuInverted={true}
-				isNew={false}
+				onBlur={() => toggleFollowUpsMenu()}
 				onItemClick={(event) => handleFollowUps(event)}
 				onSelectedItemClick={(event) => handleFollowUps(event)}
-				selectedItems={data.followUps}
+				selectedItems={newInquiry.followUps}
 				showList={showFollowUpsMenu}
-				toggleMenu={() => setOtherData((s) => ({ ...s, isFollowUpsMenuOpen: !otherData.isFollowUpsMenuOpen }))}
+				source={MyGlobal.GetAllUsers}
+				toggleMenu={() => toggleFollowUpsMenu()}
 			/>
 		);
 	};
@@ -374,7 +369,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				label="Date"
 				onChange={(event) => handleInputs("entryDate", event)}
 				tabIndex={7}
-				value={data.entryDate}
+				value={newInquiry.entryDate}
 				width="w-full"
 			/>
 		);
@@ -382,14 +377,16 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 	const uiMainProjects = () => {
 		return (
-			<ComboBox
+			<ComboBox2
 				allowCreatingNewItem={false}
-				compareWith="name"
-				comparisonValue={data.mainProject.name}
+				comparingValue1="name"
+				comparingValue2={newInquiry.mainProject.name}
 				displayValue="name"
 				filteredData={getFilteredMainProjects}
+				hasDataObject={true}
 				icon={faFile}
 				isNew={false}
+				isReadOnly={false}
 				label="Main Project"
 				onChange={(event) => handleInputs("mainProject", event)}
 				onClick={() => {}}
@@ -397,7 +394,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.mainProject.name}
 				tabIndex={4}
-				value={data.mainProject.name}
+				value={newInquiry.mainProject.name}
 				width="w-full"
 			/>
 		);
@@ -414,7 +411,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onKeyDown={() => {}}
 				rows={2}
 				tabIndex={10}
-				value={data.note}
+				value={newInquiry.note}
 				width="w-full"
 			/>
 		);
@@ -441,7 +438,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onChange={(event) => handleInputs("quote", event.target.value)}
 				onKeyPress={() => {}}
 				tabIndex={8}
-				value={MyGlobal.ThousandSeparator(data.quote)}
+				value={MyGlobal.ThousandSeparator(newInquiry.quote)}
 				width="w-full"
 			/>
 		);
@@ -452,7 +449,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={data.reference.name}
+				comparingValue2={newInquiry.reference.name}
 				displayValue="name"
 				filteredData={getFilteredReferences}
 				hasDataObject={true}
@@ -476,20 +473,16 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		return (
 			<ComboBox
 				allowCreatingNewItem={false}
-				compareWith=""
-				comparisonValue={data.status}
-				displayValue=""
+				comparisonValue={newInquiry.status}
 				filteredData={getFilteredStatuses}
 				icon={faCircleExclamation}
-				isNew={false}
 				label="Status"
 				onChange={(event) => handleInputs("status", event)}
 				onClick={() => {}}
-				onInputChange={(event) => handleSearch("status", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.status}
 				tabIndex={9}
-				value={data.status}
+				value={newInquiry.status}
 				width="w-full"
 			/>
 		);
@@ -497,14 +490,16 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 	const uiSubProjects = () => {
 		return (
-			<ComboBox
+			<ComboBox2
 				allowCreatingNewItem={true}
-				compareWith="name"
-				comparisonValue={data.subProject.name}
+				comparingValue1="name"
+				comparingValue2={newInquiry.subProject.name}
 				displayValue="name"
 				filteredData={getFilteredSubProjects}
+				hasDataObject={true}
 				icon={faFile}
 				isNew={false}
+				isReadOnly={false}
 				label="Sub Project"
 				onChange={(event) => handleInputs("subProject", event)}
 				onClick={() => addSubProject(otherData.searched.subProject.name)}
@@ -512,7 +507,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.subProject.name}
 				tabIndex={5}
-				value={data.subProject.name}
+				value={newInquiry.subProject.name}
 				width="w-full"
 			/>
 		);
@@ -523,17 +518,13 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		getSupportingData();
 	}, []);
 
-	useEffect(() => {
-		console.log(otherData);
-	}, [otherData]);
-
 	if (!otherData.hasMounted) {
 		return;
 	}
 
 	return (
 		<>
-			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border black-white-background">
+			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
 				<div className="flex w-full space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 					<div className="flex w-full justify-start items-center">
@@ -541,24 +532,24 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 					</div>
 				</div>
 			</div>
-			<div className="flex flex-col w-1/2 h-full justify-start items-center">
-				<div className="flex w-full px-3 space-x-5 justify-between items-center">
+			<div className="flex flex-col w-3/5 h-full space-y-2 justify-start items-center">
+				<div className="flex w-full px-3 space-x-6 justify-between items-center">
 					{uiClient()}
 					{uiContactNumber()}
 					{uiEmailAddress()}
 				</div>
-				<div className="flex w-full px-3 space-x-5 justify-between items-center">
+				<div className="flex w-full px-3 space-x-6 justify-between items-center">
 					{uiMainProjects()}
 					{uiSubProjects()}
 					{uiReferences()}
 				</div>
-				<div className="flex w-full px-3 space-x-5 justify-between items-center">
+				<div className="flex w-full px-3 space-x-6 justify-between items-center">
 					{uiDate()}
 					{uiQuote()}
 					{uiStatus()}
 				</div>
-				<div className="flex w-full px-3 space-x-5 justify-between items-center">{uiFollowUps()}</div>
-				<div className="flex w-full px-3 space-x-5 justify-between items-center">{uiNotes()}</div>
+				<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiFollowUps()}</div>
+				<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiNotes()}</div>
 			</div>
 			<footer className="w-full dialog-footer">
 				<button className={addButtonStyle} onClick={() => togglePreviewBox("")}>
@@ -566,7 +557,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				</button>
 			</footer>
 
-			{otherData.isPreviewBoxOpen && <NewInquiryPreview close={togglePreviewBox} inquiry={data} open={otherData.isPreviewBoxOpen} />}
+			{otherData.isPreviewBoxOpen && <NewInquiryPreview mount={otherData.isPreviewBoxOpen} selectedInquiry={newInquiry} unmount={togglePreviewBox} />}
 		</>
 	);
 }

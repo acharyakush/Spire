@@ -106,8 +106,7 @@ html {
 	@apply bg-[var(--web-gray-transparent-01)] m-0 p-0;
 	-moz-osx-font-smoothing: auto;
 	font-synthesis: none;
-	font-feature-settings: "cpsp" 1, /* Capital Spacing */ "frac" 0, /* Fractions */ "ss02" 1, /* Stylistic Set 2 */ "ss07" 1, /* Stylistic Set 7 */ "tnum" 1,
-		/* Tabular Numbers */ "zero" 1; /* Slashed Zero */
+	font-feature-settings: "cpsp" 1;
 	text-rendering: optimizeLegibility;
 	scrollbar-width: thin;
 	-webkit-font-smoothing: antialiased;
@@ -395,16 +394,16 @@ html {
 }
 
 .hovered-rows:hover {
-	@apply bg-[var(--web-primary-transparent-01)] border-y border-[var(--web-primary-transparent-05)];
+	@apply bg-[var(--web-primary-transparent-01)] border-t border-[var(--web-primary-transparent-05)];
 }
 
 .inputs {
-	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 text-base h-5 black-text w-full;
+	@apply bg-transparent flex font-medium items-center justify-center outline-none px-2.5 text-[11pt] h-5 black-text w-full;
 	font-family: var(--web-font-family);
 }
 
 .inputs-autofit {
-	@apply bg-transparent flex font-normal items-center justify-center outline-none rounded text-base h-5 black-text w-[68px];
+	@apply bg-transparent flex font-medium items-center justify-center outline-none rounded text-[11pt] h-5 black-text w-[68px];
 	font-family: var(--web-font-family);
 }
 
@@ -535,17 +534,17 @@ html {
 }
 
 .primary-button-transparent-background {
-	@apply bg-[var(--web-primary-transparent-01)] border flex font-medium primary-border h-[34px] items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--web-primary)];
+	@apply bg-[var(--web-primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded select-none space-x-2.5 text-sm text-[var(--web-primary)];
 	font-family: var(--web-font-family);
 }
 
 .primary-button-transparent-background-2 {
-	@apply bg-[var(--web-primary-transparent-01)] border flex font-medium primary-border h-[34px] items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--web-primary)];
+	@apply bg-[var(--web-primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--web-primary)];
 	font-family: var(--web-font-family);
 }
 
 .primary-button-wide {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-[34px] outline-none relative rounded select-none text-base text-white w-full;
+	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-7 outline-none relative rounded select-none text-base text-white w-full;
 	font-family: var(--web-font-family);
 }
 
@@ -682,7 +681,7 @@ html {
 }
 
 .textarea-inputs {
-	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 resize-none text-base black-text w-full;
+	@apply bg-transparent flex font-medium items-center justify-center outline-none px-2.5 resize-none text-[11pt] black-text w-full;
 	font-family: var(--web-font-family);
 }
 

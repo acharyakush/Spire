@@ -32,6 +32,8 @@ export default async function handler(req, res) {
 			const response = { administrators, employees };
 
 			return res.status(200).send(response);
+		} else if (request.type === "get-notes") {
+			queryString = `SELECT * FROM notes`;
 		} else {
 			return res.status(400).send({ error: "Invalid request type" });
 		}

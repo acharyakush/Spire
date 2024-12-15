@@ -183,6 +183,7 @@ export default function Home() {
 				response.data.employees.forEach((employee) => allUsers.push(employee));
 
 				setData((s) => ({ ...s, allUsers }));
+				MyGlobal.SetAllUsers(allUsers);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get All Users");
@@ -241,7 +242,7 @@ export default function Home() {
 		} else if (hasMounted.profileView) {
 			return <ProfileManagement close={toggleProfileView} payload={data.loggedInUser} />;
 		} else {
-			return <DashboardContext.Provider value={{}}>{uiSelectedModule()}</DashboardContext.Provider>;
+			return uiSelectedModule();
 		}
 	};
 

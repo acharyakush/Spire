@@ -1,3 +1,40 @@
+A3||15/12/2024 11:21:17 pm||Inquiries||faChevronLeft is not defined
+A3||15/12/2024 04:23:41 pm||Inquiries||Cannot read properties of undefined (reading 'includes')
+A3||15/12/2024 03:56:26 pm||Inquiries||Global is not defined
+A3||15/12/2024 03:55:22 pm||Inquiries||Global is not defined
+A3||15/12/2024 03:50:24 pm||Inquiries||Global is not defined
+A3||15/12/2024 03:45:02 pm||Inquiries||Global is not defined
+A3||15/12/2024 03:42:47 pm||Inquiries||Cannot read properties of undefined (reading 'name')
+A3||15/12/2024 03:41:29 pm||Inquiries||Cannot read properties of undefined (reading 'name')
+A3||15/12/2024 03:41:18 pm||Inquiries||Cannot read properties of undefined (reading 'name')
+A3||15/12/2024 03:41:18 pm||Inquiries => Get Required Data||Not Found
+A3||15/12/2024 03:41:18 pm||Inquiries => Get Required Data||Not Found
+A3||15/12/2024 03:30:59 pm||Inquiries => Get Required Data||Not Found
+A3||15/12/2024 03:30:59 pm||Inquiries => Get Required Data||Not Found
+A3||15/12/2024 03:30:59 pm||Inquiries||Cannot read properties of undefined (reading 'name')
+A3||15/12/2024 03:28:45 pm||Inquiries => Get Required Data||Not Found
+A3||15/12/2024 03:28:45 pm||Inquiries => Get Required Data||Not Found
+A3||15/12/2024 03:28:44 pm||Inquiries||Cannot read properties of undefined (reading 'name')
+A3||15/12/2024 03:27:45 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 03:23:28 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 03:11:28 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:45:56 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:43:13 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:36:52 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:35:55 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:34:05 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:31:24 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:30:20 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:28:48 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:25:17 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:21:38 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:17:05 pm||New Inquiry||Internal Server Error
+A3||15/12/2024 02:10:51 pm||New Inquiry||Not Found
+A3||15/12/2024 01:33:10 pm||Inquiries||Objects are not valid as a React child (found: object with keys {id, first_name, last_name, full_name, username, email_address, password, address, birth_date, gender, phone_number, designation, role, permissions}). If you meant to render a collection of children, use an array instead.
+A3||15/12/2024 01:30:25 pm||Inquiries||Objects are not valid as a React child (found: object with keys {id, first_name, last_name, full_name, username, email_address, password, address, birth_date, gender, phone_number, designation, role, permissions}). If you meant to render a collection of children, use an array instead.
+A3||15/12/2024 01:30:07 pm||Inquiries||Objects are not valid as a React child (found: object with keys {id, first_name, last_name, full_name, username, email_address, password, address, birth_date, gender, phone_number, designation, role, permissions}). If you meant to render a collection of children, use an array instead.
+A3||15/12/2024 12:10:38 pm||Inquiries||Cannot read properties of undefined (reading 'filter')
+A3||15/12/2024 12:07:09 pm||Inquiries||NewInquiryPreview is not defined
 A3||15/12/2024 12:14:43 am||Inquiries||Objects are not valid as a React child (found: object with keys {id, name, created_at, created_by, updated_at, updated_by, update_reason}). If you meant to render a collection of children, use an array instead.
 A3||15/12/2024 12:14:43 am||Inquiries||Objects are not valid as a React child (found: object with keys {id, name, created_at, created_by, updated_at, updated_by, update_reason}). If you meant to render a collection of children, use an array instead.
 A3||15/12/2024 12:14:43 am||Inquiries||Objects are not valid as a React child (found: object with keys {id, name, created_at, created_by, updated_at, updated_by, update_reason}). If you meant to render a collection of children, use an array instead.

@@ -22,8 +22,10 @@ const MyConstants = Object.freeze({
 		ErrorLogger: `api/errorLogger`,
 		Getter: `api/getter`,
 		Inquiries: Object.freeze({
+			AddInquiry: `api/inquiries/addInquiry`,
 			GetInquiries: `api/inquiries/getInquiries`,
-			GetSupportingData: `api/inquiries/getSupportingData`,
+			GetInquiriesSupportData: `api/inquiries/getInquiriesSupportData`,
+			GetNewInquirySupportData: `api/inquiries/getNewInquirySupportData`,
 		}),
 		Setter: `api/setter`,
 	}),
@@ -136,6 +138,11 @@ const MyConstants = Object.freeze({
 			Status: "Status",
 			Notes: "Notes",
 			CreatedBy: "Created By",
+		}),
+		Notes: Object.freeze({
+			date: "Date",
+			note: "Note",
+			writer: "Writer",
 		}),
 	}),
 	ToastTypes: Object.freeze({
