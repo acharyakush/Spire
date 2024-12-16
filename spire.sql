@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 14, 2024 at 07:46 PM
+-- Generation Time: Dec 16, 2024 at 07:34 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -93,91 +93,6 @@ CREATE DEFINER=`spire`@`%` PROCEDURE `generate_dynamic_id` (`prefix` VARCHAR(8),
     UNTIL lock_acquired END REPEAT;
 END$$
 
-CREATE DEFINER=`spire`@`%` PROCEDURE `generate_dynamic_reference_id` ()   BEGIN
-    DECLARE current_max_id VARCHAR(8) DEFAULT NULL;
-    DECLARE new_number INT DEFAULT 1;
-    DECLARE sql_query VARCHAR(255);
-    DECLARE lock_acquired BOOLEAN DEFAULT FALSE;
-    DECLARE id_exists INT DEFAULT 0;
-    DECLARE max_attempts INT DEFAULT 10;
-    DECLARE attempt INT DEFAULT 0;
-    DECLARE full_prefix VARCHAR(8) DEFAULT 'RF';  -- Fixed prefix 'RF'
-    DECLARE table_name VARCHAR(20) DEFAULT 'references';  -- Fixed table name 'references'
-
-    -- Start Debugging
-    SELECT 'STARTING PROCEDURE' AS DebugMessage;
-
-    -- Retry loop to acquire lock
-    lock_retry: REPEAT
-        SELECT 'Attempting to acquire lock' AS DebugMessage;  -- Debug message
-
-        -- Increase timeout to 30 seconds
-        SELECT GET_LOCK('reference_id_generation_lock', 30) INTO lock_acquired;
-
-        IF lock_acquired THEN
-            SELECT 'Lock acquired' AS DebugMessage;  -- Debug message
-
-            -- Lock acquired, proceed with ID generation
-            SET full_prefix = CONCAT(full_prefix, '%');  -- 'RF%' pattern
-
-            -- Select the current max reference ID (replace reference_id with id if necessary)
-            SET sql_query = CONCAT('SELECT MAX(id) INTO @current_max_id FROM ', '`', table_name, '` WHERE id LIKE ?');
-            SELECT sql_query AS DebugMessage;  -- Debug message to show the query
-
-            PREPARE stmt FROM sql_query;
-            EXECUTE stmt USING full_prefix;
-            DEALLOCATE PREPARE stmt;
-
-            SELECT @current_max_id INTO current_max_id;
-            SELECT current_max_id AS DebugMessage;  -- Debug message to show current_max_id
-
-            -- Extract numeric part and generate new reference ID
-            IF current_max_id IS NOT NULL THEN
-                SET new_number = CAST(SUBSTRING(current_max_id, LENGTH(full_prefix) + 1) AS UNSIGNED) + 1;
-            END IF;
-
-            SET @new_reference_id = CONCAT(full_prefix, LPAD(new_number, 6, '0'));  -- Set session variable
-            SELECT @new_reference_id AS DebugMessage;  -- Debug message to show the new reference ID
-
-            -- Check if new reference ID already exists (replace reference_id with id if necessary)
-            SET sql_query = CONCAT('SELECT COUNT(*) INTO @id_exists FROM ', '`', table_name, '` WHERE id = ?');
-            PREPARE stmt FROM sql_query;
-            EXECUTE stmt USING @new_reference_id;
-            DEALLOCATE PREPARE stmt;
-
-            SELECT @id_exists INTO id_exists;
-            SELECT id_exists AS DebugMessage;  -- Debug message to show id_exists count
-
-            -- Regenerate if reference ID exists
-            WHILE id_exists > 0 DO
-                SET new_number = new_number + 1;
-                SET @new_reference_id = CONCAT(full_prefix, LPAD(new_number, 6, '0'));
-
-                PREPARE stmt FROM sql_query;
-                EXECUTE stmt USING @new_reference_id;
-                DEALLOCATE PREPARE stmt;
-
-                SELECT @id_exists INTO id_exists;
-                SELECT id_exists AS DebugMessage;  -- Debug message to check if it goes into the loop
-            END WHILE;
-
-            -- Release the lock
-            DO RELEASE_LOCK('reference_id_generation_lock');
-            LEAVE lock_retry;
-
-        ELSE
-            -- Retry mechanism
-            SET attempt = attempt + 1;
-            IF attempt >= max_attempts THEN
-                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Could not acquire lock for reference ID generation after max retries';
-                LEAVE lock_retry;
-            END IF;
-        END IF;
-    UNTIL lock_acquired END REPEAT;
-
-    SELECT 'Procedure Finished' AS DebugMessage;  -- Debug message to mark end of procedure
-END$$
-
 DELIMITER ;
 
 -- --------------------------------------------------------
@@ -196,6 +111,34 @@ CREATE TABLE `activities` (
   `session_token` varchar(255) NOT NULL,
   `details` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `activities`
+--
+
+INSERT INTO `activities` (`id`, `user_id`, `activity`, `ip_address`, `user_agent`, `created_at`, `session_token`, `details`) VALUES
+(1, 'A3', 'Added new inquiry IQ000001.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-15 15:28:07', '', ''),
+(2, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-15 23:32:18', '', ''),
+(3, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 19:05:52', 'ozL/w8dlz6aBNwTzaig7mJQJAPYIAnOZ8/zIIHgrzFn01Q3ZDsxuQHsbzzIXHiaS2M5Utj4ce3VgrrCdnjm8ZA==', ''),
+(4, 'A3', 'Inquiries :: Changed status of IQ000001 from Hold to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:07', '', ''),
+(5, 'A3', 'Inquiries :: Changed status of IQ000001 from Open to Closed.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:12', '', ''),
+(6, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:18', '', ''),
+(7, 'A3', 'Inquiries :: Changed status of IQ000001 from Hold to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:22', '', ''),
+(8, 'A3', 'Inquiries :: Changed status of IQ000001 from Open to Closed.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:26', '', ''),
+(9, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:02:10', '', ''),
+(10, 'A3', 'Inquiries :: Changed status of IQ000001 from Open to Closed.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:31:16', '', ''),
+(11, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:34:05', '', ''),
+(12, 'A3', 'Inquiries :: Closed inquiry (IQ000001) due to Hello..', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:38:33', '', ''),
+(13, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:39:06', '', ''),
+(14, 'A3', 'Inquiries :: Changed status of IQ000001 from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:39:10', '', ''),
+(15, 'A3', 'Inquiries :: Closed inquiry (IQ000001) due to Bye..', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:39:18', '', ''),
+(16, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:04', '', ''),
+(17, 'A3', 'Inquiries :: Changed status of IQ000001 from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:38', '', ''),
+(18, 'A3', 'Inquiries :: Closed inquiry (IQ000001) due to Yes.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:49', '', ''),
+(19, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:57', '', ''),
+(20, 'A3', 'Notes :: Added a note for inquiry IQ000001.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:52:47', '', ''),
+(21, 'A3', 'Notes :: Added a note for inquiry (IQ000001).', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:54:45', '', ''),
+(22, 'A3', 'Inquiries :: Edited inquiry (IQ000001).', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 23:26:19', '', '');
 
 -- --------------------------------------------------------
 
@@ -237,10 +180,10 @@ INSERT INTO `administrators` (`id`, `first_name`, `last_name`, `full_name`, `use
 
 CREATE TABLE `clients` (
   `id` varchar(8) NOT NULL,
-  `name` varchar(200) NOT NULL,
   `affiliate_ids` varchar(2000) DEFAULT NULL,
   `company_id` varchar(8) DEFAULT NULL,
   `reference_id` varchar(8) DEFAULT NULL,
+  `name` varchar(200) NOT NULL,
   `address` varchar(500) DEFAULT NULL,
   `contact_number` bigint(20) DEFAULT NULL,
   `email_address` varchar(200) DEFAULT NULL,
@@ -256,6 +199,13 @@ CREATE TABLE `clients` (
   `updated_at` datetime DEFAULT current_timestamp(),
   `updated_by` varchar(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `clients`
+--
+
+INSERT INTO `clients` (`id`, `affiliate_ids`, `company_id`, `reference_id`, `name`, `address`, `contact_number`, `email_address`, `industry`, `is_confirmed`, `is_deleted`, `joined_on`, `notes`, `rating`, `tags`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
+('CN000001', NULL, NULL, 'RF000001', 'Kush Acharya', NULL, 8780577704, 'acharyakush2604@gmail.com', NULL, 0, 0, '2024-12-15 15:28:07', NULL, 0, NULL, '2024-12-15 15:28:07', NULL, '2024-12-15 15:28:07', NULL);
 
 -- --------------------------------------------------------
 
@@ -362,8 +312,8 @@ CREATE TABLE `inquiries` (
   `reference_id` varchar(8) NOT NULL,
   `main_project_id` varchar(8) NOT NULL,
   `sub_project_id` varchar(8) NOT NULL,
-  `contact_number` bigint(20) NOT NULL,
   `entry_date` datetime DEFAULT current_timestamp(),
+  `contact_number` bigint(20) NOT NULL,
   `email_address` varchar(200) NOT NULL,
   `follow_ups` varchar(255) NOT NULL,
   `is_closed` tinyint(1) DEFAULT 0,
@@ -376,6 +326,13 @@ CREATE TABLE `inquiries` (
   `updated_at` datetime DEFAULT current_timestamp(),
   `updated_by` varchar(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `inquiries`
+--
+
+INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `sub_project_id`, `entry_date`, `contact_number`, `email_address`, `follow_ups`, `is_closed`, `closure_reason`, `quote`, `status`, `tags`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
+('IQ000001', 'CN000001', 'RF000001', 'MP000004', 'SP000003', '2024-12-15 09:39:42', 8780577704, 'acharyakush2604@gmail.com', 'A1,A2', 0, '', 2500.00, 'Open', NULL, '2024-12-15 15:28:07', 'A3', '0000-00-00 00:00:00', 'A3');
 
 -- --------------------------------------------------------
 
@@ -467,9 +424,18 @@ CREATE TABLE `notes` (
   `project_id` varchar(8) DEFAULT NULL,
   `user_id` varchar(8) NOT NULL,
   `content` varchar(1000) NOT NULL,
-  `entered_on` datetime NOT NULL DEFAULT current_timestamp(),
+  `entry_date` datetime DEFAULT current_timestamp(),
   `source` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `notes`
+--
+
+INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `user_id`, `content`, `entry_date`, `source`) VALUES
+(1, 'IQ000001', NULL, 'A3', 'New client. Reference from CharteredWorks.', '2024-12-15 15:28:07', 'Inquiries'),
+(2, 'IQ000001', NULL, 'A3', 'Test inquiry.', '2024-12-16 20:52:47', 'Inquiries'),
+(3, 'IQ000001', NULL, 'A3', 'Inquiry note #3', '2024-12-16 20:54:45', 'Inquiries');
 
 -- --------------------------------------------------------
 
@@ -667,8 +633,8 @@ DELIMITER ;
 
 CREATE TABLE `the_references` (
   `id` varchar(8) NOT NULL,
-  `name` varchar(100) NOT NULL,
   `client_id` varchar(8) NOT NULL,
+  `name` varchar(100) NOT NULL,
   `address` varchar(200) DEFAULT NULL,
   `contact_number` bigint(20) DEFAULT NULL,
   `email_address` varchar(200) DEFAULT NULL,
@@ -684,6 +650,13 @@ CREATE TABLE `the_references` (
   `updated_at` datetime DEFAULT current_timestamp(),
   `updated_by` varchar(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `the_references`
+--
+
+INSERT INTO `the_references` (`id`, `client_id`, `name`, `address`, `contact_number`, `email_address`, `is_deleted`, `joined_on`, `notes`, `organization`, `rating`, `relationship`, `tags`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
+('RF000001', 'CN000001', 'Yash Chopra', NULL, NULL, NULL, 0, '2024-12-15 15:28:07', NULL, NULL, 0, NULL, NULL, '2024-12-15 15:28:07', NULL, '2024-12-15 15:28:07', NULL);
 
 --
 -- Indexes for dumped tables
@@ -806,8 +779,7 @@ ALTER TABLE `sub_projects`
 -- Indexes for table `the_references`
 --
 ALTER TABLE `the_references`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `client_id` (`client_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -817,7 +789,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -835,7 +807,7 @@ ALTER TABLE `licenses`
 -- AUTO_INCREMENT for table `notes`
 --
 ALTER TABLE `notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `permissions`
