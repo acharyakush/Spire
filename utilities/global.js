@@ -87,6 +87,14 @@ export const MyGlobal = Object.freeze({
 		return allUsers;
 	},
 
+	GetFullDetailsFromIds: (ids) => {
+		const idsAsArray = String(ids).split(",");
+		const idsArrayOfObjects = idsAsArray.map((value) => ({ id: value, label: "" }));
+		const fullDetailsOfIds = allUsers.filter((user) => idsArrayOfObjects.some((_user) => _user.id == user.id));
+
+		return fullDetailsOfIds;
+	},
+
 	GetAnyDataFromId: (id, type) => {
 		if (String(id).includes(",")) {
 			const names = [];

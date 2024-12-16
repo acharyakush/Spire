@@ -40,6 +40,15 @@ export default async function handler(req, res) {
 			} else if (request.type == "set-user-status") {
 				queryString = `UPDATE employees SET is_active = ? WHERE id = ?`;
 				queryParameters = [request.status, request.userId];
+			} else if (request.type == "change-inquiry-status") {
+				queryString = `UPDATE inquiries SET status = ?, is_closed = 0, closure_reason = "", updated_by = ?, updated_at = NOW() WHERE id = ?`;
+				queryParameters = [request.status, request.userId, request.id];
+			} else if (request.type == "close-inquiry") {
+				queryString = `UPDATE inquiries SET status = ?, is_closed = 1, closure_reason = ?, updated_by = ?, updated_at = NOW() WHERE id = ?`;
+				queryParameters = [request.status, request.reason, request.userId, request.id];
+			} else if (request.type == "add-note") {
+				queryString = `INSERT INTO notes (inquiry_id, user_id, content, source) VALUES (?, ?, ?, ?)`;
+				queryParameters = [request.id, request.userId, request.content, request.source];
 			}
 
 			const response = await query(queryString, queryParameters);

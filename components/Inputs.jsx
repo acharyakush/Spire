@@ -116,8 +116,11 @@ export const ComboBox2 = ({
 	value,
 	width,
 }) => {
+	const aesthetics = isReadOnly ? "cursor-not-allowed opacity-50" : "cursor-default opacity-100";
+	const clickEvent = isReadOnly ? "pointer-events-none" : "pointer-events-auto";
 	const colour = isNew ? "green-text" : "primary-text";
-	const wrapper = `flex flex-col ${width} p-2 space-y-1`;
+	const wrapper = `flex flex-col ${width} p-2 space-y-1 ${aesthetics}`;
+	const inputWrapper = `relative w-full ${clickEvent}`;
 	const noItemFound = allowCreatingNewItem ? `Create ${MyGlobal.Capitalize(searchedItem)}` : "Nothing found.";
 	const noItemFoundClickAction = allowCreatingNewItem ? onClick : () => {};
 
@@ -135,7 +138,7 @@ export const ComboBox2 = ({
 				<span className="font-regular-10 light-slate-gray-text">{label}</span>
 				<div className="flex w-full justify-start items-center">
 					<Combobox onChange={onChange} onKeyPress={onKeyPress} value={value}>
-						<div className="relative w-full">
+						<div className={inputWrapper}>
 							<div className="flex w-full h-[34px] px-2.5 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow light-gray-background full-border">
 								<FontAwesomeIcon className={colour} icon={icon} />
 								<ComboboxInput
@@ -150,7 +153,7 @@ export const ComboBox2 = ({
 									<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
 								</ComboboxButton>
 							</div>
-							<ComboboxOptions className="absolute w-full max-h-[273px] mt-1 overflow-auto divide-y rounded bottom-shadow outline-none z-50 full-border light-gray-background">
+							<ComboboxOptions className="absolute w-full max-h-[273px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border light-gray-background">
 								{uiList()}
 							</ComboboxOptions>
 						</div>
@@ -175,7 +178,7 @@ export const ComboBox2 = ({
 				const dataObject = hasDataObject ? { id: m.id, name: m.name } : m;
 
 				const nameStyle = isSelected ? `font-medium-11 ${colour}` : "font-regular-11 black-text";
-				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer hovered-rows ${
+				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y hovered-rows ${
 					isSelected && `primary-background-transparent-01`
 				}`;
 
@@ -228,7 +231,7 @@ export const ComboBoxWithChips = ({
 			const isSelected = selectedItems?.filter((user) => user.id == m.id)?.length > 0;
 			const _background = isSelected && "primary-background-transparent-01";
 			const _colour = isSelected ? "primary-text" : "black-text";
-			const wrapper = `flex w-full p-2 justify-between items-center cursor-pointer font-regular-11 ${_colour} ${_background} hovered-rows`;
+			const wrapper = `flex w-full p-2 justify-between items-center cursor-pointer border-y font-regular-11 ${_colour} ${_background} hovered-rows`;
 
 			return (
 				<span className={wrapper} key={n} onClick={() => onItemClick(m)}>
@@ -301,9 +304,10 @@ export const DatePicker = ({ icon, isNew, label, onChange, tabIndex, value, widt
 	);
 };
 
-export const EmailAddress = ({ isNew, isReadOnly = false, label = "Email Address", onChange, reference = null, suffix, tabIndex, value, width }) => {
+export const EmailAddress = ({ isReadOnly = false, label = "Email Address", onChange, reference = null, suffix, tabIndex, value, width }) => {
 	const colour = "font-regular-11 primary-text";
-	const wrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center`;
+	const aesthetics = isReadOnly ? "cursor-not-allowed opacity-50" : "cursor-default opacity-100";
+	const wrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center ${aesthetics}`;
 	const horizontalPadding = suffix ? "pl-2" : "px-2.5";
 	const pointerEvents = isReadOnly ? "pointer-events-none" : "pointer-events-auto";
 
@@ -346,8 +350,8 @@ export const Password = ({ eyeIconStyle, eyeIconUi, isNew, onChange, reference, 
 };
 
 export const TextInput = ({ disable = false, icon, id, isNew, isReadOnly = false, label, maxLength = 255, onChange, onKeyPress, tabIndex, value, width }) => {
-	const disabledAesthetics = disable ? "opacity-75" : " opacity-100";
-	const clickEvent = isReadOnly ? `pointer-events-none ${disabledAesthetics}` : "pointer-events-auto";
+	const aesthetics = disable || isReadOnly ? "opacity-50" : " opacity-100";
+	const clickEvent = isReadOnly ? `pointer-events-none ${aesthetics}` : "pointer-events-auto";
 	const cursor = isReadOnly ? "cursor-not-allowed" : "cursor-default";
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center ${cursor}`;
 

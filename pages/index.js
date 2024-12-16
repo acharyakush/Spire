@@ -123,7 +123,6 @@ export default function Home() {
 				</span>
 
 				<EmailAddress
-					isNew={false}
 					key={1}
 					onChange={(e) => handleInputs("emailAddress", e.target.value)}
 					reference={emailAddressReference}

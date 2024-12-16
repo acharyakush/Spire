@@ -7,15 +7,16 @@ import Draggable from "react-draggable";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { faArrowsUpToLine, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewInquiryPreview({ mount, selectedInquiry, unmount }) {
+export default function EditInquiryPreview({ editInquiry, mount, oldInquiry, unmount }) {
 	// Business Logic
 	const [isBoxDragged, setIsBoxDragged] = useState(false);
 
-	const followUps = selectedInquiry.followUps.length ? selectedInquiry.followUps.map((user) => user.full_name).join(", ") : "";
+	const newFollowUps = editInquiry.followUps.length ? editInquiry.followUps.map((user) => user.full_name).join(", ") : "";
+	const oldFollowUps = oldInquiry.followUps.length ? oldInquiry.followUps.map((user) => user.full_name).join(", ") : "";
 
 	const titleBarCursor = isBoxDragged ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
@@ -51,24 +52,36 @@ export default function NewInquiryPreview({ mount, selectedInquiry, unmount }) {
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setIsBoxDragged(true)} onStop={() => setIsBoxDragged(false)}>
-					<DialogPanel className="w-[600px] transform overflow-hidden rounded shadow black-white-background">
+					<DialogPanel className="w-3/4 transform overflow-hidden rounded shadow black-white-background">
 						{uiTitleBar()}
-						<div className="flex flex-col w-full py-3 space-y-3 justify-between items-center light-gray-background">
-							{uiRow("Client", selectedInquiry.client.name)}
-							{uiRow("Email Address", selectedInquiry.emailAddress)}
-							{uiRow("Contact Number", selectedInquiry.contactNumber)}
-							{uiRow("Main Project", selectedInquiry.mainProject.name)}
-							{uiRow("Sub Project", selectedInquiry.subProject.name)}
-							{uiRow("Reference", selectedInquiry.reference.name)}
-							{uiRow("Entry Date", dayjs(selectedInquiry.entryDate).format("DD MMMM, YYYY"))}
-							{uiRow("Quote", MyGlobal.FormatCurrency(selectedInquiry.quote))}
-							{uiRow("Status", selectedInquiry.status)}
-							{uiRow("Follow Ups", followUps)}
-							{uiRow("Note", selectedInquiry.note)}
+						<div className="flex w-full p-6 space-x-3 justify-between items-center light-gray-background">
+							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border black-white-background">
+								{uiRow("Client", oldInquiry.client.name)}
+								{uiRow("Email Address", oldInquiry.emailAddress)}
+								{uiRow("Contact Number", oldInquiry.contactNumber)}
+								{uiRow("Main Project", oldInquiry.mainProject.name)}
+								{uiRow("Sub Project", oldInquiry.subProject.name)}
+								{uiRow("Reference", oldInquiry.reference.name)}
+								{uiRow("Entry Date", dayjs(oldInquiry.entryDate).format("DD MMMM, YYYY"))}
+								{uiRow("Quote", MyGlobal.FormatCurrency(oldInquiry.quote))}
+								{uiRow("Follow Ups", oldFollowUps)}
+							</div>
+							<FontAwesomeIcon icon={faArrowsUpToLine} rotation={90} />
+							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border black-white-background">
+								{uiRow("Client", editInquiry.client.name)}
+								{uiRow("Email Address", editInquiry.emailAddress)}
+								{uiRow("Contact Number", editInquiry.contactNumber)}
+								{uiRow("Main Project", editInquiry.mainProject.name)}
+								{uiRow("Sub Project", editInquiry.subProject.name)}
+								{uiRow("Reference", editInquiry.reference.name)}
+								{uiRow("Entry Date", dayjs(editInquiry.entryDate).format("DD MMMM, YYYY"))}
+								{uiRow("Quote", MyGlobal.FormatCurrency(editInquiry.quote))}
+								{uiRow("Follow Ups", newFollowUps)}
+							</div>
 						</div>
 						<footer className="dialog-footer">
 							<button className="primary-button-condensed" onClick={() => unmount(true)}>
-								Add
+								Edit
 							</button>
 						</footer>
 					</DialogPanel>

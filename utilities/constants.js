@@ -23,6 +23,7 @@ const MyConstants = Object.freeze({
 		Getter: `api/getter`,
 		Inquiries: Object.freeze({
 			AddInquiry: `api/inquiries/addInquiry`,
+			EditInquiry: `api/inquiries/editInquiry`,
 			GetInquiries: `api/inquiries/getInquiries`,
 			GetInquiriesSupportData: `api/inquiries/getInquiriesSupportData`,
 			GetNewInquirySupportData: `api/inquiries/getNewInquirySupportData`,
@@ -46,7 +47,7 @@ const MyConstants = Object.freeze({
 		InquiryAdded: "New inquiry added.",
 		InquiryClosed: "Inquiry closed.",
 		InquiryConvertedToProject: "Inquiry converted to Project.",
-		InquiryUpdated: "Inquiry updated.",
+		InquiryEdited: "Inquiry edited.",
 		InvoiceAdded: "New invoice added.",
 		InvalidUser: "Invalid user.",
 		InvoiceEdited: "Invoice edited.",

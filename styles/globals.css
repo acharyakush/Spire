@@ -172,12 +172,7 @@ html {
 }
 
 .dialog-header {
-	@apply bg-[var(--web-primary)] bottom-border flex font-semibold items-center justify-between px-5 py-1.5 text-[16pt] text-white;
-	font-family: var(--web-header-font);
-}
-
-.dialog-header-green {
-	@apply bg-[var(--web-green)] bottom-border flex font-bold items-center justify-between px-5 py-1.5 text-[17pt] text-white;
+	@apply bg-[var(--web-primary)] bottom-border flex font-medium items-center justify-between px-5 py-1.5 text-[16pt] text-white;
 	font-family: var(--web-header-font);
 }
 
@@ -349,17 +344,17 @@ html {
 }
 
 .green-button-condensed {
-	@apply bg-[var(--web-green)] border border-[var(--web-green)] flex font-normal h-[34px] justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-base text-white;
+	@apply bg-[var(--web-green)] border border-[var(--web-green)] flex font-normal h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-[10pt] text-white;
 	font-family: var(--web-font-family);
 }
 
 .green-button-transparent-background {
-	@apply bg-[var(--web-green-transparent-01)] border border-[var(--web-green)] flex font-medium h-[34px] items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--web-green)];
+	@apply bg-[var(--web-green-transparent-01)] border border-[var(--web-green)] flex font-medium h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--web-green)];
 	font-family: var(--web-font-family);
 }
 
 .green-button-wide {
-	@apply bg-[var(--web-green)] block border border-[var(--web-green)] font-normal h-[34px] outline-none relative rounded select-none text-base text-white w-full;
+	@apply bg-[var(--web-green)] block border border-[var(--web-green)] font-normal h-7 outline-none relative rounded select-none text-[10pt] text-white w-full;
 	font-family: var(--web-font-family);
 }
 
@@ -420,7 +415,7 @@ html {
 }
 
 .light-gray-button {
-	@apply bg-[var(--web-light-gray-background)] border border-[var(--web-light-gray-background)] flex font-normal h-[34px] justify-center items-center outline-none px-2.5 relative rounded select-none space-x-2.5 text-base black-text;
+	@apply bg-[var(--web-light-gray-background)] border border-[var(--web-light-gray-background)] flex font-normal h-7 justify-center items-center outline-none px-2.5 relative rounded select-none space-x-2.5 text-[10pt] black-text;
 	font-family: var(--web-font-family);
 }
 
@@ -506,7 +501,7 @@ html {
 }
 
 .primary-button-condensed {
-	@apply bg-[var(--web-primary)] border border-[var(--web-primary)] flex font-normal h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-sm text-white;
+	@apply bg-[var(--web-primary)] border border-[var(--web-primary)] flex font-light h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-sm text-white;
 	font-family: var(--web-font-family);
 }
 
@@ -524,12 +519,12 @@ html {
 }
 
 .primary-button-normal {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-[34px] outline-none px-2 relative rounded select-none text-base text-white;
+	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
 	font-family: var(--web-font-family);
 }
 
 .primary-button-normal-2 {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal outline-none px-2 relative rounded select-none text-base text-white;
+	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
 	font-family: var(--web-font-family);
 }
 
@@ -544,7 +539,7 @@ html {
 }
 
 .primary-button-wide {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-7 outline-none relative rounded select-none text-base text-white w-full;
+	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-[34px] outline-none relative rounded select-none text-[10pt] text-white w-full;
 	font-family: var(--web-font-family);
 }
 
@@ -587,7 +582,7 @@ html {
 }
 
 .red-button-transparent-background {
-	@apply bg-[var(--web-red-transparent-01)] border border-[var(--web-red)] flex font-medium h-[34px] items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--web-red)];
+	@apply bg-[var(--web-red-transparent-01)] border border-[var(--web-red)] flex font-medium h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--web-red)];
 	font-family: var(--web-font-family);
 }
 

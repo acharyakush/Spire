@@ -1,11 +1,14 @@
 "use client";
 
+/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
+
 import axios from "axios";
 import dayjs from "dayjs";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
+import { AddNote } from "@/modals/Inquiry";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Badge } from "@/components/Elements";
@@ -13,9 +16,7 @@ import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar, faChevronLeft, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
-/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
-
-export default function InquiryNotes({ allClients, allNotes, selectedInquiry, unmount }) {
+export default function InquiryNotes({ allClients, allNotes, reloadInquiries, selectedInquiry, unmount }) {
 	// Business Logic
 	const [data, setData] = useState({
 		entryDate: { from: "", to: "" },
@@ -58,7 +59,7 @@ export default function InquiryNotes({ allClients, allNotes, selectedInquiry, un
 			}
 		});
 
-		setData((s) => ({ ...s, notes: { ...s.notes, api: filteredData } }));
+		setData((old) => ({ ...old, notes: { ...old.notes, api: filteredData } }));
 	};
 
 	const doSorting = () => {
@@ -100,6 +101,7 @@ export default function InquiryNotes({ allClients, allNotes, selectedInquiry, un
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-notes" }));
 
 			if (response.status === 200) {
+				reloadInquiries();
 				setNotesByInquiry(response.data);
 			}
 		} catch (error) {
@@ -109,23 +111,23 @@ export default function InquiryNotes({ allClients, allNotes, selectedInquiry, un
 
 	const setInputs = (key, value) => {
 		if (key == "from" || key == "to") {
-			setData((s) => ({ ...s, entryDate: { ...s.entryDate, [key]: value } }));
+			setData((old) => ({ ...old, entryDate: { ...old.entryDate, [key]: value } }));
 		} else {
-			setData((s) => ({ ...s, [key]: value }));
+			setData((old) => ({ ...old, [key]: value }));
 		}
 	};
 
 	const setNotesByInquiry = (source) => {
 		const notesByInquiry = source?.filter((note) => note.inquiry_id == selectedInquiry?.id);
-		setData((s) => ({ ...s, notes: { api: notesByInquiry, apiCopy: notesByInquiry } }));
+		setData((old) => ({ ...old, notes: { api: notesByInquiry, apiCopy: notesByInquiry } }));
 	};
 
 	const setSort = (column) => {
-		setData((s) => ({ ...s, sort: { column, isAscending: !data.sort.isAscending } }));
+		setData((old) => ({ ...old, sort: { column, isAscending: !data.sort.isAscending } }));
 	};
 
 	const toggleAddBox = () => {
-		setData((s) => ({ ...s, isAddBoxOpen: !data.isAddBoxOpen }));
+		setData((old) => ({ ...old, isAddBoxOpen: !data.isAddBoxOpen }));
 	};
 
 	// UI Components
@@ -265,7 +267,7 @@ export default function InquiryNotes({ allClients, allNotes, selectedInquiry, un
 	// Hooks
 	useEffect(() => {
 		setNotesByInquiry(allNotes);
-		setData((s) => ({ ...s, hasMounted: true }));
+		setData((old) => ({ ...old, hasMounted: true }));
 	}, []);
 
 	useEffect(() => {
@@ -290,7 +292,7 @@ export default function InquiryNotes({ allClients, allNotes, selectedInquiry, un
 			<>
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-1/2 space-x-2 justify-start items-center">
-						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount(false)} />
+						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount("", false)} />
 						<span className="view-heading">{clientName}'s Notes</span>
 						<span className="flex h-8 justify-center items-center">{data.notes.api.length > 0 && <Badge value={getCounts()} />}</span>
 					</div>
@@ -305,7 +307,7 @@ export default function InquiryNotes({ allClients, allNotes, selectedInquiry, un
 				</div>
 				<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
 
-				{data.isAddBoxOpen && <InquiryModals.AddNote close={toggleAddBox} inquiry={selectedInquiry} open={data.isAddBoxOpen} refreshNotes={getNotes} />}
+				{data.isAddBoxOpen && <AddNote mount={data.isAddBoxOpen} reloadNotes={getNotes} selectedInquiry={selectedInquiry} unmount={toggleAddBox} />}
 			</>
 		);
 	}

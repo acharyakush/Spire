@@ -8,6 +8,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import NewInquiry from "./NewInquiry";
+import InquiryNotes from "./InquiryNotes";
 import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
@@ -16,6 +17,7 @@ import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
+import { ChangeStatus, CloseInquiry } from "@/modals/Inquiry";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmallWithBackground, SpinnerBig, Tooltip, TooltipList } from "@/components/Elements";
@@ -26,13 +28,12 @@ import {
 	faFileExcel,
 	faFilter,
 	faMultiply,
-	faPlus,
 	faPlusCircle,
 	faSearch,
 	faSortAmountAsc,
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
-import InquiryNotes from "./InquiryNotes";
+import EditInquiry from "./EditInquiry";
 
 export default function Inquiry() {
 	// Business Logic
@@ -47,14 +48,14 @@ export default function Inquiry() {
 		inquiries: { api: [], apiCopy: [], mergedWithNotes: [] },
 		isLoading: false,
 		searchTerm: "",
-		selectedInquiry: "",
+		selectedInquiryForNotes: {},
+		selectedInquiryForStatusChange: {},
 		sort: { column: "", isAscending: false },
-		status: "",
 	});
 
 	const [hasMounted, setHasMounted] = useState({
 		changeStatus: false,
-		closureReason: false,
+		closeInquiry: false,
 		convertToProject: false,
 		editInquiry: false,
 		newInquiry: false,
@@ -64,9 +65,9 @@ export default function Inquiry() {
 
 	const allowConvertingToProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.ConvertInquiryToProject);
 
-	const headers = MyConstants.TableHeaders.Inquiries;
+	const STATUSES = MyConstants.Statuses.Inquiries;
+	const HEADERS = MyConstants.TableHeaders.Inquiries;
 	const thisView = MyConstants.Modules.Base.Inquiries;
-	const statuses = MyConstants.Statuses.Inquiries;
 
 	const newInquiryButton = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry)
 		? "block space-x-1.5 primary-button-transparent-background"
@@ -164,45 +165,45 @@ export default function Inquiry() {
 			const aSubProject = getSubProjectName(a.sub_project_id);
 			const bSubProject = getSubProjectName(b.sub_project_id);
 
-			if (data.sort.column == headers.EntryDate && data.sort.isAscending) {
+			if (data.sort.column == HEADERS.EntryDate && data.sort.isAscending) {
 				return aEntryDate - bEntryDate;
-			} else if (data.sort.column == headers.EntryDate && !data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.EntryDate && !data.sort.isAscending) {
 				return bEntryDate - aEntryDate;
-			} else if (data.sort.column == headers.Client && data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.Client && data.sort.isAscending) {
 				return aClient.localeCompare(bClient);
-			} else if (data.sort.column == headers.Client && !data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.Client && !data.sort.isAscending) {
 				return bClient.localeCompare(aClient);
-			} else if (data.sort.column == headers.MainProject && data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.MainProject && data.sort.isAscending) {
 				return aMainProject.localeCompare(bMainProject);
-			} else if (data.sort.column == headers.MainProject && !data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.MainProject && !data.sort.isAscending) {
 				return bMainProject.localeCompare(aMainProject);
-			} else if (data.sort.column == headers.SubProject && data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.SubProject && data.sort.isAscending) {
 				return aSubProject.localeCompare(bSubProject);
-			} else if (data.sort.column == headers.SubProject && !data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.SubProject && !data.sort.isAscending) {
 				return bSubProject.localeCompare(aSubProject);
-			} else if (data.sort.column == headers.Reference && data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.Reference && data.sort.isAscending) {
 				return aReference.localeCompare(bReference);
-			} else if (data.sort.column == headers.Reference && !data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.Reference && !data.sort.isAscending) {
 				return bReference.localeCompare(aReference);
-			} else if (data.sort.column == headers.FollowUps && data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.FollowUps && data.sort.isAscending) {
 				return a.follow_ups.localeCompare(b.follow_ups);
-			} else if (data.sort.column == headers.FollowUps && !data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.FollowUps && !data.sort.isAscending) {
 				return b.follow_ups.localeCompare(a.follow_ups);
-			} else if (data.sort.column == headers.Quote && data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.Quote && data.sort.isAscending) {
 				return a.quote - b.quote;
-			} else if (data.sort.column == headers.Quote && !data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.Quote && !data.sort.isAscending) {
 				return b.quote - a.quote;
-			} else if (data.sort.column == headers.Status && data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.Status && data.sort.isAscending) {
 				return a.status.localeCompare(b.status);
-			} else if (data.sort.column == headers.Status && !data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.Status && !data.sort.isAscending) {
 				return b.status.localeCompare(a.status);
-			} else if (data.sort.column == headers.Notes && data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.Notes && data.sort.isAscending) {
 				return aNotesCount - bNotesCount;
-			} else if (data.sort.column == headers.Notes && !data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.Notes && !data.sort.isAscending) {
 				return bNotesCount - aNotesCount;
-			} else if (data.sort.column == headers.CreatedBy && data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.CreatedBy && data.sort.isAscending) {
 				return aCreatedBy.localeCompare(bCreatedBy);
-			} else if (data.sort.column == headers.CreatedBy && !data.sort.isAscending) {
+			} else if (data.sort.column == HEADERS.CreatedBy && !data.sort.isAscending) {
 				return bCreatedBy.localeCompare(aCreatedBy);
 			} else {
 				return b.id - a.id;
@@ -220,7 +221,7 @@ export default function Inquiry() {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const rowHeaders = Object.values(headers);
+		const rowHeaders = Object.values(HEADERS);
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((inquiry) => {
@@ -363,38 +364,38 @@ export default function Inquiry() {
 
 	const getStatusSeverity = (status) => {
 		switch (status) {
-			case statuses.Open:
+			case STATUSES.Open:
 				return "orange-tag-transparent-01";
-			case statuses.Closed:
+			case STATUSES.Closed:
 				return "gray-tag-transparent-01";
-			case statuses.Hold:
+			case STATUSES.Hold:
 				return "red-tag-transparent-01";
-			case statuses.Confirmed:
+			case STATUSES.Confirmed:
 				return "green-tag-transparent-01 cursor-pointer";
 		}
 	};
 
 	const getStatusSeverityBackground = (status) => {
 		switch (status) {
-			case statuses.Open:
+			case STATUSES.Open:
 				return {
 					background: "orange-background-transparent-01",
 					border: "orange-border",
 					text: "orange-text",
 				};
-			case statuses.Closed:
+			case STATUSES.Closed:
 				return {
 					background: "gray-background-transparent-01",
 					border: "gray-border",
 					text: "gray-text",
 				};
-			case statuses.Hold:
+			case STATUSES.Hold:
 				return {
 					background: "red-background-transparent-01",
 					border: "red-border",
 					text: "red-text",
 				};
-			case statuses.Confirmed:
+			case STATUSES.Confirmed:
 				return {
 					background: "green-background-transparent-01",
 					border: "green-border",
@@ -504,6 +505,10 @@ export default function Inquiry() {
 		globalThis.window.open(`https://wa.me/1${contactNumber}`, "_blank");
 	};
 
+	const prepareInquiryStatusChangeData = (inquiry, newStatus) => {
+		setData((old) => ({ ...old, selectedInquiryForStatusChange: { ...inquiry, new_status: newStatus } }));
+	};
+
 	const setInputs = (key, value) => {
 		if (key == "from" || key == "to") {
 			setData((old) => ({ ...old, entryDate: { ...old.entryDate, [key]: value } }));
@@ -513,36 +518,45 @@ export default function Inquiry() {
 	};
 
 	const setSort = (header) => {
-		if (header != headers.ContactNumber) {
+		if (header != HEADERS.ContactNumber) {
 			setData((old) => ({ ...old, sort: { column: header, isAscending: !data.sort.isAscending } }));
 		}
 	};
 
-	const toggleChangeStatusBox = (inquiry, source) => {};
+	const toggleChangeStatus = (value) => {
+		if (value) {
+			setHasMounted((old) => ({ ...old, changeStatus: true }));
+		} else {
+			if (data.selectedInquiryForStatusChange.new_status != STATUSES.Closed) {
+				setData((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
+				setHasMounted((old) => ({ ...old, changeStatus: false }));
+			} else {
+				setHasMounted((old) => ({ ...old, changeStatus: false, closeInquiry: true }));
+			}
+		}
+	};
 
-	const toggleConvertToProjectBox = (inquiry, source, status) => {};
+	const toggleCloseInquiryBox = (value) => {
+		if (value) {
+			setHasMounted((old) => ({ ...old, closeInquiry: true }));
+		} else {
+			setData((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
+			setHasMounted((old) => ({ ...old, closeInquiry: false }));
+		}
+	};
 
-	const toggleInquiryClosureReasonBox = () => {
-		setData((old) => ({ ...old, selectedInquiry: {}, status: "" }));
-		setHasMounted((old) => ({ ...old, closureReason: false }));
+	const toggleEditInquiryView = (inquiry, type) => {
+		setData((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
+		setHasMounted((old) => ({ ...old, editInquiry: type }));
 	};
 
 	const toggleNewInquiryView = () => {
 		setHasMounted((old) => ({ ...old, newInquiry: !hasMounted.newInquiry }));
 	};
 
-	const toggleNewProjectBox = () => {
-		setData((old) => ({ ...old, selectedInquiry: {} }));
-		setHasMounted((old) => ({ ...old, newProject: !hasMounted.newProject }));
-	};
-
 	const toggleNotesView = (inquiry, type) => {
-		setData((old) => ({ ...old, selectedInquiry: inquiry }));
+		setData((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
 		setHasMounted((old) => ({ ...old, notes: type }));
-
-		if (!type) {
-			getInquiries();
-		}
 	};
 
 	// UI Components
@@ -576,7 +590,7 @@ export default function Inquiry() {
 	const uiClientName = (clientId, clientName, inquiry) => {
 		return (
 			<Tippy allowHTML={true} content={<Tooltip text={`${clientId} - ${clientName}`} />}>
-				<span dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleEditInquiryBox(inquiry, true)} />
+				<span dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleEditInquiryView(inquiry, true)} />
 			</Tippy>
 		);
 	};
@@ -625,7 +639,7 @@ export default function Inquiry() {
 	};
 
 	const uiFooter = () => {
-		return Object.values(headers).map((label, index) => {
+		return Object.values(HEADERS).map((label, index) => {
 			const showTotalQuote = index == 7 ? "visible" : "invisible";
 			const wrapper = `w-1/6 space-x-1 text-center text-white font-medium-10 ${showTotalQuote}`;
 
@@ -664,9 +678,9 @@ export default function Inquiry() {
 	};
 
 	const uiHeaders = () => {
-		return Object.values(headers).map((header, index) => {
+		return Object.values(HEADERS).map((header, index) => {
 			const showSortArrow = header == data.sort.column ? "block" : "hidden";
-			const showStatusFilter = header == headers.Status ? "block" : "hidden";
+			const showStatusFilter = header == HEADERS.Status ? "block" : "hidden";
 
 			return (
 				<span className="flex w-[9.09%] cursor-pointer justify-center items-center font-medium-10" key={index}>
@@ -682,13 +696,21 @@ export default function Inquiry() {
 
 	const uiMain = () => {
 		if (hasMounted.editInquiry) {
-			// return <EditInquiry allClients={data.clients.all} allInquiries={data.inquiries.api} allReferences={data.references} close={toggleEditInquiryBox} payload={data.thisInquiry} refresh={getInquiries} />;
+			return <EditInquiry unmount={toggleEditInquiryView} selectedInquiry={data.selectedInquiryForNotes} reloadInquiries={getInquiries} />;
 		} else if (hasMounted.newInquiry) {
 			return <NewInquiry reloadInquiries={getInquiries} unmount={toggleNewInquiryView} />;
 		} else if (hasMounted.newProject) {
 			// return <NewProject adminCompanies={data.adminCompanies} allClients={data.clients.all} allInquiries={data.inquiries.api} close={toggleNewProjectBox} refresh={getInquiries} thisInquiry={data.thisInquiry} />;
 		} else if (hasMounted.notes) {
-			return <InquiryNotes allClients={data.clients.all} allNotes={data.allNotes} selectedInquiry={data.selectedInquiry} unmount={toggleNotesView} />;
+			return (
+				<InquiryNotes
+					allClients={data.clients.all}
+					allNotes={data.allNotes}
+					reloadInquiries={getInquiries}
+					selectedInquiry={data.selectedInquiryForNotes}
+					unmount={toggleNotesView}
+				/>
+			);
 		} else {
 			return (
 				<>
@@ -739,7 +761,7 @@ export default function Inquiry() {
 		const clientId = MyGlobal.HighlightText(inquiry.client_id, data.searchTerm);
 		const clientName = MyGlobal.HighlightText(getClientName(inquiry.client_id), data.searchTerm);
 
-		const clientNameTextStyle = inquiry.status == statuses.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
+		const clientNameTextStyle = inquiry.status == STATUSES.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
 
 		const contactNumber = MyGlobal.HighlightText(inquiry.contact_number, data.searchTerm);
 		const mainProject = MyGlobal.HighlightText(getMainProjectName(inquiry.main_project_id), data.searchTerm);
@@ -825,7 +847,7 @@ export default function Inquiry() {
 				<MenuButton className="flex w-full justify-between items-center focus:outline-none relative z-40">
 					<FontAwesomeIcon className="text-white" icon={faFilter} size="sm" />
 				</MenuButton>
-				<MenuItems className="absolute w-fit right-0 origin-top-right divide-y divide-gray-100 rounded black-white-background shadow-md focus:outline-none z-50">
+				<MenuItems className="absolute w-fit right-0 origin-top-right rounded black-white-background shadow-md focus:outline-none z-50">
 					{uiStatusFilterMenu()}
 				</MenuItems>
 			</Menu>
@@ -845,7 +867,7 @@ export default function Inquiry() {
 			return (
 				<MenuItem
 					as="div"
-					className="w-full p-2 space-x-2.5 cursor-pointer font-regular-10 black-text hovered-rows"
+					className="w-full p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text hovered-rows"
 					key={index}
 					onClick={() => setData((old) => ({ ...old, searchTerm: status }))}>
 					<span>{status}</span>
@@ -855,7 +877,7 @@ export default function Inquiry() {
 	};
 
 	const uiStatusMenu = (inquiry) => {
-		const isConfirmed = inquiry.status == statuses.Confirmed;
+		const isConfirmed = inquiry.status == STATUSES.Confirmed;
 		const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none relative z-40 font-medium-10 ${getStatusSeverity(
 			inquiry.status,
 		)} !py-0`;
@@ -876,7 +898,7 @@ export default function Inquiry() {
 						{icon}
 					</MenuButton>
 					{!isConfirmed && (
-						<MenuItems className="absolute w-full top-7 right-0 origin-top-right divide-y divide-gray-100 rounded black-white-background bottom-shadow focus:outline-none z-50 full-border">
+						<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded black-white-background bottom-shadow focus:outline-none z-50 full-border">
 							{uiStatusMenuList(inquiry)}
 						</MenuItems>
 					)}
@@ -886,26 +908,24 @@ export default function Inquiry() {
 	};
 
 	const uiStatusMenuList = (inquiry) => {
-		return Object.values(statuses)
+		return Object.values(STATUSES)
 			.filter((status) => status != inquiry.status)
+			.filter((status) => {
+				if (status == STATUSES.Confirmed && !allowConvertingToProject) {
+					return status != STATUSES.Confirmed;
+				}
+
+				return status;
+			})
 			.map((status, index) => {
-				const label = status == statuses.Closed ? "Close" : status;
-				const revisedInquiry = { ...inquiry, new_status: status };
+				const label = status == STATUSES.Closed ? "Close" : status;
 
 				return (
 					<MenuItem
 						as="div"
-						className="p-2 space-x-2.5 cursor-pointer font-regular-10 black-text text-left hovered-rows"
+						className="p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text text-left hovered-rows"
 						key={index}
-						onClick={() => {
-							if (status == statuses.Confirmed) {
-								if (allowConvertingToProject) {
-									toggleChangeStatusBox(revisedInquiry, "inquiry");
-								}
-							} else {
-								toggleChangeStatusBox(revisedInquiry, "inquiry");
-							}
-						}}>
+						onClick={() => prepareInquiryStatusChangeData(inquiry, status)}>
 						<span>{label}</span>
 					</MenuItem>
 				);
@@ -962,30 +982,35 @@ export default function Inquiry() {
 
 	useEffect(() => {
 		if (data.hasMounted) {
-			if (data.status) {
-				changeStatus();
+			if (Object.keys(data.selectedInquiryForStatusChange).length) {
+				toggleChangeStatus(true);
 			}
 		}
-	}, [data.status]);
+	}, [data.selectedInquiryForStatusChange]);
 
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center light-gray-background">
 			{uiMain()}
 
 			{hasMounted.convertToProject && (
-				<InquiryModals.ConvertToProject close={toggleConvertToProjectBox} inquiry={data.selectedInquiry} open={hasMounted.convertToProject} />
+				<InquiryModals.ConvertToProject close={toggleConvertToProjectBox} inquiry={data.selectedInquiryForNotes} open={hasMounted.convertToProject} />
 			)}
 
 			{hasMounted.changeStatus && (
-				<InquiryModals.ChangeStatus close={toggleChangeStatusBox} inquiry={data.selectedInquiry} open={hasMounted.changeStatus} />
+				<ChangeStatus
+					mount={hasMounted.changeStatus}
+					reloadInquiries={getInquiries}
+					selectedInquiry={data.selectedInquiryForStatusChange}
+					unmount={toggleChangeStatus}
+				/>
 			)}
 
-			{hasMounted.closureReason && (
-				<InquiryModals.ClosureReason
-					close={toggleInquiryClosureReasonBox}
-					inquiry={data.selectedInquiry}
-					open={hasMounted.closureReason}
-					refreshInquiries={getInquiries}
+			{hasMounted.closeInquiry && (
+				<CloseInquiry
+					mount={hasMounted.closeInquiry}
+					reloadInquiries={getInquiries}
+					selectedInquiry={data.selectedInquiryForStatusChange}
+					unmount={toggleCloseInquiryBox}
 				/>
 			)}
 		</div>

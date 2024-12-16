@@ -3,41 +3,41 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
+import dayjs from "dayjs";
 import MyConstants from "@/utilities/constants";
-import NewInquiryPreview from "./NewInquiryPreview";
+import EditInquiryPreview from "./EditInquiryPreview";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ComboBox, ComboBox2, ComboBoxWithChips, DatePicker, EmailAddress, TextArea, TextInput } from "@/components/Inputs";
-import {
-	faCalendar,
-	faChevronLeft,
-	faCircleExclamation,
-	faFile,
-	faIndianRupee,
-	faNoteSticky,
-	faPhone,
-	faUser,
-	faUserGroup,
-} from "@fortawesome/free-solid-svg-icons";
+import { ComboBox2, ComboBoxWithChips, DatePicker, EmailAddress, TextInput } from "@/components/Inputs";
+import { faCalendar, faChevronLeft, faFile, faIndianRupee, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewInquiry({ reloadInquiries, unmount }) {
+export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount }) {
 	// Business Logic
-
-	const [newInquiry, setNewInquiry] = useState({
-		client: { id: "", name: "" },
+	const [oldInquiry, setOldInquiry] = useState({
+		client: { id: 0, name: "" },
 		contactNumber: "",
 		entryDate: new Date(),
 		emailAddress: "",
 		followUps: [],
-		mainProject: { id: "", name: "" },
-		note: "",
+		mainProject: { id: 0, name: "" },
 		quote: 2500,
-		reference: { id: "", name: "" },
-		status: MyConstants.Statuses.Inquiries.Open,
-		subProject: { id: "", name: "" },
+		reference: { id: 0, name: "" },
+		subProject: { id: 0, name: "" },
+	});
+
+	const [editInquiry, setEditInquiry] = useState({
+		client: { id: 0, name: "" },
+		contactNumber: "",
+		entryDate: new Date(),
+		emailAddress: "",
+		followUps: [],
+		mainProject: { id: 0, name: "" },
+		quote: 2500,
+		reference: { id: 0, name: "" },
+		subProject: { id: 0, name: "" },
 	});
 
 	const [otherData, setOtherData] = useState({
@@ -52,46 +52,16 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		searched: { client: {}, mainProject: {}, reference: {}, status: "", subProject: {} },
 	});
 
+	const isUserAdministrator = MyGlobal.IsUserAdministrator();
+
 	const showFollowUpsMenu = otherData.isFollowUpsMenuOpen
 		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow light-gray-background full-border"
 		: "hidden";
 
-	const disableAddButton = otherData.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
-	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
+	const disableEditButton = otherData.isLoading ? "pointer-events-none" : "pointer-events-auto";
+	const editButtonStyle = `primary-button-condensed ${disableEditButton}`;
 
 	// Functions
-	const addInquiry = async () => {
-		setOtherData((s) => ({ ...s, isLoading: true }));
-
-		try {
-			const body = {
-				...newInquiry,
-				followUps: getFollowUpsIds(),
-				mainProjectId: newInquiry.mainProject.id,
-				note: MyGlobal.EscapeString(newInquiry.note),
-				quote: Number(newInquiry.quote),
-				userId: MyGlobal.GetUserId(),
-			};
-
-			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.AddInquiry, body, MyGlobal.GetHeaders());
-
-			if (response.status === 200) {
-				reloadInquiries();
-
-				MyGlobal.AddActivity(`Added new inquiry ${response.data}.`);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryAdded);
-
-				unmount();
-			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "New Inquiry");
-		} finally {
-			setOtherData((s) => ({ ...s, isLoading: false }));
-		}
-	};
-
 	const addNewClient = (client) => {
 		const copy = [...otherData.allClients.apiCopy];
 		const name = MyGlobal.Capitalize(client);
@@ -101,7 +71,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 		handleSearch("client", "");
 
-		setNewInquiry((s) => ({ ...s, client: { id: 0, name } }));
+		setEditInquiry((s) => ({ ...s, client: { id: 0, name } }));
 		setOtherData((s) => ({ ...s, allClients: { api: revisedCopy, apiCopy: revisedCopy } }));
 	};
 
@@ -114,7 +84,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 		handleSearch("reference", "");
 
-		setNewInquiry((s) => ({ ...s, reference: { id: 0, name } }));
+		setEditInquiry((s) => ({ ...s, reference: { id: 0, name } }));
 		setOtherData((s) => ({ ...s, allReferences: { api: revisedCopy, apiCopy: revisedCopy } }));
 	};
 
@@ -124,8 +94,42 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 		handleSearch("subProject", "");
 
-		setNewInquiry((s) => ({ ...s, subProject: copy.at(0) }));
+		setEditInquiry((s) => ({ ...s, subProject: copy.at(0) }));
 		setOtherData((s) => ({ ...s, allSubProjects: { api: copy, apiCopy: copy } }));
+	};
+
+	const doInquiryEdit = async () => {
+		try {
+			setOtherData((s) => ({ ...s, isLoading: true }));
+
+			const body = {
+				...editInquiry,
+				entryDate: dayjs(editInquiry.entryDate).format("YYYY-MM-DD hh:mm:ss"),
+				followUps: getFollowUpsIds(),
+				mainProjectId: editInquiry.mainProject.id,
+				id: selectedInquiry.id,
+				source: MyConstants.Modules.Base.Inquiries,
+				type: "edit-inquiry",
+				userId: MyGlobal.GetUserId(),
+			};
+
+			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.EditInquiry, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reloadInquiries();
+
+				MyGlobal.AddActivity(`Inquiries :: Edited inquiry (${selectedInquiry.id}).`);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryEdited);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+
+			unmount();
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Edit Inquiry");
+		} finally {
+			setOtherData((s) => ({ ...s, isLoading: false }));
+		}
 	};
 
 	const getFilteredClients = () => {
@@ -167,19 +171,6 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		return references;
 	};
 
-	const getFilteredStatuses = () => {
-		const value = String(otherData.searched.status);
-		let statuses = MyConstants.Statuses.Inquiries;
-
-		if (value !== "undefined") {
-			statuses = Object.values(MyConstants.Statuses.Inquiries).filter((status) => {
-				return String(status).toLowerCase().includes(value.toLowerCase());
-			});
-		}
-
-		return statuses;
-	};
-
 	const getFilteredSubProjects = () => {
 		const value = String(otherData.searched.subProject.name);
 		let subProjects = otherData.allSubProjects.apiCopy;
@@ -194,7 +185,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	};
 
 	const getFollowUpsIds = () => {
-		return newInquiry.followUps.map((user) => user.id).join(",");
+		return editInquiry.followUps.map((user) => user.id).join(",");
 	};
 
 	const getSupportingData = async () => {
@@ -202,31 +193,69 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetNewInquirySupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
+				const allClients = response.data.clients;
+				const allMainProjects = response.data.mainProjects;
+				const allReferences = response.data.references;
+				const allSubProjects = response.data.subProjects;
+
+				const clientName = allClients.filter((client) => client.id == selectedInquiry.client_id).at(0).name;
+				const followUps = MyGlobal.GetFullDetailsFromIds(selectedInquiry.follow_ups);
+
+				const mainProjectName = allMainProjects.filter((mainProject) => mainProject.id == selectedInquiry.main_project_id).at(0).name;
+
+				const referenceName = allReferences.filter((reference) => reference.id == selectedInquiry.reference_id).at(0).name;
+
+				const subProjectName = allSubProjects.filter((subProject) => subProject.id == selectedInquiry.sub_project_id).at(0).name;
+
+				setEditInquiry({
+					client: { id: selectedInquiry.client_id, name: clientName },
+					contactNumber: selectedInquiry.contact_number,
+					entryDate: new Date(selectedInquiry.entry_date),
+					emailAddress: selectedInquiry.email_address,
+					followUps,
+					mainProject: { id: selectedInquiry.main_project_id, name: mainProjectName },
+					quote: selectedInquiry.quote,
+					reference: { id: selectedInquiry.reference_id, name: referenceName },
+					subProject: { id: selectedInquiry.sub_project_id, name: subProjectName },
+				});
+
+				setOldInquiry({
+					client: { id: selectedInquiry.client_id, name: clientName },
+					contactNumber: selectedInquiry.contact_number,
+					entryDate: new Date(selectedInquiry.entry_date),
+					emailAddress: selectedInquiry.email_address,
+					followUps,
+					mainProject: { id: selectedInquiry.main_project_id, name: mainProjectName },
+					quote: selectedInquiry.quote,
+					reference: { id: selectedInquiry.reference_id, name: referenceName },
+					subProject: { id: selectedInquiry.sub_project_id, name: subProjectName },
+				});
+
 				setOtherData((old) => ({
 					...old,
-					allClients: { api: response.data.clients, apiCopy: response.data.clients },
-					allMainProjects: { api: response.data.mainProjects, apiCopy: response.data.mainProjects },
-					allReferences: { api: response.data.references, apiCopy: response.data.references },
-					allSubProjects: { api: response.data.subProjects, apiCopy: response.data.subProjects },
+					allClients: { api: allClients, apiCopy: allClients },
+					allMainProjects: { api: allMainProjects, apiCopy: allMainProjects },
+					allReferences: { api: allReferences, apiCopy: allReferences },
+					allSubProjects: { api: allSubProjects, apiCopy: allSubProjects },
 					hasMounted: true,
 				}));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "New Inquiry => Get Supporting Data");
+			MyGlobal.HandleErrors(error, "Edit Inquiry => Get Supporting Data");
 		}
 	};
 
 	const getSelectedClientData = () => {
-		return otherData.allClients.api.filter((client) => client.id == newInquiry.client.id).at(0);
+		return otherData.allClients.api.filter((client) => client.id == editInquiry.client.id).at(0);
 	};
 
 	const getSelectedReferenceData = () => {
-		return otherData.allReferences.apiCopy.filter((reference) => reference.id == newInquiry.reference.id).at(0);
+		return otherData.allReferences.apiCopy.filter((reference) => reference.id == editInquiry.reference.id).at(0);
 	};
 
 	const handleFollowUps = (selectedUser) => {
 		let revisedData = [];
-		const copy = [...newInquiry.followUps];
+		const copy = [...editInquiry.followUps];
 
 		if (copy.includes(selectedUser)) {
 			revisedData = copy.filter((user) => user.id != selectedUser.id);
@@ -235,7 +264,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			revisedData = copy;
 		}
 
-		setNewInquiry((s) => ({ ...s, followUps: revisedData }));
+		setEditInquiry((s) => ({ ...s, followUps: revisedData }));
 	};
 
 	const handleInputs = (key, value) => {
@@ -253,7 +282,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				handleSearch("client", "");
 			}
 
-			setNewInquiry((s) => ({
+			setEditInquiry((s) => ({
 				...s,
 				client: { id: value.id, name: value.name },
 				contactNumber,
@@ -262,12 +291,12 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			}));
 		} else if (key == "reference") {
 			handleSearch("reference", "");
-			setNewInquiry((s) => ({ ...s, reference: { id: value.id, name: value.name } }));
+			setEditInquiry((s) => ({ ...s, reference: { id: value.id, name: value.name } }));
 		} else if (key == "mainProject" || key == "subProject") {
 			handleSearch(key, "");
-			setNewInquiry((s) => ({ ...s, [key]: { ...s[key], id: value.id, name: value.name } }));
+			setEditInquiry((s) => ({ ...s, [key]: { ...s[key], id: value.id, name: value.name } }));
 		} else {
-			setNewInquiry((s) => ({ ...s, [key]: value }));
+			setEditInquiry((s) => ({ ...s, [key]: value }));
 		}
 	};
 
@@ -281,7 +310,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 	const togglePreviewBox = (value) => {
 		if (value) {
-			addInquiry();
+			doInquiryEdit();
 		}
 
 		setOtherData((s) => ({ ...s, isPreviewBoxOpen: !otherData.isPreviewBoxOpen }));
@@ -293,13 +322,13 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={newInquiry.client.name}
+				comparingValue2={editInquiry.client.name}
 				displayValue="name"
 				filteredData={getFilteredClients}
 				hasDataObject={true}
 				icon={faUser}
 				isNew={false}
-				isReadOnly={false}
+				isReadOnly={!isUserAdministrator}
 				label="Client"
 				onChange={(event) => handleInputs("client", event)}
 				onClick={() => addNewClient(otherData.searched.client.name)}
@@ -318,12 +347,13 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			<TextInput
 				icon={faPhone}
 				isNew={false}
+				isReadOnly={!isUserAdministrator}
 				label="Contact Number"
 				maxLength={10}
 				onChange={(event) => handleInputs("contactNumber", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={2}
-				value={newInquiry.contactNumber}
+				value={editInquiry.contactNumber}
 				width="w-full"
 			/>
 		);
@@ -332,10 +362,11 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	const uiEmailAddress = () => {
 		return (
 			<EmailAddress
+				isReadOnly={!isUserAdministrator}
 				onChange={(event) => handleInputs("emailAddress", event.target.value)}
 				suffix=""
 				tabIndex={3}
-				value={newInquiry.emailAddress}
+				value={editInquiry.emailAddress}
 				width="w-full"
 			/>
 		);
@@ -351,7 +382,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onBlur={() => toggleFollowUpsMenu()}
 				onItemClick={(event) => handleFollowUps(event)}
 				onSelectedItemClick={(event) => handleFollowUps(event)}
-				selectedItems={newInquiry.followUps}
+				selectedItems={editInquiry.followUps}
 				showList={showFollowUpsMenu}
 				source={MyGlobal.GetAllUsers()}
 				toggleMenu={() => toggleFollowUpsMenu()}
@@ -367,7 +398,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				label="Date"
 				onChange={(event) => handleInputs("entryDate", event)}
 				tabIndex={7}
-				value={newInquiry.entryDate}
+				value={editInquiry.entryDate}
 				width="w-full"
 			/>
 		);
@@ -378,7 +409,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={newInquiry.mainProject.name}
+				comparingValue2={editInquiry.mainProject.name}
 				displayValue="name"
 				filteredData={getFilteredMainProjects}
 				hasDataObject={true}
@@ -392,24 +423,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.mainProject.name}
 				tabIndex={4}
-				value={newInquiry.mainProject.name}
-				width="w-full"
-			/>
-		);
-	};
-
-	const uiNotes = () => {
-		return (
-			<TextArea
-				icon={faNoteSticky}
-				isNew={false}
-				key={1}
-				label="Notes"
-				onChange={(event) => handleInputs("note", event.target.value)}
-				onKeyDown={() => {}}
-				rows={2}
-				tabIndex={10}
-				value={newInquiry.note}
+				value={editInquiry.mainProject.name}
 				width="w-full"
 			/>
 		);
@@ -436,7 +450,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onChange={(event) => handleInputs("quote", event.target.value)}
 				onKeyPress={() => {}}
 				tabIndex={8}
-				value={MyGlobal.ThousandSeparator(newInquiry.quote)}
+				value={editInquiry.quote}
 				width="w-full"
 			/>
 		);
@@ -447,13 +461,13 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={newInquiry.reference.name}
+				comparingValue2={editInquiry.reference.name}
 				displayValue="name"
 				filteredData={getFilteredReferences}
 				hasDataObject={true}
 				icon={faUser}
 				isNew={false}
-				isReadOnly={false}
+				isReadOnly={!isUserAdministrator}
 				label="Reference"
 				onChange={(event) => handleInputs("reference", event)}
 				onClick={() => addNewReference(otherData.searched.reference.name)}
@@ -467,31 +481,12 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		);
 	};
 
-	const uiStatus = () => {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue={newInquiry.status}
-				filteredData={getFilteredStatuses}
-				icon={faCircleExclamation}
-				label="Status"
-				onChange={(event) => handleInputs("status", event)}
-				onClick={() => {}}
-				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
-				searchedItem={otherData.searched.status}
-				tabIndex={9}
-				value={newInquiry.status}
-				width="w-full"
-			/>
-		);
-	};
-
 	const uiSubProjects = () => {
 		return (
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={newInquiry.subProject.name}
+				comparingValue2={editInquiry.subProject.name}
 				displayValue="name"
 				filteredData={getFilteredSubProjects}
 				hasDataObject={true}
@@ -505,7 +500,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.subProject.name}
 				tabIndex={5}
-				value={newInquiry.subProject.name}
+				value={editInquiry.subProject.name}
 				width="w-full"
 			/>
 		);
@@ -526,7 +521,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				<div className="flex w-full space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 					<div className="flex w-full justify-start items-center">
-						<span className="view-heading">New Inquiry</span>
+						<span className="view-heading">Edit Inquiry</span>
 					</div>
 				</div>
 			</div>
@@ -545,19 +540,19 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">
 						{uiDate()}
 						{uiQuote()}
-						{uiStatus()}
 					</div>
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiFollowUps()}</div>
-					<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiNotes()}</div>
 				</div>
 			</div>
 			<footer className="w-full dialog-footer">
-				<button className={addButtonStyle} onClick={() => togglePreviewBox("")}>
+				<button className={editButtonStyle} onClick={() => togglePreviewBox("")}>
 					{uiPreview()}
 				</button>
 			</footer>
 
-			{otherData.isPreviewBoxOpen && <NewInquiryPreview mount={otherData.isPreviewBoxOpen} selectedInquiry={newInquiry} unmount={togglePreviewBox} />}
+			{otherData.isPreviewBoxOpen && (
+				<EditInquiryPreview editInquiry={editInquiry} mount={otherData.isPreviewBoxOpen} oldInquiry={oldInquiry} unmount={togglePreviewBox} />
+			)}
 		</>
 	);
 }

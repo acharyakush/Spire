@@ -23,7 +23,6 @@
 # misc
 .DS_Store
 *.pem
-*.log
 
 # debug
 npm-debug.log*
@@ -37,3 +36,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+public/error-logs.log
+error-logs.log

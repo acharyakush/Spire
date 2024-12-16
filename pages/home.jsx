@@ -59,12 +59,12 @@ export default function Home() {
 		const newTheme = data.theme == "light" ? "dark" : "light";
 		MyGlobal.Storages.Local.Set("AppMode", newTheme);
 
-		setData((s) => ({ ...s, isDarkModeEnabled: !data.isDarkModeEnabled, theme: newTheme }));
+		setData((old) => ({ ...old, isDarkModeEnabled: !data.isDarkModeEnabled, theme: newTheme }));
 	};
 
 	const closeProjectsView = () => {
-		setData((s) => ({
-			...s,
+		setData((old) => ({
+			...old,
 			selectedModuleIndex: 0,
 			selectedModule: Constants.primaryModules.dashboard.name,
 			singleProjectObject: {},
@@ -78,9 +78,9 @@ export default function Home() {
 		const isDarkModeEnabled = MyGlobal.GetTheme() !== "light";
 
 		const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
-		colorScheme.addEventListener("change", (e) => setData((s) => ({ ...s, isDarkModeEnabled: e.matches, theme: e.matches ? "dark" : "light" })));
+		colorScheme.addEventListener("change", (e) => setData((old) => ({ ...old, isDarkModeEnabled: e.matches, theme: e.matches ? "dark" : "light" })));
 
-		setData((s) => ({ ...s, isDarkModeEnabled: isDarkModeEnabled, theme: initialTheme }));
+		setData((old) => ({ ...old, isDarkModeEnabled: isDarkModeEnabled, theme: initialTheme }));
 	};
 
 	const getPermissions = async () => {
@@ -118,10 +118,10 @@ export default function Home() {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-settings" }));
 
 			if (response.status == 200) {
-				setData((s) => ({ ...s, settings: response.data }));
+				setData((old) => ({ ...old, settings: response.data }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "Get All Staff");
+			MyGlobal.HandleErrors(error, "Get Settings");
 		}
 	};
 
@@ -182,11 +182,11 @@ export default function Home() {
 				response.data.administrators.forEach((administrator) => allUsers.push(administrator));
 				response.data.employees.forEach((employee) => allUsers.push(employee));
 
-				setData((s) => ({ ...s, allUsers }));
+				setData((old) => ({ ...old, allUsers }));
 				MyGlobal.SetAllUsers(allUsers);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "Get All Users");
+			MyGlobal.HandleErrors(error, "Get Users");
 		}
 	};
 
@@ -208,7 +208,7 @@ export default function Home() {
 	};
 
 	const setModule = (index, module) => {
-		setData((s) => ({ ...s, selectedModule: module.name, selectedModuleIndex: index }));
+		setData((old) => ({ ...old, selectedModule: module.name, selectedModuleIndex: index }));
 	};
 
 	const toggleActivitiesView = () => {
@@ -354,7 +354,7 @@ export default function Home() {
 				return (
 					<MenuItem
 						as="div"
-						className="p-3 space-x-3 cursor-pointer font-regular-11 black-text hovered-rows"
+						className="p-3 space-x-3 cursor-pointer border-y font-regular-11 black-text hovered-rows"
 						key={index}
 						onClick={() => getUserMenuClickAction(item)}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons(item)} />
@@ -372,7 +372,7 @@ export default function Home() {
 				</MenuButton>
 				<MenuItems
 					anchor="bottom"
-					className="absolute w-max mt-2 divide-y rounded bottom-shadow focus:outline-none black-white-background full-border black-text">
+					className="absolute w-max mt-2 rounded bottom-shadow focus:outline-none black-white-background full-border black-text">
 					<div className="flex flex-col p-2 font-medium-13">
 						<span>{standardName}</span>
 						<span className="font-regular-11 gray-text">{designation}</span>
