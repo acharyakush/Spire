@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 16, 2024 at 07:34 PM
+-- Generation Time: Dec 17, 2024 at 07:42 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -138,7 +138,17 @@ INSERT INTO `activities` (`id`, `user_id`, `activity`, `ip_address`, `user_agent
 (19, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:57', '', ''),
 (20, 'A3', 'Notes :: Added a note for inquiry IQ000001.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:52:47', '', ''),
 (21, 'A3', 'Notes :: Added a note for inquiry (IQ000001).', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:54:45', '', ''),
-(22, 'A3', 'Inquiries :: Edited inquiry (IQ000001).', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 23:26:19', '', '');
+(22, 'A3', 'Inquiries :: Edited inquiry (IQ000001).', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 23:26:19', '', ''),
+(23, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:35:57', '', ''),
+(24, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Hold to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:36:01', '', ''),
+(25, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:36:49', '', ''),
+(26, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Hold to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:36:51', '', ''),
+(27, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:37:01', '', ''),
+(28, 'A3', 'Inquiries :: Closed inquiry (IQ000001) due to Hello..', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:38:43', '', ''),
+(29, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:38:49', '', ''),
+(30, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:38:53', '', ''),
+(31, 'A3', 'Inquiries :: Added new project (PJ000001).', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 23:48:42', '', ''),
+(32, 'A3', 'Added new inquiry IQ000002.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 00:05:19', '', '');
 
 -- --------------------------------------------------------
 
@@ -175,6 +185,66 @@ INSERT INTO `administrators` (`id`, `first_name`, `last_name`, `full_name`, `use
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `administrators_companies`
+--
+
+CREATE TABLE `administrators_companies` (
+  `id` varchar(4) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `address` varchar(500) NOT NULL,
+  `contact_number` varchar(15) NOT NULL,
+  `email_address` varchar(100) NOT NULL,
+  `pan` varchar(10) NOT NULL,
+  `gstin` varchar(15) NOT NULL,
+  `terms_conditions` text NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `created_by` varchar(8) NOT NULL,
+  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp(),
+  `updated_by` varchar(8) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `administrators_companies`
+--
+
+INSERT INTO `administrators_companies` (`id`, `name`, `address`, `contact_number`, `email_address`, `pan`, `gstin`, `terms_conditions`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
+('AC01', 'Signiix Advisors', 'D-608, The First, Behind ITC Narmada, Vastrapur - 3800016', '9898110703', 'admin@signiixadvisors.com', 'BBXPA8126Q', '', '1. Payment is due within 30 days from the invoice date unless otherwise agreed in writing.nnn.2. A late fee of 1.5% per month will be applied to overdue balances.nnn.3. Any disputes regarding this invoice must be communicated within 15 days of receipts.nnn.4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A1', NULL, NULL),
+('AC02', 'Branchitects Firm', 'AFF8, Aakansha Flats, Opp Jaymala Cross Roads, Isanpur, Ahmedabad - 3800008', '792265411259', 'support@branchitects.com', 'BBXPA8126A', '', '1. Payment is due within 15 days from the invoice date unless otherwise agreed in writing.nnn.2. A late fee of 3.5% per month will be applied to overdue balances.nnn.3. Any disputes regarding this invoice must be communicated within 30 days of receipt.nnn.4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A1', NULL, NULL),
+('AC03', 'Pandya Sharma', 'D-608, The First, Behind ITC Narmada, Vastrapur - 3800016', '7925460175', 'support@pandya.sharma.com', 'BBXPA8126Q', '29GGGGG1314R9Z6', '1. Payment is due within 30 days from the invoice date unless otherwise agreed in writing.nnn.2. A late fee of 1.5% per month will be applied to overdue balances.nnn.3. Any disputes regarding this invoice must be communicated within 15 days of receipts.nnn.4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A3', NULL, NULL),
+('AC04', 'Abhishek Gor', '101, Shakti Flora, 9B Prankunj Society, Kankaria, Ahmedabad', '8000721554', 'abhishekgor@hotmail.com', 'BADGP9433M', 'NA', 'General', '2024-12-17 20:02:11', 'A3', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `administrators_companies_banks`
+--
+
+CREATE TABLE `administrators_companies_banks` (
+  `id` varchar(8) NOT NULL,
+  `administrator_company_id` varchar(4) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `account_number` varchar(50) NOT NULL,
+  `ifsc_code` varchar(20) NOT NULL,
+  `branch_name` varchar(100) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `created_by` varchar(8) NOT NULL,
+  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp(),
+  `updated_by` varchar(8) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `administrators_companies_banks`
+--
+
+INSERT INTO `administrators_companies_banks` (`id`, `administrator_company_id`, `name`, `account_number`, `ifsc_code`, `branch_name`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
+('BK01', 'AC01', 'HDFC Bank Limited', '50200093685321', 'HDFC0000383', 'Naranpura Branch', '2024-12-17 20:03:18', 'A1', NULL, ''),
+('BK02', 'AC02', 'Bandhan Bank', '10210010518171', 'BDBL0001474', 'Panchwati Branch', '2024-12-17 20:03:18', 'A1', NULL, ''),
+('BK03', 'AC03', 'HDFC Bank', '50200061991892', 'HDFC0005064', 'Motera Branch', '2024-12-17 20:03:18', 'A1', NULL, ''),
+('BK04', 'AC04', 'Bank Of Baroda', '18260100014353', 'BARB0BHAIRA', 'Bhairavnath Ahmedabad', '2024-12-17 20:03:18', 'A1', NULL, '');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `clients`
 --
 
@@ -205,7 +275,8 @@ CREATE TABLE `clients` (
 --
 
 INSERT INTO `clients` (`id`, `affiliate_ids`, `company_id`, `reference_id`, `name`, `address`, `contact_number`, `email_address`, `industry`, `is_confirmed`, `is_deleted`, `joined_on`, `notes`, `rating`, `tags`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
-('CN000001', NULL, NULL, 'RF000001', 'Kush Acharya', NULL, 8780577704, 'acharyakush2604@gmail.com', NULL, 0, 0, '2024-12-15 15:28:07', NULL, 0, NULL, '2024-12-15 15:28:07', NULL, '2024-12-15 15:28:07', NULL);
+('CN000001', NULL, 'CP000001', 'RF000001', 'Kush Acharya', NULL, 8780577704, 'acharyakush2604@gmail.com', NULL, 1, 0, '2024-12-15 15:28:07', NULL, 0, NULL, '2024-12-15 15:28:07', NULL, '2024-12-15 15:28:07', NULL),
+('CN000002', NULL, NULL, 'RF000002', 'Kevin Vyas', NULL, 8780577812, 'vyas.kevin@outlook.com', NULL, 0, 0, '2024-12-18 00:05:18', NULL, 0, NULL, '2024-12-18 00:05:18', NULL, '2024-12-18 00:05:18', NULL);
 
 -- --------------------------------------------------------
 
@@ -227,9 +298,16 @@ CREATE TABLE `companies` (
   `total_affiliate_fees` decimal(12,2) DEFAULT NULL CHECK (`total_affiliate_fees` >= 0),
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `created_by` varchar(8) NOT NULL,
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp(),
   `updated_by` varchar(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `companies`
+--
+
+INSERT INTO `companies` (`id`, `client_id`, `name`, `contact_number`, `email_address`, `address`, `pan`, `gst`, `reimbursement_voucher`, `invoice_fees`, `total_affiliate_fees`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
+('CP000001', 'CN000001', 'Sun Pharma Pvt Ltd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-12-17 23:48:41', 'A3', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -332,7 +410,8 @@ CREATE TABLE `inquiries` (
 --
 
 INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `sub_project_id`, `entry_date`, `contact_number`, `email_address`, `follow_ups`, `is_closed`, `closure_reason`, `quote`, `status`, `tags`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
-('IQ000001', 'CN000001', 'RF000001', 'MP000004', 'SP000003', '2024-12-15 09:39:42', 8780577704, 'acharyakush2604@gmail.com', 'A1,A2', 0, '', 2500.00, 'Open', NULL, '2024-12-15 15:28:07', 'A3', '0000-00-00 00:00:00', 'A3');
+('IQ000001', 'CN000001', 'RF000001', 'MP000004', 'SP000003', '2024-12-15 09:39:42', 8780577704, 'acharyakush2604@gmail.com', 'A1,A2', 0, '', 2500.00, 'Confirmed', NULL, '2024-12-15 15:28:07', 'A3', '2024-12-17 21:38:53', 'A3'),
+('IQ000002', 'CN000002', 'RF000002', 'MP000011', 'SP000006', '2024-12-17 18:23:01', 8780577812, 'vyas.kevin@outlook.com', 'A3', 0, NULL, 15000.00, 'Open', NULL, '2024-12-18 00:05:18', 'A3', '2024-12-18 00:05:18', NULL);
 
 -- --------------------------------------------------------
 
@@ -435,7 +514,9 @@ CREATE TABLE `notes` (
 INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `user_id`, `content`, `entry_date`, `source`) VALUES
 (1, 'IQ000001', NULL, 'A3', 'New client. Reference from CharteredWorks.', '2024-12-15 15:28:07', 'Inquiries'),
 (2, 'IQ000001', NULL, 'A3', 'Test inquiry.', '2024-12-16 20:52:47', 'Inquiries'),
-(3, 'IQ000001', NULL, 'A3', 'Inquiry note #3', '2024-12-16 20:54:45', 'Inquiries');
+(3, 'IQ000001', NULL, 'A3', 'Inquiry note #3', '2024-12-16 20:54:45', 'Inquiries'),
+(10, 'IQ000001', 'PJ000001', 'A3', 'First project. Wish me good luck.', '2024-12-17 23:48:41', 'Projects'),
+(11, 'IQ000002', NULL, 'A3', 'Lives in Portugal.', '2024-12-18 00:05:18', 'Inquiries');
 
 -- --------------------------------------------------------
 
@@ -506,14 +587,14 @@ CREATE TABLE `projects` (
   `id` varchar(8) NOT NULL,
   `client_id` varchar(8) NOT NULL,
   `company_id` varchar(8) NOT NULL,
-  `affiliate_ids` varchar(2000) NOT NULL,
+  `affiliate_ids` varchar(2000) DEFAULT NULL,
   `inquiry_id` varchar(8) NOT NULL,
   `government_id` varchar(100) DEFAULT NULL,
   `main_project_id` varchar(8) NOT NULL,
   `sub_project_id` varchar(8) NOT NULL,
   `quote` decimal(10,2) NOT NULL CHECK (`quote` >= 0),
   `due_on` datetime NOT NULL DEFAULT current_timestamp(),
-  `total_affiliate_fees` decimal(10,2) NOT NULL CHECK (`total_affiliate_fees` >= 0),
+  `total_affiliate_fees` decimal(10,2) DEFAULT NULL,
   `reimbursement_voucher` decimal(10,2) NOT NULL CHECK (`reimbursement_voucher` >= 0),
   `invoice_fees` decimal(10,2) NOT NULL CHECK (`invoice_fees` >= 0),
   `invoice_firm` varchar(500) NOT NULL,
@@ -524,9 +605,16 @@ CREATE TABLE `projects` (
   `is_edited` tinyint(1) DEFAULT 0,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `created_by` varchar(8) NOT NULL,
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp(),
   `updated_by` varchar(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `projects`
+--
+
+INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `government_id`, `main_project_id`, `sub_project_id`, `quote`, `due_on`, `total_affiliate_fees`, `reimbursement_voucher`, `invoice_fees`, `invoice_firm`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
+('PJ000001', 'CN000001', 'CP000001', NULL, 'IQ000001', NULL, 'MP000004', 'SP000003', 2500.00, '2024-12-15 04:09:42', NULL, 1250.00, 575.00, 'AC01', 'A3,A2', '2024-12-17 23:48:41', 'Active', 0, 0, '2024-12-17 23:48:41', 'A3', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -656,7 +744,8 @@ CREATE TABLE `the_references` (
 --
 
 INSERT INTO `the_references` (`id`, `client_id`, `name`, `address`, `contact_number`, `email_address`, `is_deleted`, `joined_on`, `notes`, `organization`, `rating`, `relationship`, `tags`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
-('RF000001', 'CN000001', 'Yash Chopra', NULL, NULL, NULL, 0, '2024-12-15 15:28:07', NULL, NULL, 0, NULL, NULL, '2024-12-15 15:28:07', NULL, '2024-12-15 15:28:07', NULL);
+('RF000001', 'CN000001', 'Yash Chopra', NULL, NULL, NULL, 0, '2024-12-15 15:28:07', NULL, NULL, 0, NULL, NULL, '2024-12-15 15:28:07', NULL, '2024-12-15 15:28:07', NULL),
+('RF000002', 'CN000002', 'Vrushank Soni', NULL, NULL, NULL, 0, '2024-12-18 00:05:18', NULL, NULL, 0, NULL, NULL, '2024-12-18 00:05:18', NULL, '2024-12-18 00:05:18', NULL);
 
 --
 -- Indexes for dumped tables
@@ -676,6 +765,20 @@ ALTER TABLE `administrators`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `username` (`username`),
   ADD UNIQUE KEY `email_address` (`email_address`);
+
+--
+-- Indexes for table `administrators_companies`
+--
+ALTER TABLE `administrators_companies`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email_address` (`email_address`);
+
+--
+-- Indexes for table `administrators_companies_banks`
+--
+ALTER TABLE `administrators_companies_banks`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_administrators_companies_banks_administrator_company_id` (`administrator_company_id`);
 
 --
 -- Indexes for table `clients`
@@ -789,7 +892,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -807,7 +910,7 @@ ALTER TABLE `licenses`
 -- AUTO_INCREMENT for table `notes`
 --
 ALTER TABLE `notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -824,6 +927,12 @@ ALTER TABLE `statuses`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `administrators_companies_banks`
+--
+ALTER TABLE `administrators_companies_banks`
+  ADD CONSTRAINT `fk_administrators_companies_banks_administrator_company_id` FOREIGN KEY (`administrator_company_id`) REFERENCES `administrators_companies` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `clients`
