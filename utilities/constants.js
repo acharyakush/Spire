@@ -28,6 +28,13 @@ const MyConstants = Object.freeze({
 			GetInquiriesSupportData: `api/inquiries/getInquiriesSupportData`,
 			GetNewInquirySupportData: `api/inquiries/getNewInquirySupportData`,
 		}),
+		Projects: Object.freeze({
+			AddProject: `api/projects/addProject`,
+			EditProject: `api/projects/editProject`,
+			GetProjects: `api/projects/getProjects`,
+			GetProjectsSupportData: `api/projects/getProjectsSupportData`,
+			GetNewProjectSupportData: `api/projects/getNewProjectSupportData`,
+		}),
 		Setter: `api/setter`,
 	}),
 	Messages: Object.freeze({

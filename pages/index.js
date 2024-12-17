@@ -27,6 +27,8 @@ export default function Home() {
 	const passwordType = !userData.revealPassword ? "password" : "text";
 	const eyeIconStyle = userData.password.length ? "w-5 cursor-pointer visible" : "invisible";
 	const signInButtonLabel = userData.isLoading ? "Signing in ..." : "Sign In";
+	const signInButtonStyle = userData.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	const signInButtonClass = `primary-button-wide ${signInButtonStyle}`;
 
 	// Functions
 	const autofill = () => {
@@ -146,7 +148,7 @@ export default function Home() {
 				/>
 
 				<div className="flex w-full px-2 py-4 justify-center items-center">
-					<button className="primary-button-wide" disabled={userData.isLoading} onClick={() => authenticate("click")} tabIndex={3}>
+					<button className={signInButtonClass} disabled={userData.isLoading} onClick={() => authenticate("click")} tabIndex={3}>
 						{signInButtonLabel}
 					</button>
 				</div>

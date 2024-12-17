@@ -76,6 +76,11 @@ export const MyGlobal = Object.freeze({
 	},
 
 	FormatCurrency: (value) => {
+		if (typeof value === "string") {
+			const result = MyGlobal.GetNumbers(value);
+			return result.toLocaleString("en-IN", { style: "currency", currency: "INR" });
+		}
+
 		return Number(value).toLocaleString("en-IN", { style: "currency", currency: "INR" });
 	},
 

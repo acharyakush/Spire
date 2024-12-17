@@ -95,7 +95,6 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 							<div className="flex w-full px-4 justify-center items-center">
 								<TextArea
 									icon={faNoteSticky}
-									isNew={false}
 									key={1}
 									label="Notes"
 									onChange={(e) => setNote(e.target.value)}
@@ -292,7 +291,6 @@ export function CloseInquiry({ mount, reloadInquiries, selectedInquiry, unmount 
 						<div className="flex flex-col w-full p-2.5 justify-center items-center">
 							<TextArea
 								icon={faNoteSticky}
-								isNew={false}
 								key={1}
 								label="Reason"
 								onChange={(e) => setReason(e.target.value)}

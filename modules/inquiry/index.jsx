@@ -8,9 +8,11 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import NewInquiry from "./NewInquiry";
+import EditInquiry from "./EditInquiry";
 import InquiryNotes from "./InquiryNotes";
 import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
+import NewProject from "../project/NewProject";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
@@ -33,7 +35,6 @@ import {
 	faSortAmountAsc,
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
-import EditInquiry from "./EditInquiry";
 
 export default function Inquiry() {
 	// Business Logic
@@ -80,6 +81,10 @@ export default function Inquiry() {
 	const blankDataWrapper = "flex w-full h-full justify-center items-center font-regular-12 gray-text black-white-background full-border";
 
 	// Functions
+	const closeNewProjectView = () => {
+		setHasMounted((old) => ({ ...old, newProject: false }));
+	};
+
 	const detectKeystrokes = (event) => {
 		switch (true) {
 			case event.ctrlKey && event.key == "f":
@@ -159,8 +164,9 @@ export default function Inquiry() {
 			const aNotesCount = getTotalNotesByInquiry(a.id);
 			const bNotesCount = getTotalNotesByInquiry(b.id);
 
-			const aReference = data.allReferences.filter((reference) => reference.id == a.reference_id).at(0).name;
-			const bReference = data.allReferences.filter((reference) => reference.id == b.reference_id).at(0).name;
+			const aReference = data.allReferences.length ? data.allReferences.filter((reference) => reference.id == a.reference_id).at(0).name : "";
+
+			const bReference = data.allReferences.length ? data.allReferences.filter((reference) => reference.id == b.reference_id).at(0).name : "";
 
 			const aSubProject = getSubProjectName(a.sub_project_id);
 			const bSubProject = getSubProjectName(b.sub_project_id);
@@ -528,8 +534,12 @@ export default function Inquiry() {
 			setHasMounted((old) => ({ ...old, changeStatus: true }));
 		} else {
 			if (data.selectedInquiryForStatusChange.new_status != STATUSES.Closed) {
-				setData((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
-				setHasMounted((old) => ({ ...old, changeStatus: false }));
+				if (data.selectedInquiryForStatusChange.new_status == STATUSES.Confirmed) {
+					setHasMounted((old) => ({ ...old, changeStatus: false, newProject: true }));
+				} else {
+					setData((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
+					setHasMounted((old) => ({ ...old, changeStatus: false }));
+				}
 			} else {
 				setHasMounted((old) => ({ ...old, changeStatus: false, closeInquiry: true }));
 			}
@@ -700,7 +710,7 @@ export default function Inquiry() {
 		} else if (hasMounted.newInquiry) {
 			return <NewInquiry reloadInquiries={getInquiries} unmount={toggleNewInquiryView} />;
 		} else if (hasMounted.newProject) {
-			// return <NewProject adminCompanies={data.adminCompanies} allClients={data.clients.all} allInquiries={data.inquiries.api} close={toggleNewProjectBox} refresh={getInquiries} thisInquiry={data.thisInquiry} />;
+			return <NewProject reloadInquiries={getInquiries} selectedInquiry={data.selectedInquiryForStatusChange} unmount={closeNewProjectView} />;
 		} else if (hasMounted.notes) {
 			return (
 				<InquiryNotes
@@ -918,7 +928,7 @@ export default function Inquiry() {
 				return status;
 			})
 			.map((status, index) => {
-				const label = status == STATUSES.Closed ? "Close" : status;
+				const label = status == STATUSES.Closed ? "Close" : status == STATUSES.Confirmed ? "Confirm" : status;
 
 				return (
 					<MenuItem
@@ -991,10 +1001,6 @@ export default function Inquiry() {
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center light-gray-background">
 			{uiMain()}
-
-			{hasMounted.convertToProject && (
-				<InquiryModals.ConvertToProject close={toggleConvertToProjectBox} inquiry={data.selectedInquiryForNotes} open={hasMounted.convertToProject} />
-			)}
 
 			{hasMounted.changeStatus && (
 				<ChangeStatus

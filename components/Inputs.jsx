@@ -104,7 +104,6 @@ export const ComboBox2 = ({
 	filteredData,
 	hasDataObject,
 	icon,
-	isNew,
 	isReadOnly,
 	label,
 	onChange,
@@ -118,7 +117,6 @@ export const ComboBox2 = ({
 }) => {
 	const aesthetics = isReadOnly ? "cursor-not-allowed opacity-50" : "cursor-default opacity-100";
 	const clickEvent = isReadOnly ? "pointer-events-none" : "pointer-events-auto";
-	const colour = isNew ? "green-text" : "primary-text";
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 ${aesthetics}`;
 	const inputWrapper = `relative w-full ${clickEvent}`;
 	const noItemFound = allowCreatingNewItem ? `Create ${MyGlobal.Capitalize(searchedItem)}` : "Nothing found.";
@@ -140,7 +138,7 @@ export const ComboBox2 = ({
 					<Combobox onChange={onChange} onKeyPress={onKeyPress} value={value}>
 						<div className={inputWrapper}>
 							<div className="flex w-full h-[34px] px-2.5 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow light-gray-background full-border">
-								<FontAwesomeIcon className={colour} icon={icon} />
+								<FontAwesomeIcon className="primary-text" icon={icon} />
 								<ComboboxInput
 									autoComplete="off"
 									className="w-full p-2 font-medium-11 bg-transparent black-text outline-none"
@@ -177,7 +175,7 @@ export const ComboBox2 = ({
 				const isSelected = _comparingValue1 == comparingValue2;
 				const dataObject = hasDataObject ? { id: m.id, name: m.name } : m;
 
-				const nameStyle = isSelected ? `font-medium-11 ${colour}` : "font-regular-11 black-text";
+				const nameStyle = isSelected ? "font-medium-11 primary-text" : "font-regular-11 black-text";
 				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y hovered-rows ${
 					isSelected && `primary-background-transparent-01`
 				}`;
@@ -185,7 +183,7 @@ export const ComboBox2 = ({
 				return (
 					<ComboboxOption className={wrapper} key={n} value={dataObject}>
 						<span className={nameStyle}>{_displayValue}</span>
-						{isSelected && <FontAwesomeIcon className={colour} icon={faCheck} />}
+						{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
 					</ComboboxOption>
 				);
 			});
@@ -278,15 +276,14 @@ export const ComboBoxWithChips = ({
 	return uiBox();
 };
 
-export const DatePicker = ({ icon, isNew, label, onChange, tabIndex, value, width }) => {
-	const colour = isNew ? "green-text" : "primary-text";
+export const DatePicker = ({ icon, label, onChange, tabIndex, value, width }) => {
 	const mainWrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center`;
 
 	return (
 		<div className={mainWrapper}>
 			<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">{label}</span>
 			<div className="flex w-full h-[34px] px-2 space-x-2 justify-start items-center rounded bottom-shadow light-gray-background full-border">
-				<FontAwesomeIcon className={colour} icon={icon} />
+				<FontAwesomeIcon className="primary-text" icon={icon} />
 				<ReactDatePicker
 					autoFocus={false}
 					className="bg-transparent w-full outline-none relative font-medium-11 black-text"
@@ -349,20 +346,19 @@ export const Password = ({ eyeIconStyle, eyeIconUi, isNew, onChange, reference, 
 	);
 };
 
-export const TextInput = ({ disable = false, icon, id, isNew, isReadOnly = false, label, maxLength = 255, onChange, onKeyPress, tabIndex, value, width }) => {
+export const TextInput = ({ disable = false, icon, id, isReadOnly = false, label, maxLength = 255, onChange, onKeyPress, tabIndex, value, width }) => {
 	const aesthetics = disable || isReadOnly ? "opacity-50" : " opacity-100";
 	const clickEvent = isReadOnly ? `pointer-events-none ${aesthetics}` : "pointer-events-auto";
 	const cursor = isReadOnly ? "cursor-not-allowed" : "cursor-default";
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center ${cursor}`;
 
 	const inputWrapper = `flex w-full h-[34px] px-2 space-x-1 justify-start items-center ${clickEvent} rounded bottom-shadow full-border light-gray-background`;
-	const colour = isNew ? "green-text" : "primary-text";
 
 	return (
 		<div className={wrapper}>
 			<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">{label}</span>
 			<div className={inputWrapper}>
-				<FontAwesomeIcon className={colour} icon={icon} />
+				<FontAwesomeIcon className="primary-text" icon={icon} />
 				<input
 					autoComplete="off"
 					className="inputs"
@@ -402,9 +398,8 @@ export const TextInputNative = ({ id, icon, onChange, onClearButtonClick, placeh
 	);
 };
 
-export const TextArea = ({ icon, isNew, isReadOnly = false, label, onChange, onKeyDown, rows, tabIndex, value, width }) => {
+export const TextArea = ({ icon, isReadOnly = false, label, onChange, onKeyDown, rows, tabIndex, value, width }) => {
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center`;
-	const colour = isNew ? "green-text" : "primary-text";
 	const inputWrapper = `flex w-full h-full p-2 space-x-1 justify-start items-start rounded bottom-shadow light-gray-background full-border`;
 
 	return (

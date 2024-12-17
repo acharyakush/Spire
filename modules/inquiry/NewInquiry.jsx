@@ -69,7 +69,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				followUps: getFollowUpsIds(),
 				mainProjectId: newInquiry.mainProject.id,
 				note: MyGlobal.EscapeString(newInquiry.note),
-				quote: Number(newInquiry.quote),
+				quote: MyGlobal.GetNumbers(newInquiry.quote),
 				userId: MyGlobal.GetUserId(),
 			};
 
@@ -99,7 +99,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		const revisedCopy = copy.filter((client) => client.id != 0);
 		revisedCopy.unshift({ id: 0, name });
 
-		handleSearch("client", "");
+		setSearch("client", "");
 
 		setNewInquiry((s) => ({ ...s, client: { id: 0, name } }));
 		setOtherData((s) => ({ ...s, allClients: { api: revisedCopy, apiCopy: revisedCopy } }));
@@ -112,17 +112,17 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		const revisedCopy = copy.filter((reference) => reference.id != 0);
 		revisedCopy.unshift({ id: 0, name });
 
-		handleSearch("reference", "");
+		setSearch("reference", "");
 
 		setNewInquiry((s) => ({ ...s, reference: { id: 0, name } }));
 		setOtherData((s) => ({ ...s, allReferences: { api: revisedCopy, apiCopy: revisedCopy } }));
 	};
 
-	const addSubProject = (subProject) => {
+	const addNewSubProject = (subProject) => {
 		const copy = [...otherData.allSubProjects.apiCopy];
 		copy.unshift({ id: 0, name: MyGlobal.Capitalize(subProject) });
 
-		handleSearch("subProject", "");
+		setSearch("subProject", "");
 
 		setNewInquiry((s) => ({ ...s, subProject: copy.at(0) }));
 		setOtherData((s) => ({ ...s, allSubProjects: { api: copy, apiCopy: copy } }));
@@ -224,7 +224,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		return otherData.allReferences.apiCopy.filter((reference) => reference.id == newInquiry.reference.id).at(0);
 	};
 
-	const handleFollowUps = (selectedUser) => {
+	const setFollowUps = (selectedUser) => {
 		let revisedData = [];
 		const copy = [...newInquiry.followUps];
 
@@ -238,7 +238,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		setNewInquiry((s) => ({ ...s, followUps: revisedData }));
 	};
 
-	const handleInputs = (key, value) => {
+	const setInputs = (key, value) => {
 		if (key == "client") {
 			const client = otherData.allClients.apiCopy.filter((client) => client.id == value.id).at(0);
 			const isExistingClient = client.id !== 0;
@@ -250,7 +250,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			const referenceName = isExistingClient ? otherData.allReferences.apiCopy.filter((reference) => reference.id == referenceId).at(0)?.name : "";
 
 			if (isExistingClient) {
-				handleSearch("client", "");
+				setSearch("client", "");
 			}
 
 			setNewInquiry((s) => ({
@@ -261,17 +261,17 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				reference: { id: referenceId, name: referenceName },
 			}));
 		} else if (key == "reference") {
-			handleSearch("reference", "");
+			setSearch("reference", "");
 			setNewInquiry((s) => ({ ...s, reference: { id: value.id, name: value.name } }));
 		} else if (key == "mainProject" || key == "subProject") {
-			handleSearch(key, "");
+			setSearch(key, "");
 			setNewInquiry((s) => ({ ...s, [key]: { ...s[key], id: value.id, name: value.name } }));
 		} else {
 			setNewInquiry((s) => ({ ...s, [key]: value }));
 		}
 	};
 
-	const handleSearch = (key, value) => {
+	const setSearch = (key, value) => {
 		setOtherData((s) => ({ ...s, searched: { ...s.searched, [key]: { ...s.searched[key], name: value } } }));
 	};
 
@@ -298,12 +298,11 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				filteredData={getFilteredClients}
 				hasDataObject={true}
 				icon={faUser}
-				isNew={false}
 				isReadOnly={false}
 				label="Client"
-				onChange={(event) => handleInputs("client", event)}
+				onChange={(event) => setInputs("client", event)}
 				onClick={() => addNewClient(otherData.searched.client.name)}
-				onInputChange={(event) => handleSearch("client", event.target.value)}
+				onInputChange={(event) => setSearch("client", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.client.name}
 				tabIndex={1}
@@ -317,10 +316,9 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		return (
 			<TextInput
 				icon={faPhone}
-				isNew={false}
 				label="Contact Number"
 				maxLength={10}
-				onChange={(event) => handleInputs("contactNumber", event.target.value)}
+				onChange={(event) => setInputs("contactNumber", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={2}
 				value={newInquiry.contactNumber}
@@ -332,7 +330,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	const uiEmailAddress = () => {
 		return (
 			<EmailAddress
-				onChange={(event) => handleInputs("emailAddress", event.target.value)}
+				onChange={(event) => setInputs("emailAddress", event.target.value)}
 				suffix=""
 				tabIndex={3}
 				value={newInquiry.emailAddress}
@@ -349,8 +347,8 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				icon={faUserGroup}
 				isMenuInverted={true}
 				onBlur={() => toggleFollowUpsMenu()}
-				onItemClick={(event) => handleFollowUps(event)}
-				onSelectedItemClick={(event) => handleFollowUps(event)}
+				onItemClick={(event) => setFollowUps(event)}
+				onSelectedItemClick={(event) => setFollowUps(event)}
 				selectedItems={newInquiry.followUps}
 				showList={showFollowUpsMenu}
 				source={MyGlobal.GetAllUsers()}
@@ -363,9 +361,8 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		return (
 			<DatePicker
 				icon={faCalendar}
-				isNew={false}
 				label="Date"
-				onChange={(event) => handleInputs("entryDate", event)}
+				onChange={(event) => setInputs("entryDate", event)}
 				tabIndex={7}
 				value={newInquiry.entryDate}
 				width="w-full"
@@ -383,12 +380,11 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				filteredData={getFilteredMainProjects}
 				hasDataObject={true}
 				icon={faFile}
-				isNew={false}
 				isReadOnly={false}
 				label="Main Project"
-				onChange={(event) => handleInputs("mainProject", event)}
+				onChange={(event) => setInputs("mainProject", event)}
 				onClick={() => {}}
-				onInputChange={(event) => handleSearch("mainProject", event.target.value)}
+				onInputChange={(event) => setSearch("mainProject", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.mainProject.name}
 				tabIndex={4}
@@ -402,10 +398,9 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		return (
 			<TextArea
 				icon={faNoteSticky}
-				isNew={false}
 				key={1}
 				label="Notes"
-				onChange={(event) => handleInputs("note", event.target.value)}
+				onChange={(event) => setInputs("note", event.target.value)}
 				onKeyDown={() => {}}
 				rows={2}
 				tabIndex={10}
@@ -431,9 +426,8 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		return (
 			<TextInput
 				icon={faIndianRupee}
-				isNew={false}
 				label="Quote"
-				onChange={(event) => handleInputs("quote", event.target.value)}
+				onChange={(event) => setInputs("quote", event.target.value)}
 				onKeyPress={() => {}}
 				tabIndex={8}
 				value={MyGlobal.ThousandSeparator(newInquiry.quote)}
@@ -452,12 +446,11 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				filteredData={getFilteredReferences}
 				hasDataObject={true}
 				icon={faUser}
-				isNew={false}
 				isReadOnly={false}
 				label="Reference"
-				onChange={(event) => handleInputs("reference", event)}
+				onChange={(event) => setInputs("reference", event)}
 				onClick={() => addNewReference(otherData.searched.reference.name)}
-				onInputChange={(event) => handleSearch("reference", event.target.value)}
+				onInputChange={(event) => setSearch("reference", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.reference.name}
 				tabIndex={6}
@@ -475,7 +468,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				filteredData={getFilteredStatuses}
 				icon={faCircleExclamation}
 				label="Status"
-				onChange={(event) => handleInputs("status", event)}
+				onChange={(event) => setInputs("status", event)}
 				onClick={() => {}}
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.status}
@@ -496,12 +489,11 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				filteredData={getFilteredSubProjects}
 				hasDataObject={true}
 				icon={faFile}
-				isNew={false}
 				isReadOnly={false}
 				label="Sub Project"
-				onChange={(event) => handleInputs("subProject", event)}
-				onClick={() => addSubProject(otherData.searched.subProject.name)}
-				onInputChange={(event) => handleSearch("subProject", event.target.value)}
+				onChange={(event) => setInputs("subProject", event)}
+				onClick={() => addNewSubProject(otherData.searched.subProject.name)}
+				onInputChange={(event) => setSearch("subProject", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.subProject.name}
 				tabIndex={5}

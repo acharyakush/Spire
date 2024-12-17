@@ -35,7 +35,7 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 		emailAddress: "",
 		followUps: [],
 		mainProject: { id: 0, name: "" },
-		quote: 2500,
+		quote: 0,
 		reference: { id: 0, name: "" },
 		subProject: { id: 0, name: "" },
 	});
@@ -88,7 +88,7 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 		setOtherData((s) => ({ ...s, allReferences: { api: revisedCopy, apiCopy: revisedCopy } }));
 	};
 
-	const addSubProject = (subProject) => {
+	const addNewSubProject = (subProject) => {
 		const copy = [...otherData.allSubProjects.apiCopy];
 		copy.unshift({ id: 0, name: MyGlobal.Capitalize(subProject) });
 
@@ -327,7 +327,6 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 				filteredData={getFilteredClients}
 				hasDataObject={true}
 				icon={faUser}
-				isNew={false}
 				isReadOnly={!isUserAdministrator}
 				label="Client"
 				onChange={(event) => handleInputs("client", event)}
@@ -346,7 +345,6 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 		return (
 			<TextInput
 				icon={faPhone}
-				isNew={false}
 				isReadOnly={!isUserAdministrator}
 				label="Contact Number"
 				maxLength={10}
@@ -394,7 +392,6 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 		return (
 			<DatePicker
 				icon={faCalendar}
-				isNew={false}
 				label="Date"
 				onChange={(event) => handleInputs("entryDate", event)}
 				tabIndex={7}
@@ -414,7 +411,6 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 				filteredData={getFilteredMainProjects}
 				hasDataObject={true}
 				icon={faFile}
-				isNew={false}
 				isReadOnly={false}
 				label="Main Project"
 				onChange={(event) => handleInputs("mainProject", event)}
@@ -445,7 +441,6 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 		return (
 			<TextInput
 				icon={faIndianRupee}
-				isNew={false}
 				label="Quote"
 				onChange={(event) => handleInputs("quote", event.target.value)}
 				onKeyPress={() => {}}
@@ -466,7 +461,6 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 				filteredData={getFilteredReferences}
 				hasDataObject={true}
 				icon={faUser}
-				isNew={false}
 				isReadOnly={!isUserAdministrator}
 				label="Reference"
 				onChange={(event) => handleInputs("reference", event)}
@@ -491,11 +485,10 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 				filteredData={getFilteredSubProjects}
 				hasDataObject={true}
 				icon={faFile}
-				isNew={false}
 				isReadOnly={false}
 				label="Sub Project"
 				onChange={(event) => handleInputs("subProject", event)}
-				onClick={() => addSubProject(otherData.searched.subProject.name)}
+				onClick={() => addNewSubProject(otherData.searched.subProject.name)}
 				onInputChange={(event) => handleSearch("subProject", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.subProject.name}
