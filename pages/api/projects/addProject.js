@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
 		// New Project ID
 		await query("CALL generate_dynamic_id('PJ', 'projects', @new_project_id)", []);
-		const [projectResponse] = await query("SELECT @new_project_id AS new_id;");
+		const [projectResponse] = await query("SELECT @new_project_id AS new_id;", []);
 
 		// New Company ID
 		let newCompanyId = company.id;

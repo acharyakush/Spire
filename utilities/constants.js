@@ -132,6 +132,13 @@ const MyConstants = Object.freeze({
 			Hold: "Hold",
 			Open: "Open",
 		}),
+		Projects: Object.freeze({
+			Active: "Active",
+			Cancelled: "Cancelled",
+			Closed: "Closed",
+			Completed: "Completed",
+			Hold: "Hold",
+		}),
 	}),
 	TableHeaders: Object.freeze({
 		Inquiries: Object.freeze({
@@ -151,6 +158,18 @@ const MyConstants = Object.freeze({
 			date: "Date",
 			note: "Note",
 			writer: "Writer",
+		}),
+		Projects: Object.freeze({
+			Id: "ID",
+			GovermentId: "Gov ID",
+			Client: "Client",
+			Company: "Company",
+			MainProject: "Main Project",
+			SubProject: "Sub Project",
+			Teams: "Teams",
+			DueOn: "Due On",
+			LastNote: "Last Note",
+			Status: "Status",
 		}),
 	}),
 	ToastTypes: Object.freeze({

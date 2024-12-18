@@ -2,21 +2,48 @@
 	"[javascript]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
+	"css.styleSheets": ["public/styles/global.css"],
+	"debug.console.fontSize": 14,
+	"editor.acceptSuggestionOnEnter": "smart",
 	"editor.autoClosingBrackets": "always",
+	"editor.autoClosingComments": "always",
+	"editor.autoClosingDelete": "always",
 	"editor.autoClosingQuotes": "always",
 	"editor.autoIndent": "advanced",
-	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.fontFamily": "'Fira Code', Consolas, 'Courier New', monospace",
-	"editor.fontLigatures": true,
-	"editor.formatOnSave": true,
-	"editor.insertSpaces": true,
-	"editor.quickSuggestions": {
-		"other": true,
-		"comments": false,
-		"strings": true
+	"editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll": "always",
+		"source.organizeImports": "never"
 	},
+	"editor.cursorBlinking": "smooth",
+	"editor.cursorSmoothCaretAnimation": "on",
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.fontFamily": "'JetBrains Mono Light', 'Fira Code', Consolas, 'Courier New', monospace",
+	"editor.fontLigatures": true,
+	"editor.fontSize": 15,
+	"editor.formatOnSave": true,
+	"editor.formatOnSaveMode": "file",
+	"editor.formatOnType": true,
+	"editor.foldingImportsByDefault": true,
+	"editor.foldingStrategy": "indentation",
+	"editor.guides.bracketPairs": true,
+	"editor.guides.highlightActiveIndentation": true,
+	"editor.indentSize": "tabSize",
+	"editor.insertSpaces": true,
+	"editor.linkedEditing": true,
+	"editor.parameterHints.enabled": true,
+	"editor.quickSuggestions": {
+		"other": "on",
+		"comments": "off",
+		"strings": "on"
+	},
+	"editor.smoothScrolling": true,
 	"editor.suggest.snippetsPreventQuickSuggestions": false,
+	"editor.suggestSelection": "first",
+	"editor.tabCompletion": "on",
 	"editor.tabSize": 4,
+	"editor.wrappingIndent": "indent",
+	"editor.wrappingStrategy": "advanced",
 	"editor.wordWrap": "on",
 	"files.autoSave": "off",
 	"files.watcherExclude": {
@@ -24,14 +51,27 @@
 		"**/.git/subtree-cache/**": true,
 		"**/node_modules/**": true
 	},
+	"javascript.referencesCodeLens.enabled": true,
 	"javascript.suggest.autoImports": true,
+	"javascript.suggest.completeFunctionCalls": true,
+	"javascript.updateImportsOnFileMove.enabled": "always",
+	"javascript.validate.enable": true,
 	"prettier.bracketSameLine": true,
 	"prettier.htmlWhitespaceSensitivity": "ignore",
 	"prettier.printWidth": 160,
 	"prettier.semi": true,
-	"prettier.singleQuote": false,
 	"prettier.singleAttributePerLine": false,
-	"prettier.trailingComma": "all",
+	"prettier.singleQuote": false,
 	"prettier.tabWidth": 4,
-	"prettier.useTabs": true
+	"prettier.trailingComma": "all",
+	"prettier.useTabs": true,
+	"search.exclude": {
+		"**/node_modules": true,
+		"**/bower_components": true,
+		"**/*.code-search": true,
+		"/Manager": true,
+		"/Updater": true,
+		"/public/charts/*": true
+	},
+	"terminal.integrated.fontSize": 14
 }

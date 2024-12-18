@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 17, 2024 at 07:42 PM
+-- Generation Time: Dec 18, 2024 at 07:16 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -148,7 +148,20 @@ INSERT INTO `activities` (`id`, `user_id`, `activity`, `ip_address`, `user_agent
 (29, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:38:49', '', ''),
 (30, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:38:53', '', ''),
 (31, 'A3', 'Inquiries :: Added new project (PJ000001).', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 23:48:42', '', ''),
-(32, 'A3', 'Added new inquiry IQ000002.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 00:05:19', '', '');
+(32, 'A3', 'Added new inquiry IQ000002.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 00:05:19', '', ''),
+(33, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 00:12:39', '', ''),
+(34, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:39:44', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
+(35, 'A3', 'Inquiries :: Closed inquiry (IQ000002) due to Hello..', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:47:52', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
+(36, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:49:15', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
+(37, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:50:06', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
+(38, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Hold to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:50:10', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
+(39, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:50:27', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
+(40, 'A3', 'Inquiries :: Closed inquiry (IQ000002) due to Bye.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:55:03', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
+(41, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:55:08', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
+(42, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:55:14', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
+(43, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 20:34:14', '', ''),
+(44, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 22:35:21', 'jXuEufuJPjPediJAb2V0+7BLcfq+OzSyBBVXlIZBZch3Y1Q6SPAOd5AEXJC8sN235HbdfYaWoEab5c2SnkbfyQ==', ''),
+(45, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 23:45:53', '', '');
 
 -- --------------------------------------------------------
 
@@ -411,7 +424,7 @@ CREATE TABLE `inquiries` (
 
 INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `sub_project_id`, `entry_date`, `contact_number`, `email_address`, `follow_ups`, `is_closed`, `closure_reason`, `quote`, `status`, `tags`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
 ('IQ000001', 'CN000001', 'RF000001', 'MP000004', 'SP000003', '2024-12-15 09:39:42', 8780577704, 'acharyakush2604@gmail.com', 'A1,A2', 0, '', 2500.00, 'Confirmed', NULL, '2024-12-15 15:28:07', 'A3', '2024-12-17 21:38:53', 'A3'),
-('IQ000002', 'CN000002', 'RF000002', 'MP000011', 'SP000006', '2024-12-17 18:23:01', 8780577812, 'vyas.kevin@outlook.com', 'A3', 0, NULL, 15000.00, 'Open', NULL, '2024-12-18 00:05:18', 'A3', '2024-12-18 00:05:18', NULL);
+('IQ000002', 'CN000002', 'RF000002', 'MP000011', 'SP000006', '2024-12-17 18:23:01', 8780577812, 'vyas.kevin@outlook.com', 'A3', 0, '', 15000.00, 'Hold', NULL, '2024-12-18 00:05:18', 'A3', '2024-12-18 19:55:14', 'A3');
 
 -- --------------------------------------------------------
 
@@ -892,7 +905,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `customers`

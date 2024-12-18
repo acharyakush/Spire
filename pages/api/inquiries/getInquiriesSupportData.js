@@ -14,11 +14,11 @@ export default async function handler(req, res) {
 
 	try {
 		const [clients, mainProjects, notes, subProjects, references] = await Promise.all([
-			query("SELECT * FROM clients"), // Queries
-			query("SELECT * FROM main_projects"),
-			query("SELECT * FROM notes"),
-			query("SELECT * FROM sub_projects"),
-			query("SELECT * FROM the_references"),
+			query("SELECT * FROM clients", []), // Queries
+			query("SELECT * FROM main_projects", []),
+			query("SELECT * FROM notes", []),
+			query("SELECT * FROM sub_projects", []),
+			query("SELECT * FROM the_references", []),
 		]);
 
 		return res.status(200).json({ clients, mainProjects, notes, references, subProjects });

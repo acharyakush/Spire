@@ -18,8 +18,8 @@ import MyConstants from "@/utilities/constants";
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
+import { ChangeStatus } from "@/modals/Inquiry";
 import { TextInputNative } from "@/components/Inputs";
-import { ChangeStatus, CloseInquiry } from "@/modals/Inquiry";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmallWithBackground, SpinnerBig, Tooltip, TooltipList } from "@/components/Elements";
@@ -36,9 +36,9 @@ import {
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function Inquiry() {
+export default function Inquiries() {
 	// Business Logic
-	const [data, setData] = useState({
+	const [state, setState] = useState({
 		allMainProjects: [],
 		allNotes: [],
 		allReferences: [],
@@ -56,7 +56,6 @@ export default function Inquiry() {
 
 	const [hasMounted, setHasMounted] = useState({
 		changeStatus: false,
-		closeInquiry: false,
 		convertToProject: false,
 		editInquiry: false,
 		newInquiry: false,
@@ -66,17 +65,17 @@ export default function Inquiry() {
 
 	const allowConvertingToProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.ConvertInquiryToProject);
 
-	const STATUSES = MyConstants.Statuses.Inquiries;
-	const HEADERS = MyConstants.TableHeaders.Inquiries;
+	const tableHeaders = MyConstants.TableHeaders.Inquiries;
 	const thisView = MyConstants.Modules.Base.Inquiries;
+	const STATUSES = MyConstants.Statuses.Inquiries;
 
 	const newInquiryButton = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry)
 		? "block space-x-1.5 primary-button-transparent-background"
 		: "hidden";
 
-	const showFromDateClearButton = data.entryDate.from ? "cursor-pointer primary-text" : "hidden";
-	const showToDateClearButton = data.entryDate.to ? "cursor-pointer primary-text" : "hidden";
-	const showFindClearButton = data.searchTerm ? "cursor-pointer primary-text" : "hidden";
+	const showFromDateClearButton = state.entryDate.from ? "cursor-pointer primary-text" : "hidden";
+	const showToDateClearButton = state.entryDate.to ? "cursor-pointer primary-text" : "hidden";
+	const showFindClearButton = state.searchTerm ? "cursor-pointer primary-text" : "hidden";
 
 	const blankDataWrapper = "flex w-full h-full justify-center items-center font-regular-12 gray-text black-white-background full-border";
 
@@ -95,26 +94,26 @@ export default function Inquiry() {
 	};
 
 	const doFiltering = (query) => {
-		const filteredData = data.inquiries.mergedWithNotes.filter((inquiry) => {
+		const filteredData = state.inquiries.mergedWithNotes.filter((inquiry) => {
 			if (query == "date") {
 				const checkDate = new Date(inquiry.entry_date);
-				const startDate = data.entryDate.from;
-				const endDate = data.entryDate.to;
+				const startDate = state.entryDate.from;
+				const endDate = state.entryDate.to;
 
 				if (checkDate >= startDate && checkDate <= endDate) {
 					return inquiry;
 				}
 			} else {
-				const searchTerm = data.searchTerm.toLowerCase();
+				const searchTerm = state.searchTerm.toLowerCase();
 
-				const client = data.clients.all.filter((client) => client.id == inquiry.client_id).at(0);
+				const client = state.clients.all.filter((client) => client.id == inquiry.client_id).at(0);
 				const clientId = String(client.id).toLowerCase();
 				const clientName = String(getClientName(client.id)).toLowerCase();
 
 				const createdBy = MyGlobal.GetAnyDataFromId(inquiry.created_by, "full_name");
 				const _createdBy = String(createdBy).toLowerCase();
 
-				const reference = data.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0);
+				const reference = state.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0);
 				const referenceId = String(reference.id).toLowerCase();
 				const referenceName = String(getReferenceName(inquiry.reference_id)).toLowerCase();
 
@@ -144,11 +143,11 @@ export default function Inquiry() {
 			}
 		});
 
-		setData((old) => ({ ...old, inquiries: { ...old.inquiries, api: filteredData } }));
+		setState((old) => ({ ...old, inquiries: { ...old.inquiries, api: filteredData } }));
 	};
 
 	const doSorting = () => {
-		return data.inquiries.api.sort((a, b) => {
+		return state.inquiries.api.sort((a, b) => {
 			const aClient = getClientName(a.client_id);
 			const bClient = getClientName(b.client_id);
 
@@ -164,52 +163,52 @@ export default function Inquiry() {
 			const aNotesCount = getTotalNotesByInquiry(a.id);
 			const bNotesCount = getTotalNotesByInquiry(b.id);
 
-			const aReference = data.allReferences.length ? data.allReferences.filter((reference) => reference.id == a.reference_id).at(0).name : "";
+			const aReference = state.allReferences.length ? state.allReferences.filter((reference) => reference.id == a.reference_id).at(0).name : "";
 
-			const bReference = data.allReferences.length ? data.allReferences.filter((reference) => reference.id == b.reference_id).at(0).name : "";
+			const bReference = state.allReferences.length ? state.allReferences.filter((reference) => reference.id == b.reference_id).at(0).name : "";
 
 			const aSubProject = getSubProjectName(a.sub_project_id);
 			const bSubProject = getSubProjectName(b.sub_project_id);
 
-			if (data.sort.column == HEADERS.EntryDate && data.sort.isAscending) {
+			if (state.sort.column == tableHeaders.EntryDate && state.sort.isAscending) {
 				return aEntryDate - bEntryDate;
-			} else if (data.sort.column == HEADERS.EntryDate && !data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.EntryDate && !state.sort.isAscending) {
 				return bEntryDate - aEntryDate;
-			} else if (data.sort.column == HEADERS.Client && data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.Client && state.sort.isAscending) {
 				return aClient.localeCompare(bClient);
-			} else if (data.sort.column == HEADERS.Client && !data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.Client && !state.sort.isAscending) {
 				return bClient.localeCompare(aClient);
-			} else if (data.sort.column == HEADERS.MainProject && data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.MainProject && state.sort.isAscending) {
 				return aMainProject.localeCompare(bMainProject);
-			} else if (data.sort.column == HEADERS.MainProject && !data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.MainProject && !state.sort.isAscending) {
 				return bMainProject.localeCompare(aMainProject);
-			} else if (data.sort.column == HEADERS.SubProject && data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.SubProject && state.sort.isAscending) {
 				return aSubProject.localeCompare(bSubProject);
-			} else if (data.sort.column == HEADERS.SubProject && !data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.SubProject && !state.sort.isAscending) {
 				return bSubProject.localeCompare(aSubProject);
-			} else if (data.sort.column == HEADERS.Reference && data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.Reference && state.sort.isAscending) {
 				return aReference.localeCompare(bReference);
-			} else if (data.sort.column == HEADERS.Reference && !data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.Reference && !state.sort.isAscending) {
 				return bReference.localeCompare(aReference);
-			} else if (data.sort.column == HEADERS.FollowUps && data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.FollowUps && state.sort.isAscending) {
 				return a.follow_ups.localeCompare(b.follow_ups);
-			} else if (data.sort.column == HEADERS.FollowUps && !data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.FollowUps && !state.sort.isAscending) {
 				return b.follow_ups.localeCompare(a.follow_ups);
-			} else if (data.sort.column == HEADERS.Quote && data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.Quote && state.sort.isAscending) {
 				return a.quote - b.quote;
-			} else if (data.sort.column == HEADERS.Quote && !data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.Quote && !state.sort.isAscending) {
 				return b.quote - a.quote;
-			} else if (data.sort.column == HEADERS.Status && data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.Status && state.sort.isAscending) {
 				return a.status.localeCompare(b.status);
-			} else if (data.sort.column == HEADERS.Status && !data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.Status && !state.sort.isAscending) {
 				return b.status.localeCompare(a.status);
-			} else if (data.sort.column == HEADERS.Notes && data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.Notes && state.sort.isAscending) {
 				return aNotesCount - bNotesCount;
-			} else if (data.sort.column == HEADERS.Notes && !data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.Notes && !state.sort.isAscending) {
 				return bNotesCount - aNotesCount;
-			} else if (data.sort.column == HEADERS.CreatedBy && data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.CreatedBy && state.sort.isAscending) {
 				return aCreatedBy.localeCompare(bCreatedBy);
-			} else if (data.sort.column == HEADERS.CreatedBy && !data.sort.isAscending) {
+			} else if (state.sort.column == tableHeaders.CreatedBy && !state.sort.isAscending) {
 				return bCreatedBy.localeCompare(aCreatedBy);
 			} else {
 				return b.id - a.id;
@@ -227,7 +226,7 @@ export default function Inquiry() {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const rowHeaders = Object.values(HEADERS);
+		const rowHeaders = Object.values(tableHeaders);
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((inquiry) => {
@@ -237,7 +236,7 @@ export default function Inquiry() {
 			const followUps = MyGlobal.GetAnyDataFromId(inquiry.follow_ups, "full_name");
 			const _followUps = String(followUps).replace(",", "\n");
 
-			const referenceName = data.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0).name;
+			const referenceName = state.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0).name;
 			const referenceDetails = `${inquiry.reference_id}\n${referenceName}`;
 
 			records.push(
@@ -288,7 +287,7 @@ export default function Inquiry() {
 				fontWeight: "bold",
 				height: 44,
 				span: rowHeaders.length,
-				value: `${thisView} (${data.inquiries.api.length})`,
+				value: `${thisView} (${state.inquiries.api.length})`,
 			},
 		];
 
@@ -304,8 +303,8 @@ export default function Inquiry() {
 	};
 
 	const getClientName = (clientId) => {
-		if (data.clients.all.length) {
-			return data.clients.all.filter((client) => client.id == clientId).at(0).name;
+		if (state.clients.all.length) {
+			return state.clients.all.filter((client) => client.id == clientId).at(0).name;
 		} else {
 			return "";
 		}
@@ -325,16 +324,8 @@ export default function Inquiry() {
 		}
 	};
 
-	const getMainProjectName = (mainProjectId) => {
-		if (data.allMainProjects.length) {
-			return data.allMainProjects.filter((mainProject) => mainProject.id == mainProjectId).at(0).name;
-		} else {
-			return "";
-		}
-	};
-
 	const getInquiries = async () => {
-		setData((old) => ({ ...old, isLoading: true, hasMounted: false }));
+		setState((old) => ({ ...old, isLoading: true, hasMounted: false }));
 
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetInquiries, MyGlobal.GetHeaders());
@@ -343,26 +334,34 @@ export default function Inquiry() {
 				getSupportData();
 
 				const revised = response.data.map((inquiry) => ({ ...inquiry, notes: "" }));
-				setData((old) => ({ ...old, inquiries: { api: revised, apiCopy: revised } }));
+				setState((old) => ({ ...old, inquiries: { api: revised, apiCopy: revised } }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get Inquiries");
 		} finally {
-			setData((old) => ({ ...old, isLoading: false, hasMounted: true }));
+			setState((old) => ({ ...old, isLoading: false, hasMounted: true }));
+		}
+	};
+
+	const getMainProjectName = (mainProjectId) => {
+		if (state.allMainProjects.length) {
+			return state.allMainProjects.filter((mainProject) => mainProject.id == mainProjectId).at(0).name;
+		} else {
+			return "";
 		}
 	};
 
 	const getProperCount = () => {
-		if (data.inquiries.api.length != data.inquiries.apiCopy.length) {
-			return `${data.inquiries.api.length} / ${data.inquiries.apiCopy.length}`;
+		if (state.inquiries.api.length != state.inquiries.apiCopy.length) {
+			return `${state.inquiries.api.length} / ${state.inquiries.apiCopy.length}`;
 		} else {
-			return data.inquiries.api.length;
+			return state.inquiries.api.length;
 		}
 	};
 
 	const getReferenceName = (referenceId) => {
-		if (data.allReferences.length) {
-			return data.allReferences.filter((reference) => reference.id == referenceId).at(0).name;
+		if (state.allReferences.length) {
+			return state.allReferences.filter((reference) => reference.id == referenceId).at(0).name;
 		} else {
 			return "";
 		}
@@ -411,8 +410,8 @@ export default function Inquiry() {
 	};
 
 	const getSubProjectName = (subProjectId) => {
-		if (data.allSubProjects.length) {
-			return data.allSubProjects.filter((subProject) => subProject.id == subProjectId).at(0).name;
+		if (state.allSubProjects.length) {
+			return state.allSubProjects.filter((subProject) => subProject.id == subProjectId).at(0).name;
 		} else {
 			return "";
 		}
@@ -425,7 +424,7 @@ export default function Inquiry() {
 			if (response.status === 200) {
 				const confirmedClients = response.data.clients.filter((client) => client.is_confirmed == 1);
 
-				setData((old) => ({
+				setState((old) => ({
 					...old,
 					clients: { all: response.data.clients, confirmed: confirmedClients },
 					allMainProjects: response.data.mainProjects,
@@ -440,13 +439,13 @@ export default function Inquiry() {
 	};
 
 	const getTotalNotesByInquiry = (inquiryId) => {
-		return data.allNotes.filter((note) => note.inquiry_id == inquiryId && note.source == thisView).length;
+		return state.allNotes.filter((note) => note.inquiry_id == inquiryId && note.source == thisView).length;
 	};
 
 	const getTotalQuote = () => {
 		let total = 0;
 
-		for (const inquiry of data.inquiries.api) {
+		for (const inquiry of state.inquiries.api) {
 			total += Number(inquiry.quote);
 		}
 
@@ -454,12 +453,12 @@ export default function Inquiry() {
 	};
 
 	const highlightText = (isTag, text) => {
-		const regex = new RegExp(data.searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+		const regex = new RegExp(state.searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
 		const classByTag = isTag ? "highlight-tag-characters" : "highlight-characters";
 
 		let result = text;
 
-		if (data.searchTerm) {
+		if (state.searchTerm) {
 			result = String(text).replace(regex, (match) => `<span class=${classByTag}>${match}</span>`);
 		}
 
@@ -471,8 +470,8 @@ export default function Inquiry() {
 		const mergedObject = {};
 		const mergedArray = [];
 
-		data.inquiries.apiCopy.forEach((inquiry) => {
-			data.allNotes.forEach((_note) => {
+		state.inquiries.apiCopy.forEach((inquiry) => {
+			state.allNotes.forEach((_note) => {
 				if (inquiry.id == _note.inquiry_id) {
 					newArray.push({ id: _note.inquiry_id, notes: _note.content });
 				}
@@ -487,7 +486,7 @@ export default function Inquiry() {
 			}
 		});
 
-		data.inquiries.apiCopy.forEach((inquiry) => {
+		state.inquiries.apiCopy.forEach((inquiry) => {
 			Object.values(mergedObject).forEach((note) => {
 				if (inquiry.id == note.id) {
 					mergedArray.push({ ...inquiry, notes: note.notes });
@@ -495,16 +494,16 @@ export default function Inquiry() {
 			});
 		});
 
-		const idsOfInquiries = data.inquiries.apiCopy.map((inquiry) => inquiry.id);
+		const idsOfInquiries = state.inquiries.apiCopy.map((inquiry) => inquiry.id);
 		const idsOfMergedArray = mergedArray.map((inquiry) => inquiry.id);
 		const missingIds = idsOfInquiries.filter((inquiryId) => !idsOfMergedArray.includes(inquiryId));
 
 		missingIds.forEach((inquiryId) => {
-			const missingObject = data.inquiries.apiCopy.filter((inquiry) => inquiry.id == inquiryId).at(0);
+			const missingObject = state.inquiries.apiCopy.filter((inquiry) => inquiry.id == inquiryId).at(0);
 			mergedArray.push(missingObject);
 		});
 
-		setData((old) => ({ ...old, inquiries: { ...old.inquiries, mergedWithNotes: mergedArray } }));
+		setState((old) => ({ ...old, inquiries: { ...old.inquiries, mergedWithNotes: mergedArray } }));
 	};
 
 	const openWhatsAppWeb = (contactNumber) => {
@@ -512,51 +511,36 @@ export default function Inquiry() {
 	};
 
 	const prepareInquiryStatusChangeData = (inquiry, newStatus) => {
-		setData((old) => ({ ...old, selectedInquiryForStatusChange: { ...inquiry, new_status: newStatus } }));
+		setState((old) => ({ ...old, selectedInquiryForStatusChange: { ...inquiry, new_status: newStatus } }));
 	};
 
 	const setInputs = (key, value) => {
 		if (key == "from" || key == "to") {
-			setData((old) => ({ ...old, entryDate: { ...old.entryDate, [key]: value } }));
+			setState((old) => ({ ...old, entryDate: { ...old.entryDate, [key]: value } }));
 		} else {
-			setData((old) => ({ ...old, [key]: value }));
+			setState((old) => ({ ...old, [key]: value }));
 		}
 	};
 
 	const setSort = (header) => {
-		if (header != HEADERS.ContactNumber) {
-			setData((old) => ({ ...old, sort: { column: header, isAscending: !data.sort.isAscending } }));
+		if (header != tableHeaders.ContactNumber) {
+			setState((old) => ({ ...old, sort: { column: header, isAscending: !state.sort.isAscending } }));
 		}
 	};
 
 	const toggleChangeStatus = (value) => {
-		if (value) {
+		if (value === true) {
 			setHasMounted((old) => ({ ...old, changeStatus: true }));
+		} else if (value == "open-new-project") {
+			setHasMounted((old) => ({ ...old, changeStatus: false, newProject: true }));
 		} else {
-			if (data.selectedInquiryForStatusChange.new_status != STATUSES.Closed) {
-				if (data.selectedInquiryForStatusChange.new_status == STATUSES.Confirmed) {
-					setHasMounted((old) => ({ ...old, changeStatus: false, newProject: true }));
-				} else {
-					setData((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
-					setHasMounted((old) => ({ ...old, changeStatus: false }));
-				}
-			} else {
-				setHasMounted((old) => ({ ...old, changeStatus: false, closeInquiry: true }));
-			}
-		}
-	};
-
-	const toggleCloseInquiryBox = (value) => {
-		if (value) {
-			setHasMounted((old) => ({ ...old, closeInquiry: true }));
-		} else {
-			setData((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
-			setHasMounted((old) => ({ ...old, closeInquiry: false }));
+			setState((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
+			setHasMounted((old) => ({ ...old, changeStatus: false }));
 		}
 	};
 
 	const toggleEditInquiryView = (inquiry, type) => {
-		setData((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
+		setState((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
 		setHasMounted((old) => ({ ...old, editInquiry: type }));
 	};
 
@@ -565,21 +549,21 @@ export default function Inquiry() {
 	};
 
 	const toggleNotesView = (inquiry, type) => {
-		setData((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
+		setState((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
 		setHasMounted((old) => ({ ...old, notes: type }));
 	};
 
 	// UI Components
 	const uiBody = () => {
-		if (data.isLoading) {
+		if (state.isLoading) {
 			return (
 				<div className={blankDataWrapper}>
 					<SpinnerBig />
 				</div>
 			);
-		} else if (!data.inquiries.apiCopy.length) {
+		} else if (!state.inquiries.apiCopy.length) {
 			return <div className={blankDataWrapper}>No inquiries generated.</div>;
-		} else if (!data.inquiries.api.length) {
+		} else if (!state.inquiries.api.length) {
 			return <div className={blankDataWrapper}>No inquiries found.</div>;
 		} else {
 			return (
@@ -589,7 +573,7 @@ export default function Inquiry() {
 						className="w-full h-full overflow-y-auto bottom-border"
 						data={doSorting()}
 						itemContent={(index, inquiry) => uiRows(inquiry, index)}
-						totalCount={data.inquiries.api.length}
+						totalCount={state.inquiries.api.length}
 					/>
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 				</div>
@@ -606,7 +590,7 @@ export default function Inquiry() {
 	};
 
 	const uiExport = () => {
-		if (data.inquiries.apiCopy.length) {
+		if (state.inquiries.api.length && state.inquiries.apiCopy.length) {
 			return (
 				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => exportAsExcel()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
@@ -649,7 +633,7 @@ export default function Inquiry() {
 	};
 
 	const uiFooter = () => {
-		return Object.values(HEADERS).map((label, index) => {
+		return Object.values(tableHeaders).map((label, index) => {
 			const showTotalQuote = index == 7 ? "visible" : "invisible";
 			const wrapper = `w-1/6 space-x-1 text-center text-white font-medium-10 ${showTotalQuote}`;
 
@@ -662,7 +646,7 @@ export default function Inquiry() {
 	};
 
 	const uiFromDate = () => {
-		if (data.inquiries.apiCopy.length) {
+		if (state.inquiries.apiCopy.length) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow black-white-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
@@ -670,14 +654,14 @@ export default function Inquiry() {
 						className="w-20 h-6 bg-transparent outline-none font-medium-11"
 						dateFormat="dd-MM-YYYY"
 						dropdownMode="select"
-						endDate={data.entryDate.to}
+						endDate={state.entryDate.to}
 						onChange={(e) => setInputs("from", e)}
 						peekNextMonth
 						placeholderText="From"
 						tabIndex={1}
-						selected={data.entryDate.from}
+						selected={state.entryDate.from}
 						selectsStart
-						startDate={data.entryDate.from}
+						startDate={state.entryDate.from}
 						showMonthDropdown
 						showYearDropdown
 					/>
@@ -688,9 +672,9 @@ export default function Inquiry() {
 	};
 
 	const uiHeaders = () => {
-		return Object.values(HEADERS).map((header, index) => {
-			const showSortArrow = header == data.sort.column ? "block" : "hidden";
-			const showStatusFilter = header == HEADERS.Status ? "block" : "hidden";
+		return Object.values(tableHeaders).map((header, index) => {
+			const showSortArrow = header == state.sort.column ? "block" : "hidden";
+			const showStatusFilter = header == tableHeaders.Status ? "block" : "hidden";
 
 			return (
 				<span className="flex w-[9.09%] cursor-pointer justify-center items-center font-medium-10" key={index}>
@@ -706,18 +690,18 @@ export default function Inquiry() {
 
 	const uiMain = () => {
 		if (hasMounted.editInquiry) {
-			return <EditInquiry unmount={toggleEditInquiryView} selectedInquiry={data.selectedInquiryForNotes} reloadInquiries={getInquiries} />;
+			return <EditInquiry unmount={toggleEditInquiryView} selectedInquiry={state.selectedInquiryForNotes} reloadInquiries={getInquiries} />;
 		} else if (hasMounted.newInquiry) {
 			return <NewInquiry reloadInquiries={getInquiries} unmount={toggleNewInquiryView} />;
 		} else if (hasMounted.newProject) {
-			return <NewProject reloadInquiries={getInquiries} selectedInquiry={data.selectedInquiryForStatusChange} unmount={closeNewProjectView} />;
+			return <NewProject reloadInquiries={getInquiries} selectedInquiry={state.selectedInquiryForStatusChange} unmount={closeNewProjectView} />;
 		} else if (hasMounted.notes) {
 			return (
 				<InquiryNotes
-					allClients={data.clients.all}
-					allNotes={data.allNotes}
+					allClients={state.clients.all}
+					allNotes={state.allNotes}
 					reloadInquiries={getInquiries}
-					selectedInquiry={data.selectedInquiryForNotes}
+					selectedInquiry={state.selectedInquiryForNotes}
 					unmount={toggleNotesView}
 				/>
 			);
@@ -727,7 +711,7 @@ export default function Inquiry() {
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
 						<div className="flex w-1/5 space-x-2 justify-start items-center">
 							<span className="view-heading">{thisView}</span>
-							{data.inquiries.api.length > 0 && <Badge value={getProperCount()} />}
+							{state.inquiries.api.length > 0 && <Badge value={getProperCount()} />}
 						</div>
 						<div className="flex w-4/5 space-x-2 justify-end items-center">
 							<div className="flex w-1/2 space-x-2 justify-end items-center">
@@ -768,24 +752,24 @@ export default function Inquiry() {
 	const uiRows = (inquiry, rowId) => {
 		const style = "flex flex-wrap w-[9.09%] min-h-9 justify-center items-center text-center right-border";
 
-		const clientId = MyGlobal.HighlightText(inquiry.client_id, data.searchTerm);
-		const clientName = MyGlobal.HighlightText(getClientName(inquiry.client_id), data.searchTerm);
+		const clientId = MyGlobal.HighlightText(inquiry.client_id, state.searchTerm);
+		const clientName = MyGlobal.HighlightText(getClientName(inquiry.client_id), state.searchTerm);
 
 		const clientNameTextStyle = inquiry.status == STATUSES.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
 
-		const contactNumber = MyGlobal.HighlightText(inquiry.contact_number, data.searchTerm);
-		const mainProject = MyGlobal.HighlightText(getMainProjectName(inquiry.main_project_id), data.searchTerm);
-		const subProject = MyGlobal.HighlightText(getSubProjectName(inquiry.sub_project_id), data.searchTerm);
+		const contactNumber = MyGlobal.HighlightText(inquiry.contact_number, state.searchTerm);
+		const mainProject = MyGlobal.HighlightText(getMainProjectName(inquiry.main_project_id), state.searchTerm);
+		const subProject = MyGlobal.HighlightText(getSubProjectName(inquiry.sub_project_id), state.searchTerm);
 
-		const referenceId = MyGlobal.HighlightText(inquiry.reference_id, data.searchTerm);
+		const referenceId = MyGlobal.HighlightText(inquiry.reference_id, state.searchTerm);
 		const referenceName = getReferenceName(inquiry.reference_id) ?? referenceId;
-		const _referenceName = MyGlobal.HighlightText(referenceName, data.searchTerm);
+		const _referenceName = MyGlobal.HighlightText(referenceName, state.searchTerm);
 		const referenceIdAndName = `${referenceId} - ${referenceName}`;
 
-		const quote = MyGlobal.HighlightText(inquiry.quote, data.searchTerm);
+		const quote = MyGlobal.HighlightText(inquiry.quote, state.searchTerm);
 
 		const createdBy = MyGlobal.GetAnyDataFromId(inquiry.created_by, "full_name");
-		const _createdBy = MyGlobal.HighlightText(createdBy, data.searchTerm);
+		const _createdBy = MyGlobal.HighlightText(createdBy, state.searchTerm);
 		const createdByIdAndName = `${inquiry.created_by} - ${createdBy}`;
 
 		return (
@@ -824,7 +808,7 @@ export default function Inquiry() {
 	};
 
 	const uiSearch = () => {
-		if (data.inquiries.apiCopy.length) {
+		if (state.inquiries.apiCopy.length) {
 			return (
 				<TextInputNative
 					id="searchBox"
@@ -834,7 +818,7 @@ export default function Inquiry() {
 					placeholder="Search"
 					showClearButton={showFindClearButton}
 					tabIndex={3}
-					value={data.searchTerm}
+					value={state.searchTerm}
 					width="w-36"
 				/>
 			);
@@ -842,8 +826,8 @@ export default function Inquiry() {
 	};
 
 	const uiSortArrows = (column) => {
-		if (data.sort.column == column) {
-			if (data.sort.isAscending) {
+		if (state.sort.column == column) {
+			if (state.sort.isAscending) {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} size="sm" />;
 			} else {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} size="sm" />;
@@ -867,7 +851,7 @@ export default function Inquiry() {
 	const uiStatusFilterMenu = () => {
 		const uniqueStatus = [];
 
-		data.inquiries.apiCopy.forEach((inquiry) => {
+		state.inquiries.apiCopy.forEach((inquiry) => {
 			if (!uniqueStatus.includes(inquiry.status)) {
 				uniqueStatus.push(inquiry.status);
 			}
@@ -879,7 +863,7 @@ export default function Inquiry() {
 					as="div"
 					className="w-full p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text hovered-rows"
 					key={index}
-					onClick={() => setData((old) => ({ ...old, searchTerm: status }))}>
+					onClick={() => setState((old) => ({ ...old, searchTerm: status }))}>
 					<span>{status}</span>
 				</MenuItem>
 			);
@@ -943,20 +927,20 @@ export default function Inquiry() {
 	};
 
 	const uiToDate = () => {
-		if (data.inquiries.apiCopy.length) {
+		if (state.inquiries.apiCopy.length) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow black-white-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
 						className="w-20 h-6 bg-transparent outline-none font-medium-11"
 						dateFormat="dd-MM-YYYY"
-						endDate={data.entryDate.to}
+						endDate={state.entryDate.to}
 						onChange={(e) => setInputs("to", e)}
 						placeholderText="To"
 						tabIndex={2}
-						selected={data.entryDate.to}
+						selected={state.entryDate.to}
 						selectsEnd
-						startDate={data.entryDate.to}
+						startDate={state.entryDate.to}
 					/>
 					<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
 				</div>
@@ -973,30 +957,30 @@ export default function Inquiry() {
 	}, []);
 
 	useEffect(() => {
-		if (data.inquiries.apiCopy.length) {
+		if (state.inquiries.apiCopy.length) {
 			mergeInquiriesAndNotesById();
 		}
-	}, [data.inquiries.apiCopy]);
+	}, [state.inquiries.apiCopy]);
 
 	useEffect(() => {
 		doFiltering("");
-	}, [data.searchTerm]);
+	}, [state.searchTerm]);
 
 	useEffect(() => {
-		if (data.entryDate.from && data.entryDate.to) {
+		if (state.entryDate.from && state.entryDate.to) {
 			doFiltering("date");
 		} else {
 			doFiltering("");
 		}
-	}, [data.entryDate]);
+	}, [state.entryDate]);
 
 	useEffect(() => {
-		if (data.hasMounted) {
-			if (Object.keys(data.selectedInquiryForStatusChange).length) {
+		if (state.hasMounted) {
+			if (Object.keys(state.selectedInquiryForStatusChange).length) {
 				toggleChangeStatus(true);
 			}
 		}
-	}, [data.selectedInquiryForStatusChange]);
+	}, [state.selectedInquiryForStatusChange]);
 
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center light-gray-background">
@@ -1006,17 +990,8 @@ export default function Inquiry() {
 				<ChangeStatus
 					mount={hasMounted.changeStatus}
 					reloadInquiries={getInquiries}
-					selectedInquiry={data.selectedInquiryForStatusChange}
+					selectedInquiry={state.selectedInquiryForStatusChange}
 					unmount={toggleChangeStatus}
-				/>
-			)}
-
-			{hasMounted.closeInquiry && (
-				<CloseInquiry
-					mount={hasMounted.closeInquiry}
-					reloadInquiries={getInquiries}
-					selectedInquiry={data.selectedInquiryForStatusChange}
-					unmount={toggleCloseInquiryBox}
 				/>
 			)}
 		</div>

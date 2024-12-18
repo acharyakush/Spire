@@ -168,7 +168,7 @@ html {
 }
 
 .dialog-footer {
-	@apply bg-white border-t border-t-[var(--web-primary-border)] flex items-center justify-center px-5 py-2.5 relative space-x-2 z-10;
+	@apply bg-[var(--web-light-gray)] border-t border-t-[var(--web-primary-border)] flex items-center justify-center px-5 py-2.5 relative space-x-2 z-10;
 }
 
 .dialog-header {

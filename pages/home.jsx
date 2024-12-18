@@ -3,7 +3,8 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import Inquiry from "@/modules/inquiry";
+import Projects from "@/modules/project";
+import Inquiries from "@/modules/inquiry";
 import MyConstants from "@/utilities/constants";
 
 import { useRouter } from "next/navigation";
@@ -285,23 +286,18 @@ export default function Home() {
 						key="ErrorBoundary_Inquiries"
 						onError={(error) => MyGlobal.LogErrors(error.message, MyConstants.Modules.Base.Inquiries)}
 						FallbackComponent={ErrorFallbackComponent}>
-						<Inquiry />
+						<Inquiries />
 					</ErrorBoundary>
 				);
-			// case Constants.primaryModules.projects.name:
-			// 	return (
-			// 		<ErrorBoundary
-			// 			key="ErrorBoundary_Projects"
-			// 			onError={(error) => Global.handleErrors(error.message, "Projects")}
-			// 			FallbackComponent={ErrorFallbackComponent}>
-			// 			<Projects
-			// 				close={closeProjectsView}
-			// 				object={data.singleProjectObject}
-			// 				refreshSelectedTasksProject={refreshSelectedTasksProject}
-			// 				settings={projectSettings}
-			// 			/>
-			// 		</ErrorBoundary>
-			// 	);
+			case MyConstants.Modules.Base.Projects:
+				return (
+					<ErrorBoundary
+						key="ErrorBoundary_Projects"
+						onError={(error) => MyGlobal.LogErrors(error.message, MyConstants.Modules.Base.Projects)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<Projects />
+					</ErrorBoundary>
+				);
 			// case Constants.primaryModules.affiliates.name:
 			// 	return (
 			// 		<ErrorBoundary

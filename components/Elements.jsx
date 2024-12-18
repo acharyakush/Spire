@@ -1,12 +1,12 @@
 "use client";
 
 export const Badge = ({ value }) => {
-	return <span className="flex h-5 px-2 justify-center items-end rounded-full text-white font-regular-9 primary-border primary-background">{value}</span>;
+	return <span className="flex h-5 px-1.5 justify-center items-end rounded-full text-white font-regular-9 primary-border primary-background">{value}</span>;
 };
 
 export const BadgeSmall = ({ value }) => {
 	return (
-		<span className="flex h-4 px-1 justify-center items-center rounded-full font-regular-8 primary-text primary-border primary-background-transparent-01">
+		<span className="flex h-5 px-2 justify-center items-center rounded-full font-regular-9 primary-text primary-border primary-background-transparent-01">
 			{value}
 		</span>
 	);
@@ -75,7 +75,7 @@ export const TooltipList = ({ payload }) => {
 export const ErrorFallbackComponent = ({ error }) => {
 	return (
 		<div className="flex flex-col w-full h-full space-y-2 justify-center items-center red-background-transparent-01 font-medium-16 red-text" role="alert">
-			<span>There is a technical glitch. Contact help desk.</span>
+			<span>There is a technical glitch. Contact help desk and give below message.</span>
 			<span className="flex space-x-2.5 font-regular-14">
 				<span>Reason ::</span>
 				<span>{error.message}</span>
