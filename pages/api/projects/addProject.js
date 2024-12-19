@@ -58,7 +58,7 @@ export default async function handler(req, res) {
 		}
 
 		const response = await query(
-			`INSERT INTO projects (id, client_id, company_id, inquiry_id, main_project_id, sub_project_id, quote, due_on, reimbursement_voucher, invoice_fees, invoice_firm, teams, started_on, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)`,
+			`INSERT INTO projects (id, client_id, company_id, inquiry_id, main_project_id, sub_project_id, quote, due_on, reimbursement_voucher, invoice_fees, invoice_firm_id, teams, started_on, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)`,
 			[
 				projectResponse.new_id,
 				clientId,
@@ -77,10 +77,10 @@ export default async function handler(req, res) {
 			],
 		);
 
-		const clientQuery = `UPDATE clients SET company_id = ?, is_confirmed = 1 WHERE id = ?`;
+		const clientQuery = `UPDATE clients SET company_id=?, is_confirmed=1 WHERE id=?`;
 		const clientParameters = [newCompanyId, clientId];
 
-		const inquiryQuery = `UPDATE inquiries SET status = ? WHERE id = ?`;
+		const inquiryQuery = `UPDATE inquiries SET status=? WHERE id=?`;
 		const inquiryParameters = [MyConstants.Statuses.Inquiries.Confirmed, inquiryId];
 
 		const noteQuery = `INSERT INTO notes (inquiry_id, project_id, user_id, content, source) VALUES (?, ?, ?, ?, ?)`;

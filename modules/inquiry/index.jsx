@@ -6,10 +6,10 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import axios from "axios";
 import dayjs from "dayjs";
+import Notes from "./Notes";
 import Tippy from "@tippyjs/react";
 import NewInquiry from "./NewInquiry";
 import EditInquiry from "./EditInquiry";
-import InquiryNotes from "./InquiryNotes";
 import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
 import NewProject from "../project/NewProject";
@@ -18,8 +18,8 @@ import MyConstants from "@/utilities/constants";
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { ChangeStatus } from "@/modals/Inquiry";
 import { TextInputNative } from "@/components/Inputs";
+import { ChangeStatus } from "@/modals/inquiries/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmallWithBackground, SpinnerBig, Tooltip, TooltipList } from "@/components/Elements";
@@ -419,7 +419,7 @@ export default function Inquiries() {
 
 	const getSupportData = async () => {
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetInquiriesSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				const confirmedClients = response.data.clients.filter((client) => client.is_confirmed == 1);
@@ -697,7 +697,7 @@ export default function Inquiries() {
 			return <NewProject reloadInquiries={getInquiries} selectedInquiry={state.selectedInquiryForStatusChange} unmount={closeNewProjectView} />;
 		} else if (hasMounted.notes) {
 			return (
-				<InquiryNotes
+				<Notes
 					allClients={state.clients.all}
 					allNotes={state.allNotes}
 					reloadInquiries={getInquiries}

@@ -8,15 +8,15 @@ import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
-import { AddNote } from "@/modals/Inquiry";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Badge } from "@/components/Elements";
 import { TextInputNative } from "@/components/Inputs";
+import { AddNote } from "@/modals/inquiries/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar, faChevronLeft, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
-export default function InquiryNotes({ allClients, allNotes, reloadInquiries, selectedInquiry, unmount }) {
+export default function Notes({ allClients, allNotes, reloadInquiries, selectedInquiry, unmount }) {
 	// Business Logic
 	const [data, setData] = useState({
 		entryDate: { from: "", to: "" },

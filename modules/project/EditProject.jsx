@@ -4,35 +4,35 @@
 
 import axios from "axios";
 import MyConstants from "@/utilities/constants";
-import NewProjectPreview from "@/modals/projects/NewProjectPreview";
+import EditProjectPreview from "@/modals/projects/EditProjectPreview";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ComboBox2, ComboBoxWithChips, DatePicker, TextArea, TextInput } from "@/components/Inputs";
-import { faBriefcase, faCalendar, faChevronLeft, faFile, faIndianRupee, faNoteSticky, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { ComboBox2, ComboBoxWithChips, DatePicker, TextInput } from "@/components/Inputs";
+import { faBriefcase, faCalendar, faChevronLeft, faFile, faIndianRupee, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewProject({ reloadInquiries, selectedInquiry, unmount }) {
+export default function EditProject({ reloadProjects, selectedProject, unmount }) {
 	// Business Logic
+	const [editProject, setEditProjectData] = useState({
+		client: { id: 0, name: "" },
+		company: { id: 0, name: "" },
+		contactNumber: 0,
+		dueOn: "",
+		invoiceFees: 0,
+		invoiceFirm: { id: 0, name: "" },
+		mainProject: { id: 0, name: "" },
+		quote: 0,
+		reimbursementVoucher: 0,
+		subProject: { id: 0, name: "" },
+		teams: [],
+	});
+
 	const [hasMounted, setHasMounted] = useState({
 		mainComponent: false,
 		preview: false,
 		teamsMenu: false,
-	});
-
-	const [newProject, setNewProjectData] = useState({
-		company: { id: 0, name: "" },
-		contactNumber: "",
-		dueOn: "",
-		invoiceFees: "",
-		invoiceFirm: { id: 0, name: "" },
-		mainProject: { id: 0, name: "" },
-		note: "",
-		quote: 0,
-		reimbursementVoucher: "",
-		subProject: { id: 0, name: "" },
-		teams: [],
 	});
 
 	const [otherData, setOtherData] = useState({
@@ -42,10 +42,11 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 		allSubProjects: { api: [], apiCopy: [] },
 		companiesByClients: { api: [], apiCopy: [] },
 		isLoading: false,
+		originalProject: {},
 		searched: { affiliate: {}, company: {}, mainProject: {}, subProject: {} },
 	});
 
-	const selectedInquiryClient = otherData.allClients.length && otherData.allClients.filter((client) => client.id == selectedInquiry?.client_id).at(0);
+	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const showTeamsDropdown = hasMounted.teamsMenu
 		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow light-gray-background full-border"
@@ -64,7 +65,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 		setSearch("company", "");
 
-		setNewProjectData((old) => ({ ...old, company: { id: 0, name } }));
+		setEditProjectData((old) => ({ ...old, company: { id: 0, name } }));
 		setOtherData((old) => ({ ...old, companiesByClients: { api: revisedCopy, apiCopy: revisedCopy } }));
 	};
 
@@ -74,49 +75,53 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 		setSearch("subProject", "");
 
-		setNewProjectData((s) => ({ ...s, subProject: copy.at(0) }));
+		setEditProjectData((s) => ({ ...s, subProject: copy.at(0) }));
 		setOtherData((s) => ({ ...s, allSubProjects: { api: copy, apiCopy: copy } }));
 	};
 
-	const addProject = async () => {
-		setOtherData((s) => ({ ...s, isLoading: true }));
+	const calculateQuote = () => {
+		const totalAmount = MyGlobal.GetNumbers(editProject.invoiceFees) + MyGlobal.GetNumbers(editProject.reimbursementVoucher);
 
-		const body = {
-			...newProject,
-			clientId: selectedInquiry.client_id,
-			inquiryId: selectedInquiry.id,
-			invoiceFees: MyGlobal.GetNumbers(newProject.invoiceFees),
-			quote: MyGlobal.GetNumbers(newProject.quote),
-			reimbursementVoucher: MyGlobal.GetNumbers(newProject.reimbursementVoucher),
-			teams: getTeamsIds(),
-			userId: MyGlobal.GetUserId(),
-		};
+		setEditProjectData((s) => ({ ...s, quote: totalAmount }));
+	};
 
+	const doProjectEditing = async () => {
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Projects.AddProject, body, MyGlobal.GetHeaders());
+			setOtherData((s) => ({ ...s, isLoading: true }));
+
+			const body = {
+				client: editProject.client,
+				company: editProject.company,
+				contactNumber: editProject.contactNumber,
+				dueOn: editProject.dueOn,
+				id: selectedProject.id,
+				invoiceFees: MyGlobal.GetNumbers(editProject.invoiceFees),
+				invoiceFirmId: editProject.invoiceFirm.id,
+				mainProjectId: editProject.mainProject.id,
+				quote: MyGlobal.GetNumbers(editProject.quote),
+				reimbursementVoucher: MyGlobal.GetNumbers(editProject.reimbursementVoucher),
+				subProject: editProject.subProject,
+				teams: getTeamsIds(),
+				userId: MyGlobal.GetUserId(),
+			};
+
+			const response = await axios.post(MyConstants.ApiEndpoints.Projects.EditProject, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				reloadInquiries();
+				reloadProjects();
 
-				MyGlobal.AddActivity(`Inquiries :: Added new project (${response.data}).`);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryConvertedToProject);
+				MyGlobal.AddActivity(`Projects :: Edited project (${selectedProject.id}).`);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectEdited);
 
 				unmount();
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "Inquiries => Add Project");
+			MyGlobal.HandleErrors(error, "Projects => Edit Project");
 		} finally {
 			setOtherData((s) => ({ ...s, isLoading: false }));
 		}
-	};
-
-	const calculateQuote = () => {
-		const totalAmount = MyGlobal.GetNumbers(newProject.invoiceFees) + MyGlobal.GetNumbers(newProject.reimbursementVoucher);
-		const quote = MyGlobal.ThousandSeparator(totalAmount);
-
-		setNewProjectData((s) => ({ ...s, quote }));
 	};
 
 	const getFilteredCompanies = () => {
@@ -164,54 +169,67 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 			if (response.status == 200) {
 				const allAdministratorsCompanies = response.data.administratorsCompanies;
+				const allClients = response.data.clients;
 				const allMainProjects = response.data.mainProjects;
 				const allSubProjects = response.data.subProjects;
 
-				const companiesByClient = response.data.companies.filter((company) => company.client_id == selectedInquiry.client_id);
+				const clientName = allClients.filter((client) => client.id == selectedProject.client_id).at(0).name;
 
-				const mainProjectName = allMainProjects.filter((mainProject) => mainProject.id == selectedInquiry.main_project_id).at(0).name;
+				const companyName = response.data.companies.filter((company) => company.id == selectedProject.company_id).at(0).name;
 
-				const subProjectName = allSubProjects.filter((subProject) => subProject.id == selectedInquiry.sub_project_id).at(0).name;
+				const inquiry = response.data.inquiries.filter((inquiry) => inquiry.id == selectedProject.inquiry_id).at(0);
 
-				setNewProjectData((old) => ({
-					...old,
-					contactNumber: selectedInquiry.contact_number,
-					dueOn: selectedInquiry.entry_date,
-					invoiceFirm: {
-						id: allAdministratorsCompanies.at(0).id,
-						name: allAdministratorsCompanies.at(0).name,
-					},
-					mainProject: { id: selectedInquiry.main_project_id, name: mainProjectName },
-					quote: Number(selectedInquiry.quote),
-					subProject: { id: selectedInquiry.sub_project_id, name: subProjectName },
-				}));
+				const invoiceFirm = allAdministratorsCompanies.filter((company) => company.id == selectedProject.invoice_firm_id).at(0);
+
+				const mainProjectName = allMainProjects.filter((mainProject) => mainProject.id == selectedProject.main_project_id).at(0).name;
+
+				const subProjectName = allSubProjects.filter((subProject) => subProject.id == selectedProject.sub_project_id).at(0).name;
+
+				const teams = MyGlobal.GetFullDetailsFromIds(selectedProject.teams);
+
+				const revisedProjectData = {
+					client: { id: selectedProject.client_id, name: clientName },
+					company: { id: selectedProject.company_id, name: companyName },
+					contactNumber: inquiry.contact_number,
+					dueOn: selectedProject.due_on,
+					invoiceFees: Number(selectedProject.invoice_fees),
+					invoiceFirm: { id: invoiceFirm.id, name: invoiceFirm.name },
+					mainProject: { id: selectedProject.main_project_id, name: mainProjectName },
+					quote: Number(selectedProject.quote),
+					reimbursementVoucher: Number(selectedProject.reimbursement_voucher),
+					subProject: { id: selectedProject.sub_project_id, name: subProjectName },
+					teams,
+				};
+
+				setEditProjectData(revisedProjectData);
 
 				setOtherData((old) => ({
 					...old,
 					allAdministratorsCompanies,
-					allClients: response.data.clients,
+					allClients,
 					allMainProjects: { api: allMainProjects, apiCopy: allMainProjects },
 					allSubProjects: { api: allSubProjects, apiCopy: allSubProjects },
-					companiesByClients: { api: companiesByClient, apiCopy: companiesByClient },
+					companiesByClients: { api: response.data.companies, apiCopy: response.data.companies },
+					originalProject: revisedProjectData,
 				}));
 
 				setHasMounted((old) => ({ ...old, mainComponent: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "New Project => Get Supporting Data");
+			MyGlobal.HandleErrors(error, "Edit Project => Get Supporting Data");
 		}
 	};
 
 	const getTeamsIds = () => {
-		return newProject.teams.map((user) => user.id).join(",");
+		return editProject.teams.map((user) => user.id).join(",");
 	};
 
 	const setInputs = (key, value) => {
 		if (key == "dueOn" || key == "invoiceFees" || key == "reimbursementVoucher" || key == "note") {
-			setNewProjectData((s) => ({ ...s, [key]: value }));
+			setEditProjectData((s) => ({ ...s, [key]: value }));
 		} else {
 			setSearch(key, "");
-			setNewProjectData((s) => ({ ...s, [key]: { id: value.id, name: value.name } }));
+			setEditProjectData((s) => ({ ...s, [key]: { id: value.id, name: value.name } }));
 		}
 	};
 
@@ -221,7 +239,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 	const setTeamsSelection = (user) => {
 		let revisedData = [];
-		const copy = [...newProject.teams];
+		const copy = [...editProject.teams];
 
 		if (copy.includes(user)) {
 			revisedData = copy.filter((_user) => _user != user);
@@ -230,14 +248,14 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			revisedData = copy;
 		}
 
-		setNewProjectData((s) => ({ ...s, teams: revisedData }));
+		setEditProjectData((s) => ({ ...s, teams: revisedData }));
 	};
 
 	const togglePreviewBox = (value) => {
 		setHasMounted((s) => ({ ...s, preview: !hasMounted.preview }));
 
 		if (value) {
-			addProject();
+			doProjectEditing();
 		}
 	};
 
@@ -251,12 +269,12 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			<TextInput
 				icon={faUser}
 				id="newProjectClientName"
-				isReadOnly={true}
+				isReadOnly={!isUserAdministrator}
 				label="Client"
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={1}
-				value={selectedInquiryClient?.name}
+				value={editProject.client.name}
 				width="w-full"
 			/>
 		);
@@ -267,7 +285,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={newProject.company.name}
+				comparingValue2={editProject.company.name}
 				displayValue="name"
 				filteredData={getFilteredCompanies}
 				hasDataObject={true}
@@ -280,7 +298,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.company.name}
 				tabIndex={2}
-				value={newProject.company.name}
+				value={editProject.company.name}
 				width="w-full"
 			/>
 		);
@@ -295,7 +313,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={3}
-				value={newProject.contactNumber}
+				value={editProject.contactNumber}
 				width="w-full"
 			/>
 		);
@@ -303,12 +321,19 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 	const uiDueOn = () => {
 		return (
-			<DatePicker icon={faCalendar} label="Due On" onChange={(event) => setInputs("dueOn", event)} tabIndex={6} value={newProject.dueOn} width="w-full" />
+			<DatePicker
+				icon={faCalendar}
+				label="Due On"
+				onChange={(event) => setInputs("dueOn", event)}
+				tabIndex={6}
+				value={editProject.dueOn}
+				width="w-full"
+			/>
 		);
 	};
 
 	const uiInvoiceFees = () => {
-		const label = `${newProject.invoiceFirm.name} Fees`;
+		const label = `${editProject.invoiceFirm.name}'s Fees`;
 
 		return (
 			<TextInput
@@ -318,7 +343,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onChange={(event) => setInputs("invoiceFees", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={7}
-				value={newProject.invoiceFees}
+				value={editProject.invoiceFees}
 				width="w-full"
 			/>
 		);
@@ -329,7 +354,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={newProject.invoiceFirm.name}
+				comparingValue2={editProject.invoiceFirm.name}
 				displayValue="name"
 				filteredData={otherData.allAdministratorsCompanies}
 				hasDataObject={true}
@@ -342,7 +367,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onKeyPress={() => {}}
 				searchedItem={{}}
 				tabIndex={9}
-				value={newProject.invoiceFirm.name}
+				value={editProject.invoiceFirm.name}
 				width="w-full"
 			/>
 		);
@@ -353,7 +378,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={newProject.mainProject.name}
+				comparingValue2={editProject.mainProject.name}
 				displayValue="name"
 				filteredData={getFilteredMainProjects}
 				hasDataObject={true}
@@ -366,23 +391,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.mainProject.name}
 				tabIndex={4}
-				value={newProject.mainProject.name}
-				width="w-full"
-			/>
-		);
-	};
-
-	const uiNotes = () => {
-		return (
-			<TextArea
-				icon={faNoteSticky}
-				key={1}
-				label="Notes"
-				onChange={(event) => setInputs("note", event.target.value)}
-				onKeyDown={() => {}}
-				rows={2}
-				tabIndex={10}
-				value={newProject.note}
+				value={editProject.mainProject.name}
 				width="w-full"
 			/>
 		);
@@ -409,7 +418,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={9}
-				value={MyGlobal.ThousandSeparator(newProject.quote)}
+				value={MyGlobal.ThousandSeparator(editProject.quote)}
 				width="w-full"
 			/>
 		);
@@ -424,7 +433,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onChange={(event) => setInputs("reimbursementVoucher", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={8}
-				value={newProject.reimbursementVoucher}
+				value={editProject.reimbursementVoucher}
 				width="w-full"
 			/>
 		);
@@ -435,7 +444,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={newProject.subProject.name}
+				comparingValue2={editProject.subProject.name}
 				displayValue="name"
 				filteredData={getFilteredSubProjects}
 				hasDataObject={true}
@@ -448,7 +457,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.subProject.name}
 				tabIndex={5}
-				value={newProject.subProject.name}
+				value={editProject.subProject.name}
 				width="w-full"
 			/>
 		);
@@ -464,7 +473,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onBlur={() => toggleTeamsMenu()}
 				onItemClick={(event) => setTeamsSelection(event)}
 				onSelectedItemClick={(event) => setTeamsSelection(event)}
-				selectedItems={newProject.teams}
+				selectedItems={editProject.teams}
 				showList={showTeamsDropdown}
 				source={MyGlobal.GetAllUsers()}
 				toggleMenu={() => toggleTeamsMenu()}
@@ -478,10 +487,10 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 	}, []);
 
 	useEffect(() => {
-		if (newProject.invoiceFees || newProject.reimbursementVoucher) {
+		if (editProject.invoiceFees || editProject.reimbursementVoucher) {
 			calculateQuote();
 		}
-	}, [newProject.invoiceFees, newProject.reimbursementVoucher]);
+	}, [editProject.invoiceFees, editProject.reimbursementVoucher]);
 
 	if (!hasMounted.mainComponent) {
 		return;
@@ -494,7 +503,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				<div className="flex w-full space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 					<div className="flex w-full justify-start items-center">
-						<span className="view-heading">New Project</span>
+						<span className="view-heading">Edit Project</span>
 					</div>
 				</div>
 			</div>
@@ -516,10 +525,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 						{uiQuote()}
 					</div>
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiTeams()}</div>
-					<div className="flex w-full px-3 space-x-6 justify-between items-start">
-						{uiInvoiceFirm()}
-						{uiNotes()}
-					</div>
+					<div className="flex w-full px-3 space-x-6 justify-between items-start">{uiInvoiceFirm()}</div>
 				</div>
 			</div>
 			<footer className="w-full dialog-footer">
@@ -529,11 +535,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			</footer>
 
 			{hasMounted.preview && (
-				<NewProjectPreview
-					mount={hasMounted.preview}
-					projectData={{ ...newProject, clientName: selectedInquiryClient.name }}
-					unmount={togglePreviewBox}
-				/>
+				<EditProjectPreview mount={hasMounted.preview} newProject={editProject} oldProject={otherData.originalProject} unmount={togglePreviewBox} />
 			)}
 		</>
 	);

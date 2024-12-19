@@ -4,7 +4,7 @@
 
 import axios from "axios";
 import MyConstants from "@/utilities/constants";
-import NewInquiryPreview from "./NewInquiryPreview";
+import NewInquiryPreview from "@/modals/inquiries/NewInquiryPreview";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -197,9 +197,9 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		return newInquiry.followUps.map((user) => user.id).join(",");
 	};
 
-	const getSupportingData = async () => {
+	const getSupportData = async () => {
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetNewInquirySupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
 				setOtherData((old) => ({
@@ -505,7 +505,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 	// Hooks
 	useEffect(() => {
-		getSupportingData();
+		getSupportData();
 	}, []);
 
 	if (!otherData.hasMounted) {

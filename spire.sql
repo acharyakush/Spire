@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 18, 2024 at 07:16 PM
+-- Generation Time: Dec 19, 2024 at 07:56 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -161,7 +161,8 @@ INSERT INTO `activities` (`id`, `user_id`, `activity`, `ip_address`, `user_agent
 (42, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:55:14', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
 (43, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 20:34:14', '', ''),
 (44, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 22:35:21', 'jXuEufuJPjPediJAb2V0+7BLcfq+OzSyBBVXlIZBZch3Y1Q6SPAOd5AEXJC8sN235HbdfYaWoEab5c2SnkbfyQ==', ''),
-(45, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 23:45:53', '', '');
+(45, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 23:45:53', '', ''),
+(46, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-19 20:03:19', 'FYU1XR80ciO5fwKh7a8CtoaqbVuIoWKkzmVHLWdpR//k8NybGr2CGGwiN2x7wgAVoQ5xeR1FVxF1M9KK6DG76g==', '');
 
 -- --------------------------------------------------------
 
@@ -514,22 +515,23 @@ CREATE TABLE `notes` (
   `id` int(11) NOT NULL,
   `inquiry_id` varchar(8) DEFAULT NULL,
   `project_id` varchar(8) DEFAULT NULL,
+  `original_user_id` varchar(8) NOT NULL,
   `user_id` varchar(8) NOT NULL,
   `content` varchar(1000) NOT NULL,
-  `entry_date` datetime DEFAULT current_timestamp(),
-  `source` varchar(20) NOT NULL
+  `source` varchar(20) NOT NULL,
+  `entry_date` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `notes`
 --
 
-INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `user_id`, `content`, `entry_date`, `source`) VALUES
-(1, 'IQ000001', NULL, 'A3', 'New client. Reference from CharteredWorks.', '2024-12-15 15:28:07', 'Inquiries'),
-(2, 'IQ000001', NULL, 'A3', 'Test inquiry.', '2024-12-16 20:52:47', 'Inquiries'),
-(3, 'IQ000001', NULL, 'A3', 'Inquiry note #3', '2024-12-16 20:54:45', 'Inquiries'),
-(10, 'IQ000001', 'PJ000001', 'A3', 'First project. Wish me good luck.', '2024-12-17 23:48:41', 'Projects'),
-(11, 'IQ000002', NULL, 'A3', 'Lives in Portugal.', '2024-12-18 00:05:18', 'Inquiries');
+INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `original_user_id`, `user_id`, `content`, `source`, `entry_date`) VALUES
+(1, 'IQ000001', NULL, 'A3', 'A3', 'New client. Reference from CharteredWorks.', 'Inquiries', '2024-12-15 15:28:07'),
+(2, 'IQ000001', NULL, 'A3', 'A3', 'Test inquiry.', 'Inquiries', '2024-12-16 20:52:47'),
+(3, 'IQ000001', NULL, 'A3', 'A3', 'Inquiry note #3', 'Inquiries', '2024-12-16 20:54:45'),
+(10, 'IQ000001', 'PJ000001', 'A3', 'A3', 'First project. Wish me good luck.', 'Projects', '2024-12-17 23:48:41'),
+(11, 'IQ000002', NULL, 'A3', 'A3', 'Lives in Portugal.', 'Inquiries', '2024-12-18 00:05:18');
 
 -- --------------------------------------------------------
 
@@ -602,6 +604,7 @@ CREATE TABLE `projects` (
   `company_id` varchar(8) NOT NULL,
   `affiliate_ids` varchar(2000) DEFAULT NULL,
   `inquiry_id` varchar(8) NOT NULL,
+  `invoice_firm_id` varchar(4) NOT NULL,
   `government_id` varchar(100) DEFAULT NULL,
   `main_project_id` varchar(8) NOT NULL,
   `sub_project_id` varchar(8) NOT NULL,
@@ -610,7 +613,6 @@ CREATE TABLE `projects` (
   `total_affiliate_fees` decimal(10,2) DEFAULT NULL,
   `reimbursement_voucher` decimal(10,2) NOT NULL CHECK (`reimbursement_voucher` >= 0),
   `invoice_fees` decimal(10,2) NOT NULL CHECK (`invoice_fees` >= 0),
-  `invoice_firm` varchar(500) NOT NULL,
   `teams` varchar(500) NOT NULL,
   `started_on` datetime NOT NULL DEFAULT current_timestamp(),
   `status` enum('Active','Completed','On Hold','Cancelled') NOT NULL,
@@ -626,8 +628,8 @@ CREATE TABLE `projects` (
 -- Dumping data for table `projects`
 --
 
-INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `government_id`, `main_project_id`, `sub_project_id`, `quote`, `due_on`, `total_affiliate_fees`, `reimbursement_voucher`, `invoice_fees`, `invoice_firm`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
-('PJ000001', 'CN000001', 'CP000001', NULL, 'IQ000001', NULL, 'MP000004', 'SP000003', 2500.00, '2024-12-15 04:09:42', NULL, 1250.00, 575.00, 'AC01', 'A3,A2', '2024-12-17 23:48:41', 'Active', 0, 0, '2024-12-17 23:48:41', 'A3', NULL, NULL);
+INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `invoice_firm_id`, `government_id`, `main_project_id`, `sub_project_id`, `quote`, `due_on`, `total_affiliate_fees`, `reimbursement_voucher`, `invoice_fees`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
+('PJ000001', 'CN000001', 'CP000001', NULL, 'IQ000001', 'AC01', NULL, 'MP000004', 'SP000003', 2500.00, '2024-12-15 04:09:42', NULL, 1250.00, 575.00, 'A3,A2', '2024-12-17 23:48:41', 'Active', 0, 0, '2024-12-17 23:48:41', 'A3', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -797,8 +799,7 @@ ALTER TABLE `administrators_companies_banks`
 -- Indexes for table `clients`
 --
 ALTER TABLE `clients`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `reference_id` (`reference_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `companies`
@@ -876,7 +877,8 @@ ALTER TABLE `projects`
   ADD KEY `fk_project_company_id` (`company_id`),
   ADD KEY `fk_project_inquiry_id` (`inquiry_id`),
   ADD KEY `fk_project_main_project_id` (`main_project_id`),
-  ADD KEY `fk_project_sub_project_id` (`sub_project_id`);
+  ADD KEY `fk_project_sub_project_id` (`sub_project_id`),
+  ADD KEY `fk_project_invoice_firm_id` (`invoice_firm_id`);
 
 --
 -- Indexes for table `statuses`
@@ -905,7 +907,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -946,12 +948,6 @@ ALTER TABLE `statuses`
 --
 ALTER TABLE `administrators_companies_banks`
   ADD CONSTRAINT `fk_administrators_companies_banks_administrator_company_id` FOREIGN KEY (`administrator_company_id`) REFERENCES `administrators_companies` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `clients`
---
-ALTER TABLE `clients`
-  ADD CONSTRAINT `fk_client_reference_id` FOREIGN KEY (`reference_id`) REFERENCES `the_references` (`id`);
 
 --
 -- Constraints for table `companies`
@@ -999,6 +995,7 @@ ALTER TABLE `projects`
   ADD CONSTRAINT `fk_project_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
   ADD CONSTRAINT `fk_project_company_id` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
   ADD CONSTRAINT `fk_project_inquiry_id` FOREIGN KEY (`inquiry_id`) REFERENCES `inquiries` (`id`),
+  ADD CONSTRAINT `fk_project_invoice_firm_id` FOREIGN KEY (`invoice_firm_id`) REFERENCES `administrators_companies` (`id`),
   ADD CONSTRAINT `fk_project_main_project_id` FOREIGN KEY (`main_project_id`) REFERENCES `main_projects` (`id`),
   ADD CONSTRAINT `fk_project_sub_project_id` FOREIGN KEY (`sub_project_id`) REFERENCES `sub_projects` (`id`);
 COMMIT;

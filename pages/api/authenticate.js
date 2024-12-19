@@ -23,10 +23,7 @@ export default async function handler(req, res) {
 			const isAdministrator = emailAddressDomain.includes("admins.spire.com");
 			const tableName = isAdministrator ? "administrators" : "employees";
 
-			const response = await query(`SELECT * FROM ${tableName} WHERE email_address = ? AND password = ?`, [
-				emailAddress,
-				MyGlobal.Encrypt(body.password),
-			]);
+			const response = await query(`SELECT * FROM ${tableName} WHERE email_address=? AND password=?`, [emailAddress, MyGlobal.Encrypt(body.password)]);
 
 			if (!response.length) {
 				res.status(404).end();

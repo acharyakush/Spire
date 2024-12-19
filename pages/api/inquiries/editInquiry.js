@@ -73,7 +73,7 @@ export default async function handler(req, res) {
 		}
 
 		const inquiryUpdateResult = await query(
-			`UPDATE inquiries SET client_id = ?, reference_id = ?, main_project_id = ?, sub_project_id = ?, entry_date = ?, contact_number = ?, email_address = ?, follow_ups = ?, quote = ?, updated_at = ?, updated_by = ? WHERE id = ?`,
+			`UPDATE inquiries SET client_id=?, reference_id=?, main_project_id=?, sub_project_id=?, entry_date=?, contact_number=?, email_address=?, follow_ups=?, quote=?, updated_at=?, updated_by=? WHERE id=?`,
 			[newClientId, newReferenceId, mainProjectId, subProject.id, entryDate, contactNumber, emailAddress, followUps, quote, "NOW()", userId, id],
 		);
 

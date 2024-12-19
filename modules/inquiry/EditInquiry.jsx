@@ -5,7 +5,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import MyConstants from "@/utilities/constants";
-import EditInquiryPreview from "./EditInquiryPreview";
+import EditInquiryPreview from "@/modals/inquiries/EditInquiryPreview";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -188,9 +188,9 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 		return editInquiry.followUps.map((user) => user.id).join(",");
 	};
 
-	const getSupportingData = async () => {
+	const getSupportData = async () => {
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetNewInquirySupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
 				const allClients = response.data.clients;
@@ -501,7 +501,7 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 
 	// Hooks
 	useEffect(() => {
-		getSupportingData();
+		getSupportData();
 	}, []);
 
 	if (!otherData.hasMounted) {
