@@ -15,7 +15,7 @@ import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { ChangeStatus, DeleteProject } from "@/modals/projects/miscellaneous";
+import { ChangeStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
 import { Badge, BadgeSmall, SpinnerBig, SpinnerSmall, Tooltip } from "@/components/Elements";
 import {
 	faBolt,
@@ -33,15 +33,13 @@ import {
 
 export default function Projects() {
 	// Business Logic
-	const [state, setState] = useState({
-		activeModule: { details: [], name: "All" },
-		dueDate: { from: "", to: "" },
-		isLoading: { selectedProject: false, supportData: false },
-		searchTerm: "",
-		selectedClient: {},
-		selectedProject: {},
-		showIconButton: { deleteProject: 0, editProject: 0 },
-		sort: { column: "ID", isAscending: false },
+	const [apiData, setApiData] = useState({
+		allCompanies: [],
+		allMainProjects: [],
+		allNotes: [],
+		allProjects: { api: [], apiCopy: [] },
+		allSubProjects: [],
+		confirmedClients: [],
 	});
 
 	const [hasMounted, setHasMounted] = useState({
@@ -53,13 +51,15 @@ export default function Projects() {
 		singleProject: false,
 	});
 
-	const [otherData, setOtherData] = useState({
-		allCompanies: [],
-		allMainProjects: [],
-		allNotes: [],
-		allProjects: { api: [], apiCopy: [] },
-		allSubProjects: [],
-		confirmedClients: [],
+	const [mainData, setMainData] = useState({
+		activeModule: { details: [], name: "All" },
+		dueDate: { from: "", to: "" },
+		isLoading: { selectedProject: false, supportData: false },
+		searchTerm: "",
+		selectedClient: {},
+		selectedProject: {},
+		showIconButton: { deleteProject: 0, editProject: 0 },
+		sort: { column: "ID", isAscending: false },
 	});
 
 	const thisView = MyConstants.Modules.Base.Projects;
@@ -69,18 +69,20 @@ export default function Projects() {
 	const allowDeletingProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteProject);
 	const allowEditingProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditProject);
 
-	const showSearchBoxClearButton = state.searchTerm ? "cursor-pointer primary-text" : "hidden";
+	const showSearchBoxClearButton = mainData.searchTerm ? "cursor-pointer primary-text" : "hidden";
 	const blankDataWrapper = "flex w-full h-full justify-center items-center black-white-background full-border";
 
 	// Functions
 	const changeStatus = (clientName, selectedProject, status) => {
+		const object = { ...selectedProject };
+
+		object["new_status"] = status;
+		object["client_name"] = clientName;
+
 		if (status != projectStatuses.Completed) {
-			const object = { ...selectedProject };
-
-			object["new_status"] = status;
-			object["client_name"] = clientName;
-
 			toggleChangeStatusBox(object);
+		} else {
+			toggleProjectStatusBox(object);
 		}
 	};
 
@@ -95,19 +97,19 @@ export default function Projects() {
 
 	const doFiltering = () => {
 		const selectedProject = getAggregatedProjects()
-			.filter((project) => project.key == state.activeModule.name)
+			.filter((project) => project.key == mainData.activeModule.name)
 			.at(0);
 
 		let selectedProjectList = [];
 
 		if (selectedProject.key == "All") {
-			selectedProjectList = otherData.allProjects.apiCopy;
+			selectedProjectList = apiData.allProjects.apiCopy;
 		} else {
 			selectedProjectList = selectedProject.items;
 		}
 
 		const filteredData = selectedProjectList.filter((project) => {
-			const searchedText = state.searchTerm.toLowerCase();
+			const searchedText = mainData.searchTerm.toLowerCase();
 
 			const projectId = String(project.id).toLowerCase();
 			const governmentId = String(project.government_id).toLowerCase();
@@ -140,11 +142,11 @@ export default function Projects() {
 			);
 		});
 
-		setOtherData((s) => ({ ...s, allProjects: { ...s.allProjects, api: filteredData } }));
+		setApiData((s) => ({ ...s, allProjects: { ...s.allProjects, api: filteredData } }));
 	};
 
 	const doSorting = () => {
-		return otherData.allProjects.api.sort((a, b) => {
+		return apiData.allProjects.api.sort((a, b) => {
 			const aClient = getClientName(a.client_id);
 			const bClient = getClientName(b.client_id);
 
@@ -161,41 +163,41 @@ export default function Projects() {
 			const bDueOn = new Date(b.due_on);
 
 			switch (true) {
-				case state.sort.column == tableHeaders.Id && state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.Id && mainData.sort.isAscending:
 					return a.id.localeCompare(b.id);
-				case state.sort.column == tableHeaders.Id && !state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.Id && !mainData.sort.isAscending:
 					return b.id.localeCompare(a.id);
-				case state.sort.column == tableHeaders.GovermentId && state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.GovermentId && mainData.sort.isAscending:
 					if (a.government_id) {
 						return a.government_id.localeCompare(b.government_id);
 					}
-				case state.sort.column == tableHeaders.GovermentId && !state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.GovermentId && !mainData.sort.isAscending:
 					if (b.government_id) {
 						return b.government_id.localeCompare(a.government_id);
 					}
-				case state.sort.column == tableHeaders.Client && state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.Client && mainData.sort.isAscending:
 					return aClient.localeCompare(bClient);
-				case state.sort.column == tableHeaders.Client && !state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.Client && !mainData.sort.isAscending:
 					return bClient.localeCompare(aClient);
-				case state.sort.column == tableHeaders.Company && state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.Company && mainData.sort.isAscending:
 					return aCompany.localeCompare(bCompany);
-				case state.sort.column == tableHeaders.Company && !state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.Company && !mainData.sort.isAscending:
 					return bCompany.localeCompare(aCompany);
-				case state.sort.column == tableHeaders.MainProject && state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.MainProject && mainData.sort.isAscending:
 					return aMainProject.localeCompare(bMainProject);
-				case state.sort.column == tableHeaders.MainProject && !state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.MainProject && !mainData.sort.isAscending:
 					return bMainProject.localeCompare(aMainProject);
-				case state.sort.column == tableHeaders.SubProject && state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.SubProject && mainData.sort.isAscending:
 					return aSubProject.localeCompare(bSubProject);
-				case state.sort.column == tableHeaders.SubProject && !state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.SubProject && !mainData.sort.isAscending:
 					return bSubProject.localeCompare(aSubProject);
-				case state.sort.column == tableHeaders.DueOn && state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.DueOn && mainData.sort.isAscending:
 					return aDueOn - bDueOn;
-				case state.sort.column == tableHeaders.DueOn && !state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.DueOn && !mainData.sort.isAscending:
 					return bDueOn - aDueOn;
-				case state.sort.column == tableHeaders.Status && state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.Status && mainData.sort.isAscending:
 					return a.status.localeCompare(b.status);
-				case state.sort.column == tableHeaders.Status && !state.sort.isAscending:
+				case mainData.sort.column == tableHeaders.Status && !mainData.sort.isAscending:
 					return b.status.localeCompare(a.status);
 			}
 		});
@@ -216,7 +218,7 @@ export default function Projects() {
 		const blankRows = [{ span: headers.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((project) => {
-			const lastNote = otherData.allNotes
+			const lastNote = apiData.allNotes
 				.filter((note) => note.project_id == project.id)
 				.sort((a, b) => b.id - a.id)
 				.at(0);
@@ -261,7 +263,7 @@ export default function Projects() {
 		});
 
 		const separatedRowValues = MyGlobal.SeparateObjectsIntoArrays(_records, headers.length);
-		const headerText = `${thisView} (${otherData.allProjects.api.length})`;
+		const headerText = `${thisView} (${apiData.allProjects.api.length})`;
 
 		const header = [
 			{
@@ -287,7 +289,7 @@ export default function Projects() {
 	};
 
 	const getAggregatedProjects = () => {
-		const groupedByMainProject = otherData.allProjects.apiCopy.reduce((group, project) => {
+		const groupedByMainProject = apiData.allProjects.apiCopy.reduce((group, project) => {
 			const mainProject = getMainProjectName(project.main_project_id);
 
 			if (!group[mainProject]) {
@@ -313,24 +315,24 @@ export default function Projects() {
 	};
 
 	const getClientName = (clientId) => {
-		if (otherData.confirmedClients.length) {
-			return otherData.confirmedClients.filter((client) => client.id == clientId).at(0).name;
+		if (apiData.confirmedClients.length) {
+			return apiData.confirmedClients.filter((client) => client.id == clientId).at(0).name;
 		} else {
 			return "";
 		}
 	};
 
 	const getCompanyName = (companyId) => {
-		if (otherData.allCompanies.length) {
-			return otherData.allCompanies.filter((company) => company.id == companyId).at(0).name;
+		if (apiData.allCompanies.length) {
+			return apiData.allCompanies.filter((company) => company.id == companyId).at(0).name;
 		} else {
 			return "";
 		}
 	};
 
 	const getDataCount = () => {
-		const apiCount = otherData.allProjects.api.length;
-		const apiCopyCount = otherData.allProjects.apiCopy.length;
+		const apiCount = apiData.allProjects.api.length;
+		const apiCopyCount = apiData.allProjects.apiCopy.length;
 
 		if (apiCount != apiCopyCount) {
 			return `${apiCount} / ${apiCopyCount}`;
@@ -340,29 +342,29 @@ export default function Projects() {
 	};
 
 	const getMainProjectName = (mainProjectId) => {
-		if (otherData.allMainProjects.length) {
-			return otherData.allMainProjects.filter((mainProject) => mainProject.id == mainProjectId).at(0).name;
+		if (apiData.allMainProjects.length) {
+			return apiData.allMainProjects.filter((mainProject) => mainProject.id == mainProjectId).at(0).name;
 		} else {
 			return "";
 		}
 	};
 
 	const getSubProjectName = (subProjectId) => {
-		if (otherData.allSubProjects.length) {
-			return otherData.allSubProjects.filter((subProject) => subProject.id == subProjectId).at(0).name;
+		if (apiData.allSubProjects.length) {
+			return apiData.allSubProjects.filter((subProject) => subProject.id == subProjectId).at(0).name;
 		} else {
 			return "";
 		}
 	};
 
 	const getSupportData = async () => {
-		setState((old) => ({ ...old, isLoading: { ...old.isLoading, supportData: true } }));
+		setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, supportData: true } }));
 
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetProjects, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				setOtherData((old) => ({
+				setApiData((old) => ({
 					...old,
 					allCompanies: response.data.companies,
 					allMainProjects: response.data.mainProjects,
@@ -377,57 +379,54 @@ export default function Projects() {
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Get Supporting Data`);
 		} finally {
-			setState((old) => ({ ...old, isLoading: { ...old.isLoading, supportData: false } }));
+			setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, supportData: false } }));
 		}
 	};
 
 	const setInputs = (key, value) => {
-		setState((old) => ({ ...old, [key]: value }));
+		setMainData((old) => ({ ...old, [key]: value }));
 	};
 
 	const setModule = (module) => {
-		setState((s) => ({ ...s, activeModule: { details: module.items, name: module.key } }));
+		setMainData((old) => ({ ...old, activeModule: { details: module.items, name: module.key } }));
 	};
 
 	const setMouseEnter = (projectId) => {
 		if (allowDeletingProject) {
-			setState((old) => ({ ...old, showIconButton: { ...old.showIconButton, deleteProject: projectId } }));
+			setMainData((old) => ({ ...old, showIconButton: { ...old.showIconButton, deleteProject: projectId } }));
 		}
 
 		if (allowEditingProject) {
-			setState((old) => ({ ...old, showIconButton: { ...old.showIconButton, editProject: projectId } }));
+			setMainData((old) => ({ ...old, showIconButton: { ...old.showIconButton, editProject: projectId } }));
 		}
 	};
 
 	const setMouseLeave = () => {
-		setState((old) => ({ ...old, showIconButton: { deleteProject: 0, editProject: 0 } }));
+		setMainData((old) => ({ ...old, showIconButton: { deleteProject: 0, editProject: 0 } }));
 	};
 
 	const setSort = (column) => {
-		setState((old) => ({ ...old, sort: { column, isAscending: !state.sort.isAscending } }));
+		setMainData((old) => ({ ...old, sort: { column, isAscending: !mainData.sort.isAscending } }));
 	};
 
 	const toggleChangeStatusBox = (project) => {
-		setState((old) => ({ ...old, selectedProject: project ?? {} }));
+		setMainData((old) => ({ ...old, selectedProject: project ?? {} }));
 		setHasMounted((old) => ({ ...old, changeStatus: project ? true : false }));
 	};
 
 	const toggleDeleteProjectBox = (project) => {
-		setState((old) => ({ ...old, selectedProject: project ?? {} }));
+		setMainData((old) => ({ ...old, selectedProject: project ?? {} }));
 		setHasMounted((old) => ({ ...old, deleteProject: project ? true : false }));
 	};
 
 	const toggleEditProjectView = (project) => {
-		setState((old) => ({ ...old, selectedProject: project ?? {} }));
+		setMainData((old) => ({ ...old, selectedProject: project ?? {} }));
 		setHasMounted((old) => ({ ...old, editProject: project ? true : false }));
 	};
 
-	const toggleProjectStatusBox = (value) => {
-		if (value) {
-			setHasMounted((old) => ({ ...old, projectStatus: true }));
-		} else {
-			setHasMounted((old) => ({ ...old, projectStatus: false, selectedProject: {} }));
-		}
+	const toggleProjectStatusBox = (project) => {
+		setMainData((old) => ({ ...old, selectedProject: project ?? {} }));
+		setHasMounted((old) => ({ ...old, projectStatus: project ? true : false }));
 	};
 
 	// UI Components
@@ -442,7 +441,7 @@ export default function Projects() {
 							className="w-full h-full overflow-y-auto bottom-border"
 							data={doSorting()}
 							itemContent={(index, project) => uiRows(project, index)}
-							totalCount={otherData.allProjects.api.length}
+							totalCount={apiData.allProjects.api.length}
 						/>
 					</div>
 				</div>
@@ -451,7 +450,7 @@ export default function Projects() {
 	};
 
 	const uiExport = () => {
-		if (otherData.allProjects.api.length && otherData.allProjects.apiCopy.length) {
+		if (apiData.allProjects.api.length && apiData.allProjects.apiCopy.length) {
 			return (
 				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => exportAsExcel()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
@@ -463,7 +462,7 @@ export default function Projects() {
 
 	const uiHeaders = () => {
 		return Object.values(tableHeaders).map((header, index) => {
-			const showIndicator = header == state.sort.column ? "visible" : "invisible";
+			const showIndicator = header == mainData.sort.column ? "visible" : "invisible";
 
 			return (
 				<span className="w-[10%] space-x-1 cursor-pointer text-center text-white font-medium-10" onClick={() => setSort(header)} key={index}>
@@ -475,7 +474,7 @@ export default function Projects() {
 	};
 
 	const uiLastNote = (projectId, style) => {
-		const lastNote = otherData.allNotes
+		const lastNote = apiData.allNotes
 			.filter((note) => note.project_id == projectId)
 			.sort((a, b) => b.id - a.id)
 			.at(0);
@@ -502,26 +501,26 @@ export default function Projects() {
 	};
 
 	const uiMain = () => {
-		if (state.isLoading.supportData) {
+		if (mainData.isLoading.supportData) {
 			return (
 				<div className={blankDataWrapper}>
 					<SpinnerBig />
 				</div>
 			);
-		} else if (!otherData.allProjects.api.length && otherData.allProjects.apiCopy.length) {
+		} else if (!apiData.allProjects.api.length && apiData.allProjects.apiCopy.length) {
 			return (
 				<div className={blankDataWrapper}>
 					<span className="font-regular-12 gray-text">No projects found.</span>
 				</div>
 			);
-		} else if (!otherData.allProjects.api.length && !otherData.allProjects.apiCopy.length) {
+		} else if (!apiData.allProjects.api.length && !apiData.allProjects.apiCopy.length) {
 			return (
 				<div className={blankDataWrapper}>
 					<span className="font-regular-12 gray-text">No projects created.</span>
 				</div>
 			);
 		} else if (hasMounted.editProject) {
-			return <EditProject reloadProjects={getSupportData} selectedProject={state.selectedProject} unmount={toggleEditProjectView} />;
+			return <EditProject reloadProjects={getSupportData} selectedProject={mainData.selectedProject} unmount={toggleEditProjectView} />;
 		} else {
 			return uiBody();
 		}
@@ -531,16 +530,16 @@ export default function Projects() {
 		const style = `flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center right-border`;
 		const projectActionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer text-white";
 
-		const projectId = MyGlobal.HighlightText(project.id, state.searchTerm);
+		const projectId = MyGlobal.HighlightText(project.id, mainData.searchTerm);
 
-		const governmentId = MyGlobal.HighlightText(project.government_id ?? "", state.searchTerm);
+		const governmentId = MyGlobal.HighlightText(project.government_id ?? "", mainData.searchTerm);
 		const governmentIdTextColour = !project.government_id ? "gray-text" : "primary-text";
 
-		const client = MyGlobal.HighlightText(getClientName(project.client_id), state.searchTerm);
-		const company = MyGlobal.HighlightText(getCompanyName(project.company_id), state.searchTerm);
+		const client = MyGlobal.HighlightText(getClientName(project.client_id), mainData.searchTerm);
+		const company = MyGlobal.HighlightText(getCompanyName(project.company_id), mainData.searchTerm);
 
-		const mainProject = MyGlobal.HighlightText(getMainProjectName(project.main_project_id), state.searchTerm);
-		const subProject = MyGlobal.HighlightText(getSubProjectName(project.sub_project_id), state.searchTerm);
+		const mainProject = MyGlobal.HighlightText(getMainProjectName(project.main_project_id), mainData.searchTerm);
+		const subProject = MyGlobal.HighlightText(getSubProjectName(project.sub_project_id), mainData.searchTerm);
 
 		const dueOn = dayjs(project.due_on).format("DD MMM, YYYY");
 
@@ -576,7 +575,7 @@ export default function Projects() {
 				<span className={`${style} ${governmentIdTextColour}`} dangerouslySetInnerHTML={{ __html: governmentId || "NA" }} />
 
 				<span className={`${style} space-x-5 cursor-pointer relative primary-text`}>
-					{state.isLoading.selectedProject == project.id ? (
+					{mainData.isLoading.selectedProject == project.id ? (
 						<SpinnerSmall />
 					) : (
 						<Tippy allowHTML={true} content={<Tooltip text={`${project.client_id} - ${client}`} />}>
@@ -599,7 +598,7 @@ export default function Projects() {
 	};
 
 	const uiSearch = () => {
-		if (otherData.allProjects.apiCopy.length) {
+		if (apiData.allProjects.apiCopy.length) {
 			return (
 				<TextInputNative
 					id="searchBox"
@@ -609,7 +608,7 @@ export default function Projects() {
 					placeholder=""
 					showClearButton={showSearchBoxClearButton}
 					tabIndex={1}
-					value={state.searchTerm}
+					value={mainData.searchTerm}
 					width="w-44"
 				/>
 			);
@@ -617,8 +616,8 @@ export default function Projects() {
 	};
 
 	const uiSortArrows = (column) => {
-		if (state.sort.column == column) {
-			if (state.sort.isAscending) {
+		if (mainData.sort.column == column) {
+			if (mainData.sort.isAscending) {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} />;
 			} else {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} />;
@@ -635,7 +634,7 @@ export default function Projects() {
 		return (
 			<Menu as="div" className="flex w-24 justify-center items-center relative">
 				<MenuButton className={wrapper}>
-					<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(project.status, state.searchTerm) }} />
+					<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(project.status, mainData.searchTerm) }} />
 					<FontAwesomeIcon icon={icon} />
 				</MenuButton>
 				{!isCompleted && (
@@ -663,10 +662,10 @@ export default function Projects() {
 	};
 
 	const uiTabs = () => {
-		const allModules = otherData.allProjects.apiCopy.length > 0 ? getAggregatedProjects() : {};
+		const allModules = apiData.allProjects.apiCopy.length > 0 ? getAggregatedProjects() : {};
 
 		return allModules.map((module, index) => {
-			const backgroundAndText = module.key == state.activeModule.name ? "primary-background-transparent-01 primary-text" : "bg-transparent black-text";
+			const backgroundAndText = module.key == mainData.activeModule.name ? "primary-background-transparent-01 primary-text" : "bg-transparent black-text";
 
 			const labelStyle = "flex w-4/5 justify-start items-center";
 			const countStyle = module.key != "All" && module.items.length ? "flex w-1/5 justify-end items-center font-regular-9 gray-text" : "hidden";
@@ -747,7 +746,7 @@ export default function Projects() {
 		if (hasMounted.mainComponent) {
 			doFiltering();
 		}
-	}, [state.searchTerm]);
+	}, [mainData.searchTerm]);
 
 	// Main UI
 	if (!hasMounted.mainComponent) {
@@ -761,7 +760,7 @@ export default function Projects() {
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
 						<div className="flex w-1/5 space-x-2 justify-start items-center">
 							<span className="view-heading">{thisView}</span>
-							{otherData.allProjects.api.length > 0 && <Badge value={getDataCount()} />}
+							{apiData.allProjects.api.length > 0 && <Badge value={getDataCount()} />}
 						</div>
 						<div className="flex w-1/2 space-x-2 justify-end items-center">
 							{uiSearch()}
@@ -776,7 +775,7 @@ export default function Projects() {
 				<ChangeStatus
 					mount={hasMounted.changeStatus}
 					reloadProjects={getSupportData}
-					selectedProject={state.selectedProject}
+					selectedProject={mainData.selectedProject}
 					unmount={toggleChangeStatusBox}
 				/>
 			)}
@@ -784,10 +783,14 @@ export default function Projects() {
 			{hasMounted.deleteProject && (
 				<DeleteProject
 					mount={hasMounted.deleteProject}
-					projectId={state.selectedProject.id}
+					projectId={mainData.selectedProject.id}
 					reloadProjects={getSupportData}
 					unmount={toggleDeleteProjectBox}
 				/>
+			)}
+
+			{hasMounted.projectStatus && (
+				<ProjectStatus mount={hasMounted.projectStatus} selectedProject={mainData.selectedProject} unmount={toggleProjectStatusBox} />
 			)}
 		</div>
 	);

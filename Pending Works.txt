@@ -1,0 +1,6 @@
+1. remove trimming everywhere
+2. show tooltip only if text is exremely longer
+3. single project => notes => showing aishwarya everywhere (remove it)
+4. edit inquiry should be fully editable
+5. single project > generate invoice => move to invoices (column)
+6. Invoices => invoice generation date, remove client. add sub project column beside mai project colmnn;..

@@ -15,7 +15,21 @@ import { faBriefcase, faCalendar, faChevronLeft, faFile, faIndianRupee, faPhone,
 
 export default function EditProject({ reloadProjects, selectedProject, unmount }) {
 	// Business Logic
-	const [editProject, setEditProjectData] = useState({
+	const [apiData, setApiData] = useState({
+		allAdministratorsCompanies: [],
+		allClients: [],
+		allMainProjects: { api: [], apiCopy: [] },
+		allSubProjects: { api: [], apiCopy: [] },
+		companiesByClients: { api: [], apiCopy: [] },
+	});
+
+	const [hasMounted, setHasMounted] = useState({
+		mainComponent: false,
+		preview: false,
+		teamsMenu: false,
+	});
+
+	const [mainData, setMainData] = useState({
 		client: { id: 0, name: "" },
 		company: { id: 0, name: "" },
 		contactNumber: 0,
@@ -29,18 +43,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 		teams: [],
 	});
 
-	const [hasMounted, setHasMounted] = useState({
-		mainComponent: false,
-		preview: false,
-		teamsMenu: false,
-	});
-
 	const [otherData, setOtherData] = useState({
-		allAdministratorsCompanies: [],
-		allClients: [],
-		allMainProjects: { api: [], apiCopy: [] },
-		allSubProjects: { api: [], apiCopy: [] },
-		companiesByClients: { api: [], apiCopy: [] },
 		isLoading: false,
 		originalProject: {},
 		searched: { affiliate: {}, company: {}, mainProject: {}, subProject: {} },
@@ -57,7 +60,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 
 	// Functions
 	const addNewCompany = (company) => {
-		const copy = [...otherData.companiesByClients.apiCopy];
+		const copy = [...apiData.companiesByClients.apiCopy];
 		const name = MyGlobal.Capitalize(company);
 
 		const revisedCopy = copy.filter((_company) => _company.id != 0);
@@ -65,24 +68,24 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 
 		setSearch("company", "");
 
-		setEditProjectData((old) => ({ ...old, company: { id: 0, name } }));
-		setOtherData((old) => ({ ...old, companiesByClients: { api: revisedCopy, apiCopy: revisedCopy } }));
+		setMainData((old) => ({ ...old, company: { id: 0, name } }));
+		setApiData((old) => ({ ...old, companiesByClients: { api: revisedCopy, apiCopy: revisedCopy } }));
 	};
 
 	const addNewSubProject = (subProject) => {
-		const copy = [...otherData.allSubProjects.apiCopy];
+		const copy = [...apiData.allSubProjects.apiCopy];
 		copy.unshift({ id: 0, name: MyGlobal.Capitalize(subProject) });
 
 		setSearch("subProject", "");
 
-		setEditProjectData((s) => ({ ...s, subProject: copy.at(0) }));
-		setOtherData((s) => ({ ...s, allSubProjects: { api: copy, apiCopy: copy } }));
+		setMainData((s) => ({ ...s, subProject: copy.at(0) }));
+		setApiData((s) => ({ ...s, allSubProjects: { api: copy, apiCopy: copy } }));
 	};
 
 	const calculateQuote = () => {
-		const totalAmount = MyGlobal.GetNumbers(editProject.invoiceFees) + MyGlobal.GetNumbers(editProject.reimbursementVoucher);
+		const totalAmount = MyGlobal.GetNumbers(mainData.invoiceFees) + MyGlobal.GetNumbers(mainData.reimbursementVoucher);
 
-		setEditProjectData((s) => ({ ...s, quote: totalAmount }));
+		setMainData((s) => ({ ...s, quote: totalAmount }));
 	};
 
 	const doProjectEditing = async () => {
@@ -90,17 +93,17 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 			setOtherData((s) => ({ ...s, isLoading: true }));
 
 			const body = {
-				client: editProject.client,
-				company: editProject.company,
-				contactNumber: editProject.contactNumber,
-				dueOn: editProject.dueOn,
+				client: mainData.client,
+				company: mainData.company,
+				contactNumber: mainData.contactNumber,
+				dueOn: mainData.dueOn,
 				id: selectedProject.id,
-				invoiceFees: MyGlobal.GetNumbers(editProject.invoiceFees),
-				invoiceFirmId: editProject.invoiceFirm.id,
-				mainProjectId: editProject.mainProject.id,
-				quote: MyGlobal.GetNumbers(editProject.quote),
-				reimbursementVoucher: MyGlobal.GetNumbers(editProject.reimbursementVoucher),
-				subProject: editProject.subProject,
+				invoiceFees: MyGlobal.GetNumbers(mainData.invoiceFees),
+				invoiceFirmId: mainData.invoiceFirm.id,
+				mainProjectId: mainData.mainProject.id,
+				quote: MyGlobal.GetNumbers(mainData.quote),
+				reimbursementVoucher: MyGlobal.GetNumbers(mainData.reimbursementVoucher),
+				subProject: mainData.subProject,
 				teams: getTeamsIds(),
 				userId: MyGlobal.GetUserId(),
 			};
@@ -126,10 +129,10 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 
 	const getFilteredCompanies = () => {
 		const value = String(otherData.searched.company.name);
-		let companies = otherData.companiesByClients.apiCopy;
+		let companies = apiData.companiesByClients.apiCopy;
 
 		if (value !== "undefined") {
-			companies = otherData.companiesByClients.apiCopy.filter((company) => {
+			companies = apiData.companiesByClients.apiCopy.filter((company) => {
 				return String(company.name).toLowerCase().includes(value.toLowerCase());
 			});
 		}
@@ -139,10 +142,10 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 
 	const getFilteredMainProjects = () => {
 		const value = String(otherData.searched.mainProject.name);
-		let mainProjects = otherData.allMainProjects.apiCopy;
+		let mainProjects = apiData.allMainProjects.apiCopy;
 
 		if (value !== "undefined") {
-			mainProjects = otherData.allMainProjects.apiCopy.filter((mainProject) => {
+			mainProjects = apiData.allMainProjects.apiCopy.filter((mainProject) => {
 				return String(mainProject.name).toLowerCase().includes(value.toLowerCase());
 			});
 		}
@@ -152,10 +155,10 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 
 	const getFilteredSubProjects = () => {
 		const value = String(otherData.searched.subProject.name);
-		let subProjects = otherData.allSubProjects.apiCopy;
+		let subProjects = apiData.allSubProjects.apiCopy;
 
 		if (value !== "undefined") {
-			subProjects = otherData.allSubProjects.apiCopy.filter((subProject) => {
+			subProjects = apiData.allSubProjects.apiCopy.filter((subProject) => {
 				return String(subProject.name).toLowerCase().includes(value.toLowerCase());
 			});
 		}
@@ -201,18 +204,16 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 					teams,
 				};
 
-				setEditProjectData(revisedProjectData);
-
-				setOtherData((old) => ({
-					...old,
+				setApiData({
 					allAdministratorsCompanies,
 					allClients,
 					allMainProjects: { api: allMainProjects, apiCopy: allMainProjects },
 					allSubProjects: { api: allSubProjects, apiCopy: allSubProjects },
 					companiesByClients: { api: response.data.companies, apiCopy: response.data.companies },
 					originalProject: revisedProjectData,
-				}));
+				});
 
+				setMainData(revisedProjectData);
 				setHasMounted((old) => ({ ...old, mainComponent: true }));
 			}
 		} catch (error) {
@@ -221,15 +222,15 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 	};
 
 	const getTeamsIds = () => {
-		return editProject.teams.map((user) => user.id).join(",");
+		return mainData.teams.map((user) => user.id).join(",");
 	};
 
 	const setInputs = (key, value) => {
 		if (key == "dueOn" || key == "invoiceFees" || key == "reimbursementVoucher" || key == "note") {
-			setEditProjectData((s) => ({ ...s, [key]: value }));
+			setMainData((s) => ({ ...s, [key]: value }));
 		} else {
 			setSearch(key, "");
-			setEditProjectData((s) => ({ ...s, [key]: { id: value.id, name: value.name } }));
+			setMainData((s) => ({ ...s, [key]: { id: value.id, name: value.name } }));
 		}
 	};
 
@@ -239,7 +240,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 
 	const setTeamsSelection = (user) => {
 		let revisedData = [];
-		const copy = [...editProject.teams];
+		const copy = [...mainData.teams];
 
 		if (copy.includes(user)) {
 			revisedData = copy.filter((_user) => _user != user);
@@ -248,7 +249,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 			revisedData = copy;
 		}
 
-		setEditProjectData((s) => ({ ...s, teams: revisedData }));
+		setMainData((s) => ({ ...s, teams: revisedData }));
 	};
 
 	const togglePreviewBox = (value) => {
@@ -274,7 +275,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={1}
-				value={editProject.client.name}
+				value={mainData.client.name}
 				width="w-full"
 			/>
 		);
@@ -285,7 +286,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={editProject.company.name}
+				comparingValue2={mainData.company.name}
 				displayValue="name"
 				filteredData={getFilteredCompanies}
 				hasDataObject={true}
@@ -298,7 +299,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.company.name}
 				tabIndex={2}
-				value={editProject.company.name}
+				value={mainData.company.name}
 				width="w-full"
 			/>
 		);
@@ -313,7 +314,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={3}
-				value={editProject.contactNumber}
+				value={mainData.contactNumber}
 				width="w-full"
 			/>
 		);
@@ -321,19 +322,12 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 
 	const uiDueOn = () => {
 		return (
-			<DatePicker
-				icon={faCalendar}
-				label="Due On"
-				onChange={(event) => setInputs("dueOn", event)}
-				tabIndex={6}
-				value={editProject.dueOn}
-				width="w-full"
-			/>
+			<DatePicker icon={faCalendar} label="Due On" onChange={(event) => setInputs("dueOn", event)} tabIndex={6} value={mainData.dueOn} width="w-full" />
 		);
 	};
 
 	const uiInvoiceFees = () => {
-		const label = `${editProject.invoiceFirm.name}'s Fees`;
+		const label = `${mainData.invoiceFirm.name}'s Fees`;
 
 		return (
 			<TextInput
@@ -343,7 +337,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				onChange={(event) => setInputs("invoiceFees", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={7}
-				value={editProject.invoiceFees}
+				value={mainData.invoiceFees}
 				width="w-full"
 			/>
 		);
@@ -354,9 +348,9 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={editProject.invoiceFirm.name}
+				comparingValue2={mainData.invoiceFirm.name}
 				displayValue="name"
-				filteredData={otherData.allAdministratorsCompanies}
+				filteredData={apiData.allAdministratorsCompanies}
 				hasDataObject={true}
 				icon={faBriefcase}
 				isReadOnly={false}
@@ -367,7 +361,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				onKeyPress={() => {}}
 				searchedItem={{}}
 				tabIndex={9}
-				value={editProject.invoiceFirm.name}
+				value={mainData.invoiceFirm.name}
 				width="w-full"
 			/>
 		);
@@ -378,7 +372,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={editProject.mainProject.name}
+				comparingValue2={mainData.mainProject.name}
 				displayValue="name"
 				filteredData={getFilteredMainProjects}
 				hasDataObject={true}
@@ -391,7 +385,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.mainProject.name}
 				tabIndex={4}
-				value={editProject.mainProject.name}
+				value={mainData.mainProject.name}
 				width="w-full"
 			/>
 		);
@@ -418,7 +412,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={9}
-				value={MyGlobal.ThousandSeparator(editProject.quote)}
+				value={MyGlobal.ThousandSeparator(mainData.quote)}
 				width="w-full"
 			/>
 		);
@@ -433,7 +427,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				onChange={(event) => setInputs("reimbursementVoucher", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={8}
-				value={editProject.reimbursementVoucher}
+				value={mainData.reimbursementVoucher}
 				width="w-full"
 			/>
 		);
@@ -444,7 +438,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={editProject.subProject.name}
+				comparingValue2={mainData.subProject.name}
 				displayValue="name"
 				filteredData={getFilteredSubProjects}
 				hasDataObject={true}
@@ -457,7 +451,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.subProject.name}
 				tabIndex={5}
-				value={editProject.subProject.name}
+				value={mainData.subProject.name}
 				width="w-full"
 			/>
 		);
@@ -473,7 +467,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				onBlur={() => toggleTeamsMenu()}
 				onItemClick={(event) => setTeamsSelection(event)}
 				onSelectedItemClick={(event) => setTeamsSelection(event)}
-				selectedItems={editProject.teams}
+				selectedItems={mainData.teams}
 				showList={showTeamsDropdown}
 				source={MyGlobal.GetAllUsers()}
 				toggleMenu={() => toggleTeamsMenu()}
@@ -487,10 +481,10 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 	}, []);
 
 	useEffect(() => {
-		if (editProject.invoiceFees || editProject.reimbursementVoucher) {
+		if (mainData.invoiceFees || mainData.reimbursementVoucher) {
 			calculateQuote();
 		}
-	}, [editProject.invoiceFees, editProject.reimbursementVoucher]);
+	}, [mainData.invoiceFees, mainData.reimbursementVoucher]);
 
 	if (!hasMounted.mainComponent) {
 		return;
@@ -535,7 +529,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 			</footer>
 
 			{hasMounted.preview && (
-				<EditProjectPreview mount={hasMounted.preview} newProject={editProject} oldProject={otherData.originalProject} unmount={togglePreviewBox} />
+				<EditProjectPreview mount={hasMounted.preview} newProject={mainData} oldProject={otherData.originalProject} unmount={togglePreviewBox} />
 			)}
 		</>
 	);

@@ -9,30 +9,28 @@ import MyConstants from "@/utilities/constants";
 
 import { useRouter } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { applicationName, MyGlobal } from "@/utilities/global";
 import { ErrorFallbackComponent } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { createContext, useEffect, useLayoutEffect, useState } from "react";
 import { faCog, faDatabase, faSignOut, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
-
-export const DashboardContext = createContext({});
 
 export default function Home() {
 	// Business Logic
 	const router = useRouter();
 
-	const [data, setData] = useState({
+	const [apiData, setApiData] = useState({
 		allPermissions: [],
 		allUsers: [],
-		isDarkModeEnabled: false,
-		isLogoutBoxOpen: false,
-		isUserMenuOpen: false,
-		loggedInUser: {},
 		modules: [],
-		selectedModule: MyConstants.Modules.Base.Dashboard,
-		selectedModuleIndex: 0,
 		settings: [],
+	});
+
+	const [mainData, setMainData] = useState({
+		isDarkModeEnabled: false,
+		loggedInUser: {},
+		selectedModule: { id: 0, name: MyConstants.Modules.Base.Dashboard },
 		singleProjectObject: {},
 		theme: null,
 	});
@@ -44,30 +42,18 @@ export default function Home() {
 		settingsView: false,
 	});
 
-	// const _cashFlowSettings = data.settings?.find((record) => record.name == Constants.primaryModules.cashFlow.name)?.value;
-	// const cashFlowSettings = _cashFlowSettings ? JSON.parse(_cashFlowSettings)?.at(0) : "";
-
-	// const _projectSettings = data.settings?.find((record) => record.name == Constants.primaryModules.projects.name)?.value;
-	// const projectSettings = _projectSettings ? JSON.parse(_projectSettings)?.at(0) : "";
-
-	const designation = `${data.loggedInUser.designation || ""}`;
-	const standardName = `${data.loggedInUser.first_name || ""} ${data.loggedInUser.last_name || ""}`;
-
-	const singleTabStyle = "pt-2 pb-[0.6rem] border-b-4 whitespace-nowrap font-medium-11 primary-border-colour primary-text";
-
 	// Functions
 	const changeTheme = () => {
-		const newTheme = data.theme == "light" ? "dark" : "light";
+		const newTheme = mainData.theme == "light" ? "dark" : "light";
 		MyGlobal.Storages.Local.Set("AppMode", newTheme);
 
-		setData((old) => ({ ...old, isDarkModeEnabled: !data.isDarkModeEnabled, theme: newTheme }));
+		setMainData((old) => ({ ...old, isDarkModeEnabled: !mainData.isDarkModeEnabled, theme: newTheme }));
 	};
 
 	const closeProjectsView = () => {
-		setData((old) => ({
+		setMainData((old) => ({
 			...old,
-			selectedModuleIndex: 0,
-			selectedModule: Constants.primaryModules.dashboard.name,
+			selectedModule: { id: 0, name: MyConstants.Modules.Base.Dashboard },
 			singleProjectObject: {},
 		}));
 	};
@@ -79,9 +65,9 @@ export default function Home() {
 		const isDarkModeEnabled = MyGlobal.GetTheme() !== "light";
 
 		const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
-		colorScheme.addEventListener("change", (e) => setData((old) => ({ ...old, isDarkModeEnabled: e.matches, theme: e.matches ? "dark" : "light" })));
+		colorScheme.addEventListener("change", (e) => setMainData((old) => ({ ...old, isDarkModeEnabled: e.matches, theme: e.matches ? "dark" : "light" })));
 
-		setData((old) => ({ ...old, isDarkModeEnabled: isDarkModeEnabled, theme: initialTheme }));
+		setMainData((old) => ({ ...old, isDarkModeEnabled: isDarkModeEnabled, theme: initialTheme }));
 	};
 
 	const getPermissions = async () => {
@@ -108,7 +94,7 @@ export default function Home() {
 
 			MyGlobal.SetPermission(response.data);
 
-			setData((old) => ({ ...old, allPermissions: response.data, modules }));
+			setApiData((old) => ({ ...old, allPermissions: response.data, modules }));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get All Permissions");
 		}
@@ -119,7 +105,7 @@ export default function Home() {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-settings" }));
 
 			if (response.status == 200) {
-				setData((old) => ({ ...old, settings: response.data }));
+				setApiData((old) => ({ ...old, settings: response.data }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get Settings");
@@ -132,7 +118,7 @@ export default function Home() {
 			router.replace("/");
 		} else {
 			MyGlobal.SetUserStatus(1);
-			setData((old) => ({ ...old, loggedInUser: MyGlobal.GetUserFullDetails() }));
+			setMainData((old) => ({ ...old, loggedInUser: MyGlobal.GetUserFullDetails() }));
 		}
 	};
 
@@ -183,7 +169,7 @@ export default function Home() {
 				response.data.administrators.forEach((administrator) => allUsers.push(administrator));
 				response.data.employees.forEach((employee) => allUsers.push(employee));
 
-				setData((old) => ({ ...old, allUsers }));
+				setApiData((old) => ({ ...old, allUsers }));
 				MyGlobal.SetAllUsers(allUsers);
 			}
 		} catch (error) {
@@ -209,7 +195,7 @@ export default function Home() {
 	};
 
 	const setModule = (index, module) => {
-		setData((old) => ({ ...old, selectedModule: module.name, selectedModuleIndex: index }));
+		setMainData((old) => ({ ...old, selectedModule: { id: index, name: module.name } }));
 	};
 
 	const toggleActivitiesView = () => {
@@ -229,27 +215,27 @@ export default function Home() {
 	};
 
 	const toggleTheme = () => {
-		setData((old) => ({ ...old, isDarkModeEnabled: !data.isDarkModeEnabled }));
+		setMainData((old) => ({ ...old, isDarkModeEnabled: !mainData.isDarkModeEnabled }));
 	};
 
 	// UI Components
 	const uiMain = () => {
 		if (hasMounted.activitiesView) {
-			return <Activities staff={data.allUsers} close={toggleActivitiesView} />;
+			return <Activities staff={apiData.allUsers} close={toggleActivitiesView} />;
 		} else if (hasMounted.employeesView) {
-			return <EmployeeManagement close={toggleEmployeeView} staffData={data.allUsers} />;
+			return <EmployeeManagement close={toggleEmployeeView} staffData={apiData.allUsers} />;
 		} else if (hasMounted.settingsView) {
-			return <Settings close={toggleSettingsView} reloadAllSettings={getSettings} settings={data.settings} staff={data.allUsers} />;
+			return <Settings close={toggleSettingsView} reloadAllSettings={getSettings} settings={apiData.settings} staff={apiData.allUsers} />;
 		} else if (hasMounted.profileView) {
-			return <ProfileManagement close={toggleProfileView} payload={data.loggedInUser} />;
+			return <ProfileManagement close={toggleProfileView} payload={mainData.loggedInUser} />;
 		} else {
 			return uiSelectedModule();
 		}
 	};
 
 	const uiModules = () => {
-		return data.modules.map((module, index) => {
-			const aesthetics = index == data.selectedModuleIndex ? "primary-border-colour primary-text" : "border-transparent gray-text";
+		return apiData.modules.map((module, index) => {
+			const aesthetics = index == mainData.selectedModule.id ? "primary-border-colour primary-text" : "border-transparent gray-text";
 			const wrapper = `pt-2 pb-[0.7rem] border-b-4 whitespace-nowrap font-regular-11 ${aesthetics}`;
 
 			return (
@@ -261,7 +247,7 @@ export default function Home() {
 	};
 
 	const uiSelectedModule = () => {
-		switch (data.selectedModule) {
+		switch (mainData.selectedModule.name) {
 			// case Constants.primaryModules.dashboard.name:
 			// 	return (
 			// 		<ErrorBoundary
@@ -340,7 +326,7 @@ export default function Home() {
 	const uiUserMenuList = () => {
 		return Object.values(MyConstants.UserMenu)
 			.filter((item) => {
-				if (data.loggedInUser.role == MyConstants.UserType.Employees) {
+				if (mainData.loggedInUser.role == MyConstants.UserType.Employees) {
 					return ![MyConstants.UserMenu.Activity, MyConstants.UserMenu.Employees, MyConstants.UserMenu.Storage].includes(item);
 				} else {
 					return item;
@@ -370,8 +356,8 @@ export default function Home() {
 					anchor="bottom"
 					className="absolute w-max mt-2 rounded bottom-shadow focus:outline-none black-white-background full-border black-text">
 					<div className="flex flex-col p-2 font-medium-13">
-						<span>{standardName}</span>
-						<span className="font-regular-11 gray-text">{designation}</span>
+						<span>{mainData.loggedInUser.full_name || ""}</span>
+						<span className="font-regular-11 gray-text">{mainData.loggedInUser.designation || ""}</span>
 					</div>
 					{uiUserMenuList()}
 				</MenuItems>
@@ -396,14 +382,14 @@ export default function Home() {
 	}, []);
 
 	useEffect(() => {
-		document.body.setAttribute("app-theme", data.theme);
-	}, [data.theme]);
+		document.body.setAttribute("app-theme", mainData.theme);
+	}, [mainData.theme]);
 
 	useEffect(() => {
-		if (data.loggedInUser) {
-			document.title = `${standardName} ${String.fromCharCode(183)} ${applicationName}`;
+		if (mainData.loggedInUser) {
+			document.title = `${mainData.loggedInUser.full_name || ""} ${String.fromCharCode(183)} ${applicationName}`;
 		}
-	}, [data.loggedInUser]);
+	}, [mainData.loggedInUser]);
 
 	// Main UI
 	return (

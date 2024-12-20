@@ -38,20 +38,13 @@ import {
 
 export default function Inquiries() {
 	// Business Logic
-	const [state, setState] = useState({
+	const [apiData, setApiData] = useState({
 		allMainProjects: [],
 		allNotes: [],
 		allReferences: [],
 		allSubProjects: [],
 		clients: { all: [], confirmed: [] },
-		entryDate: { from: "", to: "" },
-		hasMounted: false,
 		inquiries: { api: [], apiCopy: [], mergedWithNotes: [] },
-		isLoading: false,
-		searchTerm: "",
-		selectedInquiryForNotes: {},
-		selectedInquiryForStatusChange: {},
-		sort: { column: "", isAscending: false },
 	});
 
 	const [hasMounted, setHasMounted] = useState({
@@ -61,6 +54,16 @@ export default function Inquiries() {
 		newInquiry: false,
 		newProject: false,
 		notes: false,
+	});
+
+	const [mainData, setMainData] = useState({
+		entryDate: { from: "", to: "" },
+		hasMounted: false,
+		isLoading: false,
+		searchTerm: "",
+		selectedInquiryForNotes: {},
+		selectedInquiryForStatusChange: {},
+		sort: { column: "", isAscending: false },
 	});
 
 	const allowConvertingToProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.ConvertInquiryToProject);
@@ -73,9 +76,9 @@ export default function Inquiries() {
 		? "block space-x-1.5 primary-button-transparent-background"
 		: "hidden";
 
-	const showFromDateClearButton = state.entryDate.from ? "cursor-pointer primary-text" : "hidden";
-	const showToDateClearButton = state.entryDate.to ? "cursor-pointer primary-text" : "hidden";
-	const showFindClearButton = state.searchTerm ? "cursor-pointer primary-text" : "hidden";
+	const showFromDateClearButton = mainData.entryDate.from ? "cursor-pointer primary-text" : "hidden";
+	const showToDateClearButton = mainData.entryDate.to ? "cursor-pointer primary-text" : "hidden";
+	const showFindClearButton = mainData.searchTerm ? "cursor-pointer primary-text" : "hidden";
 
 	const blankDataWrapper = "flex w-full h-full justify-center items-center font-regular-12 gray-text black-white-background full-border";
 
@@ -94,26 +97,26 @@ export default function Inquiries() {
 	};
 
 	const doFiltering = (query) => {
-		const filteredData = state.inquiries.mergedWithNotes.filter((inquiry) => {
+		const filteredData = apiData.inquiries.mergedWithNotes.filter((inquiry) => {
 			if (query == "date") {
 				const checkDate = new Date(inquiry.entry_date);
-				const startDate = state.entryDate.from;
-				const endDate = state.entryDate.to;
+				const startDate = mainData.entryDate.from;
+				const endDate = mainData.entryDate.to;
 
 				if (checkDate >= startDate && checkDate <= endDate) {
 					return inquiry;
 				}
 			} else {
-				const searchTerm = state.searchTerm.toLowerCase();
+				const searchTerm = mainData.searchTerm.toLowerCase();
 
-				const client = state.clients.all.filter((client) => client.id == inquiry.client_id).at(0);
+				const client = apiData.clients.all.filter((client) => client.id == inquiry.client_id).at(0);
 				const clientId = String(client.id).toLowerCase();
 				const clientName = String(getClientName(client.id)).toLowerCase();
 
 				const createdBy = MyGlobal.GetAnyDataFromId(inquiry.created_by, "full_name");
 				const _createdBy = String(createdBy).toLowerCase();
 
-				const reference = state.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0);
+				const reference = apiData.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0);
 				const referenceId = String(reference.id).toLowerCase();
 				const referenceName = String(getReferenceName(inquiry.reference_id)).toLowerCase();
 
@@ -143,11 +146,11 @@ export default function Inquiries() {
 			}
 		});
 
-		setState((old) => ({ ...old, inquiries: { ...old.inquiries, api: filteredData } }));
+		setApiData((old) => ({ ...old, inquiries: { ...old.inquiries, api: filteredData } }));
 	};
 
 	const doSorting = () => {
-		return state.inquiries.api.sort((a, b) => {
+		return apiData.inquiries.api.sort((a, b) => {
 			const aClient = getClientName(a.client_id);
 			const bClient = getClientName(b.client_id);
 
@@ -163,52 +166,52 @@ export default function Inquiries() {
 			const aNotesCount = getTotalNotesByInquiry(a.id);
 			const bNotesCount = getTotalNotesByInquiry(b.id);
 
-			const aReference = state.allReferences.length ? state.allReferences.filter((reference) => reference.id == a.reference_id).at(0).name : "";
+			const aReference = apiData.allReferences.length ? apiData.allReferences.filter((reference) => reference.id == a.reference_id).at(0).name : "";
 
-			const bReference = state.allReferences.length ? state.allReferences.filter((reference) => reference.id == b.reference_id).at(0).name : "";
+			const bReference = apiData.allReferences.length ? apiData.allReferences.filter((reference) => reference.id == b.reference_id).at(0).name : "";
 
 			const aSubProject = getSubProjectName(a.sub_project_id);
 			const bSubProject = getSubProjectName(b.sub_project_id);
 
-			if (state.sort.column == tableHeaders.EntryDate && state.sort.isAscending) {
+			if (mainData.sort.column == tableHeaders.EntryDate && mainData.sort.isAscending) {
 				return aEntryDate - bEntryDate;
-			} else if (state.sort.column == tableHeaders.EntryDate && !state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.EntryDate && !mainData.sort.isAscending) {
 				return bEntryDate - aEntryDate;
-			} else if (state.sort.column == tableHeaders.Client && state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.Client && mainData.sort.isAscending) {
 				return aClient.localeCompare(bClient);
-			} else if (state.sort.column == tableHeaders.Client && !state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.Client && !mainData.sort.isAscending) {
 				return bClient.localeCompare(aClient);
-			} else if (state.sort.column == tableHeaders.MainProject && state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.MainProject && mainData.sort.isAscending) {
 				return aMainProject.localeCompare(bMainProject);
-			} else if (state.sort.column == tableHeaders.MainProject && !state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.MainProject && !mainData.sort.isAscending) {
 				return bMainProject.localeCompare(aMainProject);
-			} else if (state.sort.column == tableHeaders.SubProject && state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.SubProject && mainData.sort.isAscending) {
 				return aSubProject.localeCompare(bSubProject);
-			} else if (state.sort.column == tableHeaders.SubProject && !state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.SubProject && !mainData.sort.isAscending) {
 				return bSubProject.localeCompare(aSubProject);
-			} else if (state.sort.column == tableHeaders.Reference && state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.Reference && mainData.sort.isAscending) {
 				return aReference.localeCompare(bReference);
-			} else if (state.sort.column == tableHeaders.Reference && !state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.Reference && !mainData.sort.isAscending) {
 				return bReference.localeCompare(aReference);
-			} else if (state.sort.column == tableHeaders.FollowUps && state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.FollowUps && mainData.sort.isAscending) {
 				return a.follow_ups.localeCompare(b.follow_ups);
-			} else if (state.sort.column == tableHeaders.FollowUps && !state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.FollowUps && !mainData.sort.isAscending) {
 				return b.follow_ups.localeCompare(a.follow_ups);
-			} else if (state.sort.column == tableHeaders.Quote && state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.Quote && mainData.sort.isAscending) {
 				return a.quote - b.quote;
-			} else if (state.sort.column == tableHeaders.Quote && !state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.Quote && !mainData.sort.isAscending) {
 				return b.quote - a.quote;
-			} else if (state.sort.column == tableHeaders.Status && state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.Status && mainData.sort.isAscending) {
 				return a.status.localeCompare(b.status);
-			} else if (state.sort.column == tableHeaders.Status && !state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.Status && !mainData.sort.isAscending) {
 				return b.status.localeCompare(a.status);
-			} else if (state.sort.column == tableHeaders.Notes && state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.Notes && mainData.sort.isAscending) {
 				return aNotesCount - bNotesCount;
-			} else if (state.sort.column == tableHeaders.Notes && !state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.Notes && !mainData.sort.isAscending) {
 				return bNotesCount - aNotesCount;
-			} else if (state.sort.column == tableHeaders.CreatedBy && state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.CreatedBy && mainData.sort.isAscending) {
 				return aCreatedBy.localeCompare(bCreatedBy);
-			} else if (state.sort.column == tableHeaders.CreatedBy && !state.sort.isAscending) {
+			} else if (mainData.sort.column == tableHeaders.CreatedBy && !mainData.sort.isAscending) {
 				return bCreatedBy.localeCompare(aCreatedBy);
 			} else {
 				return b.id - a.id;
@@ -236,7 +239,7 @@ export default function Inquiries() {
 			const followUps = MyGlobal.GetAnyDataFromId(inquiry.follow_ups, "full_name");
 			const _followUps = String(followUps).replace(",", "\n");
 
-			const referenceName = state.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0).name;
+			const referenceName = apiData.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0).name;
 			const referenceDetails = `${inquiry.reference_id}\n${referenceName}`;
 
 			records.push(
@@ -287,7 +290,7 @@ export default function Inquiries() {
 				fontWeight: "bold",
 				height: 44,
 				span: rowHeaders.length,
-				value: `${thisView} (${state.inquiries.api.length})`,
+				value: `${thisView} (${apiData.inquiries.api.length})`,
 			},
 		];
 
@@ -303,8 +306,8 @@ export default function Inquiries() {
 	};
 
 	const getClientName = (clientId) => {
-		if (state.clients.all.length) {
-			return state.clients.all.filter((client) => client.id == clientId).at(0).name;
+		if (apiData.clients.all.length) {
+			return apiData.clients.all.filter((client) => client.id == clientId).at(0).name;
 		} else {
 			return "";
 		}
@@ -325,7 +328,7 @@ export default function Inquiries() {
 	};
 
 	const getInquiries = async () => {
-		setState((old) => ({ ...old, isLoading: true, hasMounted: false }));
+		setMainData((old) => ({ ...old, isLoading: true, hasMounted: false }));
 
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetInquiries, MyGlobal.GetHeaders());
@@ -334,34 +337,34 @@ export default function Inquiries() {
 				getSupportData();
 
 				const revised = response.data.map((inquiry) => ({ ...inquiry, notes: "" }));
-				setState((old) => ({ ...old, inquiries: { api: revised, apiCopy: revised } }));
+				setApiData((old) => ({ ...old, inquiries: { ...old.inquiries, api: revised, apiCopy: revised } }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get Inquiries");
 		} finally {
-			setState((old) => ({ ...old, isLoading: false, hasMounted: true }));
+			setMainData((old) => ({ ...old, isLoading: false, hasMounted: true }));
 		}
 	};
 
 	const getMainProjectName = (mainProjectId) => {
-		if (state.allMainProjects.length) {
-			return state.allMainProjects.filter((mainProject) => mainProject.id == mainProjectId).at(0).name;
+		if (apiData.allMainProjects.length) {
+			return apiData.allMainProjects.filter((mainProject) => mainProject.id == mainProjectId).at(0).name;
 		} else {
 			return "";
 		}
 	};
 
 	const getProperCount = () => {
-		if (state.inquiries.api.length != state.inquiries.apiCopy.length) {
-			return `${state.inquiries.api.length} / ${state.inquiries.apiCopy.length}`;
+		if (apiData.inquiries.api.length != apiData.inquiries.apiCopy.length) {
+			return `${apiData.inquiries.api.length} / ${apiData.inquiries.apiCopy.length}`;
 		} else {
-			return state.inquiries.api.length;
+			return apiData.inquiries.api.length;
 		}
 	};
 
 	const getReferenceName = (referenceId) => {
-		if (state.allReferences.length) {
-			return state.allReferences.filter((reference) => reference.id == referenceId).at(0).name;
+		if (apiData.allReferences.length) {
+			return apiData.allReferences.filter((reference) => reference.id == referenceId).at(0).name;
 		} else {
 			return "";
 		}
@@ -410,8 +413,8 @@ export default function Inquiries() {
 	};
 
 	const getSubProjectName = (subProjectId) => {
-		if (state.allSubProjects.length) {
-			return state.allSubProjects.filter((subProject) => subProject.id == subProjectId).at(0).name;
+		if (apiData.allSubProjects.length) {
+			return apiData.allSubProjects.filter((subProject) => subProject.id == subProjectId).at(0).name;
 		} else {
 			return "";
 		}
@@ -424,7 +427,7 @@ export default function Inquiries() {
 			if (response.status === 200) {
 				const confirmedClients = response.data.clients.filter((client) => client.is_confirmed == 1);
 
-				setState((old) => ({
+				setApiData((old) => ({
 					...old,
 					clients: { all: response.data.clients, confirmed: confirmedClients },
 					allMainProjects: response.data.mainProjects,
@@ -439,13 +442,13 @@ export default function Inquiries() {
 	};
 
 	const getTotalNotesByInquiry = (inquiryId) => {
-		return state.allNotes.filter((note) => note.inquiry_id == inquiryId && note.source == thisView).length;
+		return apiData.allNotes.filter((note) => note.inquiry_id == inquiryId && note.source == thisView).length;
 	};
 
 	const getTotalQuote = () => {
 		let total = 0;
 
-		for (const inquiry of state.inquiries.api) {
+		for (const inquiry of apiData.inquiries.api) {
 			total += Number(inquiry.quote);
 		}
 
@@ -453,12 +456,12 @@ export default function Inquiries() {
 	};
 
 	const highlightText = (isTag, text) => {
-		const regex = new RegExp(state.searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+		const regex = new RegExp(mainData.searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
 		const classByTag = isTag ? "highlight-tag-characters" : "highlight-characters";
 
 		let result = text;
 
-		if (state.searchTerm) {
+		if (mainData.searchTerm) {
 			result = String(text).replace(regex, (match) => `<span class=${classByTag}>${match}</span>`);
 		}
 
@@ -470,8 +473,8 @@ export default function Inquiries() {
 		const mergedObject = {};
 		const mergedArray = [];
 
-		state.inquiries.apiCopy.forEach((inquiry) => {
-			state.allNotes.forEach((_note) => {
+		apiData.inquiries.apiCopy.forEach((inquiry) => {
+			apiData.allNotes.forEach((_note) => {
 				if (inquiry.id == _note.inquiry_id) {
 					newArray.push({ id: _note.inquiry_id, notes: _note.content });
 				}
@@ -486,7 +489,7 @@ export default function Inquiries() {
 			}
 		});
 
-		state.inquiries.apiCopy.forEach((inquiry) => {
+		apiData.inquiries.apiCopy.forEach((inquiry) => {
 			Object.values(mergedObject).forEach((note) => {
 				if (inquiry.id == note.id) {
 					mergedArray.push({ ...inquiry, notes: note.notes });
@@ -494,16 +497,16 @@ export default function Inquiries() {
 			});
 		});
 
-		const idsOfInquiries = state.inquiries.apiCopy.map((inquiry) => inquiry.id);
+		const idsOfInquiries = apiData.inquiries.apiCopy.map((inquiry) => inquiry.id);
 		const idsOfMergedArray = mergedArray.map((inquiry) => inquiry.id);
 		const missingIds = idsOfInquiries.filter((inquiryId) => !idsOfMergedArray.includes(inquiryId));
 
 		missingIds.forEach((inquiryId) => {
-			const missingObject = state.inquiries.apiCopy.filter((inquiry) => inquiry.id == inquiryId).at(0);
+			const missingObject = apiData.inquiries.apiCopy.filter((inquiry) => inquiry.id == inquiryId).at(0);
 			mergedArray.push(missingObject);
 		});
 
-		setState((old) => ({ ...old, inquiries: { ...old.inquiries, mergedWithNotes: mergedArray } }));
+		setApiData((old) => ({ ...old, inquiries: { ...old.inquiries, mergedWithNotes: mergedArray } }));
 	};
 
 	const openWhatsAppWeb = (contactNumber) => {
@@ -511,20 +514,20 @@ export default function Inquiries() {
 	};
 
 	const prepareInquiryStatusChangeData = (inquiry, newStatus) => {
-		setState((old) => ({ ...old, selectedInquiryForStatusChange: { ...inquiry, new_status: newStatus } }));
+		setMainData((old) => ({ ...old, selectedInquiryForStatusChange: { ...inquiry, new_status: newStatus } }));
 	};
 
 	const setInputs = (key, value) => {
 		if (key == "from" || key == "to") {
-			setState((old) => ({ ...old, entryDate: { ...old.entryDate, [key]: value } }));
+			setMainData((old) => ({ ...old, entryDate: { ...old.entryDate, [key]: value } }));
 		} else {
-			setState((old) => ({ ...old, [key]: value }));
+			setMainData((old) => ({ ...old, [key]: value }));
 		}
 	};
 
 	const setSort = (header) => {
 		if (header != tableHeaders.ContactNumber) {
-			setState((old) => ({ ...old, sort: { column: header, isAscending: !state.sort.isAscending } }));
+			setMainData((old) => ({ ...old, sort: { column: header, isAscending: !mainData.sort.isAscending } }));
 		}
 	};
 
@@ -534,13 +537,13 @@ export default function Inquiries() {
 		} else if (value == "open-new-project") {
 			setHasMounted((old) => ({ ...old, changeStatus: false, newProject: true }));
 		} else {
-			setState((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
+			setMainData((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
 			setHasMounted((old) => ({ ...old, changeStatus: false }));
 		}
 	};
 
 	const toggleEditInquiryView = (inquiry, type) => {
-		setState((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
+		setMainData((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
 		setHasMounted((old) => ({ ...old, editInquiry: type }));
 	};
 
@@ -549,21 +552,21 @@ export default function Inquiries() {
 	};
 
 	const toggleNotesView = (inquiry, type) => {
-		setState((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
+		setMainData((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
 		setHasMounted((old) => ({ ...old, notes: type }));
 	};
 
 	// UI Components
 	const uiBody = () => {
-		if (state.isLoading) {
+		if (mainData.isLoading) {
 			return (
 				<div className={blankDataWrapper}>
 					<SpinnerBig />
 				</div>
 			);
-		} else if (!state.inquiries.apiCopy.length) {
+		} else if (!apiData.inquiries.apiCopy.length) {
 			return <div className={blankDataWrapper}>No inquiries generated.</div>;
-		} else if (!state.inquiries.api.length) {
+		} else if (!apiData.inquiries.api.length) {
 			return <div className={blankDataWrapper}>No inquiries found.</div>;
 		} else {
 			return (
@@ -573,7 +576,7 @@ export default function Inquiries() {
 						className="w-full h-full overflow-y-auto bottom-border"
 						data={doSorting()}
 						itemContent={(index, inquiry) => uiRows(inquiry, index)}
-						totalCount={state.inquiries.api.length}
+						totalCount={apiData.inquiries.api.length}
 					/>
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 				</div>
@@ -590,7 +593,7 @@ export default function Inquiries() {
 	};
 
 	const uiExport = () => {
-		if (state.inquiries.api.length && state.inquiries.apiCopy.length) {
+		if (apiData.inquiries.api.length && apiData.inquiries.apiCopy.length) {
 			return (
 				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => exportAsExcel()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
@@ -646,7 +649,7 @@ export default function Inquiries() {
 	};
 
 	const uiFromDate = () => {
-		if (state.inquiries.apiCopy.length) {
+		if (apiData.inquiries.apiCopy.length) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow black-white-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
@@ -654,14 +657,14 @@ export default function Inquiries() {
 						className="w-20 h-6 bg-transparent outline-none font-medium-11"
 						dateFormat="dd-MM-YYYY"
 						dropdownMode="select"
-						endDate={state.entryDate.to}
+						endDate={mainData.entryDate.to}
 						onChange={(e) => setInputs("from", e)}
 						peekNextMonth
 						placeholderText="From"
 						tabIndex={1}
-						selected={state.entryDate.from}
+						selected={mainData.entryDate.from}
 						selectsStart
-						startDate={state.entryDate.from}
+						startDate={mainData.entryDate.from}
 						showMonthDropdown
 						showYearDropdown
 					/>
@@ -673,7 +676,7 @@ export default function Inquiries() {
 
 	const uiHeaders = () => {
 		return Object.values(tableHeaders).map((header, index) => {
-			const showSortArrow = header == state.sort.column ? "block" : "hidden";
+			const showSortArrow = header == mainData.sort.column ? "block" : "hidden";
 			const showStatusFilter = header == tableHeaders.Status ? "block" : "hidden";
 
 			return (
@@ -690,18 +693,18 @@ export default function Inquiries() {
 
 	const uiMain = () => {
 		if (hasMounted.editInquiry) {
-			return <EditInquiry unmount={toggleEditInquiryView} selectedInquiry={state.selectedInquiryForNotes} reloadInquiries={getInquiries} />;
+			return <EditInquiry unmount={toggleEditInquiryView} selectedInquiry={mainData.selectedInquiryForNotes} reloadInquiries={getInquiries} />;
 		} else if (hasMounted.newInquiry) {
 			return <NewInquiry reloadInquiries={getInquiries} unmount={toggleNewInquiryView} />;
 		} else if (hasMounted.newProject) {
-			return <NewProject reloadInquiries={getInquiries} selectedInquiry={state.selectedInquiryForStatusChange} unmount={closeNewProjectView} />;
+			return <NewProject reloadInquiries={getInquiries} selectedInquiry={mainData.selectedInquiryForStatusChange} unmount={closeNewProjectView} />;
 		} else if (hasMounted.notes) {
 			return (
 				<Notes
-					allClients={state.clients.all}
-					allNotes={state.allNotes}
+					allClients={apiData.clients.all}
+					allNotes={apiData.allNotes}
 					reloadInquiries={getInquiries}
-					selectedInquiry={state.selectedInquiryForNotes}
+					selectedInquiry={mainData.selectedInquiryForNotes}
 					unmount={toggleNotesView}
 				/>
 			);
@@ -711,7 +714,7 @@ export default function Inquiries() {
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
 						<div className="flex w-1/5 space-x-2 justify-start items-center">
 							<span className="view-heading">{thisView}</span>
-							{state.inquiries.api.length > 0 && <Badge value={getProperCount()} />}
+							{apiData.inquiries.api.length > 0 && <Badge value={getProperCount()} />}
 						</div>
 						<div className="flex w-4/5 space-x-2 justify-end items-center">
 							<div className="flex w-1/2 space-x-2 justify-end items-center">
@@ -752,24 +755,24 @@ export default function Inquiries() {
 	const uiRows = (inquiry, rowId) => {
 		const style = "flex flex-wrap w-[9.09%] min-h-9 justify-center items-center text-center right-border";
 
-		const clientId = MyGlobal.HighlightText(inquiry.client_id, state.searchTerm);
-		const clientName = MyGlobal.HighlightText(getClientName(inquiry.client_id), state.searchTerm);
+		const clientId = MyGlobal.HighlightText(inquiry.client_id, mainData.searchTerm);
+		const clientName = MyGlobal.HighlightText(getClientName(inquiry.client_id), mainData.searchTerm);
 
 		const clientNameTextStyle = inquiry.status == STATUSES.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
 
-		const contactNumber = MyGlobal.HighlightText(inquiry.contact_number, state.searchTerm);
-		const mainProject = MyGlobal.HighlightText(getMainProjectName(inquiry.main_project_id), state.searchTerm);
-		const subProject = MyGlobal.HighlightText(getSubProjectName(inquiry.sub_project_id), state.searchTerm);
+		const contactNumber = MyGlobal.HighlightText(inquiry.contact_number, mainData.searchTerm);
+		const mainProject = MyGlobal.HighlightText(getMainProjectName(inquiry.main_project_id), mainData.searchTerm);
+		const subProject = MyGlobal.HighlightText(getSubProjectName(inquiry.sub_project_id), mainData.searchTerm);
 
-		const referenceId = MyGlobal.HighlightText(inquiry.reference_id, state.searchTerm);
+		const referenceId = MyGlobal.HighlightText(inquiry.reference_id, mainData.searchTerm);
 		const referenceName = getReferenceName(inquiry.reference_id) ?? referenceId;
-		const _referenceName = MyGlobal.HighlightText(referenceName, state.searchTerm);
+		const _referenceName = MyGlobal.HighlightText(referenceName, mainData.searchTerm);
 		const referenceIdAndName = `${referenceId} - ${referenceName}`;
 
-		const quote = MyGlobal.HighlightText(inquiry.quote, state.searchTerm);
+		const quote = MyGlobal.HighlightText(inquiry.quote, mainData.searchTerm);
 
 		const createdBy = MyGlobal.GetAnyDataFromId(inquiry.created_by, "full_name");
-		const _createdBy = MyGlobal.HighlightText(createdBy, state.searchTerm);
+		const _createdBy = MyGlobal.HighlightText(createdBy, mainData.searchTerm);
 		const createdByIdAndName = `${inquiry.created_by} - ${createdBy}`;
 
 		return (
@@ -808,7 +811,7 @@ export default function Inquiries() {
 	};
 
 	const uiSearch = () => {
-		if (state.inquiries.apiCopy.length) {
+		if (apiData.inquiries.apiCopy.length) {
 			return (
 				<TextInputNative
 					id="searchBox"
@@ -818,7 +821,7 @@ export default function Inquiries() {
 					placeholder="Search"
 					showClearButton={showFindClearButton}
 					tabIndex={3}
-					value={state.searchTerm}
+					value={mainData.searchTerm}
 					width="w-36"
 				/>
 			);
@@ -826,8 +829,8 @@ export default function Inquiries() {
 	};
 
 	const uiSortArrows = (column) => {
-		if (state.sort.column == column) {
-			if (state.sort.isAscending) {
+		if (mainData.sort.column == column) {
+			if (mainData.sort.isAscending) {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} size="sm" />;
 			} else {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} size="sm" />;
@@ -851,7 +854,7 @@ export default function Inquiries() {
 	const uiStatusFilterMenu = () => {
 		const uniqueStatus = [];
 
-		state.inquiries.apiCopy.forEach((inquiry) => {
+		apiData.inquiries.apiCopy.forEach((inquiry) => {
 			if (!uniqueStatus.includes(inquiry.status)) {
 				uniqueStatus.push(inquiry.status);
 			}
@@ -863,7 +866,7 @@ export default function Inquiries() {
 					as="div"
 					className="w-full p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text hovered-rows"
 					key={index}
-					onClick={() => setState((old) => ({ ...old, searchTerm: status }))}>
+					onClick={() => setMainData((old) => ({ ...old, searchTerm: status }))}>
 					<span>{status}</span>
 				</MenuItem>
 			);
@@ -927,20 +930,20 @@ export default function Inquiries() {
 	};
 
 	const uiToDate = () => {
-		if (state.inquiries.apiCopy.length) {
+		if (apiData.inquiries.apiCopy.length) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow black-white-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
 						className="w-20 h-6 bg-transparent outline-none font-medium-11"
 						dateFormat="dd-MM-YYYY"
-						endDate={state.entryDate.to}
+						endDate={mainData.entryDate.to}
 						onChange={(e) => setInputs("to", e)}
 						placeholderText="To"
 						tabIndex={2}
-						selected={state.entryDate.to}
+						selected={mainData.entryDate.to}
 						selectsEnd
-						startDate={state.entryDate.to}
+						startDate={mainData.entryDate.to}
 					/>
 					<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
 				</div>
@@ -957,30 +960,30 @@ export default function Inquiries() {
 	}, []);
 
 	useEffect(() => {
-		if (state.inquiries.apiCopy.length) {
+		if (apiData.inquiries.apiCopy.length) {
 			mergeInquiriesAndNotesById();
 		}
-	}, [state.inquiries.apiCopy]);
+	}, [apiData.inquiries.apiCopy]);
 
 	useEffect(() => {
 		doFiltering("");
-	}, [state.searchTerm]);
+	}, [mainData.searchTerm]);
 
 	useEffect(() => {
-		if (state.entryDate.from && state.entryDate.to) {
+		if (mainData.entryDate.from && mainData.entryDate.to) {
 			doFiltering("date");
 		} else {
 			doFiltering("");
 		}
-	}, [state.entryDate]);
+	}, [mainData.entryDate]);
 
 	useEffect(() => {
-		if (state.hasMounted) {
-			if (Object.keys(state.selectedInquiryForStatusChange).length) {
+		if (mainData.hasMounted) {
+			if (Object.keys(mainData.selectedInquiryForStatusChange).length) {
 				toggleChangeStatus(true);
 			}
 		}
-	}, [state.selectedInquiryForStatusChange]);
+	}, [mainData.selectedInquiryForStatusChange]);
 
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center light-gray-background">
@@ -990,7 +993,7 @@ export default function Inquiries() {
 				<ChangeStatus
 					mount={hasMounted.changeStatus}
 					reloadInquiries={getInquiries}
-					selectedInquiry={state.selectedInquiryForStatusChange}
+					selectedInquiry={mainData.selectedInquiryForStatusChange}
 					unmount={toggleChangeStatus}
 				/>
 			)}

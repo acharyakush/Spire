@@ -18,7 +18,7 @@ import { faCalendar, faChevronLeft, faMultiply, faPlusCircle, faSearch, faSortAm
 
 export default function Notes({ allClients, allNotes, reloadInquiries, selectedInquiry, unmount }) {
 	// Business Logic
-	const [data, setData] = useState({
+	const [mainData, setMainState] = useState({
 		entryDate: { from: "", to: "" },
 		hasMounted: false,
 		isAddBoxOpen: false,
@@ -30,14 +30,14 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 
 	const clientName = allClients?.filter((client) => client.id == selectedInquiry?.client_id).at(0)?.name;
 
-	const showSearchClearButton = data.searchTerm ? "cursor-pointer primary-text" : "hidden";
-	const showFromDateClearButton = data.entryDate.from ? "cursor-pointer primary-text" : "hidden";
-	const showToDateClearButton = data.entryDate.to ? "cursor-pointer primary-text" : "hidden";
+	const showSearchClearButton = mainData.searchTerm ? "cursor-pointer primary-text" : "hidden";
+	const showFromDateClearButton = mainData.entryDate.from ? "cursor-pointer primary-text" : "hidden";
+	const showToDateClearButton = mainData.entryDate.to ? "cursor-pointer primary-text" : "hidden";
 
 	// Functions
 	const doFiltering = (dataToFind) => {
-		const filteredData = data.notes.apiCopy.filter((note) => {
-			const searchTerm = data.searchTerm.toLowerCase();
+		const filteredData = mainData.notes.apiCopy.filter((note) => {
+			const searchTerm = mainData.searchTerm.toLowerCase();
 			const content = String(note.content).toLowerCase();
 
 			const writer = MyGlobal.GetAllUsers()
@@ -47,8 +47,8 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 			const writerFullName = String(writer.full_name).toLowerCase();
 
 			const checkDate = new Date(note.entry_date);
-			const startDate = data.entryDate.from;
-			const endDate = data.entryDate.to;
+			const startDate = mainData.entryDate.from;
+			const endDate = mainData.entryDate.to;
 
 			if (dataToFind == "date") {
 				if (checkDate >= startDate && checkDate <= endDate) {
@@ -59,28 +59,28 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 			}
 		});
 
-		setData((old) => ({ ...old, notes: { ...old.notes, api: filteredData } }));
+		setMainState((old) => ({ ...old, notes: { ...old.notes, api: filteredData } }));
 	};
 
 	const doSorting = () => {
-		return data.notes.api.sort((a, b) => {
+		return mainData.notes.api.sort((a, b) => {
 			const aEntryDate = new Date(a.entry_date);
 			const bEntryDate = new Date(b.entry_date);
 
 			const aWriter = MyGlobal.GetAnyDataFromId(a.user_id, "full_name");
 			const bWriter = MyGlobal.GetAnyDataFromId(b.user_id, "full_name");
 
-			if (data.sort.column == "Date" && data.sort.isAscending) {
+			if (mainData.sort.column == "Date" && mainData.sort.isAscending) {
 				return aEntryDate - bEntryDate;
-			} else if (data.sort.column == "Date" && !data.sort.isAscending) {
+			} else if (mainData.sort.column == "Date" && !mainData.sort.isAscending) {
 				return bEntryDate - aEntryDate;
-			} else if (data.sort.column == "Note" && data.sort.isAscending) {
+			} else if (mainData.sort.column == "Note" && mainData.sort.isAscending) {
 				return a.note.localeCompare(b.note);
-			} else if (data.sort.column == "Note" && !data.sort.isAscending) {
+			} else if (mainData.sort.column == "Note" && !mainData.sort.isAscending) {
 				return b.note.localeCompare(a.note);
-			} else if (data.sort.column == "Writer" && data.sort.isAscending) {
+			} else if (mainData.sort.column == "Writer" && mainData.sort.isAscending) {
 				return aWriter.localeCompare(bWriter);
-			} else if (data.sort.column == "Writer" && !data.sort.isAscending) {
+			} else if (mainData.sort.column == "Writer" && !mainData.sort.isAscending) {
 				return bWriter.localeCompare(aWriter);
 			} else {
 				return bEntryDate - aEntryDate;
@@ -89,10 +89,10 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 	};
 
 	const getCounts = () => {
-		if (data.notes.api.length != data.notes.apiCopy.length) {
-			return `${data.notes.api.length} / ${data.notes.apiCopy.length}`;
+		if (mainData.notes.api.length != mainData.notes.apiCopy.length) {
+			return `${mainData.notes.api.length} / ${mainData.notes.apiCopy.length}`;
 		} else {
-			return data.notes.api.length;
+			return mainData.notes.api.length;
 		}
 	};
 
@@ -111,28 +111,28 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 
 	const setInputs = (key, value) => {
 		if (key == "from" || key == "to") {
-			setData((old) => ({ ...old, entryDate: { ...old.entryDate, [key]: value } }));
+			setMainState((old) => ({ ...old, entryDate: { ...old.entryDate, [key]: value } }));
 		} else {
-			setData((old) => ({ ...old, [key]: value }));
+			setMainState((old) => ({ ...old, [key]: value }));
 		}
 	};
 
 	const setNotesByInquiry = (source) => {
 		const notesByInquiry = source?.filter((note) => note.inquiry_id == selectedInquiry?.id);
-		setData((old) => ({ ...old, notes: { api: notesByInquiry, apiCopy: notesByInquiry } }));
+		setMainState((old) => ({ ...old, notes: { api: notesByInquiry, apiCopy: notesByInquiry } }));
 	};
 
 	const setSort = (column) => {
-		setData((old) => ({ ...old, sort: { column, isAscending: !data.sort.isAscending } }));
+		setMainState((old) => ({ ...old, sort: { column, isAscending: !mainData.sort.isAscending } }));
 	};
 
 	const toggleAddBox = () => {
-		setData((old) => ({ ...old, isAddBoxOpen: !data.isAddBoxOpen }));
+		setMainState((old) => ({ ...old, isAddBoxOpen: !mainData.isAddBoxOpen }));
 	};
 
 	// UI Components
 	const uiBody = () => {
-		if (!data.notes.api.length && data.notes.apiCopy.length) {
+		if (!mainData.notes.api.length && mainData.notes.apiCopy.length) {
 			return (
 				<div className="flex w-full h-[calc(100vh-120px)] p-6 justify-center items-center rounded full-border">
 					<span className="font-regular-12 black-text">No notes found.</span>
@@ -146,7 +146,7 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 						className="w-full h-full overflow-y-auto"
 						data={doSorting()}
 						itemContent={(index, note) => uiRows(note, index)}
-						totalCount={data.notes.api.length}
+						totalCount={mainData.notes.api.length}
 					/>
 				</div>
 			);
@@ -160,13 +160,13 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-medium-11"
 					dateFormat="dd-MM-YYYY"
-					endDate={data.entryDate.to}
+					endDate={mainData.entryDate.to}
 					onChange={(e) => setInputs("from", e)}
 					placeholderText="From"
 					tabIndex={1}
-					selected={data.entryDate.from}
+					selected={mainData.entryDate.from}
 					selectsStart
-					startDate={data.entryDate.from}
+					startDate={mainData.entryDate.from}
 				/>
 				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
 			</div>
@@ -175,7 +175,7 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 
 	const uiHeaders = () => {
 		return Object.values(MyConstants.TableHeaders.Notes).map((header, index) => {
-			const showIndicator = header == data.sort.column ? "visible" : "invisible";
+			const showIndicator = header == mainData.sort.column ? "visible" : "invisible";
 
 			return (
 				<span className="w-1/3 space-x-1 cursor-pointer text-center font-medium-10 text-white" onClick={() => setSort(header)} key={index}>
@@ -199,13 +199,13 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 		const style = "flex w-1/3 min-h-9 justify-center items-center text-center right-border black-white-background";
 
 		const entryDate = dayjs(note.entry_date).format("DD MMM, YYYY");
-		const content = MyGlobal.HighlightText(note.content, data.searchTerm);
+		const content = MyGlobal.HighlightText(note.content, mainData.searchTerm);
 
 		const writer = MyGlobal.GetAllUsers()
 			?.filter((user) => user.id == note.user_id)
 			.at(0);
 
-		const writerFullName = MyGlobal.HighlightText(writer?.full_name, data.searchTerm);
+		const writerFullName = MyGlobal.HighlightText(writer?.full_name, mainData.searchTerm);
 
 		return (
 			<div className="flex w-full justify-center items-center bottom-border font-regular-10 black-text" key={rowIndex}>
@@ -228,15 +228,15 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 				placeholder="Search"
 				showClearButton={showSearchClearButton}
 				tabIndex={3}
-				value={data.searchTerm}
+				value={mainData.searchTerm}
 				width="w-36"
 			/>
 		);
 	};
 
 	const uiSortArrows = (column) => {
-		if (data.sort.column == column) {
-			if (data.sort.isAscending) {
+		if (mainData.sort.column == column) {
+			if (mainData.sort.isAscending) {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} />;
 			} else {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} />;
@@ -251,13 +251,13 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-medium-11"
 					dateFormat="dd-MM-YYYY"
-					endDate={data.entryDate.to}
+					endDate={mainData.entryDate.to}
 					onChange={(e) => setInputs("to", e)}
 					placeholderText="To"
 					tabIndex={2}
-					selected={data.entryDate.to}
+					selected={mainData.entryDate.to}
 					selectsEnd
-					startDate={data.entryDate.to}
+					startDate={mainData.entryDate.to}
 				/>
 				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
 			</div>
@@ -267,34 +267,34 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 	// Hooks
 	useEffect(() => {
 		setNotesByInquiry(allNotes);
-		setData((old) => ({ ...old, hasMounted: true }));
+		setMainState((old) => ({ ...old, hasMounted: true }));
 	}, []);
 
 	useEffect(() => {
-		if (data.hasMounted) {
+		if (mainData.hasMounted) {
 			doFiltering("");
 		}
-	}, [data.searchTerm]);
+	}, [mainData.searchTerm]);
 
 	useEffect(() => {
-		if (data.hasMounted) {
-			if (data.entryDate.from && data.entryDate.to) {
+		if (mainData.hasMounted) {
+			if (mainData.entryDate.from && mainData.entryDate.to) {
 				doFiltering("date");
 			} else {
 				doFiltering("");
 			}
 		}
-	}, [data.entryDate]);
+	}, [mainData.entryDate]);
 
 	// Main UI
-	if (data.hasMounted) {
+	if (mainData.hasMounted) {
 		return (
 			<>
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-1/2 space-x-2 justify-start items-center">
 						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount("", false)} />
 						<span className="view-heading">{clientName}'s Notes</span>
-						<span className="flex h-8 justify-center items-center">{data.notes.api.length > 0 && <Badge value={getCounts()} />}</span>
+						<span className="flex h-8 justify-center items-center">{mainData.notes.api.length > 0 && <Badge value={getCounts()} />}</span>
 					</div>
 					<div className="flex w-1/2 space-x-2 justify-end items-center">
 						<div className="flex w-1/2 space-x-2 justify-end items-center">
@@ -307,7 +307,9 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 				</div>
 				<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
 
-				{data.isAddBoxOpen && <AddNote mount={data.isAddBoxOpen} reloadNotes={getNotes} selectedInquiry={selectedInquiry} unmount={toggleAddBox} />}
+				{mainData.isAddBoxOpen && (
+					<AddNote mount={mainData.isAddBoxOpen} reloadNotes={getNotes} selectedInquiry={selectedInquiry} unmount={toggleAddBox} />
+				)}
 			</>
 		);
 	}

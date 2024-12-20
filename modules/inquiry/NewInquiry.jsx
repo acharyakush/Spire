@@ -25,8 +25,14 @@ import {
 
 export default function NewInquiry({ reloadInquiries, unmount }) {
 	// Business Logic
+	const [apiData, setApiData] = useState({
+		allClients: { api: [], apiCopy: [] },
+		allMainProjects: { api: [], apiCopy: [] },
+		allReferences: { api: [], apiCopy: [] },
+		allSubProjects: { api: [], apiCopy: [] },
+	});
 
-	const [newInquiry, setNewInquiry] = useState({
+	const [mainData, setMainData] = useState({
 		client: { id: "", name: "" },
 		contactNumber: "",
 		entryDate: new Date(),
@@ -41,10 +47,6 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	});
 
 	const [otherData, setOtherData] = useState({
-		allClients: { api: [], apiCopy: [] },
-		allMainProjects: { api: [], apiCopy: [] },
-		allReferences: { api: [], apiCopy: [] },
-		allSubProjects: { api: [], apiCopy: [] },
 		hasMounted: false,
 		isFollowUpsMenuOpen: false,
 		isLoading: false,
@@ -65,11 +67,11 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 		try {
 			const body = {
-				...newInquiry,
+				...mainData,
 				followUps: getFollowUpsIds(),
-				mainProjectId: newInquiry.mainProject.id,
-				note: MyGlobal.EscapeString(newInquiry.note),
-				quote: MyGlobal.GetNumbers(newInquiry.quote),
+				mainProjectId: mainData.mainProject.id,
+				note: MyGlobal.EscapeString(mainData.note),
+				quote: MyGlobal.GetNumbers(mainData.quote),
 				userId: MyGlobal.GetUserId(),
 			};
 
@@ -93,7 +95,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	};
 
 	const addNewClient = (client) => {
-		const copy = [...otherData.allClients.apiCopy];
+		const copy = [...apiData.allClients.apiCopy];
 		const name = MyGlobal.Capitalize(client);
 
 		const revisedCopy = copy.filter((client) => client.id != 0);
@@ -101,12 +103,12 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 		setSearch("client", "");
 
-		setNewInquiry((s) => ({ ...s, client: { id: 0, name } }));
-		setOtherData((s) => ({ ...s, allClients: { api: revisedCopy, apiCopy: revisedCopy } }));
+		setMainData((s) => ({ ...s, client: { id: 0, name } }));
+		setApiData((s) => ({ ...s, allClients: { api: revisedCopy, apiCopy: revisedCopy } }));
 	};
 
 	const addNewReference = (reference) => {
-		const copy = [...otherData.allReferences.apiCopy];
+		const copy = [...apiData.allReferences.apiCopy];
 		const name = MyGlobal.Capitalize(reference);
 
 		const revisedCopy = copy.filter((reference) => reference.id != 0);
@@ -114,26 +116,26 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 		setSearch("reference", "");
 
-		setNewInquiry((s) => ({ ...s, reference: { id: 0, name } }));
-		setOtherData((s) => ({ ...s, allReferences: { api: revisedCopy, apiCopy: revisedCopy } }));
+		setMainData((s) => ({ ...s, reference: { id: 0, name } }));
+		setApiData((s) => ({ ...s, allReferences: { api: revisedCopy, apiCopy: revisedCopy } }));
 	};
 
 	const addNewSubProject = (subProject) => {
-		const copy = [...otherData.allSubProjects.apiCopy];
+		const copy = [...apiData.allSubProjects.apiCopy];
 		copy.unshift({ id: 0, name: MyGlobal.Capitalize(subProject) });
 
 		setSearch("subProject", "");
 
-		setNewInquiry((s) => ({ ...s, subProject: copy.at(0) }));
-		setOtherData((s) => ({ ...s, allSubProjects: { api: copy, apiCopy: copy } }));
+		setMainData((s) => ({ ...s, subProject: copy.at(0) }));
+		setApiData((s) => ({ ...s, allSubProjects: { api: copy, apiCopy: copy } }));
 	};
 
 	const getFilteredClients = () => {
 		const value = String(otherData.searched.client.name);
-		let clients = otherData.allClients.apiCopy;
+		let clients = apiData.allClients.apiCopy;
 
 		if (value !== "undefined") {
-			clients = otherData.allClients.apiCopy.filter((client) => {
+			clients = apiData.allClients.apiCopy.filter((client) => {
 				return String(client.name).toLowerCase().includes(value.toLowerCase());
 			});
 		}
@@ -143,10 +145,10 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 	const getFilteredMainProjects = () => {
 		const value = String(otherData.searched.mainProject.name);
-		let mainProjects = otherData.allMainProjects.apiCopy;
+		let mainProjects = apiData.allMainProjects.apiCopy;
 
 		if (value !== "undefined") {
-			mainProjects = otherData.allMainProjects.apiCopy.filter((mainProject) => {
+			mainProjects = apiData.allMainProjects.apiCopy.filter((mainProject) => {
 				return String(mainProject.name).toLowerCase().includes(value.toLowerCase());
 			});
 		}
@@ -156,10 +158,10 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 	const getFilteredReferences = () => {
 		const value = String(otherData.searched.reference.name);
-		let references = otherData.allReferences.apiCopy;
+		let references = apiData.allReferences.apiCopy;
 
 		if (value !== "undefined") {
-			references = otherData.allReferences.apiCopy.filter((reference) => {
+			references = apiData.allReferences.apiCopy.filter((reference) => {
 				return String(reference.name).toLowerCase().includes(value.toLowerCase());
 			});
 		}
@@ -182,10 +184,10 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 	const getFilteredSubProjects = () => {
 		const value = String(otherData.searched.subProject.name);
-		let subProjects = otherData.allSubProjects.apiCopy;
+		let subProjects = apiData.allSubProjects.apiCopy;
 
 		if (value !== "undefined") {
-			subProjects = otherData.allSubProjects.apiCopy.filter((subProject) => {
+			subProjects = apiData.allSubProjects.apiCopy.filter((subProject) => {
 				return String(subProject.name).toLowerCase().includes(value.toLowerCase());
 			});
 		}
@@ -194,7 +196,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	};
 
 	const getFollowUpsIds = () => {
-		return newInquiry.followUps.map((user) => user.id).join(",");
+		return mainData.followUps.map((user) => user.id).join(",");
 	};
 
 	const getSupportData = async () => {
@@ -202,14 +204,14 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				setOtherData((old) => ({
-					...old,
+				setApiData({
 					allClients: { api: response.data.clients, apiCopy: response.data.clients },
 					allMainProjects: { api: response.data.mainProjects, apiCopy: response.data.mainProjects },
 					allReferences: { api: response.data.references, apiCopy: response.data.references },
 					allSubProjects: { api: response.data.subProjects, apiCopy: response.data.subProjects },
-					hasMounted: true,
-				}));
+				});
+
+				setOtherData((old) => ({ ...old, hasMounted: true }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "New Inquiry => Get Supporting Data");
@@ -217,16 +219,16 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 	};
 
 	const getSelectedClientData = () => {
-		return otherData.allClients.api.filter((client) => client.id == newInquiry.client.id).at(0);
+		return apiData.allClients.api.filter((client) => client.id == mainData.client.id).at(0);
 	};
 
 	const getSelectedReferenceData = () => {
-		return otherData.allReferences.apiCopy.filter((reference) => reference.id == newInquiry.reference.id).at(0);
+		return apiData.allReferences.apiCopy.filter((reference) => reference.id == mainData.reference.id).at(0);
 	};
 
 	const setFollowUps = (selectedUser) => {
 		let revisedData = [];
-		const copy = [...newInquiry.followUps];
+		const copy = [...mainData.followUps];
 
 		if (copy.includes(selectedUser)) {
 			revisedData = copy.filter((user) => user.id != selectedUser.id);
@@ -235,25 +237,25 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			revisedData = copy;
 		}
 
-		setNewInquiry((s) => ({ ...s, followUps: revisedData }));
+		setMainData((s) => ({ ...s, followUps: revisedData }));
 	};
 
 	const setInputs = (key, value) => {
 		if (key == "client") {
-			const client = otherData.allClients.apiCopy.filter((client) => client.id == value.id).at(0);
+			const client = apiData.allClients.apiCopy.filter((client) => client.id == value.id).at(0);
 			const isExistingClient = client.id !== 0;
 
 			const emailAddress = isExistingClient ? client.email_address : "";
 			const contactNumber = isExistingClient ? client.contact_number : "";
 
 			const referenceId = isExistingClient ? client.reference_id : "";
-			const referenceName = isExistingClient ? otherData.allReferences.apiCopy.filter((reference) => reference.id == referenceId).at(0)?.name : "";
+			const referenceName = isExistingClient ? apiData.allReferences.apiCopy.filter((reference) => reference.id == referenceId).at(0)?.name : "";
 
 			if (isExistingClient) {
 				setSearch("client", "");
 			}
 
-			setNewInquiry((s) => ({
+			setMainData((s) => ({
 				...s,
 				client: { id: value.id, name: value.name },
 				contactNumber,
@@ -262,12 +264,12 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			}));
 		} else if (key == "reference") {
 			setSearch("reference", "");
-			setNewInquiry((s) => ({ ...s, reference: { id: value.id, name: value.name } }));
+			setMainData((s) => ({ ...s, reference: { id: value.id, name: value.name } }));
 		} else if (key == "mainProject" || key == "subProject") {
 			setSearch(key, "");
-			setNewInquiry((s) => ({ ...s, [key]: { ...s[key], id: value.id, name: value.name } }));
+			setMainData((s) => ({ ...s, [key]: { ...s[key], id: value.id, name: value.name } }));
 		} else {
-			setNewInquiry((s) => ({ ...s, [key]: value }));
+			setMainData((s) => ({ ...s, [key]: value }));
 		}
 	};
 
@@ -293,7 +295,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={newInquiry.client.name}
+				comparingValue2={mainData.client.name}
 				displayValue="name"
 				filteredData={getFilteredClients}
 				hasDataObject={true}
@@ -321,7 +323,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onChange={(event) => setInputs("contactNumber", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={2}
-				value={newInquiry.contactNumber}
+				value={mainData.contactNumber}
 				width="w-full"
 			/>
 		);
@@ -333,7 +335,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onChange={(event) => setInputs("emailAddress", event.target.value)}
 				suffix=""
 				tabIndex={3}
-				value={newInquiry.emailAddress}
+				value={mainData.emailAddress}
 				width="w-full"
 			/>
 		);
@@ -349,7 +351,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onBlur={() => toggleFollowUpsMenu()}
 				onItemClick={(event) => setFollowUps(event)}
 				onSelectedItemClick={(event) => setFollowUps(event)}
-				selectedItems={newInquiry.followUps}
+				selectedItems={mainData.followUps}
 				showList={showFollowUpsMenu}
 				source={MyGlobal.GetAllUsers()}
 				toggleMenu={() => toggleFollowUpsMenu()}
@@ -364,7 +366,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				label="Date"
 				onChange={(event) => setInputs("entryDate", event)}
 				tabIndex={7}
-				value={newInquiry.entryDate}
+				value={mainData.entryDate}
 				width="w-full"
 			/>
 		);
@@ -375,7 +377,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={newInquiry.mainProject.name}
+				comparingValue2={mainData.mainProject.name}
 				displayValue="name"
 				filteredData={getFilteredMainProjects}
 				hasDataObject={true}
@@ -388,7 +390,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.mainProject.name}
 				tabIndex={4}
-				value={newInquiry.mainProject.name}
+				value={mainData.mainProject.name}
 				width="w-full"
 			/>
 		);
@@ -404,7 +406,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onKeyDown={() => {}}
 				rows={2}
 				tabIndex={10}
-				value={newInquiry.note}
+				value={mainData.note}
 				width="w-full"
 			/>
 		);
@@ -430,7 +432,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onChange={(event) => setInputs("quote", event.target.value)}
 				onKeyPress={() => {}}
 				tabIndex={8}
-				value={MyGlobal.ThousandSeparator(newInquiry.quote)}
+				value={MyGlobal.ThousandSeparator(mainData.quote)}
 				width="w-full"
 			/>
 		);
@@ -441,7 +443,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={newInquiry.reference.name}
+				comparingValue2={mainData.reference.name}
 				displayValue="name"
 				filteredData={getFilteredReferences}
 				hasDataObject={true}
@@ -464,7 +466,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		return (
 			<ComboBox
 				allowCreatingNewItem={false}
-				comparisonValue={newInquiry.status}
+				comparisonValue={mainData.status}
 				filteredData={getFilteredStatuses}
 				icon={faCircleExclamation}
 				label="Status"
@@ -473,7 +475,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.status}
 				tabIndex={9}
-				value={newInquiry.status}
+				value={mainData.status}
 				width="w-full"
 			/>
 		);
@@ -484,7 +486,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={newInquiry.subProject.name}
+				comparingValue2={mainData.subProject.name}
 				displayValue="name"
 				filteredData={getFilteredSubProjects}
 				hasDataObject={true}
@@ -497,7 +499,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.subProject.name}
 				tabIndex={5}
-				value={newInquiry.subProject.name}
+				value={mainData.subProject.name}
 				width="w-full"
 			/>
 		);
@@ -549,7 +551,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				</button>
 			</footer>
 
-			{otherData.isPreviewBoxOpen && <NewInquiryPreview mount={otherData.isPreviewBoxOpen} selectedInquiry={newInquiry} unmount={togglePreviewBox} />}
+			{otherData.isPreviewBoxOpen && <NewInquiryPreview mount={otherData.isPreviewBoxOpen} selectedInquiry={mainData} unmount={togglePreviewBox} />}
 		</>
 	);
 }

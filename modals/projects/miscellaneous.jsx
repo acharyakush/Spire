@@ -1,16 +1,18 @@
 "use client";
 
+/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
+
 import axios from "axios";
 import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextArea } from "@/components/Inputs";
-import { Spinner } from "@/components/Elements";
+import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { faArrowRight, faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faAnglesRight, faArrowRight, faCircleCheck, faCircleXmark, faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function ChangeStatus({ mount, reloadProjects, selectedProject, unmount }) {
 	// Business Logic
@@ -161,13 +163,9 @@ export function DeleteProject({ mount, projectId, reloadProjects, unmount }) {
 	// Functions
 	const deleteProject = async () => {
 		try {
-			setState((s) => ({ ...s, isLoading: true }));
+			setState((old) => ({ ...old, isLoading: true }));
 
-			const body = {
-				id: projectId,
-				type: "delete-project",
-			};
-
+			const body = { id: projectId, type: "delete-project" };
 			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
@@ -183,12 +181,12 @@ export function DeleteProject({ mount, projectId, reloadProjects, unmount }) {
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Delete Project");
 		} finally {
-			setState((s) => ({ ...s, isLoading: false }));
+			setState((old) => ({ ...old, isLoading: false }));
 		}
 	};
 
 	const setBoxDrag = () => {
-		setState((s) => ({ ...s, isBoxDragged: !state.isBoxDragged }));
+		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
 	};
 
 	// UI
@@ -245,6 +243,193 @@ export function DeleteProject({ mount, projectId, reloadProjects, unmount }) {
 								{uiButton()}
 							</button>
 						</footer>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
+export function ProjectStatus({ mount, selectedProject, unmount }) {
+	// Business Logic
+	const [state, setState] = useState({
+		isBoxDragged: false,
+		isLoading: false,
+		status: {
+			dues: { allPaidOff: false, totalAmountPending: 0, totalAmount: 0 },
+			invoices: { anyGenerated: false, anyRvGenerated: false, total: 0 },
+			tasks: { allCompleted: false, total: 0, completed: 0 },
+		},
+	});
+
+	const isCompletionEligible =
+		state.status.dues.allPaidOff && state.status.invoices.anyGenerated && state.status.invoices.anyRvGenerated && state.status.tasks.allCompleted;
+
+	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+
+	const wrapper = "flex w-full p-2.5 h-[60.59px] justify-center items-center rounded bottom-shadow black-white-background full-border";
+	const labelStyle = "flex w-4/5 space-x-2 justify-start items-center font-medium-11 black-text";
+	const valueStyle = "flex w-1/5 justify-center items-center";
+
+	// Functions
+	const getSupportData = async () => {
+		setState((old) => ({ ...old, isLoading: true }));
+
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetStatus, MyGlobal.GetHeaders({ projectId: selectedProject.id }));
+
+			if (response.status === 200) {
+				const tasks = response.data.tasks;
+				const ledgers = response.data.ledgers;
+
+				const completedTasks = tasks.filter((task) => task.is_completed == 1).length;
+				const areAllTasksCompleted = tasks.length && tasks.every((task) => task.is_completed == 1);
+
+				const areAnyDuesPending = ledgers.length && ledgers.every((ledger) => ledger.amount_received == ledger.total_amount);
+
+				const totalAmount = ledgers.reduce((total, ledger) => total + Number(ledger.total_amount), 0);
+
+				const totalAmountPending = ledgers.reduce((total, ledger) => total + (Number(ledger.total_amount) - Number(ledger.amount_received)), 0);
+
+				const anyRvGenerated = response.data.invoices.length > 0 && Boolean(response.data.invoices[0].rv_id);
+
+				setState((old) => ({
+					...old,
+					status: {
+						dues: {
+							allPaidOff: areAnyDuesPending,
+							totalAmount,
+							totalAmountPending,
+						},
+						invoices: {
+							anyGenerated: response.data.invoices.length > 0,
+							anyRvGenerated,
+							total: response.data.invoices.length,
+						},
+						tasks: {
+							allCompleted: areAllTasksCompleted,
+							completed: completedTasks,
+							total: tasks.length,
+						},
+					},
+				}));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Projects => Get Project Status");
+		} finally {
+			setState((old) => ({ ...old, isLoading: false }));
+		}
+	};
+
+	const setBoxDrag = () => {
+		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
+	};
+
+	// UI
+	const uiBody = () => {
+		if (state.isLoading) {
+			return (
+				<div className="flex flex-col w-full h-[328px] justify-center items-center">
+					<SpinnerBig />
+				</div>
+			);
+		} else {
+			const label1 = (
+				<div className="flex flex-col w-full -space-y-px">
+					<span>All tasks have been completed?</span>
+					<span className="font-regular-9">
+						Completed {state.status.tasks.completed} / {state.status.tasks.total}
+					</span>
+				</div>
+			);
+
+			const label2 = (
+				<div className="flex flex-col w-full -space-y-px">
+					<span>All dues have been paid off?</span>
+					<span className="font-regular-9">
+						Total Pending {MyGlobal.ThousandSeparator(state.status.dues.totalAmountPending)} /{" "}
+						{MyGlobal.ThousandSeparator(state.status.dues.totalAmount)}
+					</span>
+				</div>
+			);
+
+			const label3 = (
+				<div className="flex flex-col w-full -space-y-px">
+					<span>Is any invoice generated?</span>
+					<span className="font-regular-9">Generated {state.status.invoices.total}</span>
+				</div>
+			);
+
+			return (
+				<div className="flex flex-col w-full px-5 py-4 space-y-3 justify-between items-center">
+					<div className="w-full text-left font-medium-11 black-text">These statistics determine the project's eligibility for completion.</div>
+					{uiRow(label1, state.status.tasks.allCompleted)}
+					{uiRow(label2, state.status.dues.allPaidOff)}
+					{uiRow(label3, state.status.invoices.anyGenerated)}
+					{uiRow("Is any reimbursement voucher generated?", state.status.invoices.anyRvGenerated)}
+				</div>
+			);
+		}
+	};
+
+	const uiButton = () => {
+		if (isCompletionEligible) {
+			return (
+				<button className="primary-button-condensed" onClick={() => unmount(true)}>
+					<span>Mark as Completed</span>
+				</button>
+			);
+		} else {
+			return (
+				<button className="primary-button-condensed" onClick={() => unmount(false)}>
+					<span>Close</span>
+				</button>
+			);
+		}
+	};
+
+	const uiRow = (label, value) => {
+		const _value = value ? (
+			<FontAwesomeIcon className="green-text" icon={faCircleCheck} size="lg" />
+		) : (
+			<FontAwesomeIcon className="red-text" icon={faCircleXmark} size="lg" />
+		);
+
+		return (
+			<div className={wrapper}>
+				<span className={labelStyle}>
+					<FontAwesomeIcon className="gray-text" icon={faAnglesRight} size="xs" />
+					<span>{label}</span>
+				</span>
+				<span className={valueStyle}>{_value}</span>
+			</div>
+		);
+	};
+
+	const uiTitleBar = () => {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">{selectedProject.client_name}'s Project Status</span>
+			</DialogTitle>
+		);
+	};
+
+	// Hooks
+	useEffect(() => {
+		getSupportData();
+	}, []);
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[500px] transform overflow-hidden rounded light-gray-background shadow">
+						{uiTitleBar()}
+						{uiBody()}
+						<footer className="dialog-footer">{uiButton()}</footer>
 					</DialogPanel>
 				</Draggable>
 			</div>

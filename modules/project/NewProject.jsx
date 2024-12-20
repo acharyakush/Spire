@@ -15,13 +15,21 @@ import { faBriefcase, faCalendar, faChevronLeft, faFile, faIndianRupee, faNoteSt
 
 export default function NewProject({ reloadInquiries, selectedInquiry, unmount }) {
 	// Business Logic
+	const [apiData, setApiData] = useState({
+		allAdministratorsCompanies: [],
+		allClients: [],
+		allMainProjects: { api: [], apiCopy: [] },
+		allSubProjects: { api: [], apiCopy: [] },
+		companiesByClients: { api: [], apiCopy: [] },
+	});
+
 	const [hasMounted, setHasMounted] = useState({
 		mainComponent: false,
 		preview: false,
 		teamsMenu: false,
 	});
 
-	const [newProject, setNewProjectData] = useState({
+	const [mainData, setMainData] = useState({
 		company: { id: 0, name: "" },
 		contactNumber: "",
 		dueOn: "",
@@ -36,16 +44,11 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 	});
 
 	const [otherData, setOtherData] = useState({
-		allAdministratorsCompanies: [],
-		allClients: [],
-		allMainProjects: { api: [], apiCopy: [] },
-		allSubProjects: { api: [], apiCopy: [] },
-		companiesByClients: { api: [], apiCopy: [] },
 		isLoading: false,
 		searched: { affiliate: {}, company: {}, mainProject: {}, subProject: {} },
 	});
 
-	const selectedInquiryClient = otherData.allClients.length && otherData.allClients.filter((client) => client.id == selectedInquiry?.client_id).at(0);
+	const selectedInquiryClient = apiData.allClients.length && apiData.allClients.filter((client) => client.id == selectedInquiry?.client_id).at(0);
 
 	const showTeamsDropdown = hasMounted.teamsMenu
 		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow light-gray-background full-border"
@@ -56,7 +59,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 	// Functions
 	const addNewCompany = (company) => {
-		const copy = [...otherData.companiesByClients.apiCopy];
+		const copy = [...apiData.companiesByClients.apiCopy];
 		const name = MyGlobal.Capitalize(company);
 
 		const revisedCopy = copy.filter((_company) => _company.id != 0);
@@ -64,30 +67,30 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 		setSearch("company", "");
 
-		setNewProjectData((old) => ({ ...old, company: { id: 0, name } }));
-		setOtherData((old) => ({ ...old, companiesByClients: { api: revisedCopy, apiCopy: revisedCopy } }));
+		setMainData((old) => ({ ...old, company: { id: 0, name } }));
+		setApiData((old) => ({ ...old, companiesByClients: { api: revisedCopy, apiCopy: revisedCopy } }));
 	};
 
 	const addNewSubProject = (subProject) => {
-		const copy = [...otherData.allSubProjects.apiCopy];
+		const copy = [...apiData.allSubProjects.apiCopy];
 		copy.unshift({ id: 0, name: MyGlobal.Capitalize(subProject) });
 
 		setSearch("subProject", "");
 
-		setNewProjectData((s) => ({ ...s, subProject: copy.at(0) }));
-		setOtherData((s) => ({ ...s, allSubProjects: { api: copy, apiCopy: copy } }));
+		setMainData((s) => ({ ...s, subProject: copy.at(0) }));
+		setApiData((s) => ({ ...s, allSubProjects: { api: copy, apiCopy: copy } }));
 	};
 
 	const addProject = async () => {
 		setOtherData((s) => ({ ...s, isLoading: true }));
 
 		const body = {
-			...newProject,
+			...mainData,
 			clientId: selectedInquiry.client_id,
 			inquiryId: selectedInquiry.id,
-			invoiceFees: MyGlobal.GetNumbers(newProject.invoiceFees),
-			quote: MyGlobal.GetNumbers(newProject.quote),
-			reimbursementVoucher: MyGlobal.GetNumbers(newProject.reimbursementVoucher),
+			invoiceFees: MyGlobal.GetNumbers(mainData.invoiceFees),
+			quote: MyGlobal.GetNumbers(mainData.quote),
+			reimbursementVoucher: MyGlobal.GetNumbers(mainData.reimbursementVoucher),
 			teams: getTeamsIds(),
 			userId: MyGlobal.GetUserId(),
 		};
@@ -113,18 +116,18 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 	};
 
 	const calculateQuote = () => {
-		const totalAmount = MyGlobal.GetNumbers(newProject.invoiceFees) + MyGlobal.GetNumbers(newProject.reimbursementVoucher);
+		const totalAmount = MyGlobal.GetNumbers(mainData.invoiceFees) + MyGlobal.GetNumbers(mainData.reimbursementVoucher);
 		const quote = MyGlobal.ThousandSeparator(totalAmount);
 
-		setNewProjectData((s) => ({ ...s, quote }));
+		setMainData((s) => ({ ...s, quote }));
 	};
 
 	const getFilteredCompanies = () => {
 		const value = String(otherData.searched.company.name);
-		let companies = otherData.companiesByClients.apiCopy;
+		let companies = apiData.companiesByClients.apiCopy;
 
 		if (value !== "undefined") {
-			companies = otherData.companiesByClients.apiCopy.filter((company) => {
+			companies = apiData.companiesByClients.apiCopy.filter((company) => {
 				return String(company.name).toLowerCase().includes(value.toLowerCase());
 			});
 		}
@@ -134,10 +137,10 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 	const getFilteredMainProjects = () => {
 		const value = String(otherData.searched.mainProject.name);
-		let mainProjects = otherData.allMainProjects.apiCopy;
+		let mainProjects = apiData.allMainProjects.apiCopy;
 
 		if (value !== "undefined") {
-			mainProjects = otherData.allMainProjects.apiCopy.filter((mainProject) => {
+			mainProjects = apiData.allMainProjects.apiCopy.filter((mainProject) => {
 				return String(mainProject.name).toLowerCase().includes(value.toLowerCase());
 			});
 		}
@@ -147,10 +150,10 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 	const getFilteredSubProjects = () => {
 		const value = String(otherData.searched.subProject.name);
-		let subProjects = otherData.allSubProjects.apiCopy;
+		let subProjects = apiData.allSubProjects.apiCopy;
 
 		if (value !== "undefined") {
-			subProjects = otherData.allSubProjects.apiCopy.filter((subProject) => {
+			subProjects = apiData.allSubProjects.apiCopy.filter((subProject) => {
 				return String(subProject.name).toLowerCase().includes(value.toLowerCase());
 			});
 		}
@@ -173,7 +176,15 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 				const subProjectName = allSubProjects.filter((subProject) => subProject.id == selectedInquiry.sub_project_id).at(0).name;
 
-				setNewProjectData((old) => ({
+				setApiData({
+					allAdministratorsCompanies,
+					allClients: response.data.clients,
+					allMainProjects: { api: allMainProjects, apiCopy: allMainProjects },
+					allSubProjects: { api: allSubProjects, apiCopy: allSubProjects },
+					companiesByClients: { api: companiesByClient, apiCopy: companiesByClient },
+				});
+
+				setMainData((old) => ({
 					...old,
 					contactNumber: selectedInquiry.contact_number,
 					dueOn: selectedInquiry.entry_date,
@@ -186,15 +197,6 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 					subProject: { id: selectedInquiry.sub_project_id, name: subProjectName },
 				}));
 
-				setOtherData((old) => ({
-					...old,
-					allAdministratorsCompanies,
-					allClients: response.data.clients,
-					allMainProjects: { api: allMainProjects, apiCopy: allMainProjects },
-					allSubProjects: { api: allSubProjects, apiCopy: allSubProjects },
-					companiesByClients: { api: companiesByClient, apiCopy: companiesByClient },
-				}));
-
 				setHasMounted((old) => ({ ...old, mainComponent: true }));
 			}
 		} catch (error) {
@@ -203,15 +205,15 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 	};
 
 	const getTeamsIds = () => {
-		return newProject.teams.map((user) => user.id).join(",");
+		return mainData.teams.map((user) => user.id).join(",");
 	};
 
 	const setInputs = (key, value) => {
 		if (key == "dueOn" || key == "invoiceFees" || key == "reimbursementVoucher" || key == "note") {
-			setNewProjectData((s) => ({ ...s, [key]: value }));
+			setMainData((s) => ({ ...s, [key]: value }));
 		} else {
 			setSearch(key, "");
-			setNewProjectData((s) => ({ ...s, [key]: { id: value.id, name: value.name } }));
+			setMainData((s) => ({ ...s, [key]: { id: value.id, name: value.name } }));
 		}
 	};
 
@@ -221,7 +223,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 	const setTeamsSelection = (user) => {
 		let revisedData = [];
-		const copy = [...newProject.teams];
+		const copy = [...mainData.teams];
 
 		if (copy.includes(user)) {
 			revisedData = copy.filter((_user) => _user != user);
@@ -230,7 +232,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			revisedData = copy;
 		}
 
-		setNewProjectData((s) => ({ ...s, teams: revisedData }));
+		setMainData((s) => ({ ...s, teams: revisedData }));
 	};
 
 	const togglePreviewBox = (value) => {
@@ -267,7 +269,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={newProject.company.name}
+				comparingValue2={mainData.company.name}
 				displayValue="name"
 				filteredData={getFilteredCompanies}
 				hasDataObject={true}
@@ -280,7 +282,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.company.name}
 				tabIndex={2}
-				value={newProject.company.name}
+				value={mainData.company.name}
 				width="w-full"
 			/>
 		);
@@ -295,7 +297,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={3}
-				value={newProject.contactNumber}
+				value={mainData.contactNumber}
 				width="w-full"
 			/>
 		);
@@ -303,12 +305,12 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 	const uiDueOn = () => {
 		return (
-			<DatePicker icon={faCalendar} label="Due On" onChange={(event) => setInputs("dueOn", event)} tabIndex={6} value={newProject.dueOn} width="w-full" />
+			<DatePicker icon={faCalendar} label="Due On" onChange={(event) => setInputs("dueOn", event)} tabIndex={6} value={mainData.dueOn} width="w-full" />
 		);
 	};
 
 	const uiInvoiceFees = () => {
-		const label = `${newProject.invoiceFirm.name} Fees`;
+		const label = `${mainData.invoiceFirm.name} Fees`;
 
 		return (
 			<TextInput
@@ -318,7 +320,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onChange={(event) => setInputs("invoiceFees", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={7}
-				value={newProject.invoiceFees}
+				value={mainData.invoiceFees}
 				width="w-full"
 			/>
 		);
@@ -329,9 +331,9 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={newProject.invoiceFirm.name}
+				comparingValue2={mainData.invoiceFirm.name}
 				displayValue="name"
-				filteredData={otherData.allAdministratorsCompanies}
+				filteredData={apiData.allAdministratorsCompanies}
 				hasDataObject={true}
 				icon={faBriefcase}
 				isReadOnly={false}
@@ -342,7 +344,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onKeyPress={() => {}}
 				searchedItem={{}}
 				tabIndex={9}
-				value={newProject.invoiceFirm.name}
+				value={mainData.invoiceFirm.name}
 				width="w-full"
 			/>
 		);
@@ -353,7 +355,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={newProject.mainProject.name}
+				comparingValue2={mainData.mainProject.name}
 				displayValue="name"
 				filteredData={getFilteredMainProjects}
 				hasDataObject={true}
@@ -366,7 +368,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.mainProject.name}
 				tabIndex={4}
-				value={newProject.mainProject.name}
+				value={mainData.mainProject.name}
 				width="w-full"
 			/>
 		);
@@ -382,7 +384,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onKeyDown={() => {}}
 				rows={2}
 				tabIndex={10}
-				value={newProject.note}
+				value={mainData.note}
 				width="w-full"
 			/>
 		);
@@ -409,7 +411,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={9}
-				value={MyGlobal.ThousandSeparator(newProject.quote)}
+				value={MyGlobal.ThousandSeparator(mainData.quote)}
 				width="w-full"
 			/>
 		);
@@ -424,7 +426,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onChange={(event) => setInputs("reimbursementVoucher", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={8}
-				value={newProject.reimbursementVoucher}
+				value={mainData.reimbursementVoucher}
 				width="w-full"
 			/>
 		);
@@ -435,7 +437,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			<ComboBox2
 				allowCreatingNewItem={true}
 				comparingValue1="name"
-				comparingValue2={newProject.subProject.name}
+				comparingValue2={mainData.subProject.name}
 				displayValue="name"
 				filteredData={getFilteredSubProjects}
 				hasDataObject={true}
@@ -448,7 +450,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
 				searchedItem={otherData.searched.subProject.name}
 				tabIndex={5}
-				value={newProject.subProject.name}
+				value={mainData.subProject.name}
 				width="w-full"
 			/>
 		);
@@ -464,7 +466,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				onBlur={() => toggleTeamsMenu()}
 				onItemClick={(event) => setTeamsSelection(event)}
 				onSelectedItemClick={(event) => setTeamsSelection(event)}
-				selectedItems={newProject.teams}
+				selectedItems={mainData.teams}
 				showList={showTeamsDropdown}
 				source={MyGlobal.GetAllUsers()}
 				toggleMenu={() => toggleTeamsMenu()}
@@ -478,10 +480,10 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 	}, []);
 
 	useEffect(() => {
-		if (newProject.invoiceFees || newProject.reimbursementVoucher) {
+		if (mainData.invoiceFees || mainData.reimbursementVoucher) {
 			calculateQuote();
 		}
-	}, [newProject.invoiceFees, newProject.reimbursementVoucher]);
+	}, [mainData.invoiceFees, mainData.reimbursementVoucher]);
 
 	if (!hasMounted.mainComponent) {
 		return;
@@ -531,7 +533,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			{hasMounted.preview && (
 				<NewProjectPreview
 					mount={hasMounted.preview}
-					projectData={{ ...newProject, clientName: selectedInquiryClient.name }}
+					projectData={{ ...mainData, clientName: selectedInquiryClient.name }}
 					unmount={togglePreviewBox}
 				/>
 			)}
