@@ -217,7 +217,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				setHasMounted((old) => ({ ...old, mainComponent: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "Edit Project => Get Supporting Data");
+			MyGlobal.HandleErrors(error, "Edit Project => Get Support Data");
 		}
 	};
 

@@ -23,17 +23,20 @@ export default async function handler(req, res) {
 		let queryString = "";
 
 		if (request.type === "get-permissions") {
-			queryString = `SELECT * FROM permissions`;
+			queryString = "SELECT * FROM permissions";
 		} else if (request.type === "get-settings") {
-			queryString = `SELECT * FROM settings`;
+			queryString = "SELECT * FROM settings";
 		} else if (request.type === "get-users") {
-			const administrators = await query(`SELECT * FROM administrators`, []);
-			const employees = await query(`SELECT * FROM employees WHERE access_revoked=0`, []);
+			const administrators = await query("SELECT * FROM administrators", []);
+			const employees = await query("SELECT * FROM employees WHERE access_revoked=0", []);
 			const response = { administrators, employees };
 
 			return res.status(200).send(response);
 		} else if (request.type === "get-notes") {
-			queryString = `SELECT * FROM notes`;
+			queryString = "SELECT * FROM notes";
+		} else if (request.type === "get-tasks") {
+			queryString = "SELECT * FROM tasks WHERE project_id=?";
+			queryParameters = [request.projectId];
 		} else {
 			return res.status(400).send({ error: "Invalid request type" });
 		}

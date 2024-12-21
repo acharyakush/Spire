@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 19, 2024 at 07:56 PM
+-- Generation Time: Dec 21, 2024 at 08:27 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -162,7 +162,9 @@ INSERT INTO `activities` (`id`, `user_id`, `activity`, `ip_address`, `user_agent
 (43, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 20:34:14', '', ''),
 (44, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 22:35:21', 'jXuEufuJPjPediJAb2V0+7BLcfq+OzSyBBVXlIZBZch3Y1Q6SPAOd5AEXJC8sN235HbdfYaWoEab5c2SnkbfyQ==', ''),
 (45, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 23:45:53', '', ''),
-(46, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-19 20:03:19', 'FYU1XR80ciO5fwKh7a8CtoaqbVuIoWKkzmVHLWdpR//k8NybGr2CGGwiN2x7wgAVoQ5xeR1FVxF1M9KK6DG76g==', '');
+(46, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-19 20:03:19', 'FYU1XR80ciO5fwKh7a8CtoaqbVuIoWKkzmVHLWdpR//k8NybGr2CGGwiN2x7wgAVoQ5xeR1FVxF1M9KK6DG76g==', ''),
+(47, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-20 00:26:47', '', ''),
+(48, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 00:37:08', '8BevZ5J0xZc92NUCaaVwVaptdOTbtY3zKEmQnt8BSzOyGw3l2KcUruEIqayTgHyT0QosnlimuqBpCdAMeT84Aw==', '');
 
 -- --------------------------------------------------------
 
@@ -426,6 +428,27 @@ CREATE TABLE `inquiries` (
 INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `sub_project_id`, `entry_date`, `contact_number`, `email_address`, `follow_ups`, `is_closed`, `closure_reason`, `quote`, `status`, `tags`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
 ('IQ000001', 'CN000001', 'RF000001', 'MP000004', 'SP000003', '2024-12-15 09:39:42', 8780577704, 'acharyakush2604@gmail.com', 'A1,A2', 0, '', 2500.00, 'Confirmed', NULL, '2024-12-15 15:28:07', 'A3', '2024-12-17 21:38:53', 'A3'),
 ('IQ000002', 'CN000002', 'RF000002', 'MP000011', 'SP000006', '2024-12-17 18:23:01', 8780577812, 'vyas.kevin@outlook.com', 'A3', 0, '', 15000.00, 'Hold', NULL, '2024-12-18 00:05:18', 'A3', '2024-12-18 19:55:14', 'A3');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `invoices`
+--
+
+CREATE TABLE `invoices` (
+  `id` int(11) NOT NULL,
+  `custom_id` varchar(100) NOT NULL,
+  `client_id` char(8) DEFAULT NULL,
+  `project_id` char(8) DEFAULT NULL,
+  `amount` decimal(10,2) NOT NULL CHECK (`amount` >= 0),
+  `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
+  `creation_date` date NOT NULL DEFAULT current_timestamp(),
+  `rv_id` varchar(16) NOT NULL,
+  `rv_full_id` varchar(50) NOT NULL,
+  `rv_creation_date` date DEFAULT NULL,
+  `receipt_date` date DEFAULT NULL,
+  `payment_received` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -839,6 +862,14 @@ ALTER TABLE `inquiries`
   ADD KEY `fk_inquiry_sub_project_id` (`sub_project_id`);
 
 --
+-- Indexes for table `invoices`
+--
+ALTER TABLE `invoices`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_invoice_client_id` (`client_id`),
+  ADD KEY `fk_invoice_project_id` (`project_id`);
+
+--
 -- Indexes for table `licenses`
 --
 ALTER TABLE `licenses`
@@ -907,12 +938,18 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `invoices`
+--
+ALTER TABLE `invoices`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -975,6 +1012,13 @@ ALTER TABLE `inquiries`
   ADD CONSTRAINT `fk_inquiry_main_project_id` FOREIGN KEY (`main_project_id`) REFERENCES `main_projects` (`id`),
   ADD CONSTRAINT `fk_inquiry_reference_id` FOREIGN KEY (`reference_id`) REFERENCES `the_references` (`id`),
   ADD CONSTRAINT `fk_inquiry_sub_project_id` FOREIGN KEY (`sub_project_id`) REFERENCES `sub_projects` (`id`);
+
+--
+-- Constraints for table `invoices`
+--
+ALTER TABLE `invoices`
+  ADD CONSTRAINT `fk_invoice_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
+  ADD CONSTRAINT `fk_invoice_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
 
 --
 -- Constraints for table `licenses`

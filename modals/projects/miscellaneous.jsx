@@ -281,16 +281,16 @@ export function ProjectStatus({ mount, selectedProject, unmount }) {
 
 			if (response.status === 200) {
 				const tasks = response.data.tasks;
-				const ledgers = response.data.ledgers;
+				const invoices = response.data.invoices;
 
 				const completedTasks = tasks.filter((task) => task.is_completed == 1).length;
 				const areAllTasksCompleted = tasks.length && tasks.every((task) => task.is_completed == 1);
 
-				const areAnyDuesPending = ledgers.length && ledgers.every((ledger) => ledger.amount_received == ledger.total_amount);
+				// const areAnyDuesPending = invoices.length && invoices.every((ledger) => ledger.amount_received == ledger.total_amount);
 
-				const totalAmount = ledgers.reduce((total, ledger) => total + Number(ledger.total_amount), 0);
+				// const totalAmount = invoices.reduce((total, ledger) => total + Number(ledger.total_amount), 0);
 
-				const totalAmountPending = ledgers.reduce((total, ledger) => total + (Number(ledger.total_amount) - Number(ledger.amount_received)), 0);
+				// const totalAmountPending = invoices.reduce((total, ledger) => total + (Number(ledger.total_amount) - Number(ledger.amount_received)), 0);
 
 				const anyRvGenerated = response.data.invoices.length > 0 && Boolean(response.data.invoices[0].rv_id);
 
@@ -298,9 +298,9 @@ export function ProjectStatus({ mount, selectedProject, unmount }) {
 					...old,
 					status: {
 						dues: {
-							allPaidOff: areAnyDuesPending,
-							totalAmount,
-							totalAmountPending,
+							allPaidOff: 0,
+							totalAmount: 0,
+							totalAmountPending: 0,
 						},
 						invoices: {
 							anyGenerated: response.data.invoices.length > 0,

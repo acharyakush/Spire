@@ -200,7 +200,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				setHasMounted((old) => ({ ...old, mainComponent: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "New Project => Get Supporting Data");
+			MyGlobal.HandleErrors(error, "New Project => Get Support Data");
 		}
 	};
 

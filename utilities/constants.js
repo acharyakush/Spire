@@ -1,39 +1,30 @@
 "use client";
 
-const protocol = globalThis.location?.protocol;
-const hostname = globalThis.location?.hostname;
-const port = globalThis.location?.port;
-
-const developmentBaseUrl = `${protocol}//${hostname}:${port}`;
-const productionBaseUrl = "https://www.spire.com";
-const uatBaseUrl = "https://uat.spire.com";
-
-let baseUrl = productionBaseUrl;
-
-if (process.env.NEXT_PUBLIC_ENV === "development") {
-	baseUrl = developmentBaseUrl;
-} else if (process.env.NEXT_PUBLIC_ENV === "uat") {
-	baseUrl = uatBaseUrl;
-}
-
 const MyConstants = Object.freeze({
 	ApiEndpoints: Object.freeze({
 		Authenticate: "/api/authenticate",
-		ErrorLogger: `api/errorLogger`,
-		Getter: `api/getter`,
+		ErrorLogger: "api/errorLogger",
+		Getter: "api/getter",
 		Inquiries: Object.freeze({
-			AddInquiry: `api/inquiries/addInquiry`,
-			EditInquiry: `api/inquiries/editInquiry`,
-			GetInquiries: `api/inquiries/getInquiries`,
-			GetSupportData: `api/inquiries/getSupportData`,
+			AddInquiry: "api/inquiries/addInquiry",
+			EditInquiry: "api/inquiries/editInquiry",
+			GetInquiries: "api/inquiries/getInquiries",
+			GetSupportData: "api/inquiries/getSupportData",
 		}),
 		Projects: Object.freeze({
-			AddProject: `api/projects/addProject`,
-			EditProject: `api/projects/editProject`,
-			GetProjects: `api/projects/getProjects`,
-			GetSupportData: `api/projects/getSupportData`,
+			AddProject: "api/projects/addProject",
+			EditProject: "api/projects/editProject",
+			GetProjects: "api/projects/getProjects",
+			GetStatus: "api/projects/getStatus",
+			GetSupportData: "api/projects/getSupportData",
 		}),
-		Setter: `api/setter`,
+		Setter: "api/setter",
+		SingleProject: Object.freeze({
+			GetSupportData: "api/tasks/getSupportData",
+		}),
+		Tasks: Object.freeze({
+			AddTask: "api/tasks/addTask",
+		}),
 	}),
 	Messages: Object.freeze({
 		AccessRevoked: "Your access has been revoked.",
@@ -139,6 +130,11 @@ const MyConstants = Object.freeze({
 			Completed: "Completed",
 			Hold: "Hold",
 		}),
+		Tasks: Object.freeze({
+			Completed: "Completed",
+			Disable: "Disable",
+			Enable: "Enable",
+		}),
 	}),
 	TableHeaders: Object.freeze({
 		Inquiries: Object.freeze({
@@ -170,6 +166,15 @@ const MyConstants = Object.freeze({
 			DueOn: "Due On",
 			LastNote: "Last Note",
 			Status: "Status",
+		}),
+		Tasks: Object.freeze({
+			Id: "ID",
+			Task: "Task",
+			DueOn: "Due On",
+			AddedBy: "Added By",
+			Remarks: "Remarks",
+			Expense: "Expense",
+			Actions: "Actions",
 		}),
 	}),
 	ToastTypes: Object.freeze({

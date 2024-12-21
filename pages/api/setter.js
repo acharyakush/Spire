@@ -55,6 +55,9 @@ export default async function handler(req, res) {
 			} else if (request.type == "delete-project") {
 				queryString = `UPDATE projects SET is_deleted=1, updated_at=NOW(), updated_by=? WHERE id=?`;
 				queryParameters = [request.userId, request.id];
+			} else if (request.type == "mark-task-as-completed") {
+				queryString = `UPDATE tasks SET is_completed=1, completed_on=? WHERE id=? AND project_id=?`;
+				queryParameters = [request.completedOn, request.id, request.projectId];
 			}
 
 			const response = await query(queryString, queryParameters);

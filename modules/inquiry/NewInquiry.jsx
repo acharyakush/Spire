@@ -214,7 +214,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				setOtherData((old) => ({ ...old, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "New Inquiry => Get Supporting Data");
+			MyGlobal.HandleErrors(error, "New Inquiry => Get Support Data");
 		}
 	};
 

@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import EditProject from "./EditProject";
 import writeXlsxFile from "write-excel-file";
+import SingleProject from "../single-project";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
@@ -377,7 +378,7 @@ export default function Projects() {
 				setHasMounted((old) => ({ ...old, mainComponent: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${thisView} => Get Supporting Data`);
+			MyGlobal.HandleErrors(error, `${thisView} => Get Support Data`);
 		} finally {
 			setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, supportData: false } }));
 		}
@@ -427,6 +428,11 @@ export default function Projects() {
 	const toggleProjectStatusBox = (project) => {
 		setMainData((old) => ({ ...old, selectedProject: project ?? {} }));
 		setHasMounted((old) => ({ ...old, projectStatus: project ? true : false }));
+	};
+
+	const toggleSingleProjectView = (project) => {
+		setMainData((old) => ({ ...old, selectedProject: project ?? {} }));
+		setHasMounted((old) => ({ ...old, singleProject: project ? true : false }));
 	};
 
 	// UI Components
@@ -521,12 +527,21 @@ export default function Projects() {
 			);
 		} else if (hasMounted.editProject) {
 			return <EditProject reloadProjects={getSupportData} selectedProject={mainData.selectedProject} unmount={toggleEditProjectView} />;
+		} else if (hasMounted.singleProject) {
+			return (
+				<SingleProject
+					selectedClient={mainData.selectedClient}
+					selectedProject={mainData.selectedProject}
+					source="Single Project"
+					unmount={toggleSingleProjectView}
+				/>
+			);
 		} else {
 			return uiBody();
 		}
 	};
 
-	const uiRows = (project, rowId) => {
+	const uiRows = (project) => {
 		const style = `flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center right-border`;
 		const projectActionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer text-white";
 
@@ -579,7 +594,7 @@ export default function Projects() {
 						<SpinnerSmall />
 					) : (
 						<Tippy allowHTML={true} content={<Tooltip text={`${project.client_id} - ${client}`} />}>
-							<span dangerouslySetInnerHTML={{ __html: client }} onClick={() => getThisProjectData(project, rowId)} />
+							<span dangerouslySetInnerHTML={{ __html: client }} onClick={() => toggleSingleProjectView(project)} />
 						</Tippy>
 					)}
 				</span>
