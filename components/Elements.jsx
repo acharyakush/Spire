@@ -45,25 +45,24 @@ export const SpinnerSmallWhite = () => {
 };
 
 export const Tooltip = ({ text }) => {
-	return <span className="font-regular-10">{text}</span>;
+	return <span className="font-regular-11">{text}</span>;
 };
 
 export const TooltipList = ({ payload }) => {
-	const formattedPayload = String(payload).includes(",") ? String(payload).split(",") : payload;
+	const _payload = String(payload);
+	const formattedPayload = _payload.includes(",") ? _payload.split(",") : _payload;
 
 	return (
-		<div className="flex flex-col w-full p-1 justify-between items-center font-regular-9">
-			{!String(payload).includes(",") ? (
-				<span className="font-regular-10">{payload}</span>
+		<div className="flex flex-col w-full p-1 justify-between items-center font-regular-12">
+			{!_payload.includes(",") ? (
+				<span className="font-regular-11">{payload}</span>
 			) : (
 				formattedPayload.map((item, index) => {
-					const verticalSpacing = String(item).includes("\n") ? "py-2.5" : "";
-					const bottomBorder = index != formattedPayload.length - 1 ? "bottom-border" : "border-transparent";
-					const wrapper = `flex w-full justify-start items-center whitespace-pre ${verticalSpacing} ${bottomBorder}`;
+					const name = String(item).trim();
 
 					return (
-						<div className={wrapper} key={index}>
-							{index + 1}. {item}
+						<div className="flex w-full space-x-2 py-1 justify-between items-center whitespace-pre" key={index}>
+							<span>{index + 1}</span>.<span>{name}</span>
 						</div>
 					);
 				})

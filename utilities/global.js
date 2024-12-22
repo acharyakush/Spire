@@ -21,9 +21,9 @@ let userId = "";
 let fullName = "";
 
 export const MyGlobal = Object.freeze({
-	AddActivity: async (activity) => {
+	AddActivity: async (activity, module = "General") => {
 		try {
-			const body = { activity, sessionToken, type: "set-user-activity", userId };
+			const body = { activity, module, sessionToken, type: "add-user-activity", userId };
 			await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Add Activity");
@@ -92,6 +92,22 @@ export const MyGlobal = Object.freeze({
 		return allUsers;
 	},
 
+	GetAffiliatesInitials: (payload, source = []) => {
+		if (!source.length) return;
+
+		let initials = "";
+		const payloadArray = String(payload).split(",");
+
+		initials = payloadArray
+			.map((id) => {
+				const object = source.find((affiliate) => affiliate.id == id);
+				return affiliate ? MyGlobal.GetInitials(object.name) : "";
+			})
+			.filter(Boolean);
+
+		return initials;
+	},
+
 	GetFullDetailsFromIds: (ids) => {
 		const idsAsArray = String(ids).split(",");
 		const idsArrayOfObjects = idsAsArray.map((value) => ({ id: value, label: "" }));
@@ -139,6 +155,13 @@ export const MyGlobal = Object.freeze({
 		});
 
 		return initialsArray;
+	},
+
+	GetMultipleInitials: (payload) => {
+		if (!payload) return "";
+
+		const namesArray = String(payload).split(",");
+		return namesArray.map((name) => MyGlobal.GetInitials(name.trim())).join(", ");
 	},
 
 	GetNumbers: (payload) => {

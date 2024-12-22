@@ -113,8 +113,8 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 			if (response.status === 200) {
 				reloadProjects();
 
-				MyGlobal.AddActivity(`Projects :: Edited project (${selectedProject.id}).`);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectEdited);
+				MyGlobal.AddActivity(`Edited <b>${selectedProject.id}</b>.`, MyConstants.Modules.Base.Projects);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectUpdated);
 
 				unmount();
 			} else {

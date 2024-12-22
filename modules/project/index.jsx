@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import EditProject from "./EditProject";
 import writeXlsxFile from "write-excel-file";
-import SingleProject from "../single-project";
+import SingleProject from "../singleProject";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
@@ -16,7 +16,7 @@ import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { ChangeStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
+import { UpdateStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
 import { Badge, BadgeSmall, SpinnerBig, SpinnerSmall, Tooltip } from "@/components/Elements";
 import {
 	faBolt,
@@ -44,12 +44,12 @@ export default function Projects() {
 	});
 
 	const [hasMounted, setHasMounted] = useState({
-		changeStatus: false,
 		deleteProject: false,
 		editProject: false,
 		mainComponent: false,
 		projectStatus: false,
 		singleProject: false,
+		updateStatus: false,
 	});
 
 	const [mainData, setMainData] = useState({
@@ -74,19 +74,6 @@ export default function Projects() {
 	const blankDataWrapper = "flex w-full h-full justify-center items-center black-white-background full-border";
 
 	// Functions
-	const changeStatus = (clientName, selectedProject, status) => {
-		const object = { ...selectedProject };
-
-		object["new_status"] = status;
-		object["client_name"] = clientName;
-
-		if (status != projectStatuses.Completed) {
-			toggleChangeStatusBox(object);
-		} else {
-			toggleProjectStatusBox(object);
-		}
-	};
-
 	const detectKeystrokes = (event) => {
 		switch (true) {
 			case event.ctrlKey && event.key == "f":
@@ -358,7 +345,7 @@ export default function Projects() {
 		}
 	};
 
-	const getSupportData = async () => {
+	const getSupportData = async (selectedProjectId) => {
 		setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, supportData: true } }));
 
 		try {
@@ -374,6 +361,12 @@ export default function Projects() {
 					allSubProjects: response.data.subProjects,
 					confirmedClients: response.data.clients,
 				}));
+
+				if (selectedProjectId) {
+					const updateSelectedProject = response.data.projects.filter((project) => project.id == selectedProjectId).at(0);
+
+					setMainData((old) => ({ ...old, selectedProject: updateSelectedProject }));
+				}
 
 				setHasMounted((old) => ({ ...old, mainComponent: true }));
 			}
@@ -410,11 +403,6 @@ export default function Projects() {
 		setMainData((old) => ({ ...old, sort: { column, isAscending: !mainData.sort.isAscending } }));
 	};
 
-	const toggleChangeStatusBox = (project) => {
-		setMainData((old) => ({ ...old, selectedProject: project ?? {} }));
-		setHasMounted((old) => ({ ...old, changeStatus: project ? true : false }));
-	};
-
 	const toggleDeleteProjectBox = (project) => {
 		setMainData((old) => ({ ...old, selectedProject: project ?? {} }));
 		setHasMounted((old) => ({ ...old, deleteProject: project ? true : false }));
@@ -433,6 +421,24 @@ export default function Projects() {
 	const toggleSingleProjectView = (project) => {
 		setMainData((old) => ({ ...old, selectedProject: project ?? {} }));
 		setHasMounted((old) => ({ ...old, singleProject: project ? true : false }));
+	};
+
+	const toggleUpdateStatusBox = (project) => {
+		setMainData((old) => ({ ...old, selectedProject: project ?? {} }));
+		setHasMounted((old) => ({ ...old, updateStatus: project ? true : false }));
+	};
+
+	const updateStatus = (clientName, selectedProject, status) => {
+		const object = { ...selectedProject };
+
+		object["new_status"] = status;
+		object["client_name"] = clientName;
+
+		if (status != projectStatuses.Completed) {
+			toggleUpdateStatusBox(object);
+		} else {
+			toggleProjectStatusBox(object);
+		}
 	};
 
 	// UI Components
@@ -530,6 +536,7 @@ export default function Projects() {
 		} else if (hasMounted.singleProject) {
 			return (
 				<SingleProject
+					reloadProjects={getSupportData}
 					selectedClient={mainData.selectedClient}
 					selectedProject={mainData.selectedProject}
 					source="Single Project"
@@ -543,7 +550,7 @@ export default function Projects() {
 
 	const uiRows = (project) => {
 		const style = `flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center right-border`;
-		const projectActionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer text-white";
+		const projectActionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer text-white font-regular-12";
 
 		const projectId = MyGlobal.HighlightText(project.id, mainData.searchTerm);
 
@@ -564,12 +571,12 @@ export default function Projects() {
 				key={projectId}
 				onMouseEnter={() => setMouseEnter(projectId)}
 				onMouseLeave={() => setMouseLeave(projectId)}>
-				<div className={`${style} cursor-pointer primary-text`}>
+				<div className={`${style} cursor-help primary-text`}>
 					<Tippy
 						arrow
 						allowHTML
 						content={
-							<div className="flex flex-col justify-start items-center divide-y divide-gray-300">
+							<div className="flex flex-col py-1 justify-start items-center">
 								<div className={projectActionButtonStyle} onClick={() => toggleDeleteProjectBox(project)}>
 									<FontAwesomeIcon icon={faTrash} />
 									<span>Delete Project</span>
@@ -668,7 +675,7 @@ export default function Projects() {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
 
 			return (
-				<MenuItem as="div" className={wrapper} key={index} onClick={() => changeStatus(clientName, project, status)}>
+				<MenuItem as="div" className={wrapper} key={index} onClick={() => updateStatus(clientName, project, status)}>
 					<span className="font-regular-10">{status}</span>
 					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
 				</MenuItem>
@@ -786,15 +793,6 @@ export default function Projects() {
 				{uiMain()}
 			</>
 
-			{hasMounted.changeStatus && (
-				<ChangeStatus
-					mount={hasMounted.changeStatus}
-					reloadProjects={getSupportData}
-					selectedProject={mainData.selectedProject}
-					unmount={toggleChangeStatusBox}
-				/>
-			)}
-
 			{hasMounted.deleteProject && (
 				<DeleteProject
 					mount={hasMounted.deleteProject}
@@ -806,6 +804,15 @@ export default function Projects() {
 
 			{hasMounted.projectStatus && (
 				<ProjectStatus mount={hasMounted.projectStatus} selectedProject={mainData.selectedProject} unmount={toggleProjectStatusBox} />
+			)}
+
+			{hasMounted.updateStatus && (
+				<UpdateStatus
+					mount={hasMounted.updateStatus}
+					reloadProjects={getSupportData}
+					selectedProject={mainData.selectedProject}
+					unmount={toggleUpdateStatusBox}
+				/>
 			)}
 		</div>
 	);

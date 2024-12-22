@@ -19,7 +19,7 @@ import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
-import { ChangeStatus } from "@/modals/inquiries/miscellaneous";
+import { UpdateStatus } from "@/modals/inquiries/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmallWithBackground, SpinnerBig, Tooltip, TooltipList } from "@/components/Elements";
@@ -48,12 +48,12 @@ export default function Inquiries() {
 	});
 
 	const [hasMounted, setHasMounted] = useState({
-		changeStatus: false,
 		convertToProject: false,
 		editInquiry: false,
 		newInquiry: false,
 		newProject: false,
 		notes: false,
+		updateStatus: false,
 	});
 
 	const [mainData, setMainData] = useState({
@@ -531,17 +531,6 @@ export default function Inquiries() {
 		}
 	};
 
-	const toggleChangeStatus = (value) => {
-		if (value === true) {
-			setHasMounted((old) => ({ ...old, changeStatus: true }));
-		} else if (value == "open-new-project") {
-			setHasMounted((old) => ({ ...old, changeStatus: false, newProject: true }));
-		} else {
-			setMainData((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
-			setHasMounted((old) => ({ ...old, changeStatus: false }));
-		}
-	};
-
 	const toggleEditInquiryView = (inquiry, type) => {
 		setMainData((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
 		setHasMounted((old) => ({ ...old, editInquiry: type }));
@@ -554,6 +543,17 @@ export default function Inquiries() {
 	const toggleNotesView = (inquiry, type) => {
 		setMainData((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
 		setHasMounted((old) => ({ ...old, notes: type }));
+	};
+
+	const toggleUpdateStatus = (value) => {
+		if (value === true) {
+			setHasMounted((old) => ({ ...old, updateStatus: true }));
+		} else if (value == "open-new-project") {
+			setHasMounted((old) => ({ ...old, updateStatus: false, newProject: true }));
+		} else {
+			setMainData((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
+			setHasMounted((old) => ({ ...old, updateStatus: false }));
+		}
 	};
 
 	// UI Components
@@ -875,6 +875,7 @@ export default function Inquiries() {
 
 	const uiStatusMenu = (inquiry) => {
 		const isConfirmed = inquiry.status == STATUSES.Confirmed;
+
 		const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none relative z-40 font-medium-10 ${getStatusSeverity(
 			inquiry.status,
 		)} !py-0`;
@@ -884,13 +885,7 @@ export default function Inquiries() {
 		return (
 			<Tippy allowHTML={false} content={<Tooltip text={inquiry.closure_reason} />} disabled={inquiry.is_closed == 0 && !inquiry.closure_reason}>
 				<Menu as="div" className="flex w-24 justify-center items-center relative">
-					<MenuButton
-						className={wrapper}
-						onClick={() => {
-							if (allowConvertingToProject && isConfirmed) {
-								toggleConvertToProjectBox(inquiry, "inquiry", true);
-							}
-						}}>
+					<MenuButton className={wrapper}>
 						<span dangerouslySetInnerHTML={{ __html: highlightText(true, inquiry.status) }} />
 						{icon}
 					</MenuButton>
@@ -980,7 +975,7 @@ export default function Inquiries() {
 	useEffect(() => {
 		if (mainData.hasMounted) {
 			if (Object.keys(mainData.selectedInquiryForStatusChange).length) {
-				toggleChangeStatus(true);
+				toggleUpdateStatus(true);
 			}
 		}
 	}, [mainData.selectedInquiryForStatusChange]);
@@ -989,12 +984,12 @@ export default function Inquiries() {
 		<div className="flex flex-col w-full h-full justify-start items-center light-gray-background">
 			{uiMain()}
 
-			{hasMounted.changeStatus && (
-				<ChangeStatus
-					mount={hasMounted.changeStatus}
+			{hasMounted.updateStatus && (
+				<UpdateStatus
+					mount={hasMounted.updateStatus}
 					reloadInquiries={getInquiries}
 					selectedInquiry={mainData.selectedInquiryForStatusChange}
-					unmount={toggleChangeStatus}
+					unmount={toggleUpdateStatus}
 				/>
 			)}
 		</div>

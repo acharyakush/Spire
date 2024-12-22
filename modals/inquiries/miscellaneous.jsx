@@ -14,20 +14,20 @@ import { faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 	// Business Logic
-	const [data, setData] = useState({ isBoxDragged: false, isLoading: false, note: "" });
+	const [state, setState] = useState({ isBoxDragged: false, isLoading: false, note: "" });
 
-	const titleBarCursor = data.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
-	const disableSaveButton = data.isLoading || !data.note ? "pointer-events-none" : "pointer-events-auto";
+	const disableSaveButton = state.isLoading || !state.note ? "pointer-events-none" : "pointer-events-auto";
 	const saveButtonStyle = `primary-button-condensed ${disableSaveButton}`;
 
 	// Functions
 	const addNote = async () => {
-		setData((old) => ({ ...old, isLoading: true }));
+		setState((old) => ({ ...old, isLoading: true }));
 
 		const body = {
-			content: data.note,
+			content: state.note,
 			id: selectedInquiry.id,
 			source: MyConstants.Modules.Base.Inquiries,
 			type: "add-note",
@@ -40,7 +40,7 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 			if (response.status === 200) {
 				reloadNotes();
 
-				MyGlobal.AddActivity(`Notes :: Added a note for inquiry (${selectedInquiry.id}).`);
+				MyGlobal.AddActivity(`Added in <b>${selectedInquiry.id}</b>.`, MyConstants.Modules.Base.Notes);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.NoteAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
@@ -48,22 +48,22 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Inquiries => Add Note");
 		} finally {
-			setData((old) => ({ ...old, isLoading: false }));
+			setState((old) => ({ ...old, isLoading: false }));
 			unmount(false);
 		}
 	};
 
 	const setBoxDrag = () => {
-		setData((old) => ({ ...old, isBoxDragged: !data.isBoxDragged }));
+		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
 	};
 
 	const setNote = (note) => {
-		setData((old) => ({ ...old, note }));
+		setState((old) => ({ ...old, note }));
 	};
 
 	// UI Components
-	const uiButtonLabel = () => {
-		if (data.isLoading) {
+	const uiButton = () => {
+		if (state.isLoading) {
 			return (
 				<span className="px-3.5">
 					<Spinner />
@@ -77,7 +77,7 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 	const uiTitleBar = () => {
 		return (
 			<DialogTitle as="h2" className={titleBarStyle}>
-				<span className="flex w-full justify-start items-center">New Note</span>
+				<span className="flex w-full justify-start items-center">Add Note</span>
 				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
@@ -101,14 +101,14 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 									onKeyDown={() => {}}
 									rows={3}
 									tabIndex={1}
-									value={data.note}
+									value={state.note}
 									width="w-full"
 								/>
 							</div>
 						</div>
 						<footer className="dialog-footer">
 							<button className={saveButtonStyle} onClick={() => addNote()}>
-								{uiButtonLabel()}
+								{uiButton()}
 							</button>
 						</footer>
 					</DialogPanel>
@@ -118,24 +118,25 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 	);
 }
 
-export function ChangeStatus({ mount, reloadInquiries, selectedInquiry, unmount }) {
+export function UpdateStatus({ mount, reloadInquiries, selectedInquiry, unmount }) {
 	// Business Logic
-	const [data, setData] = useState({ isBoxDragged: false, isLoading: false, reason: "" });
+	const [state, setState] = useState({ isBoxDragged: false, isLoading: false, reason: "" });
 
 	const isStatusCloseInquiry = selectedInquiry?.new_status == MyConstants.Statuses.Inquiries.Closed;
-	const titleBarText = isStatusCloseInquiry ? "Close Inquiry" : "Change Status";
+	const titleBarText = isStatusCloseInquiry ? "Close Inquiry" : "Update Status";
+	const buttonLabel = isStatusCloseInquiry ? "Close" : "Update";
 
 	const reasonBoxStyle = isStatusCloseInquiry ? "flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center" : "hidden";
-	const titleBarCursor = data.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
-	let disableYesButton = data.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	let disableButton = state.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 
 	if (isStatusCloseInquiry) {
-		disableYesButton = data.isLoading || !data.reason ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+		disableButton = state.isLoading || !state.reason ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 	}
 
-	const yesButtonStyle = `primary-button-condensed ${disableYesButton}`;
+	const buttonStyle = `primary-button-condensed ${disableButton}`;
 
 	let message = "";
 
@@ -150,17 +151,25 @@ export function ChangeStatus({ mount, reloadInquiries, selectedInquiry, unmount 
 	}
 
 	// Functions
-	const changeStatus = async () => {
+	const setBoxDrag = () => {
+		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
+	};
+
+	const setReason = (reason) => {
+		setState((old) => ({ ...old, reason }));
+	};
+
+	const updateStatus = async () => {
 		if (selectedInquiry.new_status == MyConstants.Statuses.Inquiries.Confirmed) {
 			unmount("open-new-project");
 		} else {
-			setData((old) => ({ ...old, isLoading: true }));
+			setState((old) => ({ ...old, isLoading: true }));
 
 			const body = {
-				id: selectedInquiry.id,
-				reason: data.reason,
+				inquiryId: selectedInquiry.id,
+				reason: state.reason,
 				status: isStatusCloseInquiry ? MyConstants.Statuses.Inquiries.Closed : selectedInquiry.new_status,
-				type: isStatusCloseInquiry ? "close-inquiry" : "change-inquiry-status",
+				type: isStatusCloseInquiry ? "close-inquiry" : "update-inquiry-status",
 				userId: MyGlobal.GetUserId(),
 			};
 
@@ -170,48 +179,40 @@ export function ChangeStatus({ mount, reloadInquiries, selectedInquiry, unmount 
 				if (response.status === 200) {
 					reloadInquiries();
 
-					let activityMessage = `Inquiries :: Changed status of inquiry (${selectedInquiry.id}) from ${selectedInquiry.status} to ${selectedInquiry.new_status}.`;
+					let activityMessage = `Update status of <b>${selectedInquiry.id}</b> to <b>${selectedInquiry.new_status}</b> from <b>${selectedInquiry.status}</b>.`;
 
-					let successMessage = MyConstants.Messages.InquiryEdited;
+					let successMessage = MyConstants.Messages.InquiryUpdated;
 
 					if (isStatusCloseInquiry) {
-						activityMessage = `Inquiries :: Closed inquiry (${selectedInquiry.id}) due to ${data.reason}.`;
+						activityMessage = `Closed <b>${selectedInquiry.id}</b> due to <b>${state.reason}</b>.`;
 						successMessage = MyConstants.Messages.InquiryClosed;
 					}
 
-					MyGlobal.AddActivity(activityMessage);
+					MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Inquiries);
 					MyGlobal.ShowSuccessToast(successMessage);
 				} else {
 					MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 				}
 			} catch (error) {
-				const errorSource = isStatusCloseInquiry ? "Close Inquiry" : "Change Inquiry Status";
+				const errorSource = isStatusCloseInquiry ? "Close Inquiry" : "Update Inquiry Status";
 				MyGlobal.HandleErrors(error, errorSource);
 			} finally {
-				setData((old) => ({ ...old, isLoading: false, reason: "" }));
+				setState((old) => ({ ...old, isLoading: false, reason: "" }));
 				unmount(false);
 			}
 		}
 	};
 
-	const setBoxDrag = () => {
-		setData((old) => ({ ...old, isBoxDragged: !data.isBoxDragged }));
-	};
-
-	const setReason = (reason) => {
-		setData((old) => ({ ...old, reason }));
-	};
-
 	// UI Components
-	const uiButtonLabel = () => {
-		if (data.isLoading) {
+	const uiButton = () => {
+		if (state.isLoading) {
 			return (
 				<span className="px-3.5">
 					<Spinner />
 				</span>
 			);
 		} else {
-			return "Yes";
+			return buttonLabel;
 		}
 	};
 
@@ -242,13 +243,13 @@ export function ChangeStatus({ mount, reloadInquiries, selectedInquiry, unmount 
 								onKeyDown={() => {}}
 								rows={3}
 								tabIndex={1}
-								value={data.reason}
+								value={state.reason}
 								width="w-full"
 							/>
 						</div>
 						<footer className="dialog-footer">
-							<button className={yesButtonStyle} onClick={() => changeStatus()}>
-								{uiButtonLabel()}
+							<button className={buttonStyle} onClick={() => updateStatus()}>
+								{uiButton()}
 							</button>
 						</footer>
 					</DialogPanel>

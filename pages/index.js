@@ -137,7 +137,6 @@ export default function Home() {
 				<Password
 					eyeIconStyle={eyeIconStyle}
 					eyeIconUi={uiEye}
-					isNew={false}
 					key={2}
 					onChange={(e) => handleInputs("password", e.target.value)}
 					reference={passwordReference}

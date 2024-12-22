@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 			let queryParameters = "";
 			let queryString = "";
 
-			if (request.type == "set-user-activity") {
+			if (request.type == "add-user-activity") {
 				let ipAddress =
 					String(req.headers["x-forwarded-for"] || "")
 						.split(",")
@@ -34,30 +34,36 @@ export default async function handler(req, res) {
 
 				const userAgent = req.headers["user-agent"] || "";
 
-				queryString = `INSERT INTO activities (user_id, activity, ip_address, user_agent, session_token, details) VALUES (?, ?, ?, ?, ?, ?)`;
+				queryString = "INSERT INTO activities (user_id, module, activity, ip_address, user_agent, session_token, details) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-				queryParameters = [request.userId, request.activity, ipAddress, userAgent, request.sessionToken, ""];
+				queryParameters = [request.userId, request.module, request.activity, ipAddress, userAgent, request.sessionToken, ""];
 			} else if (request.type == "set-user-status") {
-				queryString = `UPDATE employees SET is_active=? WHERE id=?`;
+				queryString = "UPDATE employees SET is_active=? WHERE id=?";
 				queryParameters = [request.status, request.userId];
-			} else if (request.type == "change-inquiry-status") {
-				queryString = `UPDATE inquiries SET status=?, is_closed=0, closure_reason="", updated_at=NOW(), updated_by=? WHERE id=?`;
-				queryParameters = [request.status, request.userId, request.id];
+			} else if (request.type == "update-inquiry-status") {
+				queryString = `UPDATE inquiries SET status=?, is_closed=0, closure_reason="", updated_at=NOW() WHERE id=?`;
+				queryParameters = [request.status, request.inquiryId];
 			} else if (request.type == "close-inquiry") {
-				queryString = `UPDATE inquiries SET status=?, is_closed=1, closure_reason=?, updated_at=NOW(), updated_by=? WHERE id=?`;
-				queryParameters = [request.status, request.reason, request.userId, request.id];
+				queryString = "UPDATE inquiries SET status=?, is_closed=1, closure_reason=?, updated_at=NOW() WHERE id=?";
+				queryParameters = [request.status, request.reason, request.inquiryId];
 			} else if (request.type == "add-note") {
-				queryString = `INSERT INTO notes (inquiry_id, user_id, content, source) VALUES (?, ?, ?, ?)`;
+				queryString = "INSERT INTO notes (inquiry_id, user_id, content, source) VALUES (?, ?, ?, ?)";
 				queryParameters = [request.id, request.userId, request.content, request.source];
-			} else if (request.type == "change-project-status") {
-				queryString = `UPDATE projects SET status=? WHERE id=? AND client_id=? AND company_id=? AND inquiry_id=?`;
-				queryParameters = [request.new_status, request.id, request.client_id, request.company_id, request.inquiry_id];
+			} else if (request.type == "update-project-status") {
+				queryString = "UPDATE projects SET status=? WHERE id=? AND client_id=? AND company_id=? AND inquiry_id=?";
+				queryParameters = [request.new_status, request.projectId, request.client_id, request.company_id, request.inquiry_id];
 			} else if (request.type == "delete-project") {
-				queryString = `UPDATE projects SET is_deleted=1, updated_at=NOW(), updated_by=? WHERE id=?`;
-				queryParameters = [request.userId, request.id];
+				queryString = "UPDATE projects SET is_deleted=1, updated_at=NOW() WHERE id=?";
+				queryParameters = [request.id];
 			} else if (request.type == "mark-task-as-completed") {
-				queryString = `UPDATE tasks SET is_completed=1, completed_on=? WHERE id=? AND project_id=?`;
-				queryParameters = [request.completedOn, request.id, request.projectId];
+				queryString = "UPDATE tasks SET is_completed=1, completed_on=? WHERE id=? AND project_id=?";
+				queryParameters = [request.completedOn, request.taskId, request.projectId];
+			} else if (request.type == "handle-government-id") {
+				queryString = "UPDATE projects SET government_id=? WHERE id=?";
+				queryParameters = [request.governmentId, request.projectId];
+			} else if (request.type == "update-quote") {
+				queryString = "UPDATE projects SET quote=? WHERE id=?";
+				queryParameters = [request.quote, request.projectId];
 			}
 
 			const response = await query(queryString, queryParameters);

@@ -14,142 +14,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { faAnglesRight, faArrowRight, faCircleCheck, faCircleXmark, faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export function ChangeStatus({ mount, reloadProjects, selectedProject, unmount }) {
-	// Business Logic
-	const [state, setState] = useState({ isBoxDragged: false, isLoading: false, reason: "" });
-
-	const isNewStatusNotActive = selectedProject.new_status != MyConstants.Statuses.Projects.Active;
-
-	const reasonBoxStyle = isNewStatusNotActive ? "flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center" : "hidden";
-	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
-
-	let disableYesButton = state.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
-
-	if (isNewStatusNotActive) {
-		disableYesButton = state.isLoading || !state.reason ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
-	}
-
-	const yesButtonStyle = `primary-button-condensed ${disableYesButton}`;
-
-	let messageBody = "";
-	let activityMessage = "";
-
-	switch (selectedProject.new_status) {
-		case MyConstants.Statuses.Projects.Active:
-			activityMessage = `Projects :: Resumed project (${selectedProject.id}).`;
-			messageBody = "Are you sure you want to re-active this project?";
-			break;
-		case MyConstants.Statuses.Projects.Cancelled:
-			activityMessage = `Projects :: Cancelled project (${selectedProject.id}).`;
-			messageBody = "Are you sure you want to cancel this project? You are required to write a cancellation reason below.";
-			break;
-		case MyConstants.Statuses.Projects.Closed:
-			activityMessage = `Projects :: Closed project (${selectedProject.id}).`;
-			messageBody = "Are you sure you want to close this project? You are required to write a closure reason below.";
-			break;
-		case MyConstants.Statuses.Projects.Hold:
-			activityMessage = `Projects :: Project (${selectedProject.id}) kept on ${selectedProject.new_status}.`;
-			messageBody = "Are you sure you want to keep this project on hold? You are required to write a reason below.";
-			break;
-	}
-
-	// Functions
-	const changeStatus = async () => {
-		setState((old) => ({ ...old, isLoading: true }));
-
-		const body = {
-			id: selectedProject.id,
-			reason: state.reason,
-			status: selectedProject.new_status,
-			type: "change-project-status",
-			userId: MyGlobal.GetUserId(),
-		};
-
-		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
-
-			if (response.status === 200) {
-				reloadProjects();
-
-				MyGlobal.AddActivity(`${activityMessage}. From ${selectedProject.status} to ${selectedProject.new_status}.`);
-
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectStatusChanged);
-			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "Change Project Status");
-		} finally {
-			setState((old) => ({ ...old, isLoading: false, reason: "" }));
-			unmount(false);
-		}
-	};
-
-	const setBoxDrag = () => {
-		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
-	};
-
-	const setReason = (reason) => {
-		setState((old) => ({ ...old, reason }));
-	};
-
-	// UI Components
-	const uiButton = () => {
-		if (state.isLoading) {
-			return (
-				<span className="px-3.5">
-					<Spinner />
-				</span>
-			);
-		} else {
-			return "Yes";
-		}
-	};
-
-	const uiTitleBar = () => {
-		return (
-			<DialogTitle as="h2" className={titleBarStyle}>
-				<span className="flex w-full justify-start items-center">Change Status</span>
-				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
-			</DialogTitle>
-		);
-	};
-
-	// Main UI
-	return (
-		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
-			<div className="fixed inset-0 bg-black/50" />
-			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded black-white-background shadow">
-						{uiTitleBar()}
-						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text" dangerouslySetInnerHTML={{ __html: messageBody }} />
-						<div className={reasonBoxStyle}>
-							<TextArea
-								icon={faNoteSticky}
-								key={1}
-								label="Reason"
-								onChange={(event) => setReason(event.target.value)}
-								onKeyDown={() => {}}
-								rows={3}
-								tabIndex={1}
-								value={state.reason}
-								width="w-full"
-							/>
-						</div>
-						<footer className="dialog-footer">
-							<button className={yesButtonStyle} onClick={() => changeStatus()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
-			</div>
-		</Dialog>
-	);
-}
-
 export function DeleteProject({ mount, projectId, reloadProjects, unmount }) {
 	// Business Logic
 	const [state, setState] = useState({ isBoxDragged: false, isLoading: false });
@@ -171,7 +35,7 @@ export function DeleteProject({ mount, projectId, reloadProjects, unmount }) {
 			if (response.status === 200) {
 				reloadProjects();
 
-				MyGlobal.AddActivity(`Projects :: Deleted project ${projectId}`);
+				MyGlobal.AddActivity(`Deleted <b>${projectId}</b>`, MyConstants.Modules.Base.Projects);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectDeleted);
 
 				unmount();
@@ -219,7 +83,7 @@ export function DeleteProject({ mount, projectId, reloadProjects, unmount }) {
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-[400px] transform overflow-hidden rounded shadow black-white-background">
 						{uiTitleBar()}
-						<div className="flex flex-col w-full p-4 justify-center items-center font-regular-11 black-text">
+						<div className="flex flex-col w-full p-4 justify-center items-center font-regular-12 black-text">
 							<div className="flex flex-col px-1 text-left">
 								<span className="py-2">
 									Do you want to delete the project <b>{projectId}</b>?
@@ -430,6 +294,141 @@ export function ProjectStatus({ mount, selectedProject, unmount }) {
 						{uiTitleBar()}
 						{uiBody()}
 						<footer className="dialog-footer">{uiButton()}</footer>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
+export function UpdateStatus({ mount, reloadProjects, selectedProject, unmount }) {
+	// Business Logic
+	const [state, setState] = useState({ isBoxDragged: false, isLoading: false, reason: "" });
+
+	const isNewStatusNotActive = selectedProject.new_status != MyConstants.Statuses.Projects.Active;
+
+	const reasonBoxStyle = isNewStatusNotActive ? "flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center" : "hidden";
+	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+
+	let disableUpdateButton = state.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+
+	if (isNewStatusNotActive) {
+		disableUpdateButton = state.isLoading || !state.reason ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	}
+
+	const updateButtonStyle = `primary-button-condensed ${disableUpdateButton}`;
+
+	let messageBody = "";
+	let activityMessage = "";
+
+	switch (selectedProject.new_status) {
+		case MyConstants.Statuses.Projects.Active:
+			activityMessage = `Resumed <b>${selectedProject.id}</b> from <b>${selectedProject.status}</b>`;
+			messageBody = "Are you sure you want to re-active this project?";
+			break;
+		case MyConstants.Statuses.Projects.Cancelled:
+			activityMessage = `Cancelled <b>${selectedProject.id}</b> from <b>${selectedProject.status}</b>`;
+			messageBody = "Are you sure you want to cancel this project? You are required to write a cancellation reason below.";
+			break;
+		case MyConstants.Statuses.Projects.Closed:
+			activityMessage = `Closed <b>${selectedProject.id}</b> from <b>${selectedProject.status}</b>`;
+			messageBody = "Are you sure you want to close this project? You are required to write a closure reason below.";
+			break;
+		case MyConstants.Statuses.Projects.Hold:
+			activityMessage = `<b>${selectedProject.id}</b> kept on <b>${selectedProject.new_status}</b> from <b>${selectedProject.status}</b>`;
+			messageBody = "Are you sure you want to keep this project on hold? You are required to write a reason below.";
+			break;
+	}
+
+	// Functions
+	const setBoxDrag = () => {
+		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
+	};
+
+	const setReason = (reason) => {
+		setState((old) => ({ ...old, reason }));
+	};
+
+	const updateStatus = async () => {
+		setState((old) => ({ ...old, isLoading: true }));
+
+		const body = {
+			projectId: selectedProject.id,
+			reason: state.reason,
+			status: selectedProject.new_status,
+			type: "update-project-status",
+			userId: MyGlobal.GetUserId(),
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reloadProjects();
+
+				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Projects);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectStatusUpdated);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Update Project Status");
+		} finally {
+			setState((old) => ({ ...old, isLoading: false, reason: "" }));
+			unmount(false);
+		}
+	};
+
+	// UI Components
+	const uiButton = () => {
+		if (state.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Update";
+		}
+	};
+
+	const uiTitleBar = () => {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Update Status</span>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+			</DialogTitle>
+		);
+	};
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded black-white-background shadow">
+						{uiTitleBar()}
+						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text" dangerouslySetInnerHTML={{ __html: messageBody }} />
+						<div className={reasonBoxStyle}>
+							<TextArea
+								icon={faNoteSticky}
+								key={1}
+								label="Reason"
+								onChange={(event) => setReason(event.target.value)}
+								onKeyDown={() => {}}
+								rows={3}
+								tabIndex={1}
+								value={state.reason}
+								width="w-full"
+							/>
+						</div>
+						<footer className="dialog-footer">
+							<button className={updateButtonStyle} onClick={() => updateStatus()}>
+								{uiButton()}
+							</button>
+						</footer>
 					</DialogPanel>
 				</Draggable>
 			</div>

@@ -101,7 +101,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			if (response.status === 200) {
 				reloadInquiries();
 
-				MyGlobal.AddActivity(`Inquiries :: Added new project (${response.data}).`);
+				MyGlobal.AddActivity(`Added <b>${response.data}</b>.`, MyConstants.Modules.Base.Inquiries);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryConvertedToProject);
 
 				unmount();

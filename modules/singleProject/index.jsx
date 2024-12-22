@@ -10,10 +10,11 @@ import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { SpinnerSmall, TooltipList } from "@/components/Elements";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { SpinnerSmall, TooltipList } from "@/components/Elements";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { UpdateQuote, ManageGovernmentId } from "@/modals/singleProject/miscellaneous";
 import {
 	faBars,
 	faBriefcase,
@@ -45,17 +46,18 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 		allAffiliates: [],
 		allCompanies: [],
 		allCashFlows: [],
+		allMainProjects: [],
+		allSubProjects: [],
 		allInvoices: [],
 	});
 
 	const [hasMounted, setHasMounted] = useState({
-		changeQuote: false,
-		editGovernmentId: false,
 		generateInvoice: false,
 		governmentId: false,
 		mainComponent: false,
 		mapAffiliates: false,
 		notesBar: false,
+		updateQuote: false,
 	});
 
 	const [mainData, setMainData] = useState({
@@ -72,6 +74,22 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 		}
 	};
 
+	const getMainProjectName = () => {
+		if (apiData.allMainProjects.length) {
+			return apiData.allMainProjects.filter((mainProject) => mainProject.id == selectedProject.main_project_id).at(0).name;
+		} else {
+			return "";
+		}
+	};
+
+	const getSubProjectName = () => {
+		if (apiData.allSubProjects.length) {
+			return apiData.allSubProjects.filter((subProject) => subProject.id == selectedProject.sub_project_id).at(0).name;
+		} else {
+			return "";
+		}
+	};
+
 	const getSupportData = async () => {
 		setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, supportData: true } }));
 
@@ -79,16 +97,21 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 			const response = await axios.get(MyConstants.ApiEndpoints.SingleProject.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				setApiData((old) => ({
-					...old,
+				setApiData({
+					allAdministratorsCompanies: response.data.allAdministratorsCompanies,
+					allAdministratorsCompaniesBanks: response.data.allAdministratorsCompaniesBanks,
+					allAffiliates: [],
 					allCompanies: response.data.companies,
+					allCashFlows: [],
+					allMainProjects: response.data.mainProjects,
+					allSubProjects: response.data.subProjects,
 					allInvoices: response.data.invoices,
-				}));
+				});
 
 				setHasMounted((old) => ({ ...old, mainComponent: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `Single Project => Get Support Data`);
+			MyGlobal.HandleErrors(error, "Single Project => Get Support Data");
 		} finally {
 			setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, supportData: false } }));
 		}
@@ -102,128 +125,18 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 		globalThis.window.open(`https://wa.me/1${contactNumber}`, "_blank");
 	};
 
-	// UI Components
-	const uiClientInformation = () => {
-		const wrapperSansAesthetics = "flex w-full space-x-1.5 justify-start items-center";
-
-		const columnWrapper = "flex flex-col -space-y-px justify-center items-center cursor-pointer primary-tag-transparent-01";
-
-		const redColumnWrapper = "flex flex-col -space-y-px justify-center items-center cursor-pointer font-normal red-tag-transparent-01";
-
-		const dueOnTimeLeft =
-			dayjs(selectedProject.due_on).format("DD-MM-YYYY") == dayjs().format("DD-MM-YYYY") ? "Today" : dayjs(selectedProject.due_on).fromNow();
-
-		const quote = Number(selectedProject.quote);
-		const _quote = MyGlobal.ThousandSeparator(quote);
-
-		const teamsNames = MyGlobal.GetAnyDataFromId(selectedProject.teams, "full_name");
-		const teamsNamesArray = String(teamsNames).split(",");
-
-		let teamsInitials = "";
-
-		teamsNamesArray.forEach((name, index) => {
-			if (index != teamsNamesArray.length - 1) {
-				teamsInitials += MyGlobal.GetInitials(name) + ", ";
-			} else {
-				teamsInitials += MyGlobal.GetInitials(name);
-			}
-		});
-
-		const affiliateInitials = selectedProject.affiliate_ids
-			? selectedProject.affiliate_ids.split(",").map((id) => {
-					const affiliate = apiData.allAffiliates.filter((aff) => aff.id == id);
-
-					if (affiliate.length) {
-						return MyGlobal.getInitials(affiliate.at(0).name);
-					} else {
-						return "";
-					}
-			  })
-			: [""];
-
-		const affiliatesNames =
-			selectedProject.affiliate_ids &&
-			selectedProject.affiliate_ids.split(",").map((id) => {
-				const affiliate = apiData.allAffiliates.filter((aff) => aff.id == id);
-
-				if (affiliate.length) {
-					const parsedDetails = JSON.parse(affiliate.at(0).details);
-
-					const paidFees = Number(parsedDetails.at(0).paid_fees);
-					const totalFees = Number(parsedDetails.at(0).total_fees);
-					const pendingFees = totalFees - paidFees;
-
-					return `${affiliate.at(0).name}\nPaid ${paidFees} | Pending ${pendingFees} | Total ${totalFees}`;
-				} else {
-					return "";
-				}
-			});
-
-		return (
-			<div className="flex w-full justify-between items-center">
-				<div className="flex w-4/5 space-x-2.5 justify-start items-center">
-					<div className="flex flex-col w-fit -space-y-2 justify-center items-start">
-						<span className="font-regular-8 primary-text">{getCompanyName()}</span>
-						<Tippy allowHTML content={uiClientInformationTooltip()} disabled={!isSourceSingleClient} interactive>
-							<span className="view-heading !text-lg">{selectedProject.sub_project}</span>
-						</Tippy>
-					</div>
-					<div className={redColumnWrapper} style={{ fontSize: "12px" }}>
-						<span className={wrapperSansAesthetics}>
-							<FontAwesomeIcon className="w-4 red-text" icon={faCalendarXmark} />
-							<span>{dayjs(selectedProject.due_on).format("DD MMM, YYYY")}</span>
-						</span>
-						<span className={wrapperSansAesthetics}>
-							<FontAwesomeIcon className="w-4 red-text" icon={faStopwatch} />
-							<span>{dueOnTimeLeft}</span>
-						</span>
-					</div>
-					<div className={columnWrapper}>
-						<span className={wrapperSansAesthetics}>
-							<FontAwesomeIcon className="w-4 primary-text" icon={faBriefcase} />
-							<span>{getCompanyName()}</span>
-						</span>
-						<Tippy allowHTML className="w-full" content={uiFeesBifurcationTooltip()} disabled={!isSourceSingleClient}>
-							<span className={wrapperSansAesthetics}>
-								<FontAwesomeIcon className="w-4 primary-text" icon={faIndianRupeeSign} />
-								<span>{_quote}</span>
-							</span>
-						</Tippy>
-					</div>
-					<div className={columnWrapper}>
-						<span className={wrapperSansAesthetics}>
-							<FontAwesomeIcon className="w-4 primary-text" icon={faFile} />
-							<span>{selectedProject.main_project}</span>
-						</span>
-						<span className={wrapperSansAesthetics}>
-							<FontAwesomeIcon className="w-4 primary-text" icon={faCopy} />
-							<span>{selectedProject.sub_project}</span>
-						</span>
-					</div>
-					<div className={columnWrapper}>
-						<Tippy allowHTML content={<TooltipList payload={affiliatesNames} />} placement="top">
-							<span className={wrapperSansAesthetics}>
-								<FontAwesomeIcon className="w-4 primary-text" icon={faBriefcase} />
-								<span>{affiliateInitials.join(",") || "No affiliates mapped"}</span>
-							</span>
-						</Tippy>
-						<Tippy allowHTML content={<TooltipList payload={teamsNames} />} placement="bottom">
-							<span className={wrapperSansAesthetics}>
-								<FontAwesomeIcon className="w-4 primary-text" icon={faUserGroup} />
-								<span>{teamsInitials}</span>
-							</span>
-						</Tippy>
-					</div>
-					{!selectedProject.government_id && uiMissingGovernmentId()}
-				</div>
-				<div className="flex w-1/5 justify-end items-center">{uiHamburgerMenu()}</div>
-			</div>
-		);
+	const toggleGovernmentIdBox = () => {
+		setHasMounted((old) => ({ ...old, governmentId: !hasMounted.governmentId }));
 	};
 
+	const toggleUpdateQuoteBox = () => {
+		setHasMounted((old) => ({ ...old, updateQuote: !hasMounted.updateQuote }));
+	};
+
+	// UI Components
 	const uiClientInformationTooltip = () => {
 		return (
-			<div className="flex flex-col w-full p-0 justify-center items-center cursor-pointer font-regular-9 text-white">
+			<div className="flex flex-col w-full p-0 justify-center items-center cursor-pointer font-regular-12 text-white">
 				<div className="w-full p-2 space-x-2.5 hovered-rows-white">
 					<FontAwesomeIcon icon={faIdBadge} />
 					<span>
@@ -232,11 +145,11 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 				</div>
 				<div className="w-full p-2 space-x-2.5 hovered-rows-white" onClick={() => openWhatsApp(selectedClient.contact_number)}>
 					<FontAwesomeIcon icon={faWhatsapp} />
-					<span>{selectedClient.phone}</span>
+					<span>{selectedClient.contact_number}</span>
 				</div>
 				<div className="w-full p-2 space-x-2.5 hovered-rows-white" onClick={() => openEmailClient(selectedClient.email_address)}>
 					<FontAwesomeIcon icon={faEnvelope} />
-					<span>{selectedClient.email}</span>
+					<span>{selectedClient.email_address}</span>
 				</div>
 			</div>
 		);
@@ -267,7 +180,7 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 			});
 
 		return (
-			<div className="flex flex-col w-full justify-center items-center font-regular-9">
+			<div className="flex flex-col w-full justify-center items-center font-regular-12">
 				<div className="flex w-full py-1 justify-between items-center bottom-border">
 					<span className="flex w-1/2 justify-start items-center">Invoice</span>
 					<span className="flex w-1/2 justify-end items-center">{selectedProject.invoice_fees}</span>
@@ -288,28 +201,16 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 	};
 
 	const uiHamburgerMenu = () => {
-		const style = "w-full p-2 space-x-2.5 cursor-pointer font-regular-10 black-text hovered-rows relative";
-
-		const governmentIdClickAction = () => (selectedProject.government_id ? toggleEditGovernmentIdBox() : toggleGovernmentIdBox());
-
-		const governmentIdLabel = selectedProject.government_id ? "Edit Government ID" : "Add Government ID";
+		const style = "w-full p-3 space-x-3 cursor-pointer border-y font-regular-12 black-text hovered-rows relative";
 
 		return (
 			<Menu as="div" className="w-max relative text-left">
 				<MenuButton className="flex w-full justify-between items-center focus:outline-none relative z-40">
 					<FontAwesomeIcon className="primary-text" icon={faBars} />
 				</MenuButton>
-				<MenuItems className="absolute w-max right-0 origin-top-right divide-y divide-gray-100 rounded black-white-background shadow-md focus:outline-none z-50">
-					<MenuItem as="div" className={style} onClick={() => toggleChangeQuoteBox()}>
-						<FontAwesomeIcon className="w-5 primary-text" icon={faIndianRupeeSign} />
-						<span>Change Quote</span>
-					</MenuItem>
-
-					<MenuItem as="div" className={style} onClick={() => governmentIdClickAction()}>
-						<FontAwesomeIcon className="w-5 primary-text" icon={faIdCardClip} />
-						<span>{governmentIdLabel}</span>
-					</MenuItem>
-
+				<MenuItems
+					anchor="bottom"
+					className="absolute w-max mt-2 rounded bottom-shadow focus:outline-none black-white-background full-border black-text">
 					<MenuItem as="div" className={style} onClick={() => saveAsExcel()}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={faFileExcel} />
 						<span>Export to Excel</span>
@@ -321,7 +222,12 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 						hidden={!MyGlobal.HasPermission(MyConstants.Modules.Derived.GenerateInvoice)}
 						onClick={() => prepareGenerateInvoiceData()}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={faReceipt} />
-						<span>Invoice & Reimbursement</span>
+						<span>Generate Invoice</span>
+					</MenuItem>
+
+					<MenuItem as="div" className={style} onClick={() => toggleGovernmentIdBox()}>
+						<FontAwesomeIcon className="w-5 primary-text" icon={faIdCardClip} />
+						<span>Manage Government ID</span>
 					</MenuItem>
 
 					<MenuItem as="div" className={style} onClick={() => toggleMapAffiliatesBox()}>
@@ -336,6 +242,11 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 						onClick={() => getCashFlow()}>
 						{uiPaymentReceived()}
 					</MenuItem>
+
+					<MenuItem as="div" className={style} onClick={() => toggleUpdateQuoteBox()}>
+						<FontAwesomeIcon className="w-5 primary-text" icon={faIndianRupeeSign} />
+						<span>Update Quote</span>
+					</MenuItem>
 				</MenuItems>
 			</Menu>
 		);
@@ -343,10 +254,10 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 
 	const uiMissingGovernmentId = () => {
 		return (
-			<div className="flex flex-col w-fit px-2 py-0.5 justify-center items-center rounded blink font-regular-9 red-text red-background-transparent-01 red-border">
+			<div className="flex flex-col w-fit space-y-1 justify-center items-center font-normal blink red-text red-tag-transparent-01">
 				<span>Missing Government ID. </span>
 				<span>
-					Click <FontAwesomeIcon className="red-text" icon={faBars} />, select <b>Add Government ID</b>
+					Click <FontAwesomeIcon className="red-text" icon={faBars} />, Select <b>Add Government ID</b>
 				</span>
 			</div>
 		);
@@ -358,11 +269,105 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 		} else {
 			return (
 				<>
-					<FontAwesomeIcon className="primary-text w-5" icon={faCoins} />
+					<FontAwesomeIcon className="w-5 primary-text" icon={faCoins} />
 					<span>Payment Received</span>
 				</>
 			);
 		}
+	};
+
+	const uiProjectInformationBlock = () => {
+		const wrapperSansAesthetics = "flex w-full space-x-1.5 justify-start items-center";
+
+		const columnWrapper = "flex flex-col space-y-1 justify-center items-center cursor-pointer primary-tag-transparent-01";
+
+		const redColumnWrapper = "flex flex-col space-y-1 justify-center items-center cursor-pointer font-normal red-tag-transparent-01";
+
+		const dueOnTimeLeft =
+			dayjs(selectedProject.due_on).format("DD-MM-YYYY") == dayjs().format("DD-MM-YYYY") ? "Today" : dayjs(selectedProject.due_on).fromNow();
+
+		const quote = Number(selectedProject.quote);
+		const teamsNames = MyGlobal.GetAnyDataFromId(selectedProject.teams, "full_name");
+		const affiliateInitials = MyGlobal.GetAffiliatesInitials(selectedProject.affiliate_ids, apiData.allAffiliates);
+
+		const affiliatesNames = selectedProject.affiliate_ids
+			? selectedProject.affiliate_ids.split(",").map((id) => {
+					const affiliate = apiData.allAffiliates.filter((aff) => aff.id == id);
+
+					if (affiliate.length) {
+						const parsedDetails = JSON.parse(affiliate.at(0).details);
+
+						const paidFees = Number(parsedDetails.at(0).paid_fees);
+						const totalFees = Number(parsedDetails.at(0).total_fees);
+						const pendingFees = totalFees - paidFees;
+
+						return `${affiliate.at(0).name}\nPaid ${paidFees} | Pending ${pendingFees} | Total ${totalFees}`;
+					} else {
+						return "";
+					}
+			  })
+			: "";
+
+		return (
+			<div className="flex w-full justify-between items-center">
+				<div className="flex w-4/5 space-x-2.5 justify-start items-center">
+					<div className="flex flex-col w-fit -space-y-2 justify-center items-start">
+						<span className="font-medium-10 primary-text">{getCompanyName()}</span>
+						<Tippy allowHTML content={uiClientInformationTooltip()} disabled={!isSourceSingleClient} interactive>
+							<span className="view-heading">{getSubProjectName()}</span>
+						</Tippy>
+					</div>
+					<div className={redColumnWrapper}>
+						<span className={wrapperSansAesthetics}>
+							<FontAwesomeIcon className="w-4 red-text" icon={faCalendarXmark} />
+							<span>{dayjs(selectedProject.due_on).format("DD MMM, YYYY")}</span>
+						</span>
+						<span className={wrapperSansAesthetics}>
+							<FontAwesomeIcon className="w-4 red-text" icon={faStopwatch} />
+							<span>{dueOnTimeLeft}</span>
+						</span>
+					</div>
+					<div className={columnWrapper}>
+						<span className={wrapperSansAesthetics}>
+							<FontAwesomeIcon className="w-4 primary-text" icon={faBriefcase} />
+							<span>{getCompanyName()}</span>
+						</span>
+						<Tippy allowHTML className="w-full" content={uiFeesBifurcationTooltip()} disabled={!isSourceSingleClient}>
+							<span className={wrapperSansAesthetics}>
+								<FontAwesomeIcon className="w-4 primary-text" icon={faIndianRupeeSign} />
+								<span>{MyGlobal.ThousandSeparator(quote)}</span>
+							</span>
+						</Tippy>
+					</div>
+					<div className={columnWrapper}>
+						<span className={wrapperSansAesthetics}>
+							<FontAwesomeIcon className="w-4 primary-text" icon={faFile} />
+							<span>{getMainProjectName()}</span>
+						</span>
+						<span className={wrapperSansAesthetics}>
+							<FontAwesomeIcon className="w-4 primary-text" icon={faCopy} />
+							<span>{getSubProjectName()}</span>
+						</span>
+					</div>
+					<div className={columnWrapper}>
+						<Tippy allowHTML content={<TooltipList payload={affiliatesNames} />} disabled={!affiliatesNames} placement="top">
+							<span className={wrapperSansAesthetics}>
+								<FontAwesomeIcon className="w-4 primary-text" icon={faBriefcase} />
+								<span>{affiliateInitials || "No affiliates mapped"}</span>
+							</span>
+						</Tippy>
+						<Tippy allowHTML content={<TooltipList payload={teamsNames} />} placement="bottom">
+							<span className={wrapperSansAesthetics}>
+								<FontAwesomeIcon className="w-4 primary-text" icon={faUserGroup} />
+								<span>{MyGlobal.GetMultipleInitials(teamsNames)}</span>
+							</span>
+						</Tippy>
+					</div>
+					{!selectedProject.government_id && uiMissingGovernmentId()}
+				</div>
+				<div className="flex w-1/5 justify-end items-center">{uiHamburgerMenu()}</div>
+			</div>
+		);
 	};
 
 	// Hooks
@@ -376,12 +381,25 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 			<div className="flex flex-col w-full px-5 py-2.5 space-y-3 justify-between items-center relative">
 				<div className="flex w-full space-x-3 justify-start items-center">
 					<FontAwesomeIcon className="cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount(false)} />
-					{uiClientInformation()}
+					{uiProjectInformationBlock()}
 				</div>
 			</div>
 			<div className="flex flex-col w-full h-full justify-start items-center transition bottom-border">
 				<Tasks reloadProjects={{}} selectedClient={selectedClient} selectedProject={selectedProject} source={source} />
 			</div>
+
+			{hasMounted.governmentId && (
+				<ManageGovernmentId
+					mount={hasMounted.governmentId}
+					reloadProjects={reloadProjects}
+					selectedProject={selectedProject}
+					unmount={toggleGovernmentIdBox}
+				/>
+			)}
+
+			{hasMounted.updateQuote && (
+				<UpdateQuote mount={hasMounted.updateQuote} reloadProjects={reloadProjects} selectedProject={selectedProject} unmount={toggleUpdateQuoteBox} />
+			)}
 		</>
 	);
 }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 21, 2024 at 08:27 PM
+-- Generation Time: Dec 22, 2024 at 07:45 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -104,6 +104,7 @@ DELIMITER ;
 CREATE TABLE `activities` (
   `id` int(11) NOT NULL,
   `user_id` varchar(8) NOT NULL,
+  `module` varchar(100) DEFAULT NULL,
   `activity` varchar(255) NOT NULL,
   `ip_address` varchar(45) NOT NULL,
   `user_agent` text NOT NULL,
@@ -116,55 +117,40 @@ CREATE TABLE `activities` (
 -- Dumping data for table `activities`
 --
 
-INSERT INTO `activities` (`id`, `user_id`, `activity`, `ip_address`, `user_agent`, `created_at`, `session_token`, `details`) VALUES
-(1, 'A3', 'Added new inquiry IQ000001.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-15 15:28:07', '', ''),
-(2, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-15 23:32:18', '', ''),
-(3, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 19:05:52', 'ozL/w8dlz6aBNwTzaig7mJQJAPYIAnOZ8/zIIHgrzFn01Q3ZDsxuQHsbzzIXHiaS2M5Utj4ce3VgrrCdnjm8ZA==', ''),
-(4, 'A3', 'Inquiries :: Changed status of IQ000001 from Hold to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:07', '', ''),
-(5, 'A3', 'Inquiries :: Changed status of IQ000001 from Open to Closed.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:12', '', ''),
-(6, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:18', '', ''),
-(7, 'A3', 'Inquiries :: Changed status of IQ000001 from Hold to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:22', '', ''),
-(8, 'A3', 'Inquiries :: Changed status of IQ000001 from Open to Closed.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:26', '', ''),
-(9, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:02:10', '', ''),
-(10, 'A3', 'Inquiries :: Changed status of IQ000001 from Open to Closed.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:31:16', '', ''),
-(11, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:34:05', '', ''),
-(12, 'A3', 'Inquiries :: Closed inquiry (IQ000001) due to Hello..', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:38:33', '', ''),
-(13, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:39:06', '', ''),
-(14, 'A3', 'Inquiries :: Changed status of IQ000001 from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:39:10', '', ''),
-(15, 'A3', 'Inquiries :: Closed inquiry (IQ000001) due to Bye..', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:39:18', '', ''),
-(16, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:04', '', ''),
-(17, 'A3', 'Inquiries :: Changed status of IQ000001 from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:38', '', ''),
-(18, 'A3', 'Inquiries :: Closed inquiry (IQ000001) due to Yes.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:49', '', ''),
-(19, 'A3', 'Inquiries :: Changed status of IQ000001 from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:57', '', ''),
-(20, 'A3', 'Notes :: Added a note for inquiry IQ000001.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:52:47', '', ''),
-(21, 'A3', 'Notes :: Added a note for inquiry (IQ000001).', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:54:45', '', ''),
-(22, 'A3', 'Inquiries :: Edited inquiry (IQ000001).', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 23:26:19', '', ''),
-(23, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:35:57', '', ''),
-(24, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Hold to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:36:01', '', ''),
-(25, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:36:49', '', ''),
-(26, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Hold to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:36:51', '', ''),
-(27, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:37:01', '', ''),
-(28, 'A3', 'Inquiries :: Closed inquiry (IQ000001) due to Hello..', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:38:43', '', ''),
-(29, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:38:49', '', ''),
-(30, 'A3', 'Inquiries :: Changed status of inquiry (IQ000001) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:38:53', '', ''),
-(31, 'A3', 'Inquiries :: Added new project (PJ000001).', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 23:48:42', '', ''),
-(32, 'A3', 'Added new inquiry IQ000002.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 00:05:19', '', ''),
-(33, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 00:12:39', '', ''),
-(34, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:39:44', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
-(35, 'A3', 'Inquiries :: Closed inquiry (IQ000002) due to Hello..', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:47:52', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
-(36, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:49:15', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
-(37, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:50:06', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
-(38, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Hold to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:50:10', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
-(39, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:50:27', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
-(40, 'A3', 'Inquiries :: Closed inquiry (IQ000002) due to Bye.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:55:03', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
-(41, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Closed to Open.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:55:08', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
-(42, 'A3', 'Inquiries :: Changed status of inquiry (IQ000002) from Open to Hold.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 19:55:14', 'Dkm2jY9u7kZ/177jvniI7omUGvFSGAoOBodba/sL0rQjh+ZtAUg/L9nfaO0J6KrlzBYAmqq+cIZ+Ka1GXicxyQ==', ''),
-(43, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 20:34:14', '', ''),
-(44, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 22:35:21', 'jXuEufuJPjPediJAb2V0+7BLcfq+OzSyBBVXlIZBZch3Y1Q6SPAOd5AEXJC8sN235HbdfYaWoEab5c2SnkbfyQ==', ''),
-(45, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-18 23:45:53', '', ''),
-(46, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-19 20:03:19', 'FYU1XR80ciO5fwKh7a8CtoaqbVuIoWKkzmVHLWdpR//k8NybGr2CGGwiN2x7wgAVoQ5xeR1FVxF1M9KK6DG76g==', ''),
-(47, 'A3', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-20 00:26:47', '', ''),
-(48, '', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 00:37:08', '8BevZ5J0xZc92NUCaaVwVaptdOTbtY3zKEmQnt8BSzOyGw3l2KcUruEIqayTgHyT0QosnlimuqBpCdAMeT84Aw==', '');
+INSERT INTO `activities` (`id`, `user_id`, `module`, `activity`, `ip_address`, `user_agent`, `created_at`, `session_token`, `details`) VALUES
+(1, 'A3', 'Inquiries', 'Added <b>IQ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-15 15:28:07', '', ''),
+(2, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-15 23:32:18', '', ''),
+(3, 'A3', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 19:05:52', 'ozL/w8dlz6aBNwTzaig7mJQJAPYIAnOZ8/zIIHgrzFn01Q3ZDsxuQHsbzzIXHiaS2M5Utj4ce3VgrrCdnjm8ZA==', ''),
+(4, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Hold</b> to <b>Open</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:07', '', ''),
+(5, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Open</b> to Closed.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:12', '', ''),
+(6, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Closed</b> to <b>Hold</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:18', '', ''),
+(7, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Hold</b> to <b>Open</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:22', '', ''),
+(8, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Open</b> to Closed.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:01:26', '', ''),
+(9, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Closed</b> to <b>Open</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:02:10', '', ''),
+(10, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Open</b> to <b>Closed</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:31:16', '', ''),
+(11, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Closed</b> to <b>Open</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:34:05', '', ''),
+(12, 'A3', 'Inquiries', 'Closed <b>IQ000001</b> due to <b>Hello..</b>', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:38:33', '', ''),
+(13, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Closed</b> to <b>Open</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:39:06', '', ''),
+(14, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Open</b> to <b>Hold</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:39:10', '', ''),
+(15, 'A3', 'Inquiries', 'Closed <b>IQ000001</b> due to <b>Bye..</b>', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:39:18', '', ''),
+(16, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Closed</b> to <b>Open</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:04', '', ''),
+(17, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Open</b> to <b>Hold</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:38', '', ''),
+(18, 'A3', 'Inquiries', 'Closed <b>IQ000001</b> due to <b>Yes</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:49', '', ''),
+(19, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Closed</b> to <b>Open</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:40:57', '', ''),
+(20, 'A3', 'Notes', 'Added in <b>IQ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:52:47', '', ''),
+(21, 'A3', 'Notes', 'Added in <b>IQ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 20:54:45', '', ''),
+(22, 'A3', 'Inquiries', 'Edited <b>IQ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-16 23:26:19', '', ''),
+(23, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Open</b> to <b>Hold</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:35:57', '', ''),
+(24, 'A3', 'Inquiries', 'Changed status of <b>IQ000001</b> from <b>Hold</b> to <b>Open</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-17 21:36:01', '', ''),
+(59, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 21:38:29', '3/b/wwfGeFOF7QyQOL3KrB98ZtfYHTIZQYjfFKFcCK+aX6Cvq9AWT2LftyfykgzKBAVjssECqoroG/dMeF9/MQ==', ''),
+(60, 'A3', 'Projects', 'Updated quote of <b>PJ000001</b> from <b>2500.00</b> to <b>5500</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 21:57:22', '', ''),
+(61, 'A3', 'Projects', 'Added government id <b>PJ1/22/12/2024</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 22:21:31', '', ''),
+(62, 'A3', 'Projects', 'Added government id <b>PJ1/22-12-2024</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 22:28:31', '', ''),
+(63, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 23:12:16', '', ''),
+(64, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 23:15:34', 'b7T1l1KUi03yqcLxbfEDMUlz0YyFV1YtLIqEUlhCUXIhVig9CacaChT2/MG6/lkGaTPwM15tno/p9ct2V3Gz9Q==', ''),
+(65, 'A3', 'Projects', 'Updated quote of <b>PJ000001</b> from <b>5500.00</b> to <b>5750</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 23:24:58', 'b7T1l1KUi03yqcLxbfEDMUlz0YyFV1YtLIqEUlhCUXIhVig9CacaChT2/MG6/lkGaTPwM15tno/p9ct2V3Gz9Q==', ''),
+(66, 'A3', 'Projects', 'Added government id <b>PJ1/22/12/2024</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 23:27:22', 'b7T1l1KUi03yqcLxbfEDMUlz0YyFV1YtLIqEUlhCUXIhVig9CacaChT2/MG6/lkGaTPwM15tno/p9ct2V3Gz9Q==', ''),
+(67, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-23 00:15:03', 'b7T1l1KUi03yqcLxbfEDMUlz0YyFV1YtLIqEUlhCUXIhVig9CacaChT2/MG6/lkGaTPwM15tno/p9ct2V3Gz9Q==', '');
 
 -- --------------------------------------------------------
 
@@ -643,16 +629,15 @@ CREATE TABLE `projects` (
   `is_edited` tinyint(1) DEFAULT 0,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `created_by` varchar(8) NOT NULL,
-  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp(),
-  `updated_by` varchar(8) DEFAULT NULL
+  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `projects`
 --
 
-INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `invoice_firm_id`, `government_id`, `main_project_id`, `sub_project_id`, `quote`, `due_on`, `total_affiliate_fees`, `reimbursement_voucher`, `invoice_fees`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
-('PJ000001', 'CN000001', 'CP000001', NULL, 'IQ000001', 'AC01', NULL, 'MP000004', 'SP000003', 2500.00, '2024-12-15 04:09:42', NULL, 1250.00, 575.00, 'A3,A2', '2024-12-17 23:48:41', 'Active', 0, 0, '2024-12-17 23:48:41', 'A3', NULL, NULL);
+INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `invoice_firm_id`, `government_id`, `main_project_id`, `sub_project_id`, `quote`, `due_on`, `total_affiliate_fees`, `reimbursement_voucher`, `invoice_fees`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `created_at`, `created_by`, `updated_at`) VALUES
+('PJ000001', 'CN000001', 'CP000001', NULL, 'IQ000001', 'AC01', 'PJ1/22/12/2024', 'MP000004', 'SP000003', 5750.00, '2024-12-15 04:09:42', NULL, 1250.00, 575.00, 'A3,A2', '2024-12-17 23:48:41', 'Active', 0, 0, '2024-12-17 23:48:41', 'A3', '2024-12-22 23:27:21');
 
 -- --------------------------------------------------------
 
@@ -938,7 +923,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
 -- AUTO_INCREMENT for table `customers`

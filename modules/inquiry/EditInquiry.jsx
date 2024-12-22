@@ -121,8 +121,8 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 			if (response.status === 200) {
 				reloadInquiries();
 
-				MyGlobal.AddActivity(`Inquiries :: Edited inquiry (${selectedInquiry.id}).`);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryEdited);
+				MyGlobal.AddActivity(`Edited <b>${selectedInquiry.id}</b>.`, MyConstants.Modules.Base.Inquiries);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryUpdated);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}

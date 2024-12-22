@@ -13,7 +13,7 @@ import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextAreaNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ChangeStatus } from "@/modals/single-project/miscellaneous";
+import { AddTask, UpdateStatus } from "@/modals/singleProject/miscellaneous";
 import { SpinnerBig, SpinnerSmall, Tooltip } from "@/components/Elements";
 import {
 	faBan,
@@ -36,7 +36,8 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 	});
 
 	const [hasMounted, setHasMounted] = useState({
-		changeStatus: false,
+		addTask: false,
+		updateStatus: false,
 		markTaskCompleted: false,
 	});
 
@@ -63,21 +64,18 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 	const allowMarkingTaskCompleted = MyGlobal.HasPermission(MyConstants.Modules.Derived.MarkTaskCompleted);
 
 	// Functions
-	const addNewTask = () => {
+	const addNewTask = (task) => {
 		if (allowNewTask) {
 			const copy = [...apiData.tasks.api];
 
-			const today = new Date();
-			const sevenDaysFromToday = today.setDate(today.getDate() + 7);
-
 			copy.unshift({
-				due_on: sevenDaysFromToday,
-				expense: 0.0,
+				due_on: task.due_on,
+				expense: task.expense,
 				input_by: userId,
 				is_disabled: false,
 				is_new: true,
-				note: "",
-				task: "",
+				remark: task.remark,
+				content: task.content,
 			});
 
 			setApiData((old) => ({ ...old, tasks: { ...old.tasks, api: copy } }));
@@ -104,7 +102,8 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 				if (response.status === 200) {
 					getTasks();
 
-					MyGlobal.AddActivity(`Tasks :: Added a task (${response.data}) for ${selectedProject.id}.`);
+					MyGlobal.AddActivity(`Added <b>${response.data}</b> in <b>${selectedProject.id}</b>.`, MyConstants.Modules.Base.Tasks);
+
 					MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskAdded);
 				} else {
 					MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
@@ -260,8 +259,8 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 
 		const body = {
 			completedOn: dayjs().format("YYYY-MM-DD"),
-			id: taskId,
 			projectId: selectedProject.id,
+			taskId,
 			type: "mark-task-as-completed",
 		};
 
@@ -271,7 +270,8 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 			if (response.status === 200) {
 				getTasks();
 
-				MyGlobal.AddActivity(`Tasks :: Updated task (${taskId}) of (${selectedProject.id}).`);
+				MyGlobal.AddActivity(`Updated <b>${taskId}</b> of <b>${selectedProject.id}</b>.`, MyConstants.Modules.Base.Tasks);
+
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskUpdated);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
@@ -345,14 +345,18 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		}
 	};
 
-	const toggleChangeStatusBox = (task) => {
-		setMainData((old) => ({ ...old, selectedTask: task ?? {} }));
-		setHasMounted((old) => ({ ...old, changeStatus: task ? true : false }));
+	const toggleAddTaskBox = () => {
+		setHasMounted((old) => ({ ...old, addTask: !hasMounted.addTask }));
 	};
 
 	const toggleMarkTaskAsCompletedBox = (task) => {
 		setMainData((old) => ({ ...old, selectedTask: task ?? {} }));
 		setHasMounted((old) => ({ ...old, markTaskCompleted: task ? true : false }));
+	};
+
+	const toggleUpdateStatusBox = (task) => {
+		setMainData((old) => ({ ...old, selectedTask: task ?? {} }));
+		setHasMounted((old) => ({ ...old, updateStatus: task ? true : false }));
 	};
 
 	// UI Components
@@ -366,7 +370,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		} else if (task.is_new) {
 			return <FontAwesomeIcon className={iconClass} icon={faSave} onClick={() => addTask(task)} size="lg" />;
 		} else {
-			return <FontAwesomeIcon className={iconClass} icon={faRotate} onClick={() => allowUpdatingTask && toggleChangeStatusBox(task)} size="lg" />;
+			return <FontAwesomeIcon className={iconClass} icon={faRotate} onClick={() => allowUpdatingTask && toggleUpdateStatusBox(task)} size="lg" />;
 		}
 	};
 
@@ -384,7 +388,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 				<FontAwesomeIcon
 					className={disabledIconClass}
 					icon={disabledIcon}
-					onClick={() => allowDisablingTask && toggleChangeStatusBox(task)}
+					onClick={() => allowDisablingTask && toggleUpdateStatusBox(task)}
 					size="lg"
 					title={title}
 				/>
@@ -419,7 +423,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 			return (
 				<div className="flex flex-col w-full h-full space-y-2.5 justify-center items-center black-white-background top-border font-regular-12 gray-text">
 					<span>No tasks alloted</span>
-					<button className="space-x-1.5 primary-button-transparent-background" onClick={() => addNewTask()}>
+					<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddTaskBox()}>
 						<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
 						<span>Add</span>
 					</button>
@@ -443,17 +447,15 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		const lastTaskId = apiData.tasks.api.length && apiData.tasks.api.sort((a, b) => b.id.localeCompare(a.id)).at(0).id;
 
 		// UI
-		const cells = "flex w-[14.28%] min-h-10 justify-center items-center text-center relative";
+		const style = "flex w-[14.28%] min-h-10 justify-center items-center text-center relative";
 		const horizontalSpacing = isCompleted ? "space-x-1.5" : "space-x-0";
 		const showCircledTick = isCompleted ? "block green-text" : "hidden";
 
 		const strikeThrough = isDisabled ? "line-through decoration-3 gray-text" : "black-text";
-		const background = isCompleted ? "light-gray-background pointer-events-none" : "pointer-events-auto";
+		const background = isCompleted ? "light-gray-background pointer-events-none" : "bg-transparent pointer-events-auto";
 		const inputClickEvent = isDisabled || isCompleted ? "pointer-events-none" : "pointer-events-auto";
 
-		const inputStyle = `inputs h-6 text-center outline-none rounded resize-none ${strikeThrough} ${inputClickEvent} ${background} bottom-shadow full-border`;
-
-		const wrapper = `flex w-full justify-center items-center black-text black-white-background bottom-border font-regular-10`;
+		const wrapper = `flex w-full justify-center items-center black-text black-white-background bottom-border font-regular-12`;
 
 		const tickIconClickEvent = isDisabled ? "opacity-25 pointer-events-none" : "opacity-100 pointer-events-auto";
 		const tickIconStyle = `text-lg cursor-pointer green-text ${tickIconClickEvent}`;
@@ -462,6 +464,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 
 		const disableIcon = isDisabled ? faBan : faPen;
 		const disableIconColour = isDisabled ? "primary-text" : "red-text";
+
 		const disabledTaskClickEvent =
 			task.input_by == userId ? `opacity-100 pointer-events-auto cursor-pointer ${disableIconColour}` : "opacity-25 pointer-events-none";
 
@@ -472,74 +475,28 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		const isNewTask = apiData.tasks.api.filter((_task) => _task.id == task.id && _task.project_id == selectedProject.id);
 		const tag = !isNewTask.length && <span className="green-tag text-xs">New</span>;
 
-		const taskTabIndex = Number(`${rowIndex}1`);
-		const dueOnTabIndex = Number(`${rowIndex}2`);
-		const remarksTabIndex = Number(`${rowIndex}3`);
-		const expenseTabIndex = Number(`${rowIndex}4`);
-
-		const formattedExpenses = isNewTask ? task.expense : MyGlobal.ThousandSeparator(task.expense);
-
 		return (
 			<div className={wrapper} key={rowIndex}>
-				<span className={`${cells} ${horizontalSpacing}`}>
+				<span className={`${style} ${horizontalSpacing}`}>
 					<FontAwesomeIcon className={showCircledTick} icon={faCheckCircle} size="lg" />
 					{isNewTask.length > 0 && <span>{task.id}</span>}
 					{tag}
 				</span>
 
-				<div className={`${cells} px-2.5`}>
-					<Tippy allowHTML content={<Tooltip text={task.task} />} disabled={!task.task}>
-						<span>
-							<TextAreaNative
-								className={inputStyle}
-								onChange={(event) => setTask(event, isDisabled, isNewTask, task)}
-								onKeyDown={() => {}}
-								rows={1}
-								tabIndex={taskTabIndex}
-								value={task.task}
-							/>
-						</span>
-					</Tippy>
-				</div>
+				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(task.content, mainData.searchTerm) }} />
 
-				<span className={`${cells} px-2.5`}>
-					<ReactDatePicker
-						className={inputStyle}
-						dateFormat="dd-MM-YYYY"
-						onChange={(event) => setDueDate(event, isDisabled, isNewTask, task)}
-						selected={task.due_on}
-						tabIndex={dueOnTabIndex}
-					/>
-				</span>
+				<span
+					className={style}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(dayjs(task.due_on).format("DD/MM/YYYY"), mainData.searchTerm) }}
+				/>
 
-				<span className={cells} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(insertedBy, mainData.searchTerm) }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(insertedBy, mainData.searchTerm) }} />
 
-				<div className={`${cells} px-2.5`}>
-					<Tippy allowHTML content={<Tooltip text={task.note} />}>
-						<TextAreaNative
-							className={inputStyle}
-							onChange={(event) => setRemark(event, isDisabled, isNewTask, task)}
-							onKeyDown={(event) => event.key == "Enter" && addNewTask()}
-							rows={1}
-							tabIndex={remarksTabIndex}
-							value={task.note}
-						/>
-					</Tippy>
-				</div>
+				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(task.remark, mainData.searchTerm) }} />
 
-				<span className={`${cells} px-2.5`}>
-					<input
-						className={inputStyle}
-						onChange={(event) => setExpense(event, isDisabled, isNewTask, task)}
-						onKeyDown={() => {}}
-						placeholder="0.00"
-						tabIndex={expenseTabIndex}
-						type="text"
-						value={formattedExpenses}
-					/>
-				</span>
+				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(task.expense, mainData.searchTerm) }} />
 
-				<span className={`${cells} space-x-5`}>
+				<span className={`${style} space-x-5`}>
 					{!task.is_new && <FontAwesomeIcon className={addTaskIconStyle} icon={faPlus} onClick={() => addNewTask()} size="lg" />}
 
 					{!isCompleted && uiAddOrUpdateTask(tickIconStyle, task)}
@@ -580,8 +537,10 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		<>
 			{uiMain()}
 
-			{hasMounted.changeStatus && (
-				<ChangeStatus mount={hasMounted.changeStatus} reloadTasks={getTasks} selectedTask={mainData.selectedTask} unmount={toggleChangeStatusBox} />
+			{hasMounted.addTask && <AddTask addTask={addNewTask} mount={hasMounted.addTask} unmount={toggleAddTaskBox} />}
+
+			{hasMounted.updateStatus && (
+				<UpdateStatus mount={hasMounted.updateStatus} reloadTasks={getTasks} selectedTask={mainData.selectedTask} unmount={toggleUpdateStatusBox} />
 			)}
 		</>
 	);

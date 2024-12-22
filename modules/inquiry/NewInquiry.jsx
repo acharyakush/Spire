@@ -80,7 +80,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			if (response.status === 200) {
 				reloadInquiries();
 
-				MyGlobal.AddActivity(`Added new inquiry ${response.data}.`);
+				MyGlobal.AddActivity(`Added <b>${response.data}</b>.`, MyConstants.Modules.Base.Inquiries);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryAdded);
 
 				unmount();

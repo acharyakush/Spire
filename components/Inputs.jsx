@@ -5,7 +5,7 @@
 import Tippy from "@tippyjs/react";
 import ReactDatePicker from "react-datepicker";
 
-import { MyGlobal } from "@/utilities/global";
+import { applicationName, MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown, faCheck, faEnvelope, faLock, faMultiply } from "@fortawesome/free-solid-svg-icons";
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
@@ -39,11 +39,11 @@ export const ComboBox = ({
 	const uiBox = () => {
 		return (
 			<div className={wrapper}>
-				<span className="font-regular-10 light-slate-gray-text">{label}</span>
+				<span className="font-regular-11 light-slate-gray-text">{label}</span>
 				<div className="flex w-full justify-start items-center">
 					<Combobox onChange={onChange} onKeyPress={onKeyPress} value={value}>
 						<div className="relative w-full">
-							<div className="flex w-full h-[34px] px-2.5 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow light-gray-background full-border">
+							<div className="flex w-full h-9 px-3 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow light-gray-background full-border">
 								<FontAwesomeIcon className="primary-text" icon={icon} />
 								<ComboboxInput
 									autoComplete="off"
@@ -133,11 +133,11 @@ export const ComboBox2 = ({
 	const uiBox = () => {
 		return (
 			<div className={wrapper}>
-				<span className="font-regular-10 light-slate-gray-text">{label}</span>
+				<span className="font-regular-11 light-slate-gray-text">{label}</span>
 				<div className="flex w-full justify-start items-center">
 					<Combobox onChange={onChange} onKeyPress={onKeyPress} value={value}>
 						<div className={inputWrapper}>
-							<div className="flex w-full h-[34px] px-2.5 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow light-gray-background full-border">
+							<div className="flex w-full h-9 px-3 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow light-gray-background full-border">
 								<FontAwesomeIcon className="primary-text" icon={icon} />
 								<ComboboxInput
 									autoComplete="off"
@@ -209,8 +209,8 @@ export const ComboBoxWithChips = ({
 	const uiBox = () => {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-1 relative" onBlur={onBlur}>
-				<span className="font-regular-10 light-slate-gray-text">{label}</span>
-				<div className="flex w-full h-full px-2.5 space-x-1 justify-center items-center rounded bottom-shadow light-gray-background full-border">
+				<span className="font-regular-11 light-slate-gray-text">{label}</span>
+				<div className="flex w-full h-full px-3 space-x-1 justify-center items-center rounded bottom-shadow light-gray-background full-border">
 					<FontAwesomeIcon className="primary-text" icon={icon} />
 					<div className="flex w-full h-[34px] pl-2.5 justify-between items-center relative">
 						<div className="flex w-full space-x-1 justify-start items-center font-medium-11 black-text">{uiSelectedItems()}</div>
@@ -266,7 +266,7 @@ export const ComboBoxWithChips = ({
 	const uiTooltipUi = () => {
 		return selectedItems?.map((m, n) => {
 			return (
-				<div className="font-regular-10 text-white">
+				<div className="font-regular-11 text-white">
 					{++n}. {m?.[displayKey]}
 				</div>
 			);
@@ -281,12 +281,12 @@ export const DatePicker = ({ icon, label, onChange, tabIndex, value, width }) =>
 
 	return (
 		<div className={mainWrapper}>
-			<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">{label}</span>
-			<div className="flex w-full h-[34px] px-2 space-x-2 justify-start items-center rounded bottom-shadow light-gray-background full-border">
+			<span className="flex w-full justify-start items-center font-regular-11 light-slate-gray-text">{label}</span>
+			<div className="flex w-full h-9 px-3 space-x-2 justify-start items-center rounded bottom-shadow light-gray-background full-border">
 				<FontAwesomeIcon className="primary-text" icon={icon} />
 				<ReactDatePicker
 					autoFocus={false}
-					className="bg-transparent w-full outline-none relative font-medium-11 black-text"
+					className="bg-transparent w-full outline-none relative font-regular-12 black-text"
 					dateFormat="dd-MM-YYYY"
 					dropdownMode="select"
 					onChange={onChange}
@@ -302,23 +302,24 @@ export const DatePicker = ({ icon, label, onChange, tabIndex, value, width }) =>
 };
 
 export const EmailAddress = ({ isReadOnly = false, label = "Email Address", onChange, reference = null, suffix, tabIndex, value, width }) => {
-	const colour = "font-regular-11 primary-text";
+	const emailAddressSuffix = `@${applicationName.toLowerCase()}.com`;
+
 	const aesthetics = isReadOnly ? "cursor-not-allowed opacity-50" : "cursor-default opacity-100";
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center ${aesthetics}`;
-	const horizontalPadding = suffix ? "pl-2" : "px-2.5";
+	const horizontalPadding = suffix ? "pl-2" : "px-3";
 	const pointerEvents = isReadOnly ? "pointer-events-none" : "pointer-events-auto";
 
-	const inputWrapper = `flex w-full h-[34px] ${horizontalPadding} space-x-1 justify-start items-center rounded bottom-shadow light-gray-background ${pointerEvents} full-border`;
+	const inputWrapper = `flex w-full h-9 ${horizontalPadding} space-x-1 justify-start items-center rounded bottom-shadow light-gray-background ${pointerEvents} full-border`;
 
 	return (
 		<div className={wrapper}>
-			<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">{label}</span>
+			<span className="flex w-full justify-start items-center font-regular-11 light-slate-gray-text">{label}</span>
 			<div className={inputWrapper}>
-				<FontAwesomeIcon className={colour} icon={faEnvelope} />
+				<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
 				<input autoComplete="off" className="inputs" onChange={onChange} readOnly={isReadOnly} ref={reference} tabIndex={tabIndex} value={value} />
 				{suffix && (
-					<span className="flex h-[34px] px-1 justify-center items-center full-border no-right-border font-regular-8 light-gray-background black-text">
-						@spire.com
+					<span className="flex h-9 px-1 justify-center items-center full-border no-right-border font-regular-8 light-gray-background black-text">
+						{emailAddressSuffix}
 					</span>
 				)}
 			</div>
@@ -326,16 +327,15 @@ export const EmailAddress = ({ isReadOnly = false, label = "Email Address", onCh
 	);
 };
 
-export const Password = ({ eyeIconStyle, eyeIconUi, isNew, onChange, reference, toggleCharacters, tabIndex, type, value, width }) => {
+export const Password = ({ eyeIconStyle, eyeIconUi, onChange, reference, toggleCharacters, tabIndex, type, value, width }) => {
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center`;
-	const colour = `font-regular-10 ${isNew ? "green-text" : "primary-text"}`;
 
 	return (
 		<div className={wrapper}>
-			<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">Password</span>
-			<div className="flex w-full h-[34px] px-2.5 justify-between items-center rounded bottom-shadow light-gray-background full-border">
-				<div className="flex w-full space-x-1 justify-start items-center">
-					<FontAwesomeIcon className={colour} icon={faLock} />
+			<span className="flex w-full justify-start items-center font-regular-11 light-slate-gray-text">Password</span>
+			<div className="flex w-full h-9 px-3 justify-between items-center rounded bottom-shadow light-gray-background full-border">
+				<div className="flex w-full space-x-2 justify-start items-center">
+					<FontAwesomeIcon className="primary-text" icon={faLock} />
 					<input autoComplete="off" className="inputs" onChange={onChange} ref={reference} tabIndex={tabIndex} type={type} value={value} />
 				</div>
 				<span className={eyeIconStyle} onClick={toggleCharacters}>
@@ -352,11 +352,11 @@ export const TextInput = ({ disable = false, icon, id, isReadOnly = false, label
 	const cursor = isReadOnly ? "cursor-not-allowed" : "cursor-default";
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center ${cursor}`;
 
-	const inputWrapper = `flex w-full h-[34px] px-2 space-x-1 justify-start items-center ${clickEvent} rounded bottom-shadow full-border light-gray-background`;
+	const inputWrapper = `flex w-full h-9 px-3 space-x-1 justify-start items-center ${clickEvent} rounded bottom-shadow full-border light-gray-background`;
 
 	return (
 		<div className={wrapper}>
-			<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">{label}</span>
+			<span className="flex w-full justify-start items-center font-regular-11 light-slate-gray-text">{label}</span>
 			<div className={inputWrapper}>
 				<FontAwesomeIcon className="primary-text" icon={icon} />
 				<input
@@ -377,7 +377,7 @@ export const TextInput = ({ disable = false, icon, id, isReadOnly = false, label
 };
 
 export const TextInputNative = ({ id, icon, onChange, onClearButtonClick, placeholder, showClearButton, tabIndex, value, width }) => {
-	const wrapper = `flex ${width} h-7 px-2.5 justify-start items-center rounded bottom-shadow black-white-background`;
+	const wrapper = `flex ${width} h-9 px-3 justify-start items-center rounded bottom-shadow black-white-background`;
 
 	return (
 		<div className={wrapper}>
@@ -393,18 +393,18 @@ export const TextInputNative = ({ id, icon, onChange, onClearButtonClick, placeh
 				type="text"
 				value={value}
 			/>
-			<FontAwesomeIcon className={showClearButton} onClick={onClearButtonClick} icon={faMultiply} />
+			<FontAwesomeIcon className={showClearButton} icon={faMultiply} onClick={onClearButtonClick} />
 		</div>
 	);
 };
 
 export const TextArea = ({ icon, isReadOnly = false, label, onChange, onKeyDown, rows, tabIndex, value, width }) => {
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center`;
-	const inputWrapper = `flex w-full h-full p-2 space-x-1 justify-start items-start rounded bottom-shadow light-gray-background full-border`;
+	const inputWrapper = `flex w-full h-full px-3 py-2 space-x-1 justify-start items-start rounded bottom-shadow light-gray-background full-border`;
 
 	return (
 		<div className={wrapper}>
-			<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">{label}</span>
+			<span className="flex w-full justify-start items-center font-regular-11 light-slate-gray-text">{label}</span>
 			<div className={inputWrapper}>
 				<FontAwesomeIcon className="primary-text" icon={icon} />
 				<textarea

@@ -336,7 +336,7 @@ export default function Home() {
 				return (
 					<MenuItem
 						as="div"
-						className="p-3 space-x-3 cursor-pointer border-y font-regular-11 black-text hovered-rows"
+						className="p-3 space-x-3 cursor-pointer border-y font-regular-12 black-text hovered-rows"
 						key={index}
 						onClick={() => getUserMenuClickAction(item)}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons(item)} />
@@ -354,10 +354,10 @@ export default function Home() {
 				</MenuButton>
 				<MenuItems
 					anchor="bottom"
-					className="absolute w-max mt-2 rounded bottom-shadow focus:outline-none black-white-background full-border black-text">
-					<div className="flex flex-col p-2 font-medium-13">
+					className="absolute w-max mt-2 rounded focus:outline-none bottom-shadow black-white-background full-border black-text">
+					<div className="flex flex-col p-2 font-medium-14">
 						<span>{mainData.loggedInUser.full_name || ""}</span>
-						<span className="font-regular-11 gray-text">{mainData.loggedInUser.designation || ""}</span>
+						<span className="font-regular-10 gray-text">{mainData.loggedInUser.designation || ""}</span>
 					</div>
 					{uiUserMenuList()}
 				</MenuItems>
