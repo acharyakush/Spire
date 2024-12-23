@@ -12,8 +12,8 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { SpinnerSmall, TooltipList } from "@/components/Elements";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { SpinnerBig, SpinnerSmall, TooltipList } from "@/components/Elements";
 import { UpdateQuote, ManageGovernmentId } from "@/modals/singleProject/miscellaneous";
 import {
 	faBars,
@@ -61,9 +61,11 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 	});
 
 	const [mainData, setMainData] = useState({
-		isLoading: {},
+		isLoading: false,
 		searchTerm: "",
 	});
+
+	const blankDataWrapper = "flex w-full h-full justify-center items-center black-white-background full-border";
 
 	// Functions
 	const getCompanyName = () => {
@@ -91,7 +93,7 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 	};
 
 	const getSupportData = async () => {
-		setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, supportData: true } }));
+		setMainData((old) => ({ ...old, isLoading: true }));
 
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.SingleProject.GetSupportData, MyGlobal.GetHeaders());
@@ -113,7 +115,7 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Single Project => Get Support Data");
 		} finally {
-			setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, supportData: false } }));
+			setMainData((old) => ({ ...old, isLoading: false }));
 		}
 	};
 
@@ -376,30 +378,43 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 	}, []);
 
 	// Main UI
-	return (
-		<>
-			<div className="flex flex-col w-full px-5 py-2.5 space-y-3 justify-between items-center relative">
-				<div className="flex w-full space-x-3 justify-start items-center">
-					<FontAwesomeIcon className="cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount(false)} />
-					{uiProjectInformationBlock()}
+	if (mainData.isLoading) {
+		return (
+			<div className={blankDataWrapper}>
+				<SpinnerBig />
+			</div>
+		);
+	} else {
+		return (
+			<>
+				<div className="flex flex-col w-full px-5 py-2.5 space-y-3 justify-between items-center relative">
+					<div className="flex w-full space-x-3 justify-start items-center">
+						<FontAwesomeIcon className="cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount(false)} />
+						{uiProjectInformationBlock()}
+					</div>
 				</div>
-			</div>
-			<div className="flex flex-col w-full h-full justify-start items-center transition bottom-border">
-				<Tasks reloadProjects={{}} selectedClient={selectedClient} selectedProject={selectedProject} source={source} />
-			</div>
+				<div className="flex flex-col w-full h-full justify-start items-center transition bottom-border">
+					<Tasks reloadProjects={{}} selectedClient={selectedClient} selectedProject={selectedProject} source={source} />
+				</div>
 
-			{hasMounted.governmentId && (
-				<ManageGovernmentId
-					mount={hasMounted.governmentId}
-					reloadProjects={reloadProjects}
-					selectedProject={selectedProject}
-					unmount={toggleGovernmentIdBox}
-				/>
-			)}
+				{hasMounted.governmentId && (
+					<ManageGovernmentId
+						mount={hasMounted.governmentId}
+						reloadProjects={reloadProjects}
+						selectedProject={selectedProject}
+						unmount={toggleGovernmentIdBox}
+					/>
+				)}
 
-			{hasMounted.updateQuote && (
-				<UpdateQuote mount={hasMounted.updateQuote} reloadProjects={reloadProjects} selectedProject={selectedProject} unmount={toggleUpdateQuoteBox} />
-			)}
-		</>
-	);
+				{hasMounted.updateQuote && (
+					<UpdateQuote
+						mount={hasMounted.updateQuote}
+						reloadProjects={reloadProjects}
+						selectedProject={selectedProject}
+						unmount={toggleUpdateQuoteBox}
+					/>
+				)}
+			</>
+		);
+	}
 }

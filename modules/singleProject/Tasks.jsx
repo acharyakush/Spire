@@ -4,28 +4,25 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import Tippy from "@tippyjs/react";
 import writeXlsxFile from "write-excel-file";
-import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { TextAreaNative } from "@/components/Inputs";
+import { SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AddTask, UpdateStatus } from "@/modals/singleProject/miscellaneous";
-import { SpinnerBig, SpinnerSmall, Tooltip } from "@/components/Elements";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { AddTask, UpdateProjectStatus, UpdateTask } from "@/modals/singleProject/miscellaneous";
 import {
 	faBan,
-	faCheck,
 	faCheckCircle,
-	faPen,
-	faPlus,
+	faChevronDown,
+	faClipboardCheck,
 	faPlusCircle,
-	faRotate,
 	faSave,
 	faSortAmountAsc,
 	faSortAmountDesc,
+	faStar,
 	faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -37,17 +34,18 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 
 	const [hasMounted, setHasMounted] = useState({
 		addTask: false,
-		updateStatus: false,
 		markTaskCompleted: false,
+		updateStatus: false,
+		updateTask: false,
 	});
 
 	const [mainData, setMainData] = useState({
 		isLoading: {
 			addSingleTask: 0,
 			disableSingleTask: 0,
-			changeStatus: 0,
 			markTaskAsCompleted: 0,
 			tasks: false,
+			updateStatus: 0,
 		},
 		searchTerm: "",
 		selectedTask: {},
@@ -58,61 +56,30 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 	const tableHeaders = MyConstants.TableHeaders.Tasks;
 	const isSourceSingleClient = source === "Single Client => Single Project";
 
-	const allowNewTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewTask);
-	const allowUpdatingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.UpdateTask);
+	const allowEnablingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.EnableTask);
 	const allowDisablingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.DisableTask);
 	const allowMarkingTaskCompleted = MyGlobal.HasPermission(MyConstants.Modules.Derived.MarkTaskCompleted);
+	const allowNewTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewTask);
+	const allowUpdatingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.UpdateTask);
 
 	// Functions
-	const addNewTask = (task) => {
+	const addTask = (task) => {
 		if (allowNewTask) {
 			const copy = [...apiData.tasks.api];
 
 			copy.unshift({
-				due_on: task.due_on,
-				expense: task.expense,
-				input_by: userId,
-				is_disabled: false,
-				is_new: true,
-				remark: task.remark,
+				completed_on: new Date(),
 				content: task.content,
+				due_on: task.dueOn,
+				expense: task.expense,
+				id: task.id,
+				input_by: userId,
+				is_completed: 0,
+				is_disabled: 0,
+				remark: task.remark,
 			});
 
 			setApiData((old) => ({ ...old, tasks: { ...old.tasks, api: copy } }));
-		}
-	};
-
-	const addTask = async (task) => {
-		if (task.task && task.note) {
-			setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, addSingleTask: task.id } }));
-
-			const body = {
-				clientId: selectedClient.id,
-				dueOn: dayjs(task.due_on).format("YYYY-MM-DD"),
-				expense: task.expense,
-				note: MyGlobal.EscapeString(task.note),
-				projectId: selectedProject.id,
-				task: MyGlobal.EscapeString(task.task),
-				userId,
-			};
-
-			try {
-				const response = await axios.post(MyConstants.ApiEndpoints.Tasks.AddTask, body, MyGlobal.GetHeaders());
-
-				if (response.status === 200) {
-					getTasks();
-
-					MyGlobal.AddActivity(`Added <b>${response.data}</b> in <b>${selectedProject.id}</b>.`, MyConstants.Modules.Base.Tasks);
-
-					MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskAdded);
-				} else {
-					MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
-				}
-			} catch (error) {
-				MyGlobal.HandleErrors(error, "Add Task");
-			} finally {
-				setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, addSingleTask: 0 } }));
-			}
 		}
 	};
 
@@ -125,17 +92,17 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 
 	const doSorting = () => {
 		return apiData.tasks.api.sort((a, b) => {
-			const aDate = new Date(a.due_on);
-			const bDate = new Date(b.due_on);
+			const aDate = new Date(a.dueOn);
+			const bDate = new Date(b.dueOn);
 
 			if (mainData.sort.column == tableHeaders.Id && mainData.sort.isAscending) {
-				return a.id.localeCompare(b.id);
+				return a.id - b.id;
 			} else if (mainData.sort.column == tableHeaders.Id && !mainData.sort.isAscending) {
-				return b.id.localeCompare(a.id);
+				return b.id - a.id;
 			} else if (mainData.sort.column == tableHeaders.Task && mainData.sort.isAscending) {
-				return a.task.localeCompare(b.task);
+				return a.content.localeCompare(b.content);
 			} else if (mainData.sort.column == tableHeaders.Task && !mainData.sort.isAscending) {
-				return b.task.localeCompare(a.task);
+				return b.content.localeCompare(a.content);
 			} else if (mainData.sort.column == tableHeaders.DueOn && mainData.sort.isAscending) {
 				return aDate - bDate;
 			} else if (mainData.sort.column == tableHeaders.DueOn && !mainData.sort.isAscending) {
@@ -153,7 +120,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 			} else if (mainData.sort.column == tableHeaders.Expense && !mainData.sort.isAscending) {
 				return b.expense - a.expense;
 			} else {
-				return a.id.localeCompare(b.id);
+				return a.id - b.id;
 			}
 		});
 	};
@@ -283,66 +250,42 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		}
 	};
 
-	const setDueDate = (event, isDisabledTask, isNewTask, task) => {
-		const date = dayjs(event).format("YYYY-MM-DD");
+	const saveTask = async (task) => {
+		if (task.content && task.remark) {
+			setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, addSingleTask: task.id } }));
 
-		if (isNewTask.length) {
-			setMainData((old) => ({ ...old, selectedTask: { id: task.id, source: "due_on", value: date } }));
-		}
+			const body = {
+				clientId: selectedProject.client_id,
+				content: MyGlobal.EscapeString(task.content),
+				dueOn: dayjs(task.due_on).format("YYYY-MM-DD"),
+				expense: Number(task.expense),
+				projectId: selectedProject.id,
+				remark: MyGlobal.EscapeString(task.remark),
+				userId,
+			};
 
-		if (!isDisabledTask) {
-			setInput(task.id, date, "due_on");
-		}
-	};
+			try {
+				const response = await axios.post(MyConstants.ApiEndpoints.Tasks.AddTask, body, MyGlobal.GetHeaders());
 
-	const setExpense = (event, isDisabledTask, isNewTask, task) => {
-		const value = Number(event.target.value);
+				if (response.status === 200) {
+					getTasks();
 
-		if (MyGlobal.HasNumbers(value)) {
-			if (isNewTask.length) {
-				setMainData((old) => ({ ...old, selectedTask: { id: task.id, source: "expense", value: value } }));
+					MyGlobal.AddActivity(`Added <b>${response.data}</b> in <b>${selectedProject.id}</b>.`, MyConstants.Modules.Base.Tasks);
+
+					MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskAdded);
+				} else {
+					MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				}
+			} catch (error) {
+				MyGlobal.HandleErrors(error, "Add Task");
+			} finally {
+				setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, addSingleTask: 0 } }));
 			}
-
-			if (!isDisabledTask) {
-				setInput(task.id, value, "expense");
-			}
-		}
-	};
-
-	const setInput = (id, input, source) => {
-		const copy = [...apiData.tasks.api];
-
-		const obj = copy.filter((task) => task.id == id).at(0);
-		obj[source] = input;
-
-		const revisedTasks = copy.filter((task) => task.id != id);
-		revisedTasks.push(obj);
-
-		setApiData((old) => ({ ...old, tasks: { ...old.tasks, api: revisedTasks } }));
-	};
-
-	const setRemark = (event, isDisabledTask, isNewTask, task) => {
-		if (isNewTask.length) {
-			setMainData((old) => ({ ...old, selectedTask: { id: task.id, source: "remark", value: event.target.value } }));
-		}
-
-		if (!isDisabledTask) {
-			setInput(task.id, event.target.value, "remark");
 		}
 	};
 
 	const setSort = (column) => {
 		setMainData((old) => ({ ...old, sort: { column, isAscending: !mainData.sort.isAscending } }));
-	};
-
-	const setTask = (event, isDisabledTask, isNewTask, task) => {
-		if (isNewTask.length) {
-			setMainData((old) => ({ ...old, selectedTask: { id: task.id, source: "task", value: event.target.value } }));
-		}
-
-		if (!isDisabledTask) {
-			setInput(task.id, event.target.value, "task");
-		}
 	};
 
 	const toggleAddTaskBox = () => {
@@ -359,41 +302,92 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		setHasMounted((old) => ({ ...old, updateStatus: task ? true : false }));
 	};
 
-	// UI Components
-	const uiAddOrUpdateTask = (iconClass, task) => {
-		if (mainData.isLoading.addSingleTask == task.id) {
-			return (
-				<div className="w-4 h-4 relative">
-					<SpinnerSmall />
-				</div>
-			);
-		} else if (task.is_new) {
-			return <FontAwesomeIcon className={iconClass} icon={faSave} onClick={() => addTask(task)} size="lg" />;
-		} else {
-			return <FontAwesomeIcon className={iconClass} icon={faRotate} onClick={() => allowUpdatingTask && toggleUpdateStatusBox(task)} size="lg" />;
-		}
+	const toggleUpdateTaskBox = (task) => {
+		setMainData((old) => ({ ...old, selectedTask: task ?? {} }));
+		setHasMounted((old) => ({ ...old, updateTask: task ? true : false }));
 	};
 
-	const uiDeleteOrDisableTask = (disabledIcon, disabledIconClass, task, title) => {
-		if (mainData.isLoading.disableSingleTask == task.id) {
-			return (
-				<div className="w-4 h-4 relative">
-					<SpinnerSmall />
-				</div>
-			);
-		} else if (task.is_new) {
-			return <FontAwesomeIcon className="cursor-pointer text-base red-text" icon={faTrash} onClick={() => deleteTask(task)} size="lg" />;
-		} else {
-			return (
-				<FontAwesomeIcon
-					className={disabledIconClass}
-					icon={disabledIcon}
-					onClick={() => allowDisablingTask && toggleUpdateStatusBox(task)}
-					size="lg"
-					title={title}
-				/>
-			);
-		}
+	// UI Components
+	const uiActionsMenu = (task) => {
+		const style = "flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y hovered-rows";
+
+		const isUnsavedTask = task.id == "TK000000";
+
+		const addTaskStyle = `${style} ${isUnsavedTask ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
+
+		const saveTaskStyle = `${style} ${!isUnsavedTask ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
+
+		const updateTaskStyle = `${style} ${isUnsavedTask ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
+
+		const deleteTaskStyle = `${style} ${!isUnsavedTask ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
+
+		const isTaskDisabled = isUnsavedTask && task.is_disabled == 1;
+		const enableTaskStyle = `${style} ${!isTaskDisabled ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
+
+		const isTaskEnabled = isUnsavedTask && task.is_disabled == 0;
+		const disableTaskStyle = `${style} ${isTaskEnabled ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
+
+		const isTaskWorthCompleting = !isUnsavedTask && task.is_disabled == 0;
+		const markTaskCompletedStyle = `${style} ${!isTaskWorthCompleting ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
+
+		return (
+			<Menu as="div" className="flex justify-center items-center relative">
+				<MenuButton className="flex w-full space-x-2 justify-between items-center focus:outline-none font-regular-11">
+					<span>Actions</span>
+					<FontAwesomeIcon className="gray-text" icon={faChevronDown} />
+				</MenuButton>
+				<MenuItems className="absolute w-max top-6 right-0 origin-top-right rounded focus:outline-none z-50 black-white-background bottom-shadow full-border">
+					{allowNewTask && (
+						<MenuItem as="div" className={addTaskStyle} onClick={() => toggleAddTaskBox()}>
+							<FontAwesomeIcon className="w-5 primary-text" icon={faPlusCircle} />
+							<span className="font-regular-11">Add</span>
+						</MenuItem>
+					)}
+
+					{allowNewTask && (
+						<MenuItem as="div" className={saveTaskStyle} onClick={() => saveTask(task)}>
+							<FontAwesomeIcon className="w-5 green-text" icon={faSave} />
+							<span className="font-regular-11">Save</span>
+						</MenuItem>
+					)}
+
+					{allowUpdatingTask && (
+						<MenuItem as="div" className={updateTaskStyle} onClick={() => toggleUpdateTaskBox(task)}>
+							<FontAwesomeIcon className="w-5 orange-text" icon={faStar} />
+							<span className="font-regular-11">Update</span>
+						</MenuItem>
+					)}
+
+					{allowNewTask && (
+						<MenuItem as="div" className={deleteTaskStyle} onClick={() => deleteTask(task)}>
+							<FontAwesomeIcon className="w-5 red-text" icon={faTrash} />
+							<span className="font-regular-11">Delete</span>
+						</MenuItem>
+					)}
+
+					{allowEnablingTask && (
+						<MenuItem as="div" className={enableTaskStyle} onClick={() => {}}>
+							<FontAwesomeIcon className="w-5 green-text" icon={faCheckCircle} />
+							<span className="font-regular-11">Enable</span>
+						</MenuItem>
+					)}
+
+					{allowDisablingTask && (
+						<MenuItem as="div" className={disableTaskStyle} onClick={() => {}}>
+							<FontAwesomeIcon className="w-5 red-text" icon={faBan} />
+							<span className="font-regular-11">Disable</span>
+						</MenuItem>
+					)}
+
+					{allowMarkingTaskCompleted && (
+						<MenuItem as="div" className={markTaskCompletedStyle} onClick={() => {}}>
+							<FontAwesomeIcon className="w-5 green-text" icon={faClipboardCheck} />
+							<span className="font-regular-11">Mark Completed</span>
+						</MenuItem>
+					)}
+				</MenuItems>
+			</Menu>
+		);
 	};
 
 	const uiHeaders = () => {
@@ -421,7 +415,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 			);
 		} else if (!apiData.tasks.api.length) {
 			return (
-				<div className="flex flex-col w-full h-full space-y-2.5 justify-center items-center black-white-background top-border font-regular-12 gray-text">
+				<div className="flex flex-col w-full h-full space-y-2.5 justify-center items-center black-white-background top-border font-regular-11 gray-text">
 					<span>No tasks alloted</span>
 					<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddTaskBox()}>
 						<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
@@ -444,10 +438,9 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 	const uiRows = (task, rowIndex) => {
 		const isCompleted = task.is_completed == 1;
 		const isDisabled = task.is_disabled == 1;
-		const lastTaskId = apiData.tasks.api.length && apiData.tasks.api.sort((a, b) => b.id.localeCompare(a.id)).at(0).id;
 
 		// UI
-		const style = "flex w-[14.28%] min-h-10 justify-center items-center text-center relative";
+		const style = "flex w-[14.28%] min-h-10 justify-center items-center text-center relative right-border";
 		const horizontalSpacing = isCompleted ? "space-x-1.5" : "space-x-0";
 		const showCircledTick = isCompleted ? "block green-text" : "hidden";
 
@@ -455,25 +448,14 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		const background = isCompleted ? "light-gray-background pointer-events-none" : "bg-transparent pointer-events-auto";
 		const inputClickEvent = isDisabled || isCompleted ? "pointer-events-none" : "pointer-events-auto";
 
-		const wrapper = `flex w-full justify-center items-center black-text black-white-background bottom-border font-regular-12`;
-
-		const tickIconClickEvent = isDisabled ? "opacity-25 pointer-events-none" : "opacity-100 pointer-events-auto";
-		const tickIconStyle = `text-lg cursor-pointer green-text ${tickIconClickEvent}`;
-
-		const addTaskIconStyle = task.id == lastTaskId ? "cursor-pointer !pointer-events-auto visible primary-text" : "invisible";
-
-		const disableIcon = isDisabled ? faBan : faPen;
-		const disableIconColour = isDisabled ? "primary-text" : "red-text";
-
-		const disabledTaskClickEvent =
-			task.input_by == userId ? `opacity-100 pointer-events-auto cursor-pointer ${disableIconColour}` : "opacity-25 pointer-events-none";
-
-		const title = isDisabled ? "Enable Task" : "Disable Task";
+		const wrapper = `flex w-full justify-center items-center black-text black-white-background bottom-border font-regular-11 hovered-rows-2`;
 
 		// Variables
 		const insertedBy = MyGlobal.GetAnyDataFromId(task.input_by, "full_name");
+
 		const isNewTask = apiData.tasks.api.filter((_task) => _task.id == task.id && _task.project_id == selectedProject.id);
-		const tag = !isNewTask.length && <span className="green-tag text-xs">New</span>;
+
+		const tag = !isNewTask.length && <span className="orange-tag text-sm">Unsaved</span>;
 
 		return (
 			<div className={wrapper} key={rowIndex}>
@@ -485,10 +467,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(task.content, mainData.searchTerm) }} />
 
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(dayjs(task.due_on).format("DD/MM/YYYY"), mainData.searchTerm) }}
-				/>
+				<span className={style}>{dayjs(task.due_on).format("DD/MM/YYYY")}</span>
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(insertedBy, mainData.searchTerm) }} />
 
@@ -496,13 +475,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(task.expense, mainData.searchTerm) }} />
 
-				<span className={`${style} space-x-5`}>
-					{!task.is_new && <FontAwesomeIcon className={addTaskIconStyle} icon={faPlus} onClick={() => addNewTask()} size="lg" />}
-
-					{!isCompleted && uiAddOrUpdateTask(tickIconStyle, task)}
-					{!isCompleted && uiDeleteOrDisableTask(disableIcon, disabledTaskClickEvent, task, title)}
-					{uiTick(isCompleted, isDisabled, task)}
-				</span>
+				<span className={style}>{uiActionsMenu(task)}</span>
 			</div>
 		);
 	};
@@ -517,30 +490,29 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		}
 	};
 
-	const uiTick = (isCompleted, isDisabled, task) => {
-		if (!task.is_new && !isCompleted && !isDisabled) {
-			return (
-				<FontAwesomeIcon
-					className="cursor-pointer green-text"
-					icon={faCheck}
-					onClick={() => allowMarkingTaskCompleted && toggleMarkTaskAsCompletedBox(task)}
-					size="lg"
-				/>
-			);
-		} else {
-			return <FontAwesomeIcon className="green-text invisible" icon={faCheck} size="lg" />;
-		}
-	};
+	// Hooks
+	useEffect(() => {
+		getTasks();
+	}, []);
 
 	// Main UI
 	return (
 		<>
 			{uiMain()}
 
-			{hasMounted.addTask && <AddTask addTask={addNewTask} mount={hasMounted.addTask} unmount={toggleAddTaskBox} />}
+			{hasMounted.addTask && <AddTask addTask={addTask} mount={hasMounted.addTask} unmount={toggleAddTaskBox} />}
 
 			{hasMounted.updateStatus && (
-				<UpdateStatus mount={hasMounted.updateStatus} reloadTasks={getTasks} selectedTask={mainData.selectedTask} unmount={toggleUpdateStatusBox} />
+				<UpdateProjectStatus
+					mount={hasMounted.updateStatus}
+					reloadTasks={getTasks}
+					selectedTask={mainData.selectedTask}
+					unmount={toggleUpdateStatusBox}
+				/>
+			)}
+
+			{hasMounted.updateTask && (
+				<UpdateTask mount={hasMounted.updateTask} reloadTasks={getTasks} selectedTask={mainData.selectedTask} unmount={toggleUpdateTaskBox} />
 			)}
 		</>
 	);

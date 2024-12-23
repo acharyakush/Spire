@@ -13,13 +13,14 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { clientId, dueOn, expense, note, projectId, task, userId } = req.body;
+		const { clientId, content, dueOn, expense, projectId, remark, userId } = req.body;
 
 		await query("CALL generate_dynamic_id('TK', 'tasks', @new_task_id)", []);
 		const [storedProcedureResult] = await query("SELECT @new_task_id AS new_id;", []);
 
 		const result = await query(
-			`INSERT INTO tasks (id, client_id, project_id, task, due_on, input_by, note, expense, is_disabled, is_completed) VALUES ('${storedProcedureResult.new_id}', '${clientId}', '${projectId}', '${task}', '${dueOn}', '${userId}', '${note}', ${expense}, 0, 0)`,
+			"INSERT INTO tasks (id, client_id, project_id, content, due_on, input_by, remark, expense) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+			[storedProcedureResult.new_id, clientId, projectId, content, dueOn, userId, remark, expense],
 		);
 
 		if (result.affectedRows > 0) {

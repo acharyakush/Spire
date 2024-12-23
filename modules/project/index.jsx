@@ -550,7 +550,7 @@ export default function Projects() {
 
 	const uiRows = (project) => {
 		const style = `flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center right-border`;
-		const projectActionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer text-white font-regular-12";
+		const projectActionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer text-white font-regular-11";
 
 		const projectId = MyGlobal.HighlightText(project.id, mainData.searchTerm);
 
@@ -567,7 +567,7 @@ export default function Projects() {
 
 		return (
 			<div
-				className="flex w-full justify-center items-center black-white-background bottom-border font-regular-10 black-text"
+				className="flex w-full justify-center items-center black-white-background bottom-border font-regular-11 black-text"
 				key={projectId}
 				onMouseEnter={() => setMouseEnter(projectId)}
 				onMouseLeave={() => setMouseLeave(projectId)}>
@@ -649,7 +649,7 @@ export default function Projects() {
 
 	const uiStatusMenu = (clientName, project) => {
 		const isCompleted = project.status == projectStatuses.Completed;
-		const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none font-regular-10 !py-0`;
+		const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none font-regular-11 !py-0`;
 
 		const icon = isCompleted ? faBolt : faChevronDown;
 
@@ -676,7 +676,7 @@ export default function Projects() {
 
 			return (
 				<MenuItem as="div" className={wrapper} key={index} onClick={() => updateStatus(clientName, project, status)}>
-					<span className="font-regular-10">{status}</span>
+					<span className="font-regular-11">{status}</span>
 					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
 				</MenuItem>
 			);

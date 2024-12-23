@@ -3,28 +3,28 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
+import dayjs from "dayjs";
 import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
-import { DatePicker, TextArea, TextInput } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { DatePicker, TextArea, TextInput } from "@/components/Inputs";
 import { faCalendar, faCoins, faIdCardClip, faIndianRupeeSign, faListCheck, faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function AddTask({ addTask, mount, unmount }) {
 	// Business Logic
 	const today = new Date();
-	const sevenDaysFromToday = new Date(today);
-
-	sevenDaysFromToday.setDate(today.getDate() + 7);
+	const sevenDaysFromToday = today.setDate(today.getDate() + 7);
 
 	const [state, setState] = useState({
 		content: "",
 		due_on: sevenDaysFromToday,
 		expense: 0,
+		id: "TK000000",
 		isBoxDragged: false,
 		remark: "",
 	});
@@ -40,6 +40,7 @@ export function AddTask({ addTask, mount, unmount }) {
 			content: "",
 			due_on: sevenDaysFromToday,
 			expense: 0,
+			id: "TK000000",
 			isBoxDragged: false,
 			remark: "",
 		});
@@ -263,7 +264,7 @@ export function ManageGovernmentId({ mount, reloadProjects, selectedProject, unm
 	);
 }
 
-export function UpdateStatus({ mount, reloadTasks, selectedTask, unmount }) {
+export function UpdateProjectStatus({ mount, reloadTasks, selectedTask, unmount }) {
 	// Business Logic
 	const [state, setState] = useState({ isBoxDragged: false, isLoading: false, reason: "" });
 
@@ -495,6 +496,143 @@ export function UpdateQuote({ mount, reloadProjects, selectedProject, unmount })
 						</div>
 						<footer className="dialog-footer">
 							<button className={updateButtonStyle} onClick={() => updateQuote()}>
+								{uiButton()}
+							</button>
+						</footer>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
+export function UpdateTask({ mount, reloadTasks, selectedTask, unmount }) {
+	// Business Logic
+	const [state, setState] = useState({
+		content: selectedTask.content,
+		due_on: selectedTask.due_on,
+		expense: selectedTask.expense,
+		id: selectedTask.id,
+		isBoxDragged: false,
+		isLoading: false,
+		remark: selectedTask.remark,
+	});
+
+	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+
+	// Functions
+	const setBoxDrag = () => {
+		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
+	};
+
+	const setInputs = (key, value) => {
+		setState((old) => ({ ...old, [key]: value }));
+	};
+
+	const updateTask = async () => {
+		setState((old) => ({ ...old, isLoading: true }));
+
+		const body = {
+			content: MyGlobal.EscapeString(selectedTask.content),
+			due_on: dayjs(state.due_on).format("YYYY-MM-DD"),
+			expense: Number(selectedTask.expense),
+			taskId: selectedTask.id,
+			remark: MyGlobal.EscapeString(selectedTask.remark),
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reloadTasks();
+
+				MyGlobal.AddActivity(`Updated <b>${selectedTask.id}</b> in <b>${selectedTask.project_id}</b>.`, MyConstants.Modules.Base.Tasks);
+
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskUpdated);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Update Task");
+		} finally {
+			setState((old) => ({ ...old, isLoading: false }));
+		}
+	};
+
+	// UI Components
+	const uiButton = () => {
+		if (state.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Update";
+		}
+	};
+
+	const uiTitleBar = () => {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Update Task</span>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+			</DialogTitle>
+		);
+	};
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded black-white-background shadow">
+						{uiTitleBar()}
+						<div className="flex flex-col w-full p-2.5 space-y-2 justify-between items-center">
+							<TextArea
+								icon={faListCheck}
+								key={1}
+								label="Task"
+								onChange={(event) => setInputs("content", event.target.value)}
+								onKeyDown={() => {}}
+								rows={2}
+								tabIndex={1}
+								value={state.content}
+								width="w-full"
+							/>
+							<DatePicker
+								icon={faCalendar}
+								label="Date"
+								onChange={(event) => setInputs("due_on", event)}
+								tabIndex={2}
+								value={state.due_on}
+								width="w-full"
+							/>
+							<TextArea
+								icon={faNoteSticky}
+								key={2}
+								label="Remark"
+								onChange={(event) => setInputs("remark", event.target.value)}
+								onKeyDown={() => {}}
+								rows={2}
+								tabIndex={3}
+								value={state.remark}
+								width="w-full"
+							/>
+							<TextInput
+								icon={faCoins}
+								label="Expense"
+								onChange={(event) => setInputs("expense", event.target.value)}
+								onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
+								tabIndex={4}
+								value={state.expense}
+								width="w-full"
+							/>
+						</div>
+						<footer className="dialog-footer">
+							<button className="primary-button-condensed" onClick={() => updateTask()}>
 								{uiButton()}
 							</button>
 						</footer>

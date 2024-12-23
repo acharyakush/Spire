@@ -19,6 +19,7 @@ import { faCog, faDatabase, faSignOut, faUserCircle, faUserClock, faUserCog, faU
 export default function Home() {
 	// Business Logic
 	const router = useRouter();
+	const baseModules = MyConstants.Modules.Base;
 
 	const [apiData, setApiData] = useState({
 		allPermissions: [],
@@ -30,7 +31,7 @@ export default function Home() {
 	const [mainData, setMainData] = useState({
 		isDarkModeEnabled: false,
 		loggedInUser: {},
-		selectedModule: { id: 0, name: MyConstants.Modules.Base.Dashboard },
+		selectedModule: { id: 0, name: baseModules.Dashboard },
 		singleProjectObject: {},
 		theme: null,
 	});
@@ -53,7 +54,7 @@ export default function Home() {
 	const closeProjectsView = () => {
 		setMainData((old) => ({
 			...old,
-			selectedModule: { id: 0, name: MyConstants.Modules.Base.Dashboard },
+			selectedModule: { id: 0, name: baseModules.Dashboard },
 			singleProjectObject: {},
 		}));
 	};
@@ -92,9 +93,10 @@ export default function Home() {
 					}
 				});
 
-			MyGlobal.SetPermission(response.data);
+			const sequentialModules = modules.sort((a, b) => a.sequence - b.sequence);
 
-			setApiData((old) => ({ ...old, allPermissions: response.data, modules }));
+			MyGlobal.SetPermission(response.data);
+			setApiData((old) => ({ ...old, allPermissions: response.data, modules: sequentialModules }));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get All Permissions");
 		}
@@ -234,16 +236,47 @@ export default function Home() {
 	};
 
 	const uiModules = () => {
-		return apiData.modules.map((module, index) => {
-			const aesthetics = index == mainData.selectedModule.id ? "primary-border-colour primary-text" : "border-transparent gray-text";
-			const wrapper = `pt-2 pb-[0.7rem] border-b-4 whitespace-nowrap font-regular-11 ${aesthetics}`;
+		return apiData.modules
+			.filter((module) => module.sequence <= 8)
+			.map((module, index) => {
+				const aesthetics = index == mainData.selectedModule.id ? "primary-border-colour primary-text" : "border-transparent gray-text";
+				const wrapper = `py-3 border-b-4 whitespace-nowrap font-regular-12 ${aesthetics}`;
 
-			return (
-				<button key={index} className={wrapper} onClick={() => setModule(index, module)}>
-					{module.name}
-				</button>
-			);
-		});
+				return (
+					<button key={index} className={wrapper} onClick={() => setModule(index, module)}>
+						{module.name}
+					</button>
+				);
+			});
+	};
+
+	const uiOtherModules = () => {
+		return (
+			<Menu as="div" className="relative z-50 inline-block text-left">
+				<MenuButton className="py-3 font-regular-12 border-transparent gray-text">
+					<span>More</span>
+				</MenuButton>
+				<MenuItems anchor="bottom" className="absolute w-max rounded focus:outline-none bottom-shadow black-white-background full-border black-text">
+					{uiOtherModulesList()}
+				</MenuItems>
+			</Menu>
+		);
+	};
+
+	const uiOtherModulesList = () => {
+		return apiData.modules
+			.filter((module) => module.sequence > 8)
+			.map((module, index) => {
+				return (
+					<MenuItem
+						as="div"
+						className="p-2 cursor-pointer border-y font-regular-11 black-text hovered-rows"
+						key={index}
+						onClick={() => setModule(index, module)}>
+						<span>{module.name}</span>
+					</MenuItem>
+				);
+			});
 	};
 
 	const uiSelectedModule = () => {
@@ -266,20 +299,20 @@ export default function Home() {
 			// 			<Clients />
 			// 		</ErrorBoundary>
 			// 	);
-			case MyConstants.Modules.Base.Inquiries:
+			case baseModules.Inquiries:
 				return (
 					<ErrorBoundary
 						key="ErrorBoundary_Inquiries"
-						onError={(error) => MyGlobal.LogErrors(error.message, MyConstants.Modules.Base.Inquiries)}
+						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Inquiries)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Inquiries />
 					</ErrorBoundary>
 				);
-			case MyConstants.Modules.Base.Projects:
+			case baseModules.Projects:
 				return (
 					<ErrorBoundary
 						key="ErrorBoundary_Projects"
-						onError={(error) => MyGlobal.LogErrors(error.message, MyConstants.Modules.Base.Projects)}
+						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Projects)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Projects />
 					</ErrorBoundary>
@@ -323,6 +356,25 @@ export default function Home() {
 		}
 	};
 
+	const uiUserMenu = () => {
+		return (
+			<Menu as="div" className="relative z-50 inline-block text-left">
+				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
+					<FontAwesomeIcon className="primary-text" icon={faUserCircle} size="lg" />
+				</MenuButton>
+				<MenuItems
+					anchor="bottom"
+					className="absolute w-max mt-2 rounded focus:outline-none bottom-shadow black-white-background full-border black-text">
+					<div className="flex flex-col p-2 font-medium-14">
+						<span>{mainData.loggedInUser.full_name || ""}</span>
+						<span className="font-regular-10 gray-text">{mainData.loggedInUser.designation || ""}</span>
+					</div>
+					{uiUserMenuList()}
+				</MenuItems>
+			</Menu>
+		);
+	};
+
 	const uiUserMenuList = () => {
 		return Object.values(MyConstants.UserMenu)
 			.filter((item) => {
@@ -344,25 +396,6 @@ export default function Home() {
 					</MenuItem>
 				);
 			});
-	};
-
-	const uiUserMenu = () => {
-		return (
-			<Menu as="div" className="relative z-50 inline-block text-left">
-				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
-					<FontAwesomeIcon className="primary-text" icon={faUserCircle} size="lg" />
-				</MenuButton>
-				<MenuItems
-					anchor="bottom"
-					className="absolute w-max mt-2 rounded focus:outline-none bottom-shadow black-white-background full-border black-text">
-					<div className="flex flex-col p-2 font-medium-14">
-						<span>{mainData.loggedInUser.full_name || ""}</span>
-						<span className="font-regular-10 gray-text">{mainData.loggedInUser.designation || ""}</span>
-					</div>
-					{uiUserMenuList()}
-				</MenuItems>
-			</Menu>
-		);
 	};
 
 	// Hooks
@@ -399,7 +432,9 @@ export default function Home() {
 					<span className="uppercase dashboard-heading">{applicationName}</span>
 				</div>
 				<div className="flex w-full justify-center items-center">
-					<div className="flex space-x-6 relative">{uiModules()}</div>
+					<div className="flex space-x-6 relative">
+						{uiModules()} {uiOtherModules()}
+					</div>
 				</div>
 				<div className="flex w-full justify-end items-center">{uiUserMenu()}</div>
 			</div>

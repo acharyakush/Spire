@@ -397,6 +397,10 @@ html {
 	@apply bg-[var(--web-primary-transparent-01)] border-t border-[var(--web-primary-transparent-05)];
 }
 
+.hovered-rows-2:hover {
+	@apply bg-[var(--web-primary-transparent-01)] border-b border-[var(--web-primary-transparent-05)];
+}
+
 .inputs {
 	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 text-base !leading-none h-9 black-text w-full;
 	font-family: var(--web-font-family);

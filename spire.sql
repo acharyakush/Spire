@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 22, 2024 at 07:45 PM
+-- Generation Time: Dec 23, 2024 at 07:09 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -150,7 +150,11 @@ INSERT INTO `activities` (`id`, `user_id`, `module`, `activity`, `ip_address`, `
 (64, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 23:15:34', 'b7T1l1KUi03yqcLxbfEDMUlz0YyFV1YtLIqEUlhCUXIhVig9CacaChT2/MG6/lkGaTPwM15tno/p9ct2V3Gz9Q==', ''),
 (65, 'A3', 'Projects', 'Updated quote of <b>PJ000001</b> from <b>5500.00</b> to <b>5750</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 23:24:58', 'b7T1l1KUi03yqcLxbfEDMUlz0YyFV1YtLIqEUlhCUXIhVig9CacaChT2/MG6/lkGaTPwM15tno/p9ct2V3Gz9Q==', ''),
 (66, 'A3', 'Projects', 'Added government id <b>PJ1/22/12/2024</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-22 23:27:22', 'b7T1l1KUi03yqcLxbfEDMUlz0YyFV1YtLIqEUlhCUXIhVig9CacaChT2/MG6/lkGaTPwM15tno/p9ct2V3Gz9Q==', ''),
-(67, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-23 00:15:03', 'b7T1l1KUi03yqcLxbfEDMUlz0YyFV1YtLIqEUlhCUXIhVig9CacaChT2/MG6/lkGaTPwM15tno/p9ct2V3Gz9Q==', '');
+(67, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-23 00:15:03', 'b7T1l1KUi03yqcLxbfEDMUlz0YyFV1YtLIqEUlhCUXIhVig9CacaChT2/MG6/lkGaTPwM15tno/p9ct2V3Gz9Q==', ''),
+(68, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-23 20:02:22', 'BwqFgqJ2FUyWKaLeoQ8hjMWj59fG3Ml7wumoSh9A2TLArKAum44ezUeRw1sEsvJd/LdFQRvYNLvkjeOmNko/rw==', ''),
+(69, 'A3', 'Tasks', 'Added <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-23 22:48:22', 'BwqFgqJ2FUyWKaLeoQ8hjMWj59fG3Ml7wumoSh9A2TLArKAum44ezUeRw1sEsvJd/LdFQRvYNLvkjeOmNko/rw==', ''),
+(70, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-23 23:35:53', '', ''),
+(71, 'A3', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-23 23:35:56', 'sc5PsSmJDeky+goIXAGUiMIvWjsrr7OymshGiWnP10Z7MBAGAVVedLCLKKroTmeilh6n3bYjbOq9UwDd6HNUvQ==', '');
 
 -- --------------------------------------------------------
 
@@ -552,54 +556,56 @@ CREATE TABLE `permissions` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `module` varchar(50) NOT NULL,
-  `type` enum('Base','Derived') DEFAULT NULL
+  `type` enum('Base','Derived') DEFAULT NULL,
+  `sequence` int(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `permissions`
 --
 
-INSERT INTO `permissions` (`id`, `name`, `module`, `type`) VALUES
-(1, 'Admins', 'Admins', 'Base'),
-(2, 'New Admin Company', 'Admins', 'Derived'),
-(3, 'Edit Admin Company', 'Admins', 'Derived'),
-(4, 'Affiliates', 'Affiliates', 'Base'),
-(5, 'Edit Affiliate', 'Affiliates', 'Derived'),
-(6, 'Delete Affiliate', 'Affiliates', 'Derived'),
-(7, 'Cash Flow', 'Cash Flow', 'Base'),
-(8, 'Edit Cash Flow', 'Cash Flow', 'Derived'),
-(9, 'Delete Cash Flow', 'Cash Flow', 'Derived'),
-(10, 'Clients', 'Clients', 'Base'),
-(11, 'Edit Client', 'Clients', 'Derived'),
-(12, 'Delete Client', 'Clients', 'Derived'),
-(13, 'Companies', 'Companies', 'Base'),
-(14, 'Edit Company', 'Companies', 'Derived'),
-(15, 'Delete Company', 'Companies', 'Derived'),
-(16, 'Dashboard', 'Dashboard', 'Base'),
-(17, 'Employees', 'Employees', 'Base'),
-(18, 'Edit Employee', 'Employees', 'Derived'),
-(19, 'Delete Employee ', 'Employees', 'Derived'),
-(20, 'Inquiries', 'Inquiry', 'Base'),
-(21, 'New Inquiry', 'Inquiry', 'Derived'),
-(22, 'Edit Inquiry', 'Inquiry', 'Derived'),
-(23, 'Delete Inquiry', 'Inquiry', 'Derived'),
-(24, 'Convert Inquiry To Project', 'Inquiry', 'Derived'),
-(25, 'Invoices', 'Invoices', 'Base'),
-(26, 'Generate Invoice', 'Invoices', 'Derived'),
-(27, 'Delete Invoice', 'Invoices', 'Derived'),
-(28, 'Projects', 'Projects', 'Base'),
-(29, 'Edit Project', 'Projects', 'Derived'),
-(30, 'Delete Project', 'Projects', 'Derived'),
-(31, 'Payment Received', 'Projects', 'Derived'),
-(32, 'References', 'References', 'Base'),
-(33, 'Edit Reference', 'References', 'Derived'),
-(34, 'Delete Reference', 'References', 'Derived'),
-(35, 'Tasks', 'Tasks', 'Base'),
-(36, 'New Task', 'Tasks', 'Derived'),
-(37, 'Update Task', 'Tasks', 'Derived'),
-(38, 'Disable Task', 'Tasks', 'Derived'),
-(39, 'Mark Task Completed', 'Tasks', 'Derived'),
-(40, 'Delete Task From Reimbursement Voucher', 'Tasks', 'Derived');
+INSERT INTO `permissions` (`id`, `name`, `module`, `type`, `sequence`) VALUES
+(1, 'Administrators', 'Administrators', 'Base', 6),
+(2, 'New Administrator Company', 'Administrators', 'Derived', 0),
+(3, 'Edit Administrator Company', 'Administrators', 'Derived', 0),
+(4, 'Affiliates', 'Affiliates', 'Base', 5),
+(5, 'Edit Affiliate', 'Affiliates', 'Derived', 0),
+(6, 'Delete Affiliate', 'Affiliates', 'Derived', 0),
+(7, 'Cash Flow', 'Cash Flow', 'Base', 8),
+(8, 'Edit Cash Flow', 'Cash Flow', 'Derived', 0),
+(9, 'Delete Cash Flow', 'Cash Flow', 'Derived', 0),
+(10, 'Clients', 'Clients', 'Base', 4),
+(11, 'Edit Client', 'Clients', 'Derived', 0),
+(12, 'Delete Client', 'Clients', 'Derived', 0),
+(13, 'Companies', 'Companies', 'Base', 9),
+(14, 'Edit Company', 'Companies', 'Derived', 0),
+(15, 'Delete Company', 'Companies', 'Derived', 0),
+(16, 'Dashboard', 'Dashboard', 'Base', 1),
+(17, 'Employees', 'Employees', 'Base', 10),
+(18, 'Edit Employee', 'Employees', 'Derived', 0),
+(19, 'Delete Employee ', 'Employees', 'Derived', 0),
+(20, 'Inquiries', 'Inquiry', 'Base', 2),
+(21, 'New Inquiry', 'Inquiry', 'Derived', 0),
+(22, 'Edit Inquiry', 'Inquiry', 'Derived', 0),
+(23, 'Delete Inquiry', 'Inquiry', 'Derived', 0),
+(24, 'Convert Inquiry To Project', 'Inquiry', 'Derived', 0),
+(25, 'Invoices', 'Invoices', 'Base', 7),
+(26, 'Generate Invoice', 'Invoices', 'Derived', 0),
+(27, 'Delete Invoice', 'Invoices', 'Derived', 0),
+(28, 'Projects', 'Projects', 'Base', 3),
+(29, 'Edit Project', 'Projects', 'Derived', 0),
+(30, 'Delete Project', 'Projects', 'Derived', 0),
+(31, 'Payment Received', 'Projects', 'Derived', 0),
+(32, 'References', 'References', 'Base', 11),
+(33, 'Edit Reference', 'References', 'Derived', 0),
+(34, 'Delete Reference', 'References', 'Derived', 0),
+(35, 'Tasks', 'Tasks', 'Base', 12),
+(36, 'New Task', 'Tasks', 'Derived', 0),
+(37, 'Update Task', 'Tasks', 'Derived', 0),
+(38, 'Enable Task', 'Tasks', 'Derived', 0),
+(39, 'Disable Task', 'Tasks', 'Derived', 0),
+(40, 'Mark Task Completed', 'Tasks', 'Derived', 0),
+(41, 'Delete Task From Reimbursement Voucher', 'Tasks', 'Derived', 0);
 
 -- --------------------------------------------------------
 
@@ -735,6 +741,33 @@ CREATE TRIGGER `generate_new_sub_project_id` BEFORE INSERT ON `sub_projects` FOR
 END
 $$
 DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tasks`
+--
+
+CREATE TABLE `tasks` (
+  `id` char(8) NOT NULL,
+  `client_id` char(8) NOT NULL,
+  `project_id` char(8) NOT NULL,
+  `content` varchar(255) NOT NULL,
+  `due_on` date NOT NULL,
+  `input_by` char(8) NOT NULL,
+  `remark` varchar(255) DEFAULT NULL,
+  `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
+  `is_disabled` tinyint(1) NOT NULL DEFAULT 0,
+  `is_completed` tinyint(1) NOT NULL DEFAULT 0,
+  `completed_on` date DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tasks`
+--
+
+INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `content`, `due_on`, `input_by`, `remark`, `expense`, `is_disabled`, `is_completed`, `completed_on`) VALUES
+('TK000001', 'CN000001', 'PJ000001', 'Hello', '2024-12-23', 'A3', 'How are you today?', 1500.00, 0, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -910,6 +943,12 @@ ALTER TABLE `sub_projects`
   ADD KEY `name` (`name`);
 
 --
+-- Indexes for table `tasks`
+--
+ALTER TABLE `tasks`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `the_references`
 --
 ALTER TABLE `the_references`
@@ -923,7 +962,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -953,7 +992,7 @@ ALTER TABLE `notes`
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `statuses`
@@ -1027,6 +1066,13 @@ ALTER TABLE `projects`
   ADD CONSTRAINT `fk_project_invoice_firm_id` FOREIGN KEY (`invoice_firm_id`) REFERENCES `administrators_companies` (`id`),
   ADD CONSTRAINT `fk_project_main_project_id` FOREIGN KEY (`main_project_id`) REFERENCES `main_projects` (`id`),
   ADD CONSTRAINT `fk_project_sub_project_id` FOREIGN KEY (`sub_project_id`) REFERENCES `sub_projects` (`id`);
+
+--
+-- Constraints for table `tasks`
+--
+ALTER TABLE `tasks`
+  ADD CONSTRAINT `fk_task_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_task_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -112,6 +112,7 @@ const MyConstants = Object.freeze({
 			PaymentReceived: "Payment Received",
 			EditReference: "Edit Reference",
 			DeleteReference: "Delete Reference",
+			EnableTask: "Enable Task",
 			NewTask: "New Task",
 			UpdateTask: "Update Task",
 			DisableTask: "Disable Task",
