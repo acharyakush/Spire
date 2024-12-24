@@ -187,7 +187,7 @@ html {
 }
 
 .font-bold-12 {
-	@apply text-base !leading-none font-bold;
+	@apply text-base font-bold;
 	font-family: var(--web-font-family);
 }
 
@@ -212,7 +212,7 @@ html {
 }
 
 .font-medium-12 {
-	@apply text-base !leading-none font-medium;
+	@apply text-base font-medium;
 	font-family: var(--web-font-family);
 }
 
@@ -267,7 +267,7 @@ html {
 }
 
 .font-regular-12 {
-	@apply text-base !leading-none font-normal;
+	@apply text-base font-normal;
 	font-family: var(--web-font-family);
 }
 
@@ -297,7 +297,7 @@ html {
 }
 
 .font-semibold-12 {
-	@apply text-base !leading-none font-semibold;
+	@apply text-base font-semibold;
 	font-family: var(--web-font-family);
 }
 
@@ -402,7 +402,7 @@ html {
 }
 
 .inputs {
-	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 text-base !leading-none h-9 black-text w-full;
+	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 text-base h-9 black-text w-full;
 	font-family: var(--web-font-family);
 }
 
@@ -419,7 +419,7 @@ html {
 }
 
 .light-gray-button {
-	@apply bg-[var(--web-light-gray-background)] border border-[var(--web-light-gray-background)] flex font-light h-9 justify-center items-center outline-none px-2.5 relative rounded select-none space-x-2.5 text-base !leading-none black-text;
+	@apply bg-[var(--web-light-gray-background)] border border-[var(--web-light-gray-background)] flex font-light h-9 justify-center items-center outline-none px-2.5 relative rounded select-none space-x-2.5 text-base black-text;
 	font-family: var(--web-font-family);
 }
 
@@ -505,7 +505,7 @@ html {
 }
 
 .primary-button-condensed {
-	@apply bg-[var(--web-primary)] border border-[var(--web-primary)] flex font-light h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-base !leading-none text-white;
+	@apply bg-[var(--web-primary)] border border-[var(--web-primary)] flex font-light h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-base text-white;
 	font-family: var(--web-font-family);
 }
 
@@ -533,7 +533,7 @@ html {
 }
 
 .primary-button-transparent-background {
-	@apply bg-[var(--web-primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded select-none space-x-2.5 text-sm !leading-none text-[var(--web-primary)];
+	@apply bg-[var(--web-primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded select-none space-x-2.5 text-sm text-[var(--web-primary)];
 	font-family: var(--web-font-family);
 }
 
@@ -543,12 +543,12 @@ html {
 }
 
 .primary-button-wide {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-light h-9 outline-none relative rounded select-none text-base !leading-none text-white w-full;
+	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-light h-9 outline-none relative rounded select-none text-base text-white w-full;
 	font-family: var(--web-font-family);
 }
 
 .primary-tag-transparent-01 {
-	@apply bg-[var(--web-primary-transparent-01)] border border-[var(--web-primary)] font-normal p-1 rounded text-sm !leading-none text-[var(--web-primary)];
+	@apply bg-[var(--web-primary-transparent-01)] border border-[var(--web-primary)] font-normal p-1 rounded text-sm text-[var(--web-primary)];
 	font-family: var(--web-font-family);
 }
 
@@ -586,7 +586,7 @@ html {
 }
 
 .red-button-transparent-background {
-	@apply bg-[var(--web-red-transparent-01)] border border-[var(--web-red)] flex font-light h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-base !leading-none text-[var(--web-red)];
+	@apply bg-[var(--web-red-transparent-01)] border border-[var(--web-red)] flex font-light h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-base text-[var(--web-red)];
 	font-family: var(--web-font-family);
 }
 
@@ -595,7 +595,7 @@ html {
 }
 
 .red-tag-transparent-01 {
-	@apply bg-[var(--web-red-transparent-01)] border border-[var(--web-red)] p-1 rounded text-sm !leading-none text-[var(--web-red)];
+	@apply bg-[var(--web-red-transparent-01)] border border-[var(--web-red)] p-1 rounded text-sm text-[var(--web-red)];
 	font-family: var(--web-font-family);
 }
 
@@ -680,7 +680,7 @@ html {
 }
 
 .textarea-inputs {
-	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 resize-none text-base !leading-none black-text w-full;
+	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 resize-none text-base black-text w-full;
 	font-family: var(--web-font-family);
 }
 

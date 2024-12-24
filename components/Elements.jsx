@@ -22,7 +22,7 @@ export const BadgeSmallGreen = ({ value }) => {
 
 export const BadgeSmallWithBackground = ({ style, value }) => {
 	return (
-		<span className={`flex h-5 px-1.5 justify-center items-center rounded-full font-regular-7 ${style.text} ${style.border} ${style.background}`}>
+		<span className={`flex h-5 px-1.5 justify-center items-center rounded-full font-regular-10 ${style.text} ${style.border} ${style.background}`}>
 			{value}
 		</span>
 	);

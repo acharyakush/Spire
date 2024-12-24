@@ -281,9 +281,8 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 	const uiProjectInformationBlock = () => {
 		const wrapperSansAesthetics = "flex w-full space-x-1.5 justify-start items-center";
 
-		const columnWrapper = "flex flex-col space-y-1 justify-center items-center cursor-pointer primary-tag-transparent-01";
-
-		const redColumnWrapper = "flex flex-col space-y-1 justify-center items-center cursor-pointer font-normal red-tag-transparent-01";
+		const columnWrapper = "flex flex-col justify-center items-center cursor-pointer primary-tag-transparent-01";
+		const redColumnWrapper = "flex flex-col justify-center items-center cursor-pointer font-normal red-tag-transparent-01";
 
 		const dueOnTimeLeft =
 			dayjs(selectedProject.due_on).format("DD-MM-YYYY") == dayjs().format("DD-MM-YYYY") ? "Today" : dayjs(selectedProject.due_on).fromNow();

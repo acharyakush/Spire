@@ -17,12 +17,12 @@ import { faCalendar, faCoins, faIdCardClip, faIndianRupeeSign, faListCheck, faNo
 
 export function AddTask({ addTask, mount, unmount }) {
 	// Business Logic
-	const today = new Date();
-	const sevenDaysFromToday = today.setDate(today.getDate() + 7);
+	const today = dayjs();
+	const sevenDaysFromToday = today.add(7, "day");
 
 	const [state, setState] = useState({
 		content: "",
-		due_on: sevenDaysFromToday,
+		due_on: sevenDaysFromToday.toDate(),
 		expense: 0,
 		id: "TK000000",
 		isBoxDragged: false,
@@ -38,7 +38,7 @@ export function AddTask({ addTask, mount, unmount }) {
 
 		setState({
 			content: "",
-			due_on: sevenDaysFromToday,
+			due_on: sevenDaysFromToday.toDate(),
 			expense: 0,
 			id: "TK000000",
 			isBoxDragged: false,
@@ -534,11 +534,12 @@ export function UpdateTask({ mount, reloadTasks, selectedTask, unmount }) {
 		setState((old) => ({ ...old, isLoading: true }));
 
 		const body = {
-			content: MyGlobal.EscapeString(selectedTask.content),
-			due_on: dayjs(state.due_on).format("YYYY-MM-DD"),
-			expense: Number(selectedTask.expense),
+			content: MyGlobal.EscapeString(state.content),
+			dueOn: dayjs(state.due_on).format("YYYY-MM-DD"),
+			expense: Number(state.expense),
+			remark: MyGlobal.EscapeString(state.remark),
 			taskId: selectedTask.id,
-			remark: MyGlobal.EscapeString(selectedTask.remark),
+			type: "update-task",
 		};
 
 		try {
@@ -557,6 +558,7 @@ export function UpdateTask({ mount, reloadTasks, selectedTask, unmount }) {
 			MyGlobal.HandleErrors(error, "Update Task");
 		} finally {
 			setState((old) => ({ ...old, isLoading: false }));
+			unmount();
 		}
 	};
 
@@ -633,6 +635,133 @@ export function UpdateTask({ mount, reloadTasks, selectedTask, unmount }) {
 						</div>
 						<footer className="dialog-footer">
 							<button className="primary-button-condensed" onClick={() => updateTask()}>
+								{uiButton()}
+							</button>
+						</footer>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
+export function UpdateTaskStatus({ mount, reloadTasks, selectedTask, unmount }) {
+	// Business Logic
+	const [state, setState] = useState({ isBoxDragged: false, isLoading: false, reason: "" });
+
+	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+
+	const updateButtonClickEvent = state.isLoading || !state.reason ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	const updateButtonStyle = `primary-button-condensed ${updateButtonClickEvent}`;
+
+	let isCompleted = 0;
+	let isDisabled = 0;
+	let messageBody = "";
+	let activityMessage = "";
+
+	switch (selectedTask.status) {
+		case MyConstants.Statuses.Tasks.Enable:
+			activityMessage = `Enabled <b>${selectedTask.id}</b> due to <b>${state.reason}</b>`;
+			messageBody = "Are you sure you want to enable this task?";
+			break;
+		case MyConstants.Statuses.Tasks.Disable:
+			isDisabled = 1;
+			activityMessage = `Disabled <b>${selectedTask.id}</b> due to <b>${state.reason}</b>`;
+			messageBody = "Are you sure you want to disable this task?";
+			break;
+		case MyConstants.Statuses.Tasks.Completed:
+			isCompleted = 1;
+			activityMessage = `Closed <b>${selectedTask.id}</b> due to <b>${state.reason}</b>`;
+			messageBody = "Are you sure you want to mark this task completed?";
+			break;
+	}
+
+	// Functions
+	const setBoxDrag = () => {
+		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
+	};
+
+	const setReason = (reason) => {
+		setState((old) => ({ ...old, reason }));
+	};
+
+	const updateStatus = async () => {
+		setState((old) => ({ ...old, isLoading: true }));
+
+		const body = {
+			isCompleted,
+			isDisabled,
+			reason: state.reason,
+			taskId: selectedTask.id,
+			type: "update-task-status",
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reloadTasks();
+
+				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Tasks);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskUpdated);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Update Project Status");
+		} finally {
+			setState((old) => ({ ...old, isLoading: false, reason: "" }));
+			unmount(false);
+		}
+	};
+
+	// UI Components
+	const uiButton = () => {
+		if (state.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Update";
+		}
+	};
+
+	const uiTitleBar = () => {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Update Status</span>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+			</DialogTitle>
+		);
+	};
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded black-white-background shadow">
+						{uiTitleBar()}
+						<span className="flex w-full p-5 font-regular-12 black-text">{messageBody} You are required to write a reason below.</span>
+						<div className="flex flex-col w-full px-2.5 pb-5 justify-center items-center">
+							<TextArea
+								icon={faNoteSticky}
+								key={1}
+								label="Reason"
+								onChange={(event) => setReason(event.target.value)}
+								onKeyDown={() => {}}
+								rows={3}
+								tabIndex={1}
+								value={state.reason}
+								width="w-full"
+							/>
+						</div>
+						<footer className="dialog-footer">
+							<button className={updateButtonStyle} onClick={() => updateStatus()}>
 								{uiButton()}
 							</button>
 						</footer>

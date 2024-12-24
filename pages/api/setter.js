@@ -64,6 +64,12 @@ export default async function handler(req, res) {
 			} else if (request.type == "update-quote") {
 				queryString = "UPDATE projects SET quote=? WHERE id=?";
 				queryParameters = [request.quote, request.projectId];
+			} else if (request.type == "update-task") {
+				queryString = "UPDATE tasks SET content=?, due_on=?, remark=?, expense=? WHERE id=?";
+				queryParameters = [request.content, request.dueOn, request.remark, request.expense, request.taskId];
+			} else if (request.type == "update-task-status") {
+				queryString = "UPDATE tasks SET is_completed=?, is_disabled=?, reason=? WHERE id=?";
+				queryParameters = [request.isCompleted, request.isDisabled, request.reason, request.taskId];
 			}
 
 			const response = await query(queryString, queryParameters);

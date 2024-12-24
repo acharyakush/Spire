@@ -287,7 +287,7 @@ export const DatePicker = ({ icon, label, onChange, tabIndex, value, width }) =>
 				<ReactDatePicker
 					autoFocus={false}
 					className="bg-transparent w-full outline-none relative font-regular-12 black-text"
-					dateFormat="dd-MM-YYYY"
+					dateFormat="dd-MM-yyyy"
 					dropdownMode="select"
 					onChange={onChange}
 					peekNextMonth

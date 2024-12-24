@@ -14,7 +14,7 @@ import { applicationName, MyGlobal } from "@/utilities/global";
 import { ErrorFallbackComponent } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { faCog, faDatabase, faSignOut, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCog, faDatabase, faSignOut, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 export default function Home() {
 	// Business Logic
@@ -31,7 +31,7 @@ export default function Home() {
 	const [mainData, setMainData] = useState({
 		isDarkModeEnabled: false,
 		loggedInUser: {},
-		selectedModule: { id: 0, name: baseModules.Dashboard },
+		selectedModule: { name: baseModules.Dashboard, sequence: 0 },
 		singleProjectObject: {},
 		theme: null,
 	});
@@ -54,7 +54,7 @@ export default function Home() {
 	const closeProjectsView = () => {
 		setMainData((old) => ({
 			...old,
-			selectedModule: { id: 0, name: baseModules.Dashboard },
+			selectedModule: { name: baseModules.Dashboard, sequence: 0 },
 			singleProjectObject: {},
 		}));
 	};
@@ -96,7 +96,9 @@ export default function Home() {
 			const sequentialModules = modules.sort((a, b) => a.sequence - b.sequence);
 
 			MyGlobal.SetPermission(response.data);
+
 			setApiData((old) => ({ ...old, allPermissions: response.data, modules: sequentialModules }));
+			setMainData((old) => ({ ...old, selectedModule: { name: sequentialModules.at(0).module, sequence: sequentialModules.at(0).sequence - 1 } }));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get All Permissions");
 		}
@@ -196,8 +198,8 @@ export default function Home() {
 		router.replace("/");
 	};
 
-	const setModule = (index, module) => {
-		setMainData((old) => ({ ...old, selectedModule: { id: index, name: module.name } }));
+	const setModule = (module, sequence) => {
+		setMainData((old) => ({ ...old, selectedModule: { name: module.name, sequence: sequence - 1 } }));
 	};
 
 	const toggleActivitiesView = () => {
@@ -239,11 +241,14 @@ export default function Home() {
 		return apiData.modules
 			.filter((module) => module.sequence <= 8)
 			.map((module, index) => {
-				const aesthetics = index == mainData.selectedModule.id ? "primary-border-colour primary-text" : "border-transparent gray-text";
-				const wrapper = `py-3 border-b-4 whitespace-nowrap font-regular-12 ${aesthetics}`;
+				const aesthetics =
+					index == mainData.selectedModule.sequence
+						? "primary-border-colour primary-background-transparent-01 primary-text"
+						: "border-transparent gray-text";
+				const wrapper = `p-2 border-b-4 whitespace-nowrap font-regular-12 ${aesthetics}`;
 
 				return (
-					<button key={index} className={wrapper} onClick={() => setModule(index, module)}>
+					<button key={index} className={wrapper} onClick={() => setModule(module, module.sequence)}>
 						{module.name}
 					</button>
 				);
@@ -251,9 +256,13 @@ export default function Home() {
 	};
 
 	const uiOtherModules = () => {
+		const aesthetics =
+			mainData.selectedModule.sequence == -1 ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
+		const wrapper = `p-2 border-b-4 whitespace-nowrap font-regular-12 ${aesthetics}`;
+
 		return (
 			<Menu as="div" className="relative z-50 inline-block text-left">
-				<MenuButton className="py-3 font-regular-12 border-transparent gray-text">
+				<MenuButton className={wrapper}>
 					<span>More</span>
 				</MenuButton>
 				<MenuItems anchor="bottom" className="absolute w-max rounded focus:outline-none bottom-shadow black-white-background full-border black-text">
@@ -267,12 +276,16 @@ export default function Home() {
 		return apiData.modules
 			.filter((module) => module.sequence > 8)
 			.map((module, index) => {
+				const isSelected = module.name == mainData.selectedModule.name;
+				const selectedModuleTextStyle = isSelected ? "primary-background-transparent-01 primary-text" : "gray-text";
+
 				return (
 					<MenuItem
 						as="div"
-						className="p-2 cursor-pointer border-y font-regular-11 black-text hovered-rows"
+						className={`p-2 space-x-2.5 cursor-pointer border-y ${selectedModuleTextStyle} hovered-rows`}
 						key={index}
-						onClick={() => setModule(index, module)}>
+						onClick={() => setModule(module, 0)}>
+						{isSelected && <FontAwesomeIcon icon={faCheck} />}
 						<span>{module.name}</span>
 					</MenuItem>
 				);
@@ -432,7 +445,7 @@ export default function Home() {
 					<span className="uppercase dashboard-heading">{applicationName}</span>
 				</div>
 				<div className="flex w-full justify-center items-center">
-					<div className="flex space-x-6 relative">
+					<div className="flex space-x-2 relative">
 						{uiModules()} {uiOtherModules()}
 					</div>
 				</div>

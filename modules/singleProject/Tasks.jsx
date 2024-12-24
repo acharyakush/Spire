@@ -12,7 +12,7 @@ import { MyGlobal } from "@/utilities/global";
 import { SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { AddTask, UpdateProjectStatus, UpdateTask } from "@/modals/singleProject/miscellaneous";
+import { AddTask, UpdateProjectStatus, UpdateTask, UpdateTaskStatus } from "@/modals/singleProject/miscellaneous";
 import {
 	faBan,
 	faCheckCircle,
@@ -37,6 +37,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		markTaskCompleted: false,
 		updateStatus: false,
 		updateTask: false,
+		updateTaskStatus: false,
 	});
 
 	const [mainData, setMainData] = useState({
@@ -221,35 +222,6 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		}
 	};
 
-	const markTaskAsCompleted = async (taskId) => {
-		setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, markTaskAsCompleted: taskId } }));
-
-		const body = {
-			completedOn: dayjs().format("YYYY-MM-DD"),
-			projectId: selectedProject.id,
-			taskId,
-			type: "mark-task-as-completed",
-		};
-
-		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
-
-			if (response.status === 200) {
-				getTasks();
-
-				MyGlobal.AddActivity(`Updated <b>${taskId}</b> of <b>${selectedProject.id}</b>.`, MyConstants.Modules.Base.Tasks);
-
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskUpdated);
-			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "Mark Task Completed");
-		} finally {
-			setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, markTaskAsCompleted: 0 } }));
-		}
-	};
-
 	const saveTask = async (task) => {
 		if (task.content && task.remark) {
 			setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, addSingleTask: task.id } }));
@@ -292,11 +264,6 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		setHasMounted((old) => ({ ...old, addTask: !hasMounted.addTask }));
 	};
 
-	const toggleMarkTaskAsCompletedBox = (task) => {
-		setMainData((old) => ({ ...old, selectedTask: task ?? {} }));
-		setHasMounted((old) => ({ ...old, markTaskCompleted: task ? true : false }));
-	};
-
 	const toggleUpdateStatusBox = (task) => {
 		setMainData((old) => ({ ...old, selectedTask: task ?? {} }));
 		setHasMounted((old) => ({ ...old, updateStatus: task ? true : false }));
@@ -307,28 +274,27 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		setHasMounted((old) => ({ ...old, updateTask: task ? true : false }));
 	};
 
+	const toggleUpdateTaskStatusBox = (task) => {
+		setMainData((old) => ({ ...old, selectedTask: task ?? {} }));
+		setHasMounted((old) => ({ ...old, updateTaskStatus: task ? true : false }));
+	};
+
 	// UI Components
 	const uiActionsMenu = (task) => {
 		const style = "flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y hovered-rows";
 
+		const noClickAndHalfOpacity = "pointer-events-none opacity-25";
+		const clickAndFullOpacity = "pointer-events-auto opacity-100";
+
 		const isUnsavedTask = task.id == "TK000000";
 
-		const addTaskStyle = `${style} ${isUnsavedTask ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
+		const updateTaskStyle = !isUnsavedTask && (task.is_disabled == 1 || task.is_completed == 1) ? noClickAndHalfOpacity : clickAndFullOpacity;
+		const deleteOrSaveTaskStyle = !isUnsavedTask ? noClickAndHalfOpacity : clickAndFullOpacity;
+		const enableTaskStyle = !isUnsavedTask && task.is_disabled == 1 ? clickAndFullOpacity : noClickAndHalfOpacity;
 
-		const saveTaskStyle = `${style} ${!isUnsavedTask ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
+		const disableTaskStyle = !isUnsavedTask && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
 
-		const updateTaskStyle = `${style} ${isUnsavedTask ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
-
-		const deleteTaskStyle = `${style} ${!isUnsavedTask ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
-
-		const isTaskDisabled = isUnsavedTask && task.is_disabled == 1;
-		const enableTaskStyle = `${style} ${!isTaskDisabled ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
-
-		const isTaskEnabled = isUnsavedTask && task.is_disabled == 0;
-		const disableTaskStyle = `${style} ${isTaskEnabled ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
-
-		const isTaskWorthCompleting = !isUnsavedTask && task.is_disabled == 0;
-		const markTaskCompletedStyle = `${style} ${!isTaskWorthCompleting ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100"}`;
+		const markTaskCompletedStyle = !isUnsavedTask && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
 
 		return (
 			<Menu as="div" className="flex justify-center items-center relative">
@@ -338,49 +304,58 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 				</MenuButton>
 				<MenuItems className="absolute w-max top-6 right-0 origin-top-right rounded focus:outline-none z-50 black-white-background bottom-shadow full-border">
 					{allowNewTask && (
-						<MenuItem as="div" className={addTaskStyle} onClick={() => toggleAddTaskBox()}>
+						<MenuItem as="div" className={style} onClick={() => toggleAddTaskBox()}>
 							<FontAwesomeIcon className="w-5 primary-text" icon={faPlusCircle} />
 							<span className="font-regular-11">Add</span>
 						</MenuItem>
 					)}
 
 					{allowNewTask && (
-						<MenuItem as="div" className={saveTaskStyle} onClick={() => saveTask(task)}>
+						<MenuItem as="div" className={`${style} ${deleteOrSaveTaskStyle}`} onClick={() => saveTask(task)}>
 							<FontAwesomeIcon className="w-5 green-text" icon={faSave} />
 							<span className="font-regular-11">Save</span>
 						</MenuItem>
 					)}
 
 					{allowUpdatingTask && (
-						<MenuItem as="div" className={updateTaskStyle} onClick={() => toggleUpdateTaskBox(task)}>
+						<MenuItem as="div" className={`${style} ${updateTaskStyle}`} onClick={() => toggleUpdateTaskBox(task)}>
 							<FontAwesomeIcon className="w-5 orange-text" icon={faStar} />
 							<span className="font-regular-11">Update</span>
 						</MenuItem>
 					)}
 
 					{allowNewTask && (
-						<MenuItem as="div" className={deleteTaskStyle} onClick={() => deleteTask(task)}>
+						<MenuItem as="div" className={`${style} ${deleteOrSaveTaskStyle}`} onClick={() => deleteTask(task)}>
 							<FontAwesomeIcon className="w-5 red-text" icon={faTrash} />
 							<span className="font-regular-11">Delete</span>
 						</MenuItem>
 					)}
 
 					{allowEnablingTask && (
-						<MenuItem as="div" className={enableTaskStyle} onClick={() => {}}>
+						<MenuItem
+							as="div"
+							className={`${style} ${enableTaskStyle}`}
+							onClick={() => toggleUpdateTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Enable })}>
 							<FontAwesomeIcon className="w-5 green-text" icon={faCheckCircle} />
 							<span className="font-regular-11">Enable</span>
 						</MenuItem>
 					)}
 
 					{allowDisablingTask && (
-						<MenuItem as="div" className={disableTaskStyle} onClick={() => {}}>
+						<MenuItem
+							as="div"
+							className={`${style} ${disableTaskStyle}`}
+							onClick={() => toggleUpdateTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Disable })}>
 							<FontAwesomeIcon className="w-5 red-text" icon={faBan} />
 							<span className="font-regular-11">Disable</span>
 						</MenuItem>
 					)}
 
 					{allowMarkingTaskCompleted && (
-						<MenuItem as="div" className={markTaskCompletedStyle} onClick={() => {}}>
+						<MenuItem
+							as="div"
+							className={`${style} ${markTaskCompletedStyle}`}
+							onClick={() => toggleUpdateTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Completed })}>
 							<FontAwesomeIcon className="w-5 green-text" icon={faClipboardCheck} />
 							<span className="font-regular-11">Mark Completed</span>
 						</MenuItem>
@@ -436,33 +411,31 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 	};
 
 	const uiRows = (task, rowIndex) => {
+		// Variables
 		const isCompleted = task.is_completed == 1;
 		const isDisabled = task.is_disabled == 1;
+		const isUnsavedTask = task.id == "TK000000";
+		const insertedBy = MyGlobal.GetAnyDataFromId(task.input_by, "full_name");
+		const unsavedTaskTag = isUnsavedTask && <span className="orange-tag text-sm">Unsaved</span>;
 
 		// UI
 		const style = "flex w-[14.28%] min-h-10 justify-center items-center text-center relative right-border";
+		const actionsStyle = `${style} !no-underline !decoration-0 black-white-background black-text`;
+
 		const horizontalSpacing = isCompleted ? "space-x-1.5" : "space-x-0";
 		const showCircledTick = isCompleted ? "block green-text" : "hidden";
 
 		const strikeThrough = isDisabled ? "line-through decoration-3 gray-text" : "black-text";
-		const background = isCompleted ? "light-gray-background pointer-events-none" : "bg-transparent pointer-events-auto";
-		const inputClickEvent = isDisabled || isCompleted ? "pointer-events-none" : "pointer-events-auto";
+		const background = isCompleted ? "light-gray-background" : "black-white-background";
 
-		const wrapper = `flex w-full justify-center items-center black-text black-white-background bottom-border font-regular-11 hovered-rows-2`;
-
-		// Variables
-		const insertedBy = MyGlobal.GetAnyDataFromId(task.input_by, "full_name");
-
-		const isNewTask = apiData.tasks.api.filter((_task) => _task.id == task.id && _task.project_id == selectedProject.id);
-
-		const tag = !isNewTask.length && <span className="orange-tag text-sm">Unsaved</span>;
+		const wrapper = `flex w-full justify-center items-center ${strikeThrough} ${background} bottom-border font-regular-11 hovered-rows-2`;
 
 		return (
 			<div className={wrapper} key={rowIndex}>
 				<span className={`${style} ${horizontalSpacing}`}>
-					<FontAwesomeIcon className={showCircledTick} icon={faCheckCircle} size="lg" />
-					{isNewTask.length > 0 && <span>{task.id}</span>}
-					{tag}
+					<FontAwesomeIcon className={showCircledTick} icon={faCheckCircle} />
+					<span>{task.id}</span>
+					{unsavedTaskTag}
 				</span>
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(task.content, mainData.searchTerm) }} />
@@ -475,7 +448,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(task.expense, mainData.searchTerm) }} />
 
-				<span className={style}>{uiActionsMenu(task)}</span>
+				<span className={actionsStyle}>{uiActionsMenu(task)}</span>
 			</div>
 		);
 	};
@@ -513,6 +486,15 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 
 			{hasMounted.updateTask && (
 				<UpdateTask mount={hasMounted.updateTask} reloadTasks={getTasks} selectedTask={mainData.selectedTask} unmount={toggleUpdateTaskBox} />
+			)}
+
+			{hasMounted.updateTaskStatus && (
+				<UpdateTaskStatus
+					mount={hasMounted.updateTaskStatus}
+					reloadTasks={getTasks}
+					selectedTask={mainData.selectedTask}
+					unmount={toggleUpdateTaskStatusBox}
+				/>
 			)}
 		</>
 	);
