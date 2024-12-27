@@ -1,16 +1,8 @@
-@font-face {
-	font-family: "Inter";
-	src: url("/inter-variable.ttf");
-}
-
-@font-face {
-	font-family: "geist";
-	src: url("/geist-variable.ttf");
-}
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
 :root {
-	--web-font-family: "Geist", Arial, sans-serif;
-	--web-header-font: "Geist", Arial, sans-serif;
+	--web-font-family: "Inter", Arial, sans-serif;
+	--web-header-font: "Inter", Arial, sans-serif;
 }
 
 @tailwind base;
@@ -79,7 +71,9 @@
 	--web-gray-transparent-01: rgba(176, 176, 176, 0.1);
 
 	--web-green-transparent-01: rgba(0, 98, 65, 0.1);
-	--web-green: #006241;
+	/* --web-green: #006241; */
+	--web-green: #4fa85e;
+	--web-green-transparent-1: rgb(81, 114, 36, 0.1);
 
 	--web-light-gray: #f5f5f5;
 	--web-light-slate-gray: #9e9e9e;
@@ -88,7 +82,7 @@
 	--web-logo-green: #455526;
 
 	--web-orange-transparent-01: rgba(254, 150, 1, 0.1);
-	--web-orange: #fe9601;
+	--web-orange: #eeb501;
 
 	--web-primary-background: #e0e0e0;
 	--web-primary-border: #e0e0e0;
@@ -97,7 +91,7 @@
 	--web-primary: #35648c;
 
 	--web-red-transparent-01: rgba(229, 9, 20, 0.1);
-	--web-red: rgb(229, 9, 20);
+	--web-red: #d62121;
 
 	--web-text: #232f33;
 	--web-white: #232f33;
@@ -201,6 +195,16 @@ html {
 	font-family: var(--web-font-family);
 }
 
+.font-bold-20 {
+	@apply text-[20pt] font-bold;
+	font-family: var(--web-font-family);
+}
+
+.font-bold-26 {
+	@apply text-[26pt] font-bold;
+	font-family: var(--web-font-family);
+}
+
 .font-medium-10 {
 	@apply text-[10pt] font-medium;
 	font-family: var(--web-font-family);
@@ -233,6 +237,11 @@ html {
 
 .font-medium-18 {
 	@apply text-[18pt] font-medium;
+	font-family: var(--web-font-family);
+}
+
+.font-medium-26 {
+	@apply text-[26pt] font-medium;
 	font-family: var(--web-font-family);
 }
 
@@ -340,6 +349,10 @@ html {
 	@apply bg-[var(--web-green)];
 }
 
+.green-background-gradient {
+	background: linear-gradient(to bottom, var(--web-green), #000);
+}
+
 .green-background-transparent-01 {
 	@apply bg-[var(--web-green-transparent-01)];
 }
@@ -419,7 +432,7 @@ html {
 }
 
 .light-gray-button {
-	@apply bg-[var(--web-light-gray-background)] border border-[var(--web-light-gray-background)] flex font-light h-9 justify-center items-center outline-none px-2.5 relative rounded select-none space-x-2.5 text-base black-text;
+	@apply bg-[var(--web-light-gray-background)] border border-[var(--web-light-gray-background)] flex font-normal h-9 justify-center items-center outline-none px-2.5 relative rounded select-none space-x-2.5 text-base black-text;
 	font-family: var(--web-font-family);
 }
 
@@ -464,6 +477,14 @@ html {
 	border-top: none;
 }
 
+.orange-background {
+	@apply bg-[var(--web-orange)];
+}
+
+.orange-background-gradient {
+	background: linear-gradient(to bottom, var(--web-orange), #000);
+}
+
 .orange-background-transparent-01 {
 	@apply bg-[var(--web-orange-transparent-01)];
 }
@@ -488,6 +509,10 @@ html {
 	@apply bg-[var(--web-primary)];
 }
 
+.primary-background-gradient {
+	background: linear-gradient(to bottom, var(--web-primary), #000);
+}
+
 .primary-background-transparent-01 {
 	@apply bg-[var(--web-primary-transparent-01)];
 }
@@ -505,7 +530,7 @@ html {
 }
 
 .primary-button-condensed {
-	@apply bg-[var(--web-primary)] border border-[var(--web-primary)] flex font-light h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-base text-white;
+	@apply bg-[var(--web-primary)] border border-[var(--web-primary)] flex font-normal h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-base text-white;
 	font-family: var(--web-font-family);
 }
 
@@ -523,12 +548,12 @@ html {
 }
 
 .primary-button-normal {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-light h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
+	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
 	font-family: var(--web-font-family);
 }
 
 .primary-button-normal-2 {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-light h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
+	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
 	font-family: var(--web-font-family);
 }
 
@@ -543,7 +568,7 @@ html {
 }
 
 .primary-button-wide {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-light h-9 outline-none relative rounded select-none text-base text-white w-full;
+	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-9 outline-none relative rounded select-none text-base text-white w-full;
 	font-family: var(--web-font-family);
 }
 
@@ -573,6 +598,10 @@ html {
 	@apply bg-[var(--web-red)];
 }
 
+.red-background-gradient {
+	background: linear-gradient(to bottom, var(--web-red), #000);
+}
+
 .red-background-transparent-01 {
 	@apply bg-[var(--web-red-transparent-01)];
 }
@@ -586,7 +615,7 @@ html {
 }
 
 .red-button-transparent-background {
-	@apply bg-[var(--web-red-transparent-01)] border border-[var(--web-red)] flex font-light h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-base text-[var(--web-red)];
+	@apply bg-[var(--web-red-transparent-01)] border border-[var(--web-red)] flex font-normal h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-base text-[var(--web-red)];
 	font-family: var(--web-font-family);
 }
 
@@ -730,4 +759,63 @@ html {
 	box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
 	-moz-box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
 	-webkit-box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
+}
+
+.layout {
+	display: flex;
+	height: 100vh;
+}
+
+.sidebar {
+	width: 200px;
+	background-color: #2c3e50;
+	color: white;
+	padding: 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	border-top-left-radius: 20px;
+	border-bottom-left-radius: 20px;
+	position: relative;
+	z-index: 2;
+}
+
+.module {
+	padding: 10px 15px;
+	background-color: #34495e;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+.module.active {
+	background-color: #1abc9c;
+	border-radius: 15px 0 0 15px;
+}
+
+.module:hover {
+	background-color: #16a085;
+}
+
+.content {
+	flex: 1;
+	background-color: #ecf0f1;
+	padding: 20px;
+	border-top-left-radius: 20px;
+	border-bottom-left-radius: 20px;
+	margin-left: -20px; /* Overlap the sidebar to create a smooth curve effect */
+	z-index: 1;
+	position: relative;
+}
+
+.content h1 {
+	color: #2c3e50;
+}
+
+.content p {
+	color: #34495e;
+}
+
+.gradient {
+	background: linear-gradient(to bottom, var(--web-green-transparent-1), #000);
 }

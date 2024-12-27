@@ -37,6 +37,9 @@ export default async function handler(req, res) {
 		} else if (request.type === "get-tasks") {
 			queryString = "SELECT * FROM tasks WHERE project_id=?";
 			queryParameters = [request.projectId];
+		} else if (request.type === "get-tasks-particulars-remarks") {
+			queryString = "SELECT * FROM tasks_particulars_remarks WHERE project_id=?";
+			queryParameters = [request.projectId];
 		} else {
 			return res.status(400).send({ error: "Invalid request type" });
 		}

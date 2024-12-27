@@ -30,6 +30,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 	// Business Logic
 	const [apiData, setApiData] = useState({
 		tasks: { api: [], apiCopy: [] },
+		tasksParticularsRemarks: { api: [], apiCopy: [] },
 	});
 
 	const [hasMounted, setHasMounted] = useState({
@@ -210,11 +211,17 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, tasks: true } }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ projectId: selectedProject.id, type: "get-tasks" }));
+			const allTasks = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ projectId: selectedProject.id, type: "get-tasks" }));
 
-			if (response.status === 200) {
-				setApiData({ tasks: { api: response.data, apiCopy: response.data } });
-			}
+			const allTasksParticularsRemarks = await axios.get(
+				MyConstants.ApiEndpoints.Getter,
+				MyGlobal.GetHeaders({ projectId: selectedProject.id, type: "get-tasks-particulars-remarks" }),
+			);
+
+			setApiData({
+				tasks: { api: allTasks.data, apiCopy: allTasks.data },
+				tasksParticularsRemarks: { api: allTasksParticularsRemarks.data, apiCopy: allTasksParticularsRemarks.data },
+			});
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get Tasks");
 		} finally {
@@ -222,8 +229,23 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		}
 	};
 
+	const getSelectedTaskData = () => {
+		let selectedTaskParticularsRemarks = [];
+
+		if (apiData.tasksParticularsRemarks.api.length) {
+			const result = apiData.tasksParticularsRemarks.api.filter((object) => object.task_id == mainData.selectedTask.id);
+
+			if (result.length) {
+				selectedTaskParticularsRemarks = result;
+			}
+		}
+
+		const selectedTaskData = apiData.tasks.api.filter((task) => task.id == mainData.selectedTask.id).at(0);
+		return [{ ...selectedTaskData, selectedTaskParticularsRemarks }];
+	};
+
 	const saveTask = async (task) => {
-		if (task.content && task.remark) {
+		if (task.content) {
 			setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, addSingleTask: task.id } }));
 
 			const body = {
@@ -254,6 +276,10 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 				setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, addSingleTask: 0 } }));
 			}
 		}
+	};
+
+	const setTask = (task) => {
+		setMainData((old) => ({ ...old, selectedTask: task }));
 	};
 
 	const setSort = (column) => {
@@ -367,18 +393,32 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 
 	const uiHeaders = () => {
 		return Object.values(tableHeaders).map((header, index) => {
+			const width = index != 2 ? "w-2/5" : "w-1/5";
 			const showSortArrow = header == mainData.sort.column ? "visible" : "invisible";
+			const wrapper = `flex ${width} h-10 space-x-2 justify-center items-center cursor-pointer text-center text-white font-medium-12`;
 
 			return (
-				<span
-					className="flex w-[14.28%] h-9 space-x-2 justify-center items-center cursor-pointer text-center text-white font-medium-10"
-					onClick={() => setSort(header)}
-					key={index}>
+				<span className={wrapper} onClick={() => setSort(header)} key={index}>
 					<span>{header}</span>
 					<span className={showSortArrow}>{uiSortArrows(header)}</span>
 				</span>
 			);
 		});
+	};
+
+	const uiSelectedTaskHeader = () => {
+		const data = getSelectedTaskData().at(0);
+
+		return (
+			<div className="flex flex-col w-full space-y-2 justify-between items-center">
+				<div className="flex w-full justify-between items-center">
+					<span className="font-medium-14">{MyGlobal.ThousandSeparator(data.expense)}</span>
+					<span className="font-medium-14">{data.content}</span>
+					<span className="font-medium-14">{dayjs(data.due_on).format("DD MMM, YYYY")}</span>
+				</div>
+				<div className="flex w-full justify-center items-center primary-background">{uiHeaders()}</div>
+			</div>
+		);
 	};
 
 	const uiMain = () => {
@@ -401,21 +441,28 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		} else {
 			return (
 				<>
-					<div className="flex w-full primary-background">{uiHeaders()}</div>
-					<div className="w-full h-[calc(100vh-141px)] overflow-y-auto black-white-background">
-						{doSorting().map((task, index) => uiRows(task, index))}
+					<div className="flex w-full justify-between items-center">
+						<div className="flex flex-col w-[15%] justify-start items-center">{doSorting().map((task, index) => uiTasksList(task, index))}</div>
+						<div className="flex flex-col w-[85%] justify-between items-center">
+							<div className="flex w-full">{uiSelectedTaskHeader()}</div>
+							<div className="w-full h-[calc(100vh-141px)] overflow-y-auto black-white-background">
+								{getSelectedTaskData().map((task, index) => uiSelectedTaskRows(task, index))}
+							</div>
+						</div>
 					</div>
 				</>
 			);
 		}
 	};
 
-	const uiRows = (task, rowIndex) => {
+	const uiSelectedTaskRows = (task, rowIndex) => {
+		console.log(task);
 		// Variables
 		const isCompleted = task.is_completed == 1;
 		const isDisabled = task.is_disabled == 1;
 		const isUnsavedTask = task.id == "TK000000";
-		const insertedBy = MyGlobal.GetAnyDataFromId(task.input_by, "full_name");
+		// const insertedBy = MyGlobal.GetAnyDataFromId(task.input_by, "full_name");
+		const insertedBy = "";
 		const unsavedTaskTag = isUnsavedTask && <span className="orange-tag text-sm">Unsaved</span>;
 
 		// UI
@@ -434,7 +481,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 			<div className={wrapper} key={rowIndex}>
 				<span className={`${style} ${horizontalSpacing}`}>
 					<FontAwesomeIcon className={showCircledTick} icon={faCheckCircle} />
-					<span>{task.id}</span>
+					{!isUnsavedTask && <span>{task.id}</span>}
 					{unsavedTaskTag}
 				</span>
 
@@ -461,6 +508,23 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 				return <FontAwesomeIcon icon={faSortAmountDesc} />;
 			}
 		}
+	};
+
+	const uiTasksList = (task, rowIndex) => {
+		// UI
+		const style = "flex w-full min-h-10 justify-center items-center text-center relative bottom-shadow right-border";
+
+		const wrapper = `flex w-full justify-center items-center black-text black-white-background font-regular-11 hovered-rows-2`;
+
+		return (
+			<div className={wrapper} key={rowIndex}>
+				<span
+					className={style}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(task.content, mainData.searchTerm) }}
+					onClick={() => setTask(task)}
+				/>
+			</div>
+		);
 	};
 
 	// Hooks

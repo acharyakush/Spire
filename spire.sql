@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 24, 2024 at 07:31 PM
+-- Generation Time: Dec 27, 2024 at 03:56 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -169,7 +169,15 @@ INSERT INTO `activities` (`id`, `user_id`, `module`, `activity`, `ip_address`, `
 (83, 'A3', 'Tasks', 'Updated <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-24 22:55:27', '', ''),
 (84, 'A3', 'Tasks', 'Enabled <b>TK000001</b> due to <b>NA</b>', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-24 23:12:53', '', ''),
 (85, 'A3', 'Tasks', 'Closed <b>TK000001</b> due to <b>Yes</b>', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-24 23:13:08', '', ''),
-(86, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-24 23:59:57', '', '');
+(86, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-24 23:59:57', '', ''),
+(87, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-25 16:01:46', '3Z0OAOBrwLZrdWalpYLaGbL6SUWoY92JHX0gQ9sy4HvANTCDECrkf0/48HwyLOTkPJ1IP6Mq85LzojUHRL1UTA==', ''),
+(88, '', 'General', 'Logged in.', '::ffff:192.168.1.15', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-25 18:05:49', 'mPgO0KoG9gTrjJH1H05pbup7L3HlBlbI+YNOogYBUTNFzwlq2KTiBLaPXUbkN+G0r6xhLkF5AAl+beafIoj7yA==', ''),
+(89, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-25 19:23:33', '', ''),
+(90, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-25 19:50:06', 'b4FxASSPyqdsuw40mdWJYwGAzas67RZjm5JcLpDz8N33BHUG5ftJQCeiRifShMJRVSLR9eINWsX7Zzv5s5tbpw==', ''),
+(91, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-25 20:38:18', 'b4FxASSPyqdsuw40mdWJYwGAzas67RZjm5JcLpDz8N33BHUG5ftJQCeiRifShMJRVSLR9eINWsX7Zzv5s5tbpw==', ''),
+(92, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-26 18:51:18', 'OqftxFfSHWhmYzyF69mtxjSKDtNJuwFu634vJDRy+4uRoXlTPt10hv3sVmmyyDtgjl8uf5qPTtS4fjSPxmaRSg==', ''),
+(93, 'A3', 'Tasks', 'Added <b>TK000002</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-26 19:27:25', 'OqftxFfSHWhmYzyF69mtxjSKDtNJuwFu634vJDRy+4uRoXlTPt10hv3sVmmyyDtgjl8uf5qPTtS4fjSPxmaRSg==', ''),
+(94, 'A3', 'Tasks', 'Added <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-26 20:13:12', '', '');
 
 -- --------------------------------------------------------
 
@@ -1022,7 +1030,6 @@ CREATE TABLE `tasks` (
   `content` varchar(255) NOT NULL,
   `due_on` date NOT NULL,
   `input_by` char(8) NOT NULL,
-  `remark` varchar(255) DEFAULT NULL,
   `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
   `is_completed` tinyint(1) NOT NULL DEFAULT 0,
   `is_disabled` tinyint(1) NOT NULL DEFAULT 0,
@@ -1034,8 +1041,23 @@ CREATE TABLE `tasks` (
 -- Dumping data for table `tasks`
 --
 
-INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `content`, `due_on`, `input_by`, `remark`, `expense`, `is_completed`, `is_disabled`, `reason`, `completed_on`) VALUES
-('TK000001', 'CN000001', 'PJ000001', 'Hellos', '2024-12-25', 'A3', 'How are you today?', 1500.00, 1, 0, 'Yes', NULL);
+INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `content`, `due_on`, `input_by`, `expense`, `is_completed`, `is_disabled`, `reason`, `completed_on`) VALUES
+('TK000001', 'CN000001', 'PJ000001', 'Task #1', '2024-12-26', 'A3', 5000.00, 0, 0, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tasks_particulars_remarks`
+--
+
+CREATE TABLE `tasks_particulars_remarks` (
+  `id` int(11) NOT NULL,
+  `task_id` char(8) NOT NULL,
+  `particulars` varchar(500) NOT NULL,
+  `remarks` varchar(500) NOT NULL,
+  `created_by` char(8) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -1338,6 +1360,13 @@ ALTER TABLE `tasks`
   ADD KEY `fk_task_project_id` (`project_id`);
 
 --
+-- Indexes for table `tasks_particulars_remarks`
+--
+ALTER TABLE `tasks_particulars_remarks`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_task_particulars_remarks_task_id` (`task_id`);
+
+--
 -- Indexes for table `the_references`
 --
 ALTER TABLE `the_references`
@@ -1351,7 +1380,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=87;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -1426,6 +1455,12 @@ ALTER TABLE `statuses`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT for table `tasks_particulars_remarks`
+--
+ALTER TABLE `tasks_particulars_remarks`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Constraints for dumped tables
 --
 
@@ -1498,6 +1533,12 @@ ALTER TABLE `projects`
 ALTER TABLE `tasks`
   ADD CONSTRAINT `fk_task_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
   ADD CONSTRAINT `fk_task_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
+
+--
+-- Constraints for table `tasks_particulars_remarks`
+--
+ALTER TABLE `tasks_particulars_remarks`
+  ADD CONSTRAINT `fk_task_particulars_remarks_task_id` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -26,8 +26,10 @@ export function AddTask({ addTask, mount, unmount }) {
 		expense: 0,
 		id: "TK000000",
 		isBoxDragged: false,
-		remark: "",
 	});
+
+	const addButtonAesthetics = state.content ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+	const addButtonStyle = `primary-button-condensed ${addButtonAesthetics}`;
 
 	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
@@ -42,7 +44,6 @@ export function AddTask({ addTask, mount, unmount }) {
 			expense: 0,
 			id: "TK000000",
 			isBoxDragged: false,
-			remark: "",
 		});
 	};
 
@@ -98,21 +99,10 @@ export function AddTask({ addTask, mount, unmount }) {
 							/>
 							<DatePicker
 								icon={faCalendar}
-								label="Date"
+								label="Due On"
 								onChange={(event) => setInputs("due_on", event)}
 								tabIndex={2}
 								value={state.due_on}
-								width="w-full"
-							/>
-							<TextArea
-								icon={faNoteSticky}
-								key={2}
-								label="Remark"
-								onChange={(event) => setInputs("remark", event.target.value)}
-								onKeyDown={() => {}}
-								rows={2}
-								tabIndex={3}
-								value={state.remark}
 								width="w-full"
 							/>
 							<TextInput
@@ -120,13 +110,13 @@ export function AddTask({ addTask, mount, unmount }) {
 								label="Expense"
 								onChange={(event) => setInputs("expense", event.target.value)}
 								onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
-								tabIndex={4}
+								tabIndex={3}
 								value={state.expense}
 								width="w-full"
 							/>
 						</div>
 						<footer className="dialog-footer">
-							<button className="primary-button-condensed" onClick={() => addNewTask()}>
+							<button className={addButtonStyle} onClick={() => addNewTask()}>
 								{uiButton()}
 							</button>
 						</footer>

@@ -3,6 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
+import Dashboard from "./dashboard";
 import Projects from "@/modules/project";
 import Inquiries from "@/modules/inquiry";
 import MyConstants from "@/utilities/constants";
@@ -294,15 +295,15 @@ export default function Home() {
 
 	const uiSelectedModule = () => {
 		switch (mainData.selectedModule.name) {
-			// case Constants.primaryModules.dashboard.name:
-			// 	return (
-			// 		<ErrorBoundary
-			// 			key="ErrorBoundary_Dashboard"
-			// 			onError={(error) => Global.handleErrors(error.message, "Dashboard")}
-			// 			FallbackComponent={ErrorFallbackComponent}>
-			// 			<Dashboard goToProjects={goToProjects} projectSettings={projectSettings} />
-			// 		</ErrorBoundary>
-			// 	);
+			case baseModules.Dashboard:
+				return (
+					<ErrorBoundary
+						key="ErrorBoundary_Dashboard"
+						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Dashboard)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<Dashboard />
+					</ErrorBoundary>
+				);
 			// case Constants.primaryModules.clients.name:
 			// 	return (
 			// 		<ErrorBoundary
@@ -439,13 +440,13 @@ export default function Home() {
 
 	// Main UI
 	return (
-		<main className="flex flex-col min-w-[1024px] h-screen rounded-t overflow-y-hidden">
+		<main className="flex flex-col min-w-[1024px] h-screen overflow-y-hidden">
 			<div className="flex w-full h-11 px-5 justify-between items-center relative shadow black-white-background">
 				<div className="flex w-full justify-start items-center">
 					<span className="uppercase dashboard-heading">{applicationName}</span>
 				</div>
 				<div className="flex w-full justify-center items-center">
-					<div className="flex space-x-2 relative">
+					<div className="flex space-x-2 relative text-white">
 						{uiModules()} {uiOtherModules()}
 					</div>
 				</div>
