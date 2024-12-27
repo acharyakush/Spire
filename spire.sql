@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 27, 2024 at 03:56 AM
+-- Generation Time: Dec 27, 2024 at 06:54 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -105,7 +105,7 @@ CREATE TABLE `activities` (
   `id` int(11) NOT NULL,
   `user_id` char(8) NOT NULL,
   `module` varchar(100) DEFAULT NULL,
-  `activity` varchar(255) NOT NULL,
+  `activity` varchar(5000) NOT NULL,
   `ip_address` varchar(45) NOT NULL,
   `user_agent` text NOT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
@@ -177,7 +177,15 @@ INSERT INTO `activities` (`id`, `user_id`, `module`, `activity`, `ip_address`, `
 (91, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-25 20:38:18', 'b4FxASSPyqdsuw40mdWJYwGAzas67RZjm5JcLpDz8N33BHUG5ftJQCeiRifShMJRVSLR9eINWsX7Zzv5s5tbpw==', ''),
 (92, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-26 18:51:18', 'OqftxFfSHWhmYzyF69mtxjSKDtNJuwFu634vJDRy+4uRoXlTPt10hv3sVmmyyDtgjl8uf5qPTtS4fjSPxmaRSg==', ''),
 (93, 'A3', 'Tasks', 'Added <b>TK000002</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-26 19:27:25', 'OqftxFfSHWhmYzyF69mtxjSKDtNJuwFu634vJDRy+4uRoXlTPt10hv3sVmmyyDtgjl8uf5qPTtS4fjSPxmaRSg==', ''),
-(94, 'A3', 'Tasks', 'Added <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-26 20:13:12', '', '');
+(94, 'A3', 'Tasks', 'Added <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-26 20:13:12', '', ''),
+(95, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 08:26:40', '', ''),
+(96, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 19:34:53', 'YBl02ecMk4kWvFAxtZ6ny9LQM8UyaXeW8GbLQ8yIdrMAgY5bgE9AMexYKAGc4/FiWHACSUE+9SXLxiA3m9QoJQ==', ''),
+(97, 'A3', 'Tasks', 'Updated <b>Old Particular: Ledger of Loan</b> => <b>Ledger of Loans</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 22:18:10', 'YBl02ecMk4kWvFAxtZ6ny9LQM8UyaXeW8GbLQ8yIdrMAgY5bgE9AMexYKAGc4/FiWHACSUE+9SXLxiA3m9QoJQ==', ''),
+(98, 'A3', 'Tasks', 'Updated <b>Old Expense: 5000.00</b> => <b>5500.00</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 22:23:52', 'YBl02ecMk4kWvFAxtZ6ny9LQM8UyaXeW8GbLQ8yIdrMAgY5bgE9AMexYKAGc4/FiWHACSUE+9SXLxiA3m9QoJQ==', ''),
+(99, 'A3', 'Tasks', 'Updated <b>Old Expense: 5000.00</b> => <b>4500.00</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 22:26:20', 'YBl02ecMk4kWvFAxtZ6ny9LQM8UyaXeW8GbLQ8yIdrMAgY5bgE9AMexYKAGc4/FiWHACSUE+9SXLxiA3m9QoJQ==', ''),
+(101, 'A3', 'Tasks', 'Updated Task_id from <b>TK000001</b> to <b>undefined</b>, Project_id from <b>PJ000001</b> to <b>undefined</b>, Particular from <b>Ledger of Loans</b> to <b>Ledger of Loans.</b>, Remark from <b>Check CIBIL score for loan eligibility</b> to <b>Check CIBIL score for loan eligibility.</b>, Created_by from <b>A3</b> to <b>undefined</b>, Created_at from <b>2024-12-27T14:20:22.000Z</b> to <b>undefined</b>, Expense from <b>4500.00</b> to <b>5500.00</b>, Rowid from <b>2</b> to <b>undefined</b>, Task from <b>Task #1</b> to <b>Task #2</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 22:33:52', 'YBl02ecMk4kWvFAxtZ6ny9LQM8UyaXeW8GbLQ8yIdrMAgY5bgE9AMexYKAGc4/FiWHACSUE+9SXLxiA3m9QoJQ==', ''),
+(102, 'A3', 'Tasks', 'Updated Due Date from <b>2024-12-25T18:30:00.000Z</b> to <b>Wed Jan 01 2025 00:00:00 GMT+0530 (India Standard Time)</b>, Expense from <b>4500.00</b> to <b>5000.00</b>, Particular from <b>Prepare form for submission</b> to <b>Prepare form for submissions</b>, Task from <b>Task #1</b> to <b>Task #2</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 22:39:43', 'YBl02ecMk4kWvFAxtZ6ny9LQM8UyaXeW8GbLQ8yIdrMAgY5bgE9AMexYKAGc4/FiWHACSUE+9SXLxiA3m9QoJQ==', ''),
+(103, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 23:24:20', '', '');
 
 -- --------------------------------------------------------
 
@@ -1027,7 +1035,7 @@ CREATE TABLE `tasks` (
   `id` char(8) NOT NULL,
   `client_id` char(8) NOT NULL,
   `project_id` char(8) NOT NULL,
-  `content` varchar(255) NOT NULL,
+  `task` varchar(255) NOT NULL,
   `due_on` date NOT NULL,
   `input_by` char(8) NOT NULL,
   `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
@@ -1041,8 +1049,8 @@ CREATE TABLE `tasks` (
 -- Dumping data for table `tasks`
 --
 
-INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `content`, `due_on`, `input_by`, `expense`, `is_completed`, `is_disabled`, `reason`, `completed_on`) VALUES
-('TK000001', 'CN000001', 'PJ000001', 'Task #1', '2024-12-26', 'A3', 5000.00, 0, 0, NULL, NULL);
+INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `input_by`, `expense`, `is_completed`, `is_disabled`, `reason`, `completed_on`) VALUES
+('TK000001', 'CN000001', 'PJ000001', 'Task #2', '2025-01-01', 'A3', 5000.00, 0, 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1053,11 +1061,24 @@ INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `content`, `due_on`, `inpu
 CREATE TABLE `tasks_particulars_remarks` (
   `id` int(11) NOT NULL,
   `task_id` char(8) NOT NULL,
-  `particulars` varchar(500) NOT NULL,
-  `remarks` varchar(500) NOT NULL,
+  `project_id` char(8) NOT NULL,
+  `particular` varchar(500) NOT NULL,
+  `remark` varchar(500) NOT NULL,
   `created_by` char(8) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tasks_particulars_remarks`
+--
+
+INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particular`, `remark`, `created_by`, `created_at`) VALUES
+(1, 'TK000001', 'PJ000001', 'Accounts settlement', 'Send documents to CA', 'A3', '2024-12-27 19:50:22'),
+(2, 'TK000001', 'PJ000001', 'Ledger of Loans.', 'Check CIBIL score for loan eligibility.', 'A3', '2024-12-27 19:50:22'),
+(3, 'TK000001', 'PJ000001', 'Prepare documents for load', 'Get them from storage server', 'A3', '2024-12-27 19:51:20'),
+(4, 'TK000001', 'PJ000001', 'Prepare form for submissions', 'First take permission from DS', 'A3', '2024-12-27 19:51:20'),
+(5, 'TK000001', 'PJ000001', 'Check status online', 'Make sure the internet connectivity is normal', 'A3', '2024-12-27 19:52:15'),
+(6, 'TK000001', 'PJ000001', 'Pay & Upload', 'No remarks here.', 'A3', '2024-12-27 19:52:15');
 
 -- --------------------------------------------------------
 
@@ -1364,7 +1385,8 @@ ALTER TABLE `tasks`
 --
 ALTER TABLE `tasks_particulars_remarks`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_task_particulars_remarks_task_id` (`task_id`);
+  ADD KEY `fk_task_particulars_remarks_task_id` (`task_id`),
+  ADD KEY `fk_task_particulars_remarks_project_id` (`project_id`);
 
 --
 -- Indexes for table `the_references`
@@ -1380,7 +1402,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -1458,7 +1480,7 @@ ALTER TABLE `statuses`
 -- AUTO_INCREMENT for table `tasks_particulars_remarks`
 --
 ALTER TABLE `tasks_particulars_remarks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
@@ -1538,6 +1560,7 @@ ALTER TABLE `tasks`
 -- Constraints for table `tasks_particulars_remarks`
 --
 ALTER TABLE `tasks_particulars_remarks`
+  ADD CONSTRAINT `fk_task_particulars_remarks_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`),
   ADD CONSTRAINT `fk_task_particulars_remarks_task_id` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`);
 COMMIT;
 

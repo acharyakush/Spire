@@ -1,12 +1,11 @@
 "use client";
 
 // Imports
-import Head from "next/head";
-
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 config.autoAddCss = false;
 
+import "animate.css";
 import "@/styles/globals.css";
 import "tippy.js/dist/tippy.css";
 import "react-toastify/dist/ReactToastify.css";

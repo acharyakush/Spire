@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,14 +21,14 @@ export function AddTask({ addTask, mount, unmount }) {
 	const sevenDaysFromToday = today.add(7, "day");
 
 	const [state, setState] = useState({
-		content: "",
 		due_on: sevenDaysFromToday.toDate(),
 		expense: 0,
 		id: "TK000000",
 		isBoxDragged: false,
+		task: "",
 	});
 
-	const addButtonAesthetics = state.content ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+	const addButtonAesthetics = state.task ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 	const addButtonStyle = `primary-button-condensed ${addButtonAesthetics}`;
 
 	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
@@ -39,11 +39,11 @@ export function AddTask({ addTask, mount, unmount }) {
 		addTask(state);
 
 		setState({
-			content: "",
 			due_on: sevenDaysFromToday.toDate(),
 			expense: 0,
 			id: "TK000000",
 			isBoxDragged: false,
+			task: "",
 		});
 	};
 
@@ -90,11 +90,11 @@ export function AddTask({ addTask, mount, unmount }) {
 								icon={faListCheck}
 								key={1}
 								label="Task"
-								onChange={(event) => setInputs("content", event.target.value)}
+								onChange={(event) => setInputs("task", event.target.value)}
 								onKeyDown={() => {}}
 								rows={2}
 								tabIndex={1}
-								value={state.content}
+								value={state.task}
 								width="w-full"
 							/>
 							<DatePicker
@@ -499,19 +499,40 @@ export function UpdateQuote({ mount, reloadProjects, selectedProject, unmount })
 export function UpdateTask({ mount, reloadTasks, selectedTask, unmount }) {
 	// Business Logic
 	const [state, setState] = useState({
-		content: selectedTask.content,
 		due_on: selectedTask.due_on,
 		expense: selectedTask.expense,
 		id: selectedTask.id,
 		isBoxDragged: false,
 		isLoading: false,
+		particular: selectedTask.particular,
 		remark: selectedTask.remark,
+		task: selectedTask.task,
 	});
 
 	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
 	// Functions
+	const getAddActivityMessage = () => {
+		const changes = [];
+
+		["due_on", "expense", "particular", "remark", "task"].forEach((key) => {
+			if (selectedTask[key] !== state[key]) {
+				changes.push({
+					old: selectedTask[key],
+					new: state[key],
+					label: key === "due_on" ? "Due Date" : MyGlobal.Capitalize(key),
+				});
+			}
+		});
+
+		const messages = changes.map((change) => `${change.label} from <b>${change.old}</b> to <b>${change.new}</b>`);
+
+		const finalMessage = messages.join(", ");
+
+		return `Updated ${finalMessage} of <b>${selectedTask.id}</b> in <b>${selectedTask.project_id}</b>.`;
+	};
+
 	const setBoxDrag = () => {
 		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
 	};
@@ -523,23 +544,32 @@ export function UpdateTask({ mount, reloadTasks, selectedTask, unmount }) {
 	const updateTask = async () => {
 		setState((old) => ({ ...old, isLoading: true }));
 
-		const body = {
-			content: MyGlobal.EscapeString(state.content),
+		const updateTaskBody = {
 			dueOn: dayjs(state.due_on).format("YYYY-MM-DD"),
 			expense: Number(state.expense),
-			remark: MyGlobal.EscapeString(state.remark),
+			task: MyGlobal.EscapeString(state.task),
 			taskId: selectedTask.id,
 			type: "update-task",
 		};
 
-		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+		const updateTasksParticularAndRemarkBody = {
+			particular: MyGlobal.EscapeString(state.particular),
+			projectId: selectedTask.project_id,
+			remark: MyGlobal.EscapeString(state.remark),
+			rowId: selectedTask.rowId,
+			taskId: selectedTask.id,
+			type: "update-tasks-particular-and-remark",
+		};
 
-			if (response.status === 200) {
+		try {
+			const updateTaskBodyResponse = await axios.post(MyConstants.ApiEndpoints.Setter, updateTaskBody, MyGlobal.GetHeaders());
+
+			const updateTasksParticularAndRemark = await axios.post(MyConstants.ApiEndpoints.Setter, updateTasksParticularAndRemarkBody, MyGlobal.GetHeaders());
+
+			if (updateTaskBodyResponse.status === 200 && updateTasksParticularAndRemark.status == 200) {
 				reloadTasks();
 
-				MyGlobal.AddActivity(`Updated <b>${selectedTask.id}</b> in <b>${selectedTask.project_id}</b>.`, MyConstants.Modules.Base.Tasks);
-
+				MyGlobal.AddActivity(getAddActivityMessage(), MyConstants.Modules.Base.Tasks);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskUpdated);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
@@ -580,26 +610,44 @@ export function UpdateTask({ mount, reloadTasks, selectedTask, unmount }) {
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded black-white-background shadow">
+					<DialogPanel className="w-1/2 transform overflow-hidden rounded black-white-background shadow">
 						{uiTitleBar()}
-						<div className="flex flex-col w-full p-2.5 space-y-2 justify-between items-center">
-							<TextArea
+						<div className="w-full p-2.5 space-y-2 columns-2">
+							<TextInput
 								icon={faListCheck}
-								key={1}
 								label="Task"
-								onChange={(event) => setInputs("content", event.target.value)}
-								onKeyDown={() => {}}
-								rows={2}
+								onChange={(event) => setInputs("task", event.target.value)}
+								onKeyPress={() => {}}
 								tabIndex={1}
-								value={state.content}
+								value={state.task}
 								width="w-full"
 							/>
 							<DatePicker
 								icon={faCalendar}
-								label="Date"
+								label="Due On"
 								onChange={(event) => setInputs("due_on", event)}
 								tabIndex={2}
 								value={state.due_on}
+								width="w-full"
+							/>
+							<TextInput
+								icon={faCoins}
+								label="Expense"
+								onChange={(event) => setInputs("expense", event.target.value)}
+								onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
+								tabIndex={3}
+								value={state.expense}
+								width="w-full"
+							/>
+							<TextArea
+								icon={faNoteSticky}
+								key={1}
+								label="Particular"
+								onChange={(event) => setInputs("particular", event.target.value)}
+								onKeyDown={() => {}}
+								rows={2}
+								tabIndex={4}
+								value={state.particular}
 								width="w-full"
 							/>
 							<TextArea
@@ -609,17 +657,8 @@ export function UpdateTask({ mount, reloadTasks, selectedTask, unmount }) {
 								onChange={(event) => setInputs("remark", event.target.value)}
 								onKeyDown={() => {}}
 								rows={2}
-								tabIndex={3}
+								tabIndex={5}
 								value={state.remark}
-								width="w-full"
-							/>
-							<TextInput
-								icon={faCoins}
-								label="Expense"
-								onChange={(event) => setInputs("expense", event.target.value)}
-								onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
-								tabIndex={4}
-								value={state.expense}
 								width="w-full"
 							/>
 						</div>

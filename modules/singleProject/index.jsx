@@ -282,6 +282,7 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 		const wrapperSansAesthetics = "flex w-full space-x-1.5 justify-start items-center";
 
 		const columnWrapper = "flex flex-col justify-center items-center cursor-pointer primary-tag-transparent-01";
+
 		const redColumnWrapper = "flex flex-col justify-center items-center cursor-pointer font-normal red-tag-transparent-01";
 
 		const dueOnTimeLeft =
