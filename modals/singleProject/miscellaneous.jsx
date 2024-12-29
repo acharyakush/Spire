@@ -13,7 +13,106 @@ import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { DatePicker, TextArea, TextInput } from "@/components/Inputs";
-import { faCalendar, faCoins, faIdCardClip, faIndianRupeeSign, faListCheck, faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faCoins, faIdCardClip, faIndianRupeeSign, faListCheck, faNoteSticky, faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
+
+export function AddParticularAndRemark({ addParticularAndRemark, mount, selectedTaskMetaData, unmount }) {
+	// Business Logic
+	const [state, setState] = useState({
+		isBoxDragged: false,
+		particular: "",
+		remark: "",
+	});
+
+	const addButtonAesthetics = state.particular && state.remark ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+	const addButtonStyle = `primary-button-condensed ${addButtonAesthetics}`;
+
+	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+
+	// Functions
+	const addNewParticularAndRemark = () => {
+		addParticularAndRemark({ ...state, taskId: selectedTaskMetaData.task_id });
+
+		setState({
+			isBoxDragged: false,
+			particular: "",
+			remark: "",
+		});
+	};
+
+	const setBoxDrag = () => {
+		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
+	};
+
+	const setInputs = (key, value) => {
+		setState((old) => ({ ...old, [key]: value }));
+	};
+
+	// UI Components
+	const uiButton = () => {
+		if (state.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Add";
+		}
+	};
+
+	const uiTitleBar = () => {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Add Particular & Remark</span>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+			</DialogTitle>
+		);
+	};
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded black-white-background shadow">
+						{uiTitleBar()}
+						<div className="flex flex-col w-full p-2.5 space-y-2 justify-between items-center">
+							<TextArea
+								icon={faListCheck}
+								key={1}
+								label="Particular"
+								onChange={(event) => setInputs("particular", event.target.value)}
+								onKeyDown={() => {}}
+								rows={2}
+								tabIndex={1}
+								value={state.particular}
+								width="w-full"
+							/>
+							<TextArea
+								icon={faStickyNote}
+								key={2}
+								label="Remark"
+								onChange={(event) => setInputs("remark", event.target.value)}
+								onKeyDown={() => {}}
+								rows={2}
+								tabIndex={2}
+								value={state.remark}
+								width="w-full"
+							/>
+						</div>
+						<footer className="dialog-footer">
+							<button className={addButtonStyle} onClick={() => addNewParticularAndRemark()}>
+								{uiButton()}
+							</button>
+						</footer>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
 
 export function AddTask({ addTask, mount, unmount }) {
 	// Business Logic
@@ -25,6 +124,8 @@ export function AddTask({ addTask, mount, unmount }) {
 		expense: 0,
 		id: "TK000000",
 		isBoxDragged: false,
+		particular: "",
+		remark: "",
 		task: "",
 	});
 
@@ -43,6 +144,8 @@ export function AddTask({ addTask, mount, unmount }) {
 			expense: 0,
 			id: "TK000000",
 			isBoxDragged: false,
+			particular: "",
+			remark: "",
 			task: "",
 		});
 	};
@@ -83,16 +186,14 @@ export function AddTask({ addTask, mount, unmount }) {
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded black-white-background shadow">
+					<DialogPanel className="w-1/2 transform overflow-hidden rounded black-white-background shadow">
 						{uiTitleBar()}
-						<div className="flex flex-col w-full p-2.5 space-y-2 justify-between items-center">
-							<TextArea
+						<div className="w-full p-2.5 space-y-2 columns-2">
+							<TextInput
 								icon={faListCheck}
-								key={1}
 								label="Task"
 								onChange={(event) => setInputs("task", event.target.value)}
-								onKeyDown={() => {}}
-								rows={2}
+								onKeyPress={() => {}}
 								tabIndex={1}
 								value={state.task}
 								width="w-full"
@@ -112,6 +213,28 @@ export function AddTask({ addTask, mount, unmount }) {
 								onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 								tabIndex={3}
 								value={state.expense}
+								width="w-full"
+							/>
+							<TextArea
+								icon={faNoteSticky}
+								key={1}
+								label="Particular"
+								onChange={(event) => setInputs("particular", event.target.value)}
+								onKeyDown={() => {}}
+								rows={2}
+								tabIndex={4}
+								value={state.particular}
+								width="w-full"
+							/>
+							<TextArea
+								icon={faNoteSticky}
+								key={2}
+								label="Remark"
+								onChange={(event) => setInputs("remark", event.target.value)}
+								onKeyDown={() => {}}
+								rows={2}
+								tabIndex={5}
+								value={state.remark}
 								width="w-full"
 							/>
 						</div>

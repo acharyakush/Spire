@@ -550,7 +550,7 @@ export default function Projects() {
 
 	const uiRows = (project) => {
 		const style = `flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center right-border`;
-		const projectActionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer text-white font-regular-11";
+		const projectActionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text";
 
 		const projectId = MyGlobal.HighlightText(project.id, mainData.searchTerm);
 

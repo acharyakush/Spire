@@ -1,8 +1,5 @@
 {
-	"[javascript]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
-	"css.styleSheets": ["public/styles/global.css"],
+	"css.styleSheets": ["public/styles/globals.css"],
 	"debug.console.fontSize": 15,
 	"editor.acceptSuggestionOnEnter": "smart",
 	"editor.autoClosingBrackets": "always",
@@ -66,12 +63,7 @@
 	"prettier.trailingComma": "all",
 	"prettier.useTabs": true,
 	"search.exclude": {
-		"**/node_modules": true,
-		"**/bower_components": true,
-		"**/*.code-search": true,
-		"/Manager": true,
-		"/Updater": true,
-		"/public/charts/*": true
+		"**/node_modules": true
 	},
 	"terminal.integrated.fontSize": 15
 }
