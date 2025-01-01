@@ -155,7 +155,7 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 
 	const uiFromDate = () => {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow black-white-background full-border">
+			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background full-border">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-medium-11"
@@ -196,7 +196,7 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 	};
 
 	const uiRows = (note, rowIndex) => {
-		const style = "flex w-1/3 min-h-9 justify-center items-center text-center right-border black-white-background";
+		const style = "flex w-1/3 min-h-9 justify-center items-center text-center right-border contrast-background";
 
 		const entryDate = dayjs(note.entry_date).format("DD MMM, YYYY");
 		const content = MyGlobal.HighlightText(note.content, mainData.searchTerm);
@@ -246,7 +246,7 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 
 	const uiToDate = () => {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow black-white-background full-border">
+			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background full-border">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-medium-11"

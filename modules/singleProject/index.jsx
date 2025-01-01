@@ -14,7 +14,6 @@ import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { SpinnerBig, SpinnerSmall, TooltipList } from "@/components/Elements";
-import { UpdateQuote, ManageGovernmentId } from "@/modals/singleProject/miscellaneous";
 import {
 	faBars,
 	faBriefcase,
@@ -32,6 +31,7 @@ import {
 	faStopwatch,
 	faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
+import { EditQuote, ManageGovernmentId } from "@/modals/singleProject/project";
 
 export default function SingleProject({ reloadProjects, reloadNotes, selectedClient, selectedProject, source, unmount }) {
 	// Business Logic
@@ -65,7 +65,7 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 		searchTerm: "",
 	});
 
-	const blankDataWrapper = "flex w-full h-full justify-center items-center black-white-background full-border";
+	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
 	// Functions
 	const getCompanyName = () => {
@@ -203,28 +203,17 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 	};
 
 	const uiHamburgerMenu = () => {
-		const style = "w-full p-3 space-x-3 cursor-pointer border-y font-regular-12 black-text hovered-rows relative";
+		const style = "w-full p-3 space-x-3 cursor-pointer border-y font-regular-11 black-text hovered-rows";
 
 		return (
 			<Menu as="div" className="w-max relative text-left">
 				<MenuButton className="flex w-full justify-between items-center focus:outline-none relative z-40">
 					<FontAwesomeIcon className="primary-text" icon={faBars} />
 				</MenuButton>
-				<MenuItems
-					anchor="bottom"
-					className="absolute w-max mt-2 rounded bottom-shadow focus:outline-none black-white-background full-border black-text">
+				<MenuItems anchor="bottom" className="absolute w-max mt-2 rounded bottom-shadow focus:outline-none contrast-background full-border black-text">
 					<MenuItem as="div" className={style} onClick={() => saveAsExcel()}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={faFileExcel} />
 						<span>Export to Excel</span>
-					</MenuItem>
-
-					<MenuItem
-						as="div"
-						className={style}
-						hidden={!MyGlobal.HasPermission(MyConstants.Modules.Derived.GenerateInvoice)}
-						onClick={() => prepareGenerateInvoiceData()}>
-						<FontAwesomeIcon className="w-5 primary-text" icon={faReceipt} />
-						<span>Generate Invoice</span>
 					</MenuItem>
 
 					<MenuItem as="div" className={style} onClick={() => toggleGovernmentIdBox()}>
@@ -407,7 +396,7 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 				)}
 
 				{hasMounted.updateQuote && (
-					<UpdateQuote
+					<EditQuote
 						mount={hasMounted.updateQuote}
 						reloadProjects={reloadProjects}
 						selectedProject={selectedProject}

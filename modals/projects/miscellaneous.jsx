@@ -81,7 +81,7 @@ export function DeleteProject({ mount, projectId, reloadProjects, unmount }) {
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded shadow black-white-background">
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded shadow contrast-background">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full p-4 justify-center items-center font-regular-12 black-text">
 							<div className="flex flex-col px-1 text-left">
@@ -132,7 +132,7 @@ export function ProjectStatus({ mount, selectedProject, unmount }) {
 	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
-	const wrapper = "flex w-full p-2.5 h-[60.59px] justify-center items-center rounded bottom-shadow black-white-background full-border";
+	const wrapper = "flex w-full p-2.5 h-[60.59px] justify-center items-center rounded bottom-shadow contrast-background full-border";
 	const labelStyle = "flex w-4/5 space-x-2 justify-start items-center font-medium-11 black-text";
 	const valueStyle = "flex w-1/5 justify-center items-center";
 
@@ -368,7 +368,7 @@ export function UpdateStatus({ mount, reloadProjects, selectedProject, unmount }
 				reloadProjects();
 
 				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Projects);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectStatusUpdated);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectStatusEdited);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
@@ -408,7 +408,7 @@ export function UpdateStatus({ mount, reloadProjects, selectedProject, unmount }
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded black-white-background shadow">
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text" dangerouslySetInnerHTML={{ __html: messageBody }} />
 						<div className={reasonBoxStyle}>

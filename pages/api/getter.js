@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 		} else if (request.type === "get-tasks") {
 			queryString = "SELECT * FROM tasks WHERE project_id=?";
 			queryParameters = [request.projectId];
-		} else if (request.type === "get-tasks-particulars-remarks") {
+		} else if (request.type === "get-tasks-particulars-and-remarks") {
 			queryString = "SELECT * FROM tasks_particulars_remarks WHERE project_id=?";
 			queryParameters = [request.projectId];
 		} else if (request.type === "get-tasks-notes") {

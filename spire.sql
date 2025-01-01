@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 27, 2024 at 06:54 PM
+-- Generation Time: Jan 01, 2025 at 08:15 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -185,7 +185,28 @@ INSERT INTO `activities` (`id`, `user_id`, `module`, `activity`, `ip_address`, `
 (99, 'A3', 'Tasks', 'Updated <b>Old Expense: 5000.00</b> => <b>4500.00</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 22:26:20', 'YBl02ecMk4kWvFAxtZ6ny9LQM8UyaXeW8GbLQ8yIdrMAgY5bgE9AMexYKAGc4/FiWHACSUE+9SXLxiA3m9QoJQ==', ''),
 (101, 'A3', 'Tasks', 'Updated Task_id from <b>TK000001</b> to <b>undefined</b>, Project_id from <b>PJ000001</b> to <b>undefined</b>, Particular from <b>Ledger of Loans</b> to <b>Ledger of Loans.</b>, Remark from <b>Check CIBIL score for loan eligibility</b> to <b>Check CIBIL score for loan eligibility.</b>, Created_by from <b>A3</b> to <b>undefined</b>, Created_at from <b>2024-12-27T14:20:22.000Z</b> to <b>undefined</b>, Expense from <b>4500.00</b> to <b>5500.00</b>, Rowid from <b>2</b> to <b>undefined</b>, Task from <b>Task #1</b> to <b>Task #2</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 22:33:52', 'YBl02ecMk4kWvFAxtZ6ny9LQM8UyaXeW8GbLQ8yIdrMAgY5bgE9AMexYKAGc4/FiWHACSUE+9SXLxiA3m9QoJQ==', ''),
 (102, 'A3', 'Tasks', 'Updated Due Date from <b>2024-12-25T18:30:00.000Z</b> to <b>Wed Jan 01 2025 00:00:00 GMT+0530 (India Standard Time)</b>, Expense from <b>4500.00</b> to <b>5000.00</b>, Particular from <b>Prepare form for submission</b> to <b>Prepare form for submissions</b>, Task from <b>Task #1</b> to <b>Task #2</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 22:39:43', 'YBl02ecMk4kWvFAxtZ6ny9LQM8UyaXeW8GbLQ8yIdrMAgY5bgE9AMexYKAGc4/FiWHACSUE+9SXLxiA3m9QoJQ==', ''),
-(103, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 23:24:20', '', '');
+(103, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-27 23:24:20', '', ''),
+(104, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-28 21:53:41', 'DDVQO7mrIw5x+nDlH5NWCx2lUjGlSnygPVwDxsg3vsug1hJeidzwEet0gU9bdKEU5+ngrO23ij/Sqm3nbY7IkQ==', ''),
+(105, 'A3', 'Tasks', 'Updated Remark from <b>Get them from storage server</b> to <b>Get them from storage servers.</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-29 22:57:34', '', ''),
+(106, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-29 23:18:52', '', ''),
+(107, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-29 23:19:55', '1IhViwIrtOsnuSffeYPrTuI3NiEK++2WltXOZm0QPyYNIxH+vt8GQq8BycaKKZv8w2XExBDGKYKIvjmiFIZnZA==', ''),
+(108, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-29 23:44:05', '1IhViwIrtOsnuSffeYPrTuI3NiEK++2WltXOZm0QPyYNIxH+vt8GQq8BycaKKZv8w2XExBDGKYKIvjmiFIZnZA==', ''),
+(109, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-31 15:33:54', 'i4YglNpfN7vYIps2KZ8L8CbIni0bo2vNakDOgczebZsZb8tHHDuFK0gutANv6RG1a5HD3xFqkc5bwcaOV0iSQQ==', ''),
+(110, 'A3', 'Inquiries', 'Update status of <b>IQ000002</b> to <b>Open</b> from <b>Hold</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-31 16:44:57', 'i4YglNpfN7vYIps2KZ8L8CbIni0bo2vNakDOgczebZsZb8tHHDuFK0gutANv6RG1a5HD3xFqkc5bwcaOV0iSQQ==', ''),
+(111, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2024-12-31 20:41:17', 'i4YglNpfN7vYIps2KZ8L8CbIni0bo2vNakDOgczebZsZb8tHHDuFK0gutANv6RG1a5HD3xFqkc5bwcaOV0iSQQ==', ''),
+(112, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 19:37:06', '75jLubFVJ1xMm3IbdwNQmYj9nIQ6dtOPbkUefbg5RxA1R0GTVVL1MtZ0V9uFXvz/rJ7rghcslFB9zt6tvGinsA==', ''),
+(113, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 21:45:21', '', ''),
+(114, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 21:51:35', 'Wr9XkqBMicVwJpFdR6KxY35BieB68v4rlm/YNzSbRU3J0KrVHk+HiM1LcQT8V4dQvbompArgZfnTy1Yu504csw==', ''),
+(115, 'A3', 'Tasks', 'Closed <b>TK000001</b> due to <b>I no longer require this.</b>', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 22:42:41', '', ''),
+(116, 'A3', 'Tasks', 'Edited Due Date from <b>2024-12-31T18:30:00.000Z</b> to <b>Tue Jan 21 2025 00:00:00 GMT+0530 (India Standard Time)</b>, Expense from <b>5000.00</b> to <b>5100.00</b>, Task from <b>Task #2</b> to <b>Task #21</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 22:59:02', '', ''),
+(117, 'A3', 'Tasks', 'Disabled <b>TK000001</b> due to <b>I am done with this task</b>', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:00:04', '', ''),
+(118, 'A3', 'Tasks', 'Enabled <b>TK000001</b> due to <b>I am not done with it.</b>', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:04:02', '', ''),
+(119, 'A3', 'Tasks', 'Closed <b>TK000001</b> due to <b>I am done.</b>', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:04:25', '', ''),
+(120, 'A3', 'Tasks', 'Edited Particular from <b>Prepare documents for load</b> to <b>Prepare documents for loads.</b> of <b>3</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:32:39', '', ''),
+(121, 'A3', 'Tasks', 'Edited Remark from <b>Get them from storage servers.</b> to <b>Get them from storage servers</b> of <b>3</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:32:50', '', ''),
+(122, 'A3', 'Tasks', 'Edited Remark from <b>Make sure the internet connectivity is normal</b> to <b>Make sure the internet connectivity is normal.</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:33:42', '', ''),
+(123, 'A3', 'Tasks', 'Added a particular and remark in <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:45:36', '', ''),
+(124, 'A3', 'Tasks', 'Edited Task from <b>Task #21</b> to <b>Task #1</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:53:30', '', '');
 
 -- --------------------------------------------------------
 
@@ -442,7 +463,7 @@ CREATE TABLE `inquiries` (
 
 INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `sub_project_id`, `entry_date`, `contact_number`, `email_address`, `follow_ups`, `is_closed`, `closure_reason`, `quote`, `status`, `tags`, `created_at`, `created_by`, `updated_at`) VALUES
 ('IQ000001', 'CN000001', 'RF000001', 'MP000004', 'SP000003', '2024-12-15 09:39:42', 8780577704, 'acharyakush2604@gmail.com', 'A1,A2', 0, '', 2500.00, 'Confirmed', NULL, '2024-12-15 15:28:07', 'A3', '2024-12-17 21:38:53'),
-('IQ000002', 'CN000002', 'RF000002', 'MP000011', 'SP000006', '2024-12-17 18:23:01', 8780577812, 'vyas.kevin@outlook.com', 'A3', 0, '', 15000.00, 'Hold', NULL, '2024-12-18 00:05:18', 'A3', '2024-12-18 19:55:14');
+('IQ000002', 'CN000002', 'RF000002', 'MP000011', 'SP000006', '2024-12-17 18:23:01', 8780577812, 'vyas.kevin@outlook.com', 'A3', 0, '', 15000.00, 'Open', NULL, '2024-12-18 00:05:18', 'A3', '2024-12-31 16:44:57');
 
 -- --------------------------------------------------------
 
@@ -551,6 +572,7 @@ CREATE TABLE `notes` (
   `id` int(11) NOT NULL,
   `inquiry_id` char(8) DEFAULT NULL,
   `project_id` char(8) DEFAULT NULL,
+  `task_id` char(8) DEFAULT NULL,
   `original_user_id` char(8) NOT NULL,
   `user_id` char(8) NOT NULL,
   `content` varchar(1000) NOT NULL,
@@ -562,12 +584,12 @@ CREATE TABLE `notes` (
 -- Dumping data for table `notes`
 --
 
-INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `original_user_id`, `user_id`, `content`, `source`, `entry_date`) VALUES
-(1, 'IQ000001', NULL, 'A3', 'A3', 'New client. Reference from CharteredWorks.', 'Inquiries', '2024-12-15 15:28:07'),
-(2, 'IQ000001', NULL, 'A3', 'A3', 'Test inquiry.', 'Inquiries', '2024-12-16 20:52:47'),
-(3, 'IQ000001', NULL, 'A3', 'A3', 'Inquiry note #3', 'Inquiries', '2024-12-16 20:54:45'),
-(10, 'IQ000001', 'PJ000001', 'A3', 'A3', 'First project. Wish me good luck.', 'Projects', '2024-12-17 23:48:41'),
-(11, 'IQ000002', NULL, 'A3', 'A3', 'Lives in Portugal.', 'Inquiries', '2024-12-18 00:05:18');
+INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `task_id`, `original_user_id`, `user_id`, `content`, `source`, `entry_date`) VALUES
+(1, 'IQ000001', NULL, NULL, 'A3', 'A3', 'New client. Reference from CharteredWorks.', 'Inquiries', '2024-12-15 15:28:07'),
+(2, 'IQ000001', NULL, NULL, 'A3', 'A3', 'Test inquiry.', 'Inquiries', '2024-12-16 20:52:47'),
+(3, 'IQ000001', NULL, NULL, 'A3', 'A3', 'Inquiry note #3', 'Inquiries', '2024-12-16 20:54:45'),
+(10, 'IQ000001', 'PJ000001', 'TK000001', 'A3', 'A3', 'First project. Wish me good luck.', 'Projects', '2024-12-17 23:48:41'),
+(11, 'IQ000002', NULL, NULL, 'A3', 'A3', 'Lives in Portugal.', 'Inquiries', '2024-12-18 00:05:18');
 
 -- --------------------------------------------------------
 
@@ -624,11 +646,13 @@ INSERT INTO `permissions` (`id`, `name`, `module`, `type`, `sequence`) VALUES
 (34, 'Delete Reference', 'References', 'Derived', 0),
 (35, 'Tasks', 'Tasks', 'Base', 12),
 (36, 'New Task', 'Tasks', 'Derived', 0),
-(37, 'Update Task', 'Tasks', 'Derived', 0),
+(37, 'Edit Task', 'Tasks', 'Derived', 0),
 (38, 'Enable Task', 'Tasks', 'Derived', 0),
 (39, 'Disable Task', 'Tasks', 'Derived', 0),
 (40, 'Mark Task Completed', 'Tasks', 'Derived', 0),
-(41, 'Delete Task From Reimbursement Voucher', 'Tasks', 'Derived', 0);
+(41, 'Delete Task From Reimbursement Voucher', 'Tasks', 'Derived', 0),
+(42, 'Delete Particular And Remark', 'Tasks', 'Derived', 0),
+(43, 'Edit Particular And Remark', 'Tasks', 'Derived', 0);
 
 -- --------------------------------------------------------
 
@@ -768,6 +792,13 @@ CREATE TABLE `pma__recent` (
   `tables` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Recently accessed tables';
 
+--
+-- Dumping data for table `pma__recent`
+--
+
+INSERT INTO `pma__recent` (`username`, `tables`) VALUES
+('spire', '[{\"db\":\"spire\",\"table\":\"tasks_particulars_remarks\"}]');
+
 -- --------------------------------------------------------
 
 --
@@ -867,6 +898,13 @@ CREATE TABLE `pma__userconfig` (
   `timevalue` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `config_data` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='User preferences storage for phpMyAdmin';
+
+--
+-- Dumping data for table `pma__userconfig`
+--
+
+INSERT INTO `pma__userconfig` (`username`, `timevalue`, `config_data`) VALUES
+('spire', '2024-12-29 17:29:39', '{\"Console\\/Mode\":\"collapse\"}');
 
 -- --------------------------------------------------------
 
@@ -1050,7 +1088,7 @@ CREATE TABLE `tasks` (
 --
 
 INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `input_by`, `expense`, `is_completed`, `is_disabled`, `reason`, `completed_on`) VALUES
-('TK000001', 'CN000001', 'PJ000001', 'Task #2', '2025-01-01', 'A3', 5000.00, 0, 0, NULL, NULL);
+('TK000001', 'CN000001', 'PJ000001', 'Task #1', '2025-01-21', 'A3', 5100.00, 0, 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1075,10 +1113,12 @@ CREATE TABLE `tasks_particulars_remarks` (
 INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particular`, `remark`, `created_by`, `created_at`) VALUES
 (1, 'TK000001', 'PJ000001', 'Accounts settlement', 'Send documents to CA', 'A3', '2024-12-27 19:50:22'),
 (2, 'TK000001', 'PJ000001', 'Ledger of Loans.', 'Check CIBIL score for loan eligibility.', 'A3', '2024-12-27 19:50:22'),
-(3, 'TK000001', 'PJ000001', 'Prepare documents for load', 'Get them from storage server', 'A3', '2024-12-27 19:51:20'),
+(3, 'TK000001', 'PJ000001', 'Prepare documents for loads.', 'Get them from storage servers', 'A3', '2024-12-27 19:51:20'),
 (4, 'TK000001', 'PJ000001', 'Prepare form for submissions', 'First take permission from DS', 'A3', '2024-12-27 19:51:20'),
-(5, 'TK000001', 'PJ000001', 'Check status online', 'Make sure the internet connectivity is normal', 'A3', '2024-12-27 19:52:15'),
-(6, 'TK000001', 'PJ000001', 'Pay & Upload', 'No remarks here.', 'A3', '2024-12-27 19:52:15');
+(5, 'TK000001', 'PJ000001', 'Check status online', 'Make sure the internet connectivity is normal.', 'A3', '2024-12-27 19:52:15'),
+(6, 'TK000001', 'PJ000001', 'Pay & Upload', 'No remarks here.', 'A3', '2024-12-27 19:52:15'),
+(7, 'TK000001', 'PJ000001', 'Hello', 'Bellow', 'A3', '2025-01-01 23:44:39'),
+(8, 'TK000001', 'PJ000001', 'Hi', 'Bye', 'A3', '2025-01-01 23:45:36');
 
 -- --------------------------------------------------------
 
@@ -1402,7 +1442,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -1432,7 +1472,7 @@ ALTER TABLE `notes`
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT for table `pma__bookmark`
@@ -1480,7 +1520,7 @@ ALTER TABLE `statuses`
 -- AUTO_INCREMENT for table `tasks_particulars_remarks`
 --
 ALTER TABLE `tasks_particulars_remarks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables

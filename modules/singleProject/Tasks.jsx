@@ -14,11 +14,12 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AddParticularAndRemark, AddTask, UpdateProjectStatus, UpdateTask, UpdateTaskStatus } from "@/modals/singleProject/miscellaneous";
+import { AddParticularAndRemark, AddTask, EditParticularAndRemark, EditTask, EditTaskStatus } from "@/modals/singleProject/tasks";
 import {
 	faBan,
 	faBolt,
 	faCheckCircle,
+	faCircleCheck,
 	faCircleExclamation,
 	faClipboardCheck,
 	faIndianRupee,
@@ -33,19 +34,25 @@ import {
 
 export default function Tasks({ reloadProjects, selectedClient, selectedProject, source }) {
 	// Business Logic
+	const userId = MyGlobal.GetUserId();
+
+	const allTasksTableHeaders = MyConstants.TableHeaders.Tasks;
+	const allTasksRemarksTableHeaders = MyConstants.TableHeaders.TasksRemarks;
+	const isSourceSingleClient = source === "Single Client => Single Project";
+
 	const [apiData, setApiData] = useState({
-		tasks: { api: [], apiCopy: [] },
-		tasksNotes: { api: [], apiCopy: [] },
-		tasksParticularsRemarks: { api: [], apiCopy: [] },
+		allTasksRemarks: { api: [], apiCopy: [] },
+		allTasks: { api: [], apiCopy: [] },
+		allTasksParticularsAndRemarks: { api: [], apiCopy: [] },
 	});
 
 	const [hasMounted, setHasMounted] = useState({
-		addTask: false,
 		addParticularAndRemark: false,
+		addTask: false,
+		editParticularAndRemark: false,
+		editTask: false,
+		editTaskStatus: false,
 		markTaskCompleted: false,
-		updateStatus: false,
-		updateTask: false,
-		updateTaskStatus: false,
 	});
 
 	const [mainData, setMainData] = useState({
@@ -54,45 +61,30 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 			disableSingleTask: 0,
 			markTaskAsCompleted: 0,
 			tasks: false,
-			updateStatus: 0,
 		},
 		searchTerm: "",
+		selectedModuleId: 1,
 		selectedTask: {},
 		selectedTaskMetaData: {},
-		sort: { column: "ID", isAscending: true },
+		sortAllTasksRemarks: { column: allTasksRemarksTableHeaders.Date, isAscending: true },
+		sortSelectedTask: { column: allTasksTableHeaders.Particulars, isAscending: true },
 	});
 
-	const userId = MyGlobal.GetUserId();
-	const tableHeaders = MyConstants.TableHeaders.Tasks;
-	const isSourceSingleClient = source === "Single Client => Single Project";
-
-	const allowEnablingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.EnableTask);
 	const allowDisablingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.DisableTask);
+	const allowEditingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditTask);
+	const allowEnablingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.EnableTask);
+
 	const allowMarkingTaskCompleted = MyGlobal.HasPermission(MyConstants.Modules.Derived.MarkTaskCompleted);
 	const allowNewTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewTask);
-	const allowUpdatingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.UpdateTask);
+
+	const allowDeletingParticularAndRemark = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteParticularAndRemark);
+
+	const allowEditingParticularAndRemark = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditParticularAndRemark);
 
 	// Functions
-	const addParticularAndRemark = (particularAndRemark) => {
-		if (allowNewTask) {
-			const copy = [...apiData.tasksParticularsRemarks.api];
-
-			copy.unshift({
-				created_by: userId,
-				id: "TK000000",
-				particular: particularAndRemark.particular,
-				project_id: selectedProject.id,
-				remark: particularAndRemark.remark,
-				task_id: particularAndRemark.taskId,
-			});
-
-			setApiData((old) => ({ ...old, tasksParticularsRemarks: { ...old.tasksParticularsRemarks, api: copy } }));
-		}
-	};
-
 	const addTask = (task) => {
 		if (allowNewTask) {
-			const copy = [...apiData.tasks.api];
+			const copy = [...apiData.allTasks.api];
 
 			copy.unshift({
 				completed_on: new Date(),
@@ -106,50 +98,15 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 				remark: task.remark,
 			});
 
-			setApiData((old) => ({ ...old, tasks: { ...old.tasks, api: copy } }));
+			setApiData((old) => ({ ...old, allTasks: { ...old.allTasks, api: copy } }));
 		}
 	};
 
 	const deleteTask = (task) => {
-		const copy = [...apiData.tasks.api];
+		const copy = [...apiData.allTasks.api];
 		const finalTasks = copy.filter((_task) => _task.id != task.id);
 
-		setApiData((old) => ({ ...old, tasks: { ...old.tasks, api: finalTasks } }));
-	};
-
-	const doSorting = () => {
-		return apiData.tasks.api.sort((a, b) => {
-			const aDate = new Date(a.dueOn);
-			const bDate = new Date(b.dueOn);
-
-			if (mainData.sort.column == tableHeaders.Id && mainData.sort.isAscending) {
-				return a.id - b.id;
-			} else if (mainData.sort.column == tableHeaders.Id && !mainData.sort.isAscending) {
-				return b.id - a.id;
-			} else if (mainData.sort.column == tableHeaders.Task && mainData.sort.isAscending) {
-				return a.task.localeCompare(b.task);
-			} else if (mainData.sort.column == tableHeaders.Task && !mainData.sort.isAscending) {
-				return b.task.localeCompare(a.task);
-			} else if (mainData.sort.column == tableHeaders.DueOn && mainData.sort.isAscending) {
-				return aDate - bDate;
-			} else if (mainData.sort.column == tableHeaders.DueOn && !mainData.sort.isAscending) {
-				return bDate - aDate;
-			} else if (mainData.sort.column == tableHeaders.AddedBy && mainData.sort.isAscending) {
-				return a.input_by.localeCompare(b.input_by);
-			} else if (mainData.sort.column == tableHeaders.AddedBy && !mainData.sort.isAscending) {
-				return b.input_by.localeCompare(a.input_by);
-			} else if (mainData.sort.column == tableHeaders.Remarks && mainData.sort.isAscending) {
-				return a.remark.localeCompare(b.remark);
-			} else if (mainData.sort.column == tableHeaders.Remarks && !mainData.sort.isAscending) {
-				return b.remark.localeCompare(a.remark);
-			} else if (mainData.sort.column == tableHeaders.Expense && mainData.sort.isAscending) {
-				return a.expense - b.expense;
-			} else if (mainData.sort.column == tableHeaders.Expense && !mainData.sort.isAscending) {
-				return b.expense - a.expense;
-			} else {
-				return a.id - b.id;
-			}
-		});
+		setApiData((old) => ({ ...old, allTasks: { ...old.allTasks, api: finalTasks } }));
 	};
 
 	const exportToExcel = () => {
@@ -162,11 +119,11 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		const rowHeight = 28;
 		const maximumColumnWidth = 20;
 
-		const getHeaders = Object.values(tableHeaders).filter((header) => header != tableHeaders.Actions);
+		const getHeaders = Object.values(allTasksTableHeaders).filter((header) => header != allTasksTableHeaders.Actions);
 		const blankRows = [{ span: getHeaders.length, height: rowHeight, colSpan: 2 }];
 
-		doSorting().forEach((task) => {
-			const isNewTask = apiData.tasks.apiCopy.filter((_task) => _task.id == task.id && _task.project_id == selectedProject.id);
+		sortSelectedTaskRows().forEach((task) => {
+			const isNewTask = apiData.allTasks.apiCopy.filter((_task) => _task.id == task.id && _task.project_id == selectedProject.id);
 
 			if (isNewTask.length) {
 				const insertedBy = MyGlobal.GetAnyDataFromId(task.input_by, "full_name");
@@ -232,39 +189,11 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		});
 	};
 
-	const getTasks = async () => {
-		setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, tasks: true } }));
-
-		try {
-			const allTasks = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ projectId: selectedProject.id, type: "get-tasks" }));
-
-			const allTasksParticularsRemarks = await axios.get(
-				MyConstants.ApiEndpoints.Getter,
-				MyGlobal.GetHeaders({ projectId: selectedProject.id, type: "get-tasks-particulars-remarks" }),
-			);
-
-			const allTasksNotes = await axios.get(
-				MyConstants.ApiEndpoints.Getter,
-				MyGlobal.GetHeaders({ inquiryId: selectedProject.inquiry_id, projectId: selectedProject.id, type: "get-tasks-notes" }),
-			);
-
-			setApiData({
-				tasks: { api: allTasks.data, apiCopy: allTasks.data },
-				tasksNotes: { api: allTasksNotes.data, apiCopy: allTasksNotes.data },
-				tasksParticularsRemarks: { api: allTasksParticularsRemarks.data, apiCopy: allTasksParticularsRemarks.data },
-			});
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "Get Tasks");
-		} finally {
-			setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, tasks: false } }));
-		}
-	};
-
 	const getSelectedTaskData = () => {
 		let array = [];
 
-		if (apiData.tasksParticularsRemarks.api.length) {
-			const result = apiData.tasksParticularsRemarks.api.filter(
+		if (apiData.allTasksParticularsAndRemarks.api.length) {
+			const result = apiData.allTasksParticularsAndRemarks.api.filter(
 				(object) => object.project_id == selectedProject.id && object.task_id == mainData.selectedTask.id,
 			);
 
@@ -276,18 +205,34 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		return array;
 	};
 
-	const getSelectedTaskNotes = () => {
-		let array = [];
+	const getTasks = async () => {
+		setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, tasks: true } }));
 
-		if (apiData.tasksNotes.api.length) {
-			const result = apiData.tasksNotes.api.filter((object) => object.project_id == selectedProject.id && object.task_id == mainData.selectedTask.id);
+		try {
+			const allTasks = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ projectId: selectedProject.id, type: "get-tasks" }));
 
-			if (result.length) {
-				array = result;
-			}
+			const allTasksParticularsAndRemarks = await axios.get(
+				MyConstants.ApiEndpoints.Getter,
+				MyGlobal.GetHeaders({ projectId: selectedProject.id, type: "get-tasks-particulars-and-remarks" }),
+			);
+
+			const allTasksRemarks = allTasksParticularsAndRemarks.data.map((record) => {
+				const taskName = allTasks.data.filter((task) => task.id == record.task_id).at(0).task;
+				const writtenBy = MyGlobal.GetAnyDataFromId(record.created_by, "full_name");
+
+				return { ...record, created_by: writtenBy, task_name: taskName };
+			});
+
+			setApiData({
+				allTasks: { api: allTasks.data, apiCopy: allTasks.data },
+				allTasksRemarks: { api: allTasksRemarks, apiCopy: allTasksRemarks },
+				allTasksParticularsAndRemarks: { api: allTasksParticularsAndRemarks.data, apiCopy: allTasksParticularsAndRemarks.data },
+			});
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Get Tasks");
+		} finally {
+			setMainData((old) => ({ ...old, isLoading: { ...old.isLoading, tasks: false } }));
 		}
-
-		return array;
 	};
 
 	const saveTask = async (task) => {
@@ -324,12 +269,65 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		}
 	};
 
-	const setTask = (task) => {
-		setMainData((old) => ({ ...old, selectedTask: task }));
+	const setAllTasksRemarksSorting = (column) => {
+		setMainData((old) => ({ ...old, sortAllTasksRemarks: { column, isAscending: !mainData.sortAllTasksRemarks.isAscending } }));
 	};
 
-	const setSort = (column) => {
-		setMainData((old) => ({ ...old, sort: { column, isAscending: !mainData.sort.isAscending } }));
+	const setSelectedModule = (moduleId) => {
+		setMainData((old) => ({ ...old, selectedModuleId: moduleId, selectedTask: {}, selectedTaskMetaData: {} }));
+	};
+
+	const setSelectedTask = (task) => {
+		setMainData((old) => ({ ...old, selectedModuleId: 0, selectedTask: task }));
+	};
+
+	const setSelectedTaskSorting = (column) => {
+		if (column != allTasksTableHeaders.Actions) {
+			setMainData((old) => ({ ...old, sortSelectedTask: { column, isAscending: !mainData.sortSelectedTask.isAscending } }));
+		}
+	};
+
+	const sortAllTasksRemarksRows = () => {
+		return apiData.allTasksRemarks.api.sort((a, b) => {
+			const aCreatedAt = new Date(a.created_at);
+			const bCreatedAt = new Date(b.created_at);
+
+			const { column, isAscending } = mainData.sortAllTasksRemarks;
+
+			if (column == allTasksRemarksTableHeaders.Task && isAscending) {
+				return a.task_name.localeCompare(b.task_name);
+			} else if (column == allTasksRemarksTableHeaders.Task && !isAscending) {
+				return b.task_name.localeCompare(a.task_name);
+			} else if (column == allTasksRemarksTableHeaders.Remark && isAscending) {
+				return a.remark.localeCompare(b.remark);
+			} else if (column == allTasksRemarksTableHeaders.Remark && !isAscending) {
+				return b.remark.localeCompare(a.remark);
+			} else if (column == allTasksRemarksTableHeaders.Date && isAscending) {
+				return aCreatedAt - bCreatedAt;
+			} else if (column == allTasksRemarksTableHeaders.Date && !isAscending) {
+				return bCreatedAt - aCreatedAt;
+			} else if (column == allTasksRemarksTableHeaders.WrittenBy && !isAscending) {
+				return a.created_by.localeCompare(b.created_by);
+			} else if (column == allTasksRemarksTableHeaders.WrittenBy && !isAscending) {
+				return b.created_by.localeCompare(a.created_by);
+			}
+		});
+	};
+
+	const sortSelectedTaskRows = () => {
+		return getSelectedTaskData().sort((a, b) => {
+			const { column, isAscending } = mainData.sortSelectedTask;
+
+			if (column == allTasksTableHeaders.Particulars && isAscending) {
+				return a.particular.localeCompare(b.particular);
+			} else if (column == allTasksTableHeaders.Particulars && !isAscending) {
+				return b.particular.localeCompare(a.particular);
+			} else if (column == allTasksTableHeaders.Remark && isAscending) {
+				return a.remark.localeCompare(b.remark);
+			} else if (column == allTasksTableHeaders.Remark && !isAscending) {
+				return b.remark.localeCompare(a.remark);
+			}
+		});
 	};
 
 	const toggleAddParticularAndRemarkBox = (task) => {
@@ -341,12 +339,12 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		setHasMounted((old) => ({ ...old, addTask: !hasMounted.addTask }));
 	};
 
-	const toggleUpdateStatusBox = (task) => {
-		setMainData((old) => ({ ...old, selectedTask: task ?? {} }));
-		setHasMounted((old) => ({ ...old, updateStatus: task ? true : false }));
+	const toggleEditParticularAndRemarkBox = (task) => {
+		setMainData((old) => ({ ...old, selectedTaskMetaData: task ?? {} }));
+		setHasMounted((old) => ({ ...old, editParticularAndRemark: !hasMounted.editParticularAndRemark }));
 	};
 
-	const toggleUpdateTaskBox = (task) => {
+	const toggleEditTaskBox = (task) => {
 		const selectedTaskObject = {
 			...task,
 			due_on: mainData.selectedTask.due_on,
@@ -358,17 +356,198 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		};
 
 		setMainData((old) => ({ ...old, selectedTask: selectedTaskObject ?? {} }));
-		setHasMounted((old) => ({ ...old, updateTask: task ? true : false }));
+		setHasMounted((old) => ({ ...old, editTask: task ? true : false }));
 	};
 
-	const toggleUpdateTaskStatusBox = (task) => {
+	const toggleEditTaskStatusBox = (task) => {
 		setMainData((old) => ({ ...old, selectedTask: task ?? {} }));
-		setHasMounted((old) => ({ ...old, updateTaskStatus: task ? true : false }));
+		setHasMounted((old) => ({ ...old, editTaskStatus: task ? true : false }));
 	};
 
 	// UI Components
-	const uiActions = (task) => {
-		const style = "flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y hovered-rows";
+	const uiAllTasks = () => {
+		return apiData.allTasks.api.map((task, index) => {
+			const showAddTaskButton = apiData.allTasks.api.length - 1 == index;
+			const totalParticularsAndRemarks = apiData.allTasksRemarks.api.filter((record) => record.task_id == task.id).length;
+
+			const isUnsavedTask = task.id == "TK000000";
+			const iconColour = task.is_completed == 1 ? "green-text" : "red-text";
+			const iconStyle = `mr-2.5 ${iconColour}`;
+
+			const icon =
+				task.is_completed == 1 ? (
+					<FontAwesomeIcon className={iconStyle} icon={faCircleCheck} />
+				) : task.is_disabled == 1 ? (
+					<FontAwesomeIcon className={iconStyle} icon={faBan} />
+				) : isUnsavedTask ? (
+					<span className="mr-2.5 text-xs orange-tag">Unsaved</span>
+				) : (
+					""
+				);
+
+			const selectedTaskStyle =
+				task.id == mainData.selectedTask?.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+
+			const wrapper = `flex w-full h-10 px-5 justify-between items-center rounded shadow ${selectedTaskStyle} font-regular-11 hovered-rows`;
+
+			return (
+				<div className="flex w-full space-x-3 justify-start items-center">
+					<button className={wrapper} key={index} onClick={() => setSelectedTask(task)}>
+						<div className="flex justify-center items-center">
+							{icon}
+							<span>{task.task}</span>
+						</div>
+						{totalParticularsAndRemarks > 0 && <span className="font-regular-10 gray-text">{totalParticularsAndRemarks}</span>}
+					</button>
+					{allowNewTask && showAddTaskButton && (
+						<FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleAddTaskBox()} size="lg" />
+					)}
+				</div>
+			);
+		});
+	};
+
+	const uiAllTasksRemarksButton = () => {
+		const selectedAesthetics =
+			mainData.selectedModuleId == 1 ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+
+		const wrapper = `flex w-full h-10 px-5 justify-between items-center rounded shadow ${selectedAesthetics} font-regular-11 hovered-rows`;
+
+		return (
+			<button className={wrapper} onClick={() => setSelectedModule(1)}>
+				<span>All Remarks</span>
+				<span className="font-regular-10 gray-text">{apiData.allTasksRemarks.api.length}</span>
+			</button>
+		);
+	};
+
+	const uiAllTasksRemarks = () => {
+		return (
+			<div className="flex flex-col w-full h-full justify-between items-center contrast-background">
+				<div className="flex w-full px-4 justify-center items-center primary-background">{uiAllTasksRemarksHeaders()}</div>
+				<div className="flex flex-col w-full h-full overflow-y-auto">
+					{sortAllTasksRemarksRows().map((remark, index) => uiAllTasksRemarksRows(remark, index))}
+				</div>
+			</div>
+		);
+	};
+
+	const uiAllTasksRemarksHeaders = () => {
+		return Object.values(MyConstants.TableHeaders.TasksRemarks).map((header, index) => {
+			const showSortArrow = header == mainData.sortAllTasksRemarks.column ? "visible" : "invisible";
+
+			return (
+				<span
+					className="flex w-1/4 h-10 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11"
+					onClick={() => setAllTasksRemarksSorting(header)}
+					key={index}>
+					<span>{header}</span>
+					<span className={showSortArrow}>{uiAllTasksRemarksHeadersSortArrows(header)}</span>
+				</span>
+			);
+		});
+	};
+
+	const uiAllTasksRemarksHeadersSortArrows = (column) => {
+		if (mainData.sortAllTasksRemarks.column == column) {
+			if (mainData.sortAllTasksRemarks.isAscending) {
+				return <FontAwesomeIcon icon={faSortAmountAsc} />;
+			} else {
+				return <FontAwesomeIcon icon={faSortAmountDesc} />;
+			}
+		}
+	};
+
+	const uiAllTasksRemarksRows = (remark, rowIndex) => {
+		const style = `flex w-1/4 justify-center items-center whitespace-pre-wrap`;
+
+		return (
+			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background bottom-border font-regular-11 hovered-rows-2" key={rowIndex}>
+				<span className={style}>{remark.task_name}</span>
+
+				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(remark.remark, mainData.searchTerm) }} />
+
+				<span className={style}>{dayjs(remark.created_at).format("hh:mm:ss a, DD MMM, YYYY")}</span>
+
+				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(remark.created_by, mainData.searchTerm) }} />
+			</div>
+		);
+	};
+
+	const uiMain = () => {
+		if (mainData.isLoading.tasks) {
+			return (
+				<div className="flex w-full h-full justify-center items-center contrast-background full-border">
+					<SpinnerBig />
+				</div>
+			);
+		} else {
+			return (
+				<>
+					<div className="flex flex-col w-full h-full justify-between items-center">
+						<div className="flex w-full h-full justify-start items-center">
+							<div className="flex flex-col w-[15%] h-full px-5 pb-5 space-y-2.5 justify-between items-center">
+								<div className="flex flex-col w-full h-full space-y-2.5 justify-start items-center">{uiAllTasks()}</div>
+								{uiAllTasksRemarksButton()}
+							</div>
+							<div className="flex flex-col w-[85%] h-full mr-5 space-y-2 justify-start items-center rounded shadow contrast-background">
+								{!apiData.allTasksRemarks.api.length
+									? uiNoDataFound()
+									: Object.keys(mainData.selectedTask).length
+									? uiSelectedTask()
+									: uiAllTasksRemarks()}
+							</div>
+						</div>
+					</div>
+				</>
+			);
+		}
+	};
+
+	const uiNoDataFound = () => {
+		return (
+			<div className="flex flex-col w-[85%] h-full space-y-2 justify-center items-center rounded shadow gray-text contrast-background">
+				<FontAwesomeIcon className="text-6xl" icon={faCircleExclamation} />
+				<span>No tasks alloted</span>
+				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddTaskBox()}>
+					<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
+					<span>Add</span>
+				</button>
+			</div>
+		);
+	};
+
+	const uiNoParticularsAndRemarksFound = () => {
+		return (
+			<div className="flex flex-col w-full h-full space-y-2 justify-center items-center rounded shadow gray-text contrast-background">
+				<FontAwesomeIcon className="text-6xl" icon={faCircleExclamation} />
+				<span>No particulars or remarks found</span>
+				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddParticularAndRemarkBox()}>
+					<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
+					<span>Add</span>
+				</button>
+			</div>
+		);
+	};
+
+	const uiSelectedTask = () => {
+		return (
+			<div className="flex flex-col w-full h-full justify-start items-center">
+				<div className="flex w-full contrast-background">{uiSelectedTaskPrimaryInformation()}</div>
+				<div className="flex flex-col w-full h-full contrast-background">
+					<div className="flex w-full px-4 justify-center items-center primary-background">{uiSelectedTaskRowsHeaders()}</div>
+					<div className="flex flex-col w-full h-full overflow-y-auto">
+						{!sortSelectedTaskRows().length
+							? uiNoParticularsAndRemarksFound()
+							: sortSelectedTaskRows().map((task, index) => uiSelectedTaskRows(task, index))}
+					</div>
+				</div>
+			</div>
+		);
+	};
+
+	const uiSelectedTaskActions = (task) => {
+		const style = "flex w-full py-2 space-x-2.5 justify-start items-center cursor-pointer border-y hovered-rows";
 
 		const noClickAndHalfOpacity = "pointer-events-none opacity-25";
 		const clickAndFullOpacity = "pointer-events-auto opacity-100";
@@ -394,21 +573,14 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 				content={
 					<div className="flex flex-col justify-center items-center">
 						{allowNewTask && (
-							<div className={style} onClick={() => toggleAddParticularAndRemarkBox(task)}>
-								<FontAwesomeIcon className="w-5 primary-text" icon={faPlusCircle} />
-								<span>Add</span>
-							</div>
-						)}
-
-						{allowNewTask && (
 							<div className={`${style} ${deleteOrSaveTaskStyle}`} onClick={() => saveTask(task)}>
 								<FontAwesomeIcon className="w-5 green-text" icon={faSave} />
 								<span>Save</span>
 							</div>
 						)}
 
-						{allowUpdatingTask && (
-							<div className={`${style} ${updateTaskStyle}`} onClick={() => toggleUpdateTaskBox(task)}>
+						{allowEditingTask && (
+							<div className={`${style} ${updateTaskStyle}`} onClick={() => toggleEditTaskBox(task)}>
 								<FontAwesomeIcon className="w-5 orange-text" icon={faStar} />
 								<span>Update</span>
 							</div>
@@ -424,7 +596,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 						{allowEnablingTask && (
 							<div
 								className={`${style} ${enableTaskStyle}`}
-								onClick={() => toggleUpdateTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Enable })}>
+								onClick={() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Enable })}>
 								<FontAwesomeIcon className="w-5 green-text" icon={faCheckCircle} />
 								<span>Enable</span>
 							</div>
@@ -433,7 +605,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 						{allowDisablingTask && (
 							<div
 								className={`${style} ${disableTaskStyle}`}
-								onClick={() => toggleUpdateTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Disable })}>
+								onClick={() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Disable })}>
 								<FontAwesomeIcon className="w-5 red-text" icon={faBan} />
 								<span>Disable</span>
 							</div>
@@ -442,7 +614,7 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 						{allowMarkingTaskCompleted && (
 							<div
 								className={`${style} ${markTaskCompletedStyle}`}
-								onClick={() => toggleUpdateTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Completed })}>
+								onClick={() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Completed })}>
 								<FontAwesomeIcon className="w-5 green-text" icon={faClipboardCheck} />
 								<span>Mark Task Completed</span>
 							</div>
@@ -453,201 +625,110 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 				placement="bottom"
 				theme="light"
 				trigger="click">
-				<button className="space-x-2 font-regular-10 green-tag-transparent-01">
-					<FontAwesomeIcon className="cursor-pointer green-text" icon={faBolt} />
-					<span>Actions</span>
-				</button>
+				<FontAwesomeIcon className="cursor-pointer font-regular-11 green-text" icon={faBolt} />
 			</Tippy>
 		);
 	};
 
-	const uiMain = () => {
-		if (mainData.isLoading.tasks) {
-			return (
-				<div className="flex w-full h-full justify-center items-center black-white-background full-border">
-					<SpinnerBig />
-				</div>
-			);
-		} else if (!apiData.tasks.api.length) {
-			return (
-				<div className="flex flex-col w-full h-full space-y-2.5 justify-center items-center black-white-background top-border font-regular-11 gray-text">
-					<span>No tasks alloted</span>
-					<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddTaskBox()}>
-						<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
-						<span>Add</span>
-					</button>
-				</div>
-			);
-		} else {
-			return (
-				<>
-					<div className="flex flex-col w-full justify-between items-center">
-						<div className="flex w-full justify-start items-center">
-							<div className="flex flex-col w-[15%] h-full px-5 space-y-2.5 justify-start items-center">
-								{doSorting().map((task, index) => uiTasksList(task, index))}
-								<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddTaskBox()}>
-									<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
-									<span>Add</span>
-								</button>
-							</div>
-							{!Object.keys(mainData.selectedTask).length ? uiNoTaskSelected() : uiSelectedTask()}
+	const uiSelectedTaskParticularsAndRemarksActions = (selectedTaskRecord) => {
+		const style = "flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y hovered-rows-2";
+
+		const deleteRecordStyle = allowDeletingParticularAndRemark ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+
+		const editRecordStyle = allowEditingParticularAndRemark ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+
+		return (
+			<Tippy
+				allowHTML
+				animation="fade"
+				arrow
+				className="relative z-40"
+				content={
+					<div className="flex flex-col justify-center items-center">
+						<div className={style} onClick={() => toggleAddParticularAndRemarkBox(selectedTaskRecord)}>
+							<FontAwesomeIcon className="w-5 primary-text" icon={faPlusCircle} />
+							<span>Add</span>
 						</div>
-						{Object.keys(mainData.selectedTask).length > 0 && (
-							<div className="flex w-full justify-between items-center">
-								<div className="flex flex-col w-[15%] h-full px-5 justify-start items-center" />
-								{!getSelectedTaskNotes().length ? uiNoNotesWritten() : uiSelectedTaskNotes()}
-							</div>
-						)}
-					</div>
-				</>
-			);
-		}
-	};
 
-	const uiNoNotesWritten = () => {
-		return (
-			<div className="flex flex-col w-[85%] h-[272px] space-y-2 justify-center items-center rounded shadow black-white-background font-regular-11 gray-text">
-				<FontAwesomeIcon className="text-6xl" icon={faCircleExclamation} />
-				<span>No notes written.</span>
-				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddTaskBox()}>
-					<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
-					<span>Add</span>
-				</button>
-			</div>
-		);
-	};
+						<div className={`${style} ${editRecordStyle}`} onClick={() => toggleEditParticularAndRemarkBox(selectedTaskRecord)}>
+							<FontAwesomeIcon className="w-5 orange-text" icon={faStar} />
+							<span>Edit</span>
+						</div>
 
-	const uiNoTaskSelected = () => {
-		return (
-			<div className="flex flex-col w-[85%] h-[calc(100vh-140px)] space-y-2 justify-center items-center rounded shadow gray-text black-white-background">
-				<FontAwesomeIcon className="text-6xl" icon={faCircleExclamation} />
-				<span>Select a task</span>
-			</div>
-		);
-	};
-
-	const uiSelectedTask = () => {
-		return (
-			<div className="flex flex-col w-[85%] space-y-2 justify-start items-center rounded shadow black-white-background">
-				<div className="flex flex-col w-full justify-start items-center">
-					<div className="flex w-full black-white-background">{uiSelectedTaskHeader()}</div>
-					<div className="flex flex-col w-full h-[272px] black-white-background">
-						<div className="flex w-full px-4 justify-center items-center primary-background">{uiSelectedTaskRowsHeaders()}</div>
-						<div className="flex flex-col w-full h-[232px] overflow-y-auto">
-							{getSelectedTaskData().map((task, index) => uiSelectedTaskRows(task, index))}
+						<div className={`${style} ${deleteRecordStyle}`} onClick={() => deleteTask(selectedTaskRecord)}>
+							<FontAwesomeIcon className="w-5 red-text" icon={faTrash} />
+							<span>Delete</span>
 						</div>
 					</div>
-				</div>
-			</div>
+				}
+				hideOnClick
+				interactive
+				placement="bottom"
+				theme="light"
+				trigger="click">
+				<FontAwesomeIcon className="cursor-pointer green-text" icon={faBolt} />
+			</Tippy>
 		);
 	};
 
-	const uiSelectedTaskHeader = () => {
-		const selectedTask = apiData.tasks.api.filter((task) => task.id == mainData.selectedTask.id).at(0);
+	const uiSelectedTaskPrimaryInformation = () => {
+		const selectedTask = apiData.allTasks.api.find((task) => task.id == mainData.selectedTask.id);
+		const isSelectedTaskDefined = typeof selectedTask === "object";
 
-		const task = typeof selectedTask === "object" ? selectedTask.task : "";
-		const expense = typeof selectedTask === "object" ? Number(selectedTask.expense) : 0;
-		const dueOn = typeof selectedTask === "object" ? dayjs(selectedTask.due_on).format("DD MMM, YYYY") : "";
+		const isCompleted = isSelectedTaskDefined ? selectedTask.is_completed : false;
+		const task = isSelectedTaskDefined ? selectedTask.task : "";
+		const expense = isSelectedTaskDefined ? Number(selectedTask.expense) : 0;
+		const dueOn = isSelectedTaskDefined ? dayjs(selectedTask.due_on).format("DD MMM, YYYY") : "";
 
 		return (
 			<div className="flex w-full px-4 py-2 justify-between items-center bottom-border">
 				<div className="flex !px-2.5 space-x-2.5 justify-between items-center red-tag-transparent-01">
-					<FontAwesomeIcon className="font-regular-10" icon={faIndianRupee} />
-					<span className="font-medium-10">{expense}</span>
+					<FontAwesomeIcon className="font-regular-11" icon={faIndianRupee} />
+					<span className="font-medium-11">{expense}</span>
 				</div>
-				<span className="font-medium-14">{task}</span>
+				<div className="flex space-x-2.5 justify-center items-center font-medium-14">
+					<span>{task}</span>
+					{!isCompleted && uiSelectedTaskActions(mainData.selectedTask)}
+				</div>
 				<div className="flex !px-2.5 space-x-2.5 justify-between items-center red-tag-transparent-01">
-					<FontAwesomeIcon className="font-regular-10" icon={faStopwatch} />
-					<span className="font-medium-10">{dueOn}</span>
+					<FontAwesomeIcon className="font-regular-11" icon={faStopwatch} />
+					<span className="font-medium-11">{dueOn}</span>
 				</div>
-			</div>
-		);
-	};
-
-	const uiSelectedTaskNotes = () => {
-		return (
-			<div className="flex flex-col w-[85%] space-y-2 justify-start items-center rounded shadow black-white-background">
-				<div className="flex flex-col w-full justify-start items-center">
-					<div className="flex flex-col w-full h-[272px] black-white-background">
-						<div className="flex w-full px-4 justify-center items-center primary-background">{uiSelectedTaskNotesRowsHeaders()}</div>
-						<div className="flex flex-col w-full h-[232px] overflow-y-auto">
-							{getSelectedTaskNotes().map((note, index) => uiSelectedTaskNotesRows(note, index))}
-						</div>
-					</div>
-				</div>
-			</div>
-		);
-	};
-
-	const uiSelectedTaskNotesRowsHeaders = () => {
-		return ["Date", "Note", "Written By"].map((header, index) => {
-			const width = index != 2 ? "w-2/5" : "w-1/5";
-
-			const showSortArrow = header == mainData.sort.column ? "visible" : "invisible";
-			const wrapper = `flex ${width} h-10 justify-start items-center cursor-pointer text-center text-white font-medium-12`;
-
-			return (
-				<span className={wrapper} onClick={() => setSort(header)} key={index}>
-					<span>{header}</span>
-					<span className={showSortArrow}>{uiSortArrows(header)}</span>
-				</span>
-			);
-		});
-	};
-
-	const uiSelectedTaskNotesRows = (note, rowIndex) => {
-		const style = `flex w-2/5 justify-start items-center whitespace-pre`;
-		const lastColumnStyle = `flex w-1/5 justify-start items-center whitespace-pre`;
-
-		const entryDate = dayjs(note.entry_date).format("hh:mm:ss a, DD MMM, YYYY");
-		const writtenBy = MyGlobal.GetAnyDataFromId(note.user_id, "full_name");
-
-		return (
-			<div className="flex w-full px-4 py-2 justify-center items-center black-white-background bottom-border font-regular-12" key={rowIndex}>
-				<span className={style}>{entryDate}</span>
-
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(note.content, mainData.searchTerm) }} />
-
-				<span className={lastColumnStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(writtenBy, mainData.searchTerm) }} />
 			</div>
 		);
 	};
 
 	const uiSelectedTaskRows = (task, rowIndex) => {
-		const style = "flex w-2/5 justify-start items-center whitespace-pre";
+		const style = "flex w-1/3 justify-center items-center whitespace-pre-wrap";
 
 		return (
-			<div className="flex w-full px-4 py-2 justify-center items-center black-white-background bottom-border font-regular-12" key={rowIndex}>
-				<span className="pr-1">{rowIndex + 1}. </span>
-
+			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background border-y font-regular-11 hovered-rows-2" key={rowIndex}>
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(task.particular, mainData.searchTerm) }} />
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(task.remark, mainData.searchTerm) }} />
 
-				<span className="w-1/5">{uiActions(task)}</span>
+				<span className={style}>{uiSelectedTaskParticularsAndRemarksActions(task)}</span>
 			</div>
 		);
 	};
 
 	const uiSelectedTaskRowsHeaders = () => {
-		return Object.values(tableHeaders).map((header, index) => {
-			const width = index != 2 ? "w-2/5" : "w-1/5";
-
-			const showSortArrow = header == mainData.sort.column ? "visible" : "invisible";
-			const wrapper = `flex ${width} h-10 justify-start items-center cursor-pointer text-center text-white font-medium-12`;
+		return Object.values(allTasksTableHeaders).map((header, index) => {
+			const showSortArrow = header == mainData.sortSelectedTask.column && header != allTasksTableHeaders.Actions ? "visible" : "invisible";
+			const wrapper = `flex w-1/3 h-10 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11`;
 
 			return (
-				<span className={wrapper} onClick={() => setSort(header)} key={index}>
+				<span className={wrapper} onClick={() => setSelectedTaskSorting(header)} key={index}>
 					<span>{header}</span>
-					<span className={showSortArrow}>{uiSortArrows(header)}</span>
+					<span className={showSortArrow}>{uiSelectedTaskRowsHeadersSortArrows(header)}</span>
 				</span>
 			);
 		});
 	};
 
-	const uiSortArrows = (column) => {
-		if (mainData.sort.column == column) {
-			if (mainData.sort.isAscending) {
+	const uiSelectedTaskRowsHeadersSortArrows = (column) => {
+		if (mainData.sortSelectedTask.column == column) {
+			if (mainData.sortSelectedTask.isAscending) {
 				return <FontAwesomeIcon icon={faSortAmountAsc} />;
 			} else {
 				return <FontAwesomeIcon icon={faSortAmountDesc} />;
@@ -655,65 +736,46 @@ export default function Tasks({ reloadProjects, selectedClient, selectedProject,
 		}
 	};
 
-	const uiTasksList = (task, rowIndex) => {
-		// UI
-		const wrapper = `flex w-full justify-center items-center rounded shadow black-text black-white-background font-regular-11 hovered-rows-2`;
-
-		return (
-			<div className={wrapper} key={rowIndex}>
-				<button
-					className="flex w-full min-h-10 justify-center items-center text-center relative"
-					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(task.task, mainData.searchTerm) }}
-					onClick={() => setTask(task)}
-				/>
-			</div>
-		);
-	};
-
 	// Hooks
 	useEffect(() => {
 		getTasks();
 	}, []);
-
-	useEffect(() => {
-		console.log(apiData.tasksParticularsRemarks.api);
-	}, [apiData.tasksParticularsRemarks.api]);
 
 	// Main UI
 	return (
 		<>
 			{uiMain()}
 
-			{hasMounted.addTask && <AddTask addTask={addTask} mount={hasMounted.addTask} unmount={toggleAddTaskBox} />}
-
 			{hasMounted.addParticularAndRemark && (
 				<AddParticularAndRemark
-					addParticularAndRemark={addParticularAndRemark}
 					mount={hasMounted.addParticularAndRemark}
-					selectedTaskMetaData={mainData.selectedTaskMetaData}
+					reloadTasks={getTasks}
+					selectedTask={mainData.selectedTaskMetaData}
 					unmount={toggleAddParticularAndRemarkBox}
 				/>
 			)}
 
-			{hasMounted.updateStatus && (
-				<UpdateProjectStatus
-					mount={hasMounted.updateStatus}
+			{hasMounted.addTask && <AddTask addTask={addTask} mount={hasMounted.addTask} unmount={toggleAddTaskBox} />}
+
+			{hasMounted.editParticularAndRemark && (
+				<EditParticularAndRemark
+					mount={hasMounted.editParticularAndRemark}
 					reloadTasks={getTasks}
-					selectedTask={mainData.selectedTask}
-					unmount={toggleUpdateStatusBox}
+					selectedTask={mainData.selectedTaskMetaData}
+					unmount={toggleEditParticularAndRemarkBox}
 				/>
 			)}
 
-			{hasMounted.updateTask && (
-				<UpdateTask mount={hasMounted.updateTask} reloadTasks={getTasks} selectedTask={mainData.selectedTask} unmount={toggleUpdateTaskBox} />
+			{hasMounted.editTask && (
+				<EditTask mount={hasMounted.editTask} reloadTasks={getTasks} selectedTask={mainData.selectedTask} unmount={toggleEditTaskBox} />
 			)}
 
-			{hasMounted.updateTaskStatus && (
-				<UpdateTaskStatus
-					mount={hasMounted.updateTaskStatus}
+			{hasMounted.editTaskStatus && (
+				<EditTaskStatus
+					mount={hasMounted.editTaskStatus}
 					reloadTasks={getTasks}
 					selectedTask={mainData.selectedTask}
-					unmount={toggleUpdateTaskStatusBox}
+					unmount={toggleEditTaskStatusBox}
 				/>
 			)}
 		</>

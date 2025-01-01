@@ -49,7 +49,7 @@ export default async function handler(req, res) {
 			} else if (request.type == "add-note") {
 				queryString = "INSERT INTO notes (inquiry_id, user_id, content, source) VALUES (?, ?, ?, ?)";
 				queryParameters = [request.id, request.userId, request.content, request.source];
-			} else if (request.type == "update-project-status") {
+			} else if (request.type == "edit-project-status") {
 				queryString = "UPDATE projects SET status=? WHERE id=? AND client_id=? AND company_id=? AND inquiry_id=?";
 				queryParameters = [request.new_status, request.projectId, request.client_id, request.company_id, request.inquiry_id];
 			} else if (request.type == "delete-project") {
@@ -58,19 +58,22 @@ export default async function handler(req, res) {
 			} else if (request.type == "mark-task-as-completed") {
 				queryString = "UPDATE tasks SET is_completed=1, completed_on=? WHERE id=? AND project_id=?";
 				queryParameters = [request.completedOn, request.taskId, request.projectId];
-			} else if (request.type == "handle-government-id") {
+			} else if (request.type == "manage-government-id") {
 				queryString = "UPDATE projects SET government_id=? WHERE id=?";
 				queryParameters = [request.governmentId, request.projectId];
-			} else if (request.type == "update-quote") {
+			} else if (request.type == "edit-quote") {
 				queryString = "UPDATE projects SET quote=? WHERE id=?";
 				queryParameters = [request.quote, request.projectId];
-			} else if (request.type == "update-task") {
+			} else if (request.type == "edit-task") {
 				queryString = "UPDATE tasks SET task=?, due_on=?, expense=? WHERE id=?";
 				queryParameters = [request.task, request.dueOn, request.expense, request.taskId];
-			} else if (request.type == "update-task-status") {
+			} else if (request.type == "edit-task-status") {
 				queryString = "UPDATE tasks SET is_completed=?, is_disabled=?, reason=? WHERE id=?";
 				queryParameters = [request.isCompleted, request.isDisabled, request.reason, request.taskId];
-			} else if (request.type == "update-tasks-particular-and-remark") {
+			} else if (request.type == "add-tasks-particular-and-remark") {
+				queryString = "INSERT INTO tasks_particulars_remarks (task_id, project_id, particular, remark, created_by) VALUES (?, ?, ?, ?, ?)";
+				queryParameters = [request.taskId, request.projectId, request.particular, request.remark, request.createdBy];
+			} else if (request.type == "edit-tasks-particular-and-remark") {
 				queryString = "UPDATE tasks_particulars_remarks SET particular=?, remark=? WHERE id=? AND task_id=? AND project_id=?";
 				queryParameters = [request.particular, request.remark, request.rowId, request.taskId, request.projectId];
 			}

@@ -52,10 +52,10 @@ export default function EditProjectPreview({ mount, newProject, oldProject, unmo
 					handle=".draggable-handle"
 					onStart={() => setIsBoxBeingDragged(!isBoxBeingDragged)}
 					onStop={() => setIsBoxBeingDragged(!isBoxBeingDragged)}>
-					<DialogPanel className="w-3/4 transform overflow-hidden rounded shadow black-white-background">
+					<DialogPanel className="w-3/4 transform overflow-hidden rounded shadow contrast-background">
 						{uiTitleBar()}
 						<div className="flex w-full p-6 space-x-3 justify-between items-center light-gray-background">
-							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border black-white-background">
+							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
 								{uiRow("Client", oldProject.client.name)}
 								{uiRow("Company", oldProject.company.name)}
 								{uiRow("Contact Number", oldProject.contactNumber)}
@@ -68,7 +68,7 @@ export default function EditProjectPreview({ mount, newProject, oldProject, unmo
 								{uiRow("Invoice Firm", oldProject.invoiceFirm.name)}
 							</div>
 							<FontAwesomeIcon icon={faArrowsUpToLine} rotation={90} />
-							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border black-white-background">
+							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
 								{uiRow("Client", newProject.client.name)}
 								{uiRow("Company", newProject.company.name)}
 								{uiRow("Contact Number", newProject.contactNumber)}

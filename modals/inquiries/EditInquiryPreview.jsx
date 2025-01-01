@@ -52,10 +52,10 @@ export default function EditInquiryPreview({ editInquiry, mount, oldInquiry, unm
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setIsBoxDragged(true)} onStop={() => setIsBoxDragged(false)}>
-					<DialogPanel className="w-3/4 transform overflow-hidden rounded shadow black-white-background">
+					<DialogPanel className="w-3/4 transform overflow-hidden rounded shadow contrast-background">
 						{uiTitleBar()}
 						<div className="flex w-full p-6 space-x-3 justify-between items-center light-gray-background">
-							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border black-white-background">
+							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
 								{uiRow("Client", oldInquiry.client.name)}
 								{uiRow("Email Address", oldInquiry.emailAddress)}
 								{uiRow("Contact Number", oldInquiry.contactNumber)}
@@ -67,7 +67,7 @@ export default function EditInquiryPreview({ editInquiry, mount, oldInquiry, unm
 								{uiRow("Follow Ups", oldFollowUps)}
 							</div>
 							<FontAwesomeIcon icon={faArrowsUpToLine} rotation={90} />
-							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border black-white-background">
+							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
 								{uiRow("Client", editInquiry.client.name)}
 								{uiRow("Email Address", editInquiry.emailAddress)}
 								{uiRow("Contact Number", editInquiry.contactNumber)}

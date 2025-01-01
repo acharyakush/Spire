@@ -71,7 +71,7 @@ export default function Projects() {
 	const allowEditingProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditProject);
 
 	const showSearchBoxClearButton = mainData.searchTerm ? "cursor-pointer primary-text" : "hidden";
-	const blankDataWrapper = "flex w-full h-full justify-center items-center black-white-background full-border";
+	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
 	// Functions
 	const detectKeystrokes = (event) => {
@@ -446,7 +446,7 @@ export default function Projects() {
 		return (
 			<div className="flex w-full h-full justify-center items-start">
 				<div className="flex flex-col w-[10%] justify-start items-center">{uiTabs()}</div>
-				<div className="flex flex-col w-[90%] h-full justify-start items-center black-white-background">
+				<div className="flex flex-col w-[90%] h-full justify-start items-center contrast-background">
 					<div className="flex flex-col w-full h-full justify-center items-start full-border">
 						<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
 						<Virtuoso
@@ -567,7 +567,7 @@ export default function Projects() {
 
 		return (
 			<div
-				className="flex w-full justify-center items-center black-white-background bottom-border font-regular-11 black-text"
+				className="flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text"
 				key={projectId}
 				onMouseEnter={() => setMouseEnter(projectId)}
 				onMouseLeave={() => setMouseLeave(projectId)}>
@@ -660,7 +660,7 @@ export default function Projects() {
 					<FontAwesomeIcon icon={icon} />
 				</MenuButton>
 				{!isCompleted && (
-					<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 black-white-background bottom-shadow full-border">
+					<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">
 						{uiStatusMenuList(clientName, project)}
 					</MenuItems>
 				)}
@@ -671,7 +671,7 @@ export default function Projects() {
 	const uiStatusMenuList = (clientName, project) => {
 		return Object.values(projectStatuses).map((status, index) => {
 			const isSelected = status == project.status;
-			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "black-white-background black-text";
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
 
 			return (

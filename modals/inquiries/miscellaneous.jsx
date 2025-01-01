@@ -89,7 +89,7 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded black-white-background shadow">
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full pt-2 pb-4 justify-between items-center">
 							<div className="flex w-full px-4 justify-center items-center">
@@ -231,7 +231,7 @@ export function UpdateStatus({ mount, reloadInquiries, selectedInquiry, unmount 
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded black-white-background shadow">
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text" dangerouslySetInnerHTML={{ __html: message }} />
 						<div className={reasonBoxStyle}>

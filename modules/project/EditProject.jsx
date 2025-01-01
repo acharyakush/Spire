@@ -114,7 +114,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				reloadProjects();
 
 				MyGlobal.AddActivity(`Edited <b>${selectedProject.id}</b>.`, MyConstants.Modules.Base.Projects);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectUpdated);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectEdited);
 
 				unmount();
 			} else {
@@ -501,7 +501,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 					</div>
 				</div>
 			</div>
-			<div className="flex w-full h-full justify-center items-center black-white-background">
+			<div className="flex w-full h-full justify-center items-center contrast-background">
 				<div className="flex flex-col w-3/5 h-full space-y-3 justify-start items-center">
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">
 						{uiClient()}

@@ -266,7 +266,7 @@ export default function Home() {
 				<MenuButton className={wrapper}>
 					<span>More</span>
 				</MenuButton>
-				<MenuItems anchor="bottom" className="absolute w-max rounded focus:outline-none bottom-shadow black-white-background full-border black-text">
+				<MenuItems anchor="bottom" className="absolute w-max rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
 					{uiOtherModulesList()}
 				</MenuItems>
 			</Menu>
@@ -376,9 +376,7 @@ export default function Home() {
 				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
 					<FontAwesomeIcon className="primary-text" icon={faUserCircle} size="lg" />
 				</MenuButton>
-				<MenuItems
-					anchor="bottom"
-					className="absolute w-max mt-2 rounded focus:outline-none bottom-shadow black-white-background full-border black-text">
+				<MenuItems anchor="bottom" className="absolute w-max mt-2 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
 					<div className="flex flex-col p-2 font-medium-14">
 						<span>{mainData.loggedInUser.full_name || ""}</span>
 						<span className="font-regular-10 gray-text">{mainData.loggedInUser.designation || ""}</span>
@@ -441,7 +439,7 @@ export default function Home() {
 	// Main UI
 	return (
 		<main className="flex flex-col min-w-[1024px] h-screen overflow-y-hidden">
-			<div className="flex w-full h-11 px-5 justify-between items-center relative shadow black-white-background">
+			<div className="flex w-full h-11 px-5 justify-between items-center relative shadow contrast-background">
 				<div className="flex w-full justify-start items-center">
 					<span className="uppercase dashboard-heading">{applicationName}</span>
 				</div>

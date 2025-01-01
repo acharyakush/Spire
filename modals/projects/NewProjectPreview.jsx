@@ -52,7 +52,7 @@ export default function NewProjectPreview({ mount, projectData, unmount }) {
 					handle=".draggable-handle"
 					onStart={() => setIsBoxBeingDragged(!isBoxBeingDragged)}
 					onStop={() => setIsBoxBeingDragged(!isBoxBeingDragged)}>
-					<DialogPanel className="w-1/2 transform overflow-hidden rounded shadow black-white-background">
+					<DialogPanel className="w-1/2 transform overflow-hidden rounded shadow contrast-background">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full h-[410px] py-3 space-y-3 justify-between items-center overflow-y-auto light-gray-background">
 							{uiRow("Client", projectData.clientName)}

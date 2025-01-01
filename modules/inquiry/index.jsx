@@ -80,7 +80,7 @@ export default function Inquiries() {
 	const showToDateClearButton = mainData.entryDate.to ? "cursor-pointer primary-text" : "hidden";
 	const showFindClearButton = mainData.searchTerm ? "cursor-pointer primary-text" : "hidden";
 
-	const blankDataWrapper = "flex w-full h-full justify-center items-center font-regular-12 gray-text black-white-background full-border";
+	const blankDataWrapper = "flex w-full h-full justify-center items-center font-regular-12 gray-text contrast-background full-border";
 
 	// Functions
 	const closeNewProjectView = () => {
@@ -651,7 +651,7 @@ export default function Inquiries() {
 	const uiFromDate = () => {
 		if (apiData.inquiries.apiCopy.length) {
 			return (
-				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow black-white-background">
+				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
 						className="w-20 h-6 bg-transparent outline-none font-medium-11"
@@ -776,7 +776,7 @@ export default function Inquiries() {
 		const createdByIdAndName = `${inquiry.created_by} - ${createdBy}`;
 
 		return (
-			<div className="flex w-full justify-center items-center black-white-background bottom-border font-regular-10 black-text" key={rowId}>
+			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={rowId}>
 				<span className={style}>{dayjs(inquiry.entry_date).format("DD MMM, YYYY")}</span>
 
 				<span className={`${style} space-x-2 ${clientNameTextStyle}`}>{uiClientName(clientId, clientName, inquiry)}</span>
@@ -844,7 +844,7 @@ export default function Inquiries() {
 				<MenuButton className="flex w-full justify-between items-center focus:outline-none relative z-40">
 					<FontAwesomeIcon className="text-white" icon={faFilter} size="sm" />
 				</MenuButton>
-				<MenuItems className="absolute w-fit right-0 origin-top-right rounded black-white-background shadow-md focus:outline-none z-50">
+				<MenuItems className="absolute w-fit right-0 origin-top-right rounded contrast-background shadow-md focus:outline-none z-50">
 					{uiStatusFilterMenu()}
 				</MenuItems>
 			</Menu>
@@ -890,7 +890,7 @@ export default function Inquiries() {
 						{icon}
 					</MenuButton>
 					{!isConfirmed && (
-						<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded black-white-background bottom-shadow focus:outline-none z-50 full-border">
+						<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">
 							{uiStatusMenuList(inquiry)}
 						</MenuItems>
 					)}
@@ -927,7 +927,7 @@ export default function Inquiries() {
 	const uiToDate = () => {
 		if (apiData.inquiries.apiCopy.length) {
 			return (
-				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow black-white-background">
+				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
 						className="w-20 h-6 bg-transparent outline-none font-medium-11"

@@ -1,8 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
 :root {
-	--web-font-family: "Inter", Arial, sans-serif;
-	--web-header-font: "Inter", Arial, sans-serif;
+	--font-family: "Inter", Arial, sans-serif;
+	--header-font: "Inter", Arial, sans-serif;
 }
 
 @tailwind base;
@@ -12,7 +12,7 @@
 		@apply inline-block;
 	}
 	body {
-		font-family: var(--web-font-family);
+		font-family: var(--font-family);
 	}
 }
 
@@ -26,83 +26,82 @@
 @tailwind utilities;
 
 [app-theme="dark"] {
-	--web-black-white: #333333; /* Darker gray for better contrast */
-	--web-blue-transparent-01: rgba(0, 113, 206, 0.1);
-	--web-blue: #0071ce;
+	--contrast: #333333; /* Darker gray for better contrast */
 
-	--web-gray: #444444; /* Darker gray for dark mode */
-	--web-gray-transparent-01: rgba(68, 68, 68, 0.1);
+	--blue: #0e72cf;
+	--blue2: #0078d4;
 
-	--web-green-transparent-01: rgba(0, 98, 65, 0.1);
-	--web-green: #006241;
+	--gray: #444444; /* Darker gray for dark mode */
+	--gray-transparent-01: rgba(68, 68, 68, 0.1);
 
-	--web-light-gray: #555555; /* Lighter gray in dark mode */
-	--web-light-slate-gray: #666666;
+	--green-transparent-01: rgba(16, 124, 16, 0.1);
+	--green: #107c10;
 
-	--web-logo-green-transparent-01: rgba(69, 85, 38, 0.1);
-	--web-logo-green: #455526;
+	--light-gray: #555555; /* Lighter gray in dark mode */
+	--light-slate-gray: #666666;
 
-	--web-orange-transparent-01: rgba(255, 153, 0, 0.1);
-	--web-orange: #ff9900;
+	--logo-green-transparent-01: rgba(69, 85, 38, 0.1);
+	--logo-green: #455526;
 
-	--web-primary-background: #2e2e2e;
-	--web-primary-border: #222222;
-	--web-primary-transparent-01: rgba(0, 136, 223, 0.1);
-	--web-primary-transparent-05: rgba(0, 136, 223, 0.5);
-	--web-primary: #0088df;
+	--orange-transparent-01: rgba(255, 153, 0, 0.1);
+	--orange: #ff9900;
 
-	--web-red-transparent-01: rgba(227, 25, 55, 0.1);
-	--web-red: #e31937;
+	--primary-background: #2e2e2e;
+	--primary-border: #222222;
+	--primary-transparent-01: rgba(51, 102, 153, 0.1);
+	--primary-transparent-05: rgba(51, 102, 153, 0.5);
+	--primary: #0078d4;
 
-	--web-text: #ffffff; /* White text for dark mode */
-	--web-white: #ffffff;
+	--red-transparent-01: rgba(227, 25, 55, 0.1);
+	--red: #e31937;
 
-	--web-yellow: #ffda03;
-	--web-yellow-transparent-01: rgba(255, 218, 3, 0.1);
+	--text: #ffffff; /* White text for dark mode */
+	--white: #ffffff;
+
+	--yellow: #ffda03;
+	--yellow-transparent-01: rgba(255, 218, 3, 0.1);
 }
 
 [app-theme="light"] {
-	--web-black-white: #fff;
+	--contrast: #fff;
 
-	--web-blue-transparent-01: #093e5219;
-	--web-blue: #093e52;
+	--blue-transparent-01: #093e5219;
+	--blue: #093e52;
 
-	--web-gray: #b0b0b0;
-	--web-gray-transparent-01: rgba(176, 176, 176, 0.1);
+	--gray: #b0b0b0;
+	--gray-transparent-01: rgba(176, 176, 176, 0.1);
 
-	--web-green-transparent-01: rgba(0, 98, 65, 0.1);
-	/* --web-green: #006241; */
-	--web-green: #4fa85e;
-	--web-green-transparent-1: rgb(81, 114, 36, 0.1);
+	--green-transparent-01: rgba(16, 124, 16, 0.1);
+	--green: #107c10;
 
-	--web-light-gray: #f5f5f5;
-	--web-light-slate-gray: #9e9e9e;
+	--light-gray: #f5f5f5;
+	--light-slate-gray: #9e9e9e;
 
-	--web-logo-green-transparent-01: rgba(69, 85, 38, 0.1);
-	--web-logo-green: #455526;
+	--logo-green-transparent-01: rgba(69, 85, 38, 0.1);
+	--logo-green: #455526;
 
-	--web-orange-transparent-01: rgba(254, 150, 1, 0.1);
-	--web-orange: #eeb501;
+	--orange-transparent-01: rgba(255, 153, 0, 0.1);
+	--orange: #ff9900;
 
-	--web-primary-background: #e0e0e0;
-	--web-primary-border: #e0e0e0;
-	--web-primary-transparent-01: rgba(53, 100, 140, 0.1);
-	--web-primary-transparent-05: rgba(53, 100, 140, 0.5);
-	--web-primary: #35648c;
+	--primary-background: #e0e0e0;
+	--primary-border: #e0e0e0;
+	--primary-transparent-01: rgba(51, 102, 153, 0.1);
+	--primary-transparent-05: rgba(51, 102, 153, 0.5);
+	--primary: #336699;
 
-	--web-red-transparent-01: rgba(229, 9, 20, 0.1);
-	--web-red: #d62121;
+	--red-transparent-01: rgba(229, 9, 20, 0.1);
+	--red: #d62121;
 
-	--web-text: #232f33;
-	--web-white: #232f33;
+	--text: #232f33;
+	--white: #232f33;
 
-	--web-yellow: #ffda03;
-	--web-yellow-transparent-01: rgba(255, 218, 3, 0.1);
+	--yellow: #ffda03;
+	--yellow-transparent-01: rgba(255, 218, 3, 0.1);
 }
 
 body,
 html {
-	@apply bg-[var(--web-gray-transparent-01)] m-0 p-0;
+	@apply bg-[var(--gray-transparent-01)] m-0 p-0;
 	-moz-osx-font-smoothing: auto;
 	font-synthesis: none;
 	font-feature-settings: "cpsp" 1;
@@ -112,11 +111,11 @@ html {
 }
 
 .black-text {
-	@apply text-[var(--web-text)];
+	@apply text-[var(--text)];
 }
 
-.black-white-background {
-	@apply bg-[var(--web-black-white)];
+.contrast-background {
+	@apply bg-[var(--contrast)];
 }
 
 .blink {
@@ -137,286 +136,286 @@ html {
 }
 
 .blue-background-transparent-01 {
-	@apply bg-[var(--web-blue-transparent-01)];
+	@apply bg-[var(--blue-transparent-01)];
 }
 
 .blue-border {
-	@apply border border-[var(--web-blue)];
+	@apply border border-[var(--blue)];
 }
 
 .blue-tag {
-	@apply bg-[var(--web-blue)] py-0.5 px-1.5 rounded text-white;
+	@apply bg-[var(--blue)] py-0.5 px-1.5 rounded text-white;
 }
 
 .blue-tag-transparent-01 {
-	@apply bg-[var(--web-blue-transparent-01)] border border-[var(--web-blue)] py-0.5 px-1.5 rounded text-[var(--web-blue)];
+	@apply bg-[var(--blue-transparent-01)] border border-[var(--blue)] py-0.5 px-1.5 rounded text-[var(--blue)];
 }
 
 .blue-text {
-	@apply text-[var(--web-blue)];
+	@apply text-[var(--blue)];
 }
 
 .bottom-border {
-	@apply border-b border-b-[var(--web-primary-border)];
+	@apply border-b border-b-[var(--primary-border)];
 }
 
 .dashboard-heading,
 .view-heading {
-	@apply font-semibold text-[var(--web-primary)] text-[16pt];
-	font-family: var(--web-header-font);
+	@apply font-semibold text-[var(--primary)] text-[16pt];
+	font-family: var(--header-font);
 }
 
 .dialog-footer {
-	@apply bg-[var(--web-light-gray)] border-t border-t-[var(--web-primary-border)] flex items-center justify-center px-5 py-2.5 relative space-x-2 z-10;
+	@apply bg-[var(--light-gray)] border-t border-t-[var(--primary-border)] flex items-center justify-center px-5 py-2.5 relative space-x-2 z-10;
 }
 
 .dialog-header {
-	@apply bg-[var(--web-primary)] bottom-border flex font-medium items-center justify-between px-5 py-1.5 text-[16pt] text-white;
-	font-family: var(--web-header-font);
+	@apply bg-[var(--primary)] bottom-border flex font-medium items-center justify-between px-5 py-1.5 text-[16pt] text-white;
+	font-family: var(--header-font);
 }
 
 .font-bold-10 {
 	@apply text-[10pt] font-bold;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-bold-12 {
 	@apply text-base font-bold;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-bold-14 {
 	@apply text-[14pt] font-bold;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-bold-16 {
 	@apply text-[16pt] font-bold;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-bold-20 {
 	@apply text-[20pt] font-bold;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-bold-26 {
 	@apply text-[26pt] font-bold;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-medium-10 {
 	@apply text-[10pt] font-medium;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-medium-11 {
 	@apply text-[11pt] font-medium;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-medium-12 {
 	@apply text-base font-medium;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-medium-13 {
 	@apply text-[13pt] font-medium;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-medium-14 {
 	@apply text-[14pt] font-medium;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-medium-16 {
 	@apply text-[16pt] font-medium;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-medium-18 {
 	@apply text-[18pt] font-medium;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-medium-26 {
 	@apply text-[26pt] font-medium;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-medium-8 {
 	@apply text-[8pt] font-medium;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-medium-9 {
 	@apply text-[9pt] font-medium;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-regular-7 {
 	@apply text-[7pt] font-normal;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-regular-8 {
 	@apply text-[8pt] font-normal;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-regular-10 {
 	@apply text-[10pt] font-normal;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-regular-11 {
 	@apply text-[11pt] font-normal;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-regular-12 {
 	@apply text-base font-normal;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-regular-14 {
 	@apply text-[14pt] font-normal;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-regular-16 {
 	@apply text-[16pt] font-normal;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-regular-8 {
 	@apply text-[8pt] font-normal;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-regular-9 {
 	@apply text-[9pt] font-normal;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-semibold-10 {
 	@apply text-[10pt] font-semibold;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-semibold-12 {
 	@apply text-base font-semibold;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-semibold-14 {
 	@apply text-[14pt] font-semibold;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .font-semibold-16 {
 	@apply text-[16pt] font-semibold;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .full-border {
-	@apply border border-[var(--web-primary-border)];
+	@apply border border-[var(--primary-border)];
 }
 
 .gray-background {
-	@apply bg-[var(--web-gray)];
+	@apply bg-[var(--gray)];
 }
 
 .gray-background-transparent-01 {
-	@apply bg-[var(--web-gray-transparent-01)];
+	@apply bg-[var(--gray-transparent-01)];
 }
 
 .gray-border {
-	@apply border border-[var(--web-gray)];
+	@apply border border-[var(--gray)];
 }
 
 .gray-text {
-	@apply text-[var(--web-gray)];
+	@apply text-[var(--gray)];
 }
 
 .gray-tag-transparent-01 {
-	@apply bg-[var(--web-gray-transparent-01)] border border-[var(--web-gray)] font-normal px-1.5 py-0.5 rounded text-[var(--web-gray)];
-	font-family: var(--web-font-family);
+	@apply bg-[var(--gray-transparent-01)] border border-[var(--gray)] font-normal px-1.5 py-0.5 rounded text-[var(--gray)];
+	font-family: var(--font-family);
 }
 
 .green-background {
-	@apply bg-[var(--web-green)];
+	@apply bg-[var(--green)];
 }
 
 .green-background-gradient {
-	background: linear-gradient(to bottom, var(--web-green), #000);
+	background: linear-gradient(to bottom, var(--green), #000);
 }
 
 .green-background-transparent-01 {
-	@apply bg-[var(--web-green-transparent-01)];
+	@apply bg-[var(--green-transparent-01)];
 }
 
 .green-border {
-	@apply border border-[var(--web-green)];
+	@apply border border-[var(--green)];
 }
 
 .green-button-condensed {
-	@apply bg-[var(--web-green)] border border-[var(--web-green)] flex font-normal h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-[10pt] text-white;
-	font-family: var(--web-font-family);
+	@apply bg-[var(--green)] border border-[var(--green)] flex font-normal h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-[10pt] text-white;
+	font-family: var(--font-family);
 }
 
 .green-button-transparent-background {
-	@apply bg-[var(--web-green-transparent-01)] border border-[var(--web-green)] flex font-medium h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--web-green)];
-	font-family: var(--web-font-family);
+	@apply bg-[var(--green-transparent-01)] border border-[var(--green)] flex font-medium h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--green)];
+	font-family: var(--font-family);
 }
 
 .green-button-wide {
-	@apply bg-[var(--web-green)] block border border-[var(--web-green)] font-normal h-7 outline-none relative rounded select-none text-[10pt] text-white w-full;
-	font-family: var(--web-font-family);
+	@apply bg-[var(--green)] block border border-[var(--green)] font-normal h-7 outline-none relative rounded select-none text-[10pt] text-white w-full;
+	font-family: var(--font-family);
 }
 
 .green-tag {
-	@apply bg-[var(--web-green)] py-0.5 px-1.5 rounded text-white;
+	@apply bg-[var(--green)] py-0.5 px-1.5 rounded text-white;
 }
 
 .green-tag-transparent-01 {
-	@apply bg-[var(--web-green-transparent-01)] border border-[var(--web-green)] py-0.5 px-1.5 rounded text-[var(--web-green)];
+	@apply bg-[var(--green-transparent-01)] border border-[var(--green)] py-0.5 px-1.5 rounded text-[var(--green)];
 }
 
 .green-text {
-	@apply text-[var(--web-green)];
+	@apply text-[var(--green)];
 }
 
 .highlight-characters {
-	@apply bg-[yellow] border-[0.5px] border-[var(--web-gray)] font-bold rounded text-black;
+	@apply bg-[yellow] border-[0.5px] border-[var(--gray)] font-bold rounded text-black;
 	padding-inline: 1px;
 }
 
 .highlight-tag-characters {
-	@apply bg-[yellow] border-[0.5px] border-[var(--web-gray)] font-bold rounded text-black;
+	@apply bg-[yellow] border-[0.5px] border-[var(--gray)] font-bold rounded text-black;
 	padding-inline: 1px;
 }
 
 .hovered-rows-green:hover {
-	@apply bg-[var(--web-green-transparent-01)] rounded-sm text-[var(--web-green)];
+	@apply bg-[var(--green-transparent-01)] rounded-sm text-[var(--green)];
 }
 
 .hovered-rows-white:hover {
-	@apply bg-[var(--web-light-gray)] rounded-sm text-[var(--web-primary)];
+	@apply bg-[var(--light-gray)] rounded-sm text-[var(--primary)];
 }
 
 .hovered-rows:hover {
-	@apply bg-[var(--web-primary-transparent-01)] border-t border-[var(--web-primary-transparent-05)];
+	@apply bg-[var(--primary-transparent-01)] border-t border-[var(--primary-transparent-05)];
 }
 
 .hovered-rows-2:hover {
-	@apply bg-[var(--web-primary-transparent-01)] border-b border-[var(--web-primary-transparent-05)];
+	@apply bg-[var(--primary-transparent-01)] border-b border-[var(--primary-transparent-05)];
 }
 
 .inputs {
 	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 text-base h-9 black-text w-full;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .lavendar-background {
@@ -424,49 +423,49 @@ html {
 }
 
 .left-border {
-	@apply border-l border-[var(--web-primary-border)];
+	@apply border-l border-[var(--primary-border)];
 }
 
 .light-gray-background {
-	@apply bg-[var(--web-light-gray)];
+	@apply bg-[var(--light-gray)];
 }
 
 .light-gray-button {
-	@apply bg-[var(--web-light-gray-background)] border border-[var(--web-light-gray-background)] flex font-normal h-9 justify-center items-center outline-none px-2.5 relative rounded select-none space-x-2.5 text-base black-text;
-	font-family: var(--web-font-family);
+	@apply bg-[var(--light-gray-background)] border border-[var(--light-gray-background)] flex font-normal h-9 justify-center items-center outline-none px-2.5 relative rounded select-none space-x-2.5 text-base black-text;
+	font-family: var(--font-family);
 }
 
 .light-slate-gray-background {
-	@apply bg-[var(--web-light-slate-gray)];
+	@apply bg-[var(--light-slate-gray)];
 }
 
 .light-slate-gray-text {
-	@apply text-[var(--web-light-slate-gray)];
+	@apply text-[var(--light-slate-gray)];
 }
 
 .login-heading {
-	@apply font-semibold text-[var(--web-primary)] text-[28pt];
-	font-family: var(--web-header-font);
+	@apply font-semibold text-[var(--primary)] text-[28pt];
+	font-family: var(--header-font);
 }
 
 .logo-green-background {
-	@apply bg-[var(--web-logo-green)];
+	@apply bg-[var(--logo-green)];
 }
 
 .logo-green-background-transparent-01 {
-	@apply bg-[var(--web-logo-green-transparent-01)];
+	@apply bg-[var(--logo-green-transparent-01)];
 }
 
 .logo-green-border {
-	@apply border border-[var(--web-logo-green)];
+	@apply border border-[var(--logo-green)];
 }
 
 .logo-green-border-colour {
-	@apply border-[var(--web-logo-green)];
+	@apply border-[var(--logo-green)];
 }
 
 .logo-green-text {
-	@apply text-[var(--web-logo-green)];
+	@apply text-[var(--logo-green)];
 }
 
 .no-right-border {
@@ -478,60 +477,60 @@ html {
 }
 
 .orange-background {
-	@apply bg-[var(--web-orange)];
+	@apply bg-[var(--orange)];
 }
 
 .orange-background-gradient {
-	background: linear-gradient(to bottom, var(--web-orange), #000);
+	background: linear-gradient(to bottom, var(--orange), #000);
 }
 
 .orange-background-transparent-01 {
-	@apply bg-[var(--web-orange-transparent-01)];
+	@apply bg-[var(--orange-transparent-01)];
 }
 
 .orange-border {
-	@apply border border-[var(--web-orange)];
+	@apply border border-[var(--orange)];
 }
 
 .orange-tag {
-	@apply bg-[var(--web-orange)] py-0.5 px-1.5 rounded text-white;
+	@apply bg-[var(--orange)] py-0.5 px-1.5 rounded text-white;
 }
 
 .orange-tag-transparent-01 {
-	@apply bg-[var(--web-orange-transparent-01)] border border-[var(--web-orange)] py-0.5 px-1.5 rounded text-[var(--web-orange)];
+	@apply bg-[var(--orange-transparent-01)] border border-[var(--orange)] py-0.5 px-1.5 rounded text-[var(--orange)];
 }
 
 .orange-text {
-	@apply text-[var(--web-orange)];
+	@apply text-[var(--orange)];
 }
 
 .primary-background {
-	@apply bg-[var(--web-primary)];
+	@apply bg-[var(--primary)];
 }
 
 .primary-background-gradient {
-	background: linear-gradient(to bottom, var(--web-primary), #000);
+	background: linear-gradient(to bottom, var(--primary), #000);
 }
 
 .primary-background-transparent-01 {
-	@apply bg-[var(--web-primary-transparent-01)];
+	@apply bg-[var(--primary-transparent-01)];
 }
 
 .primary-background-transparent-05 {
-	@apply bg-[var(--web-primary-transparent-05)];
+	@apply bg-[var(--primary-transparent-05)];
 }
 
 .primary-border {
-	@apply border border-[var(--web-primary)];
+	@apply border border-[var(--primary)];
 }
 
 .primary-border-colour {
-	@apply border-[var(--web-primary)];
+	@apply border-[var(--primary)];
 }
 
 .primary-button-condensed {
-	@apply bg-[var(--web-primary)] border border-[var(--web-primary)] flex font-normal h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-base text-white;
-	font-family: var(--web-font-family);
+	@apply bg-[var(--primary)] border border-[var(--primary)] flex font-normal h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-base text-white;
+	font-family: var(--font-family);
 }
 
 .green-button-condensed:active,
@@ -548,42 +547,42 @@ html {
 }
 
 .primary-button-normal {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
-	font-family: var(--web-font-family);
+	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
+	font-family: var(--font-family);
 }
 
 .primary-button-normal-2 {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
-	font-family: var(--web-font-family);
+	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
+	font-family: var(--font-family);
 }
 
 .primary-button-transparent-background {
-	@apply bg-[var(--web-primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded select-none space-x-2.5 text-sm text-[var(--web-primary)];
-	font-family: var(--web-font-family);
+	@apply bg-[var(--primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded select-none space-x-2.5 text-sm text-[var(--primary)];
+	font-family: var(--font-family);
 }
 
 .primary-button-transparent-background-2 {
-	@apply bg-[var(--web-primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--web-primary)];
-	font-family: var(--web-font-family);
+	@apply bg-[var(--primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--primary)];
+	font-family: var(--font-family);
 }
 
 .primary-button-wide {
-	@apply bg-[var(--web-primary)] block border border-[var(--web-primary)] font-normal h-9 outline-none relative rounded select-none text-base text-white w-full;
-	font-family: var(--web-font-family);
+	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-9 outline-none relative rounded select-none text-base text-white w-full;
+	font-family: var(--font-family);
 }
 
 .primary-tag-transparent-01 {
-	@apply bg-[var(--web-primary-transparent-01)] border border-[var(--web-primary)] font-normal p-1 rounded text-sm text-[var(--web-primary)];
-	font-family: var(--web-font-family);
+	@apply bg-[var(--primary-transparent-01)] border border-[var(--primary)] font-normal p-1 rounded text-xs text-[var(--primary)];
+	font-family: var(--font-family);
 }
 
 .primary-text {
-	@apply text-[var(--web-primary)];
+	@apply text-[var(--primary)];
 }
 
 .react-datepicker {
 	@apply !text-[9pt] !font-normal;
-	font-family: var(--web-font-family) !important;
+	font-family: var(--font-family) !important;
 }
 
 .react-datepicker-popper {
@@ -595,28 +594,28 @@ html {
 }
 
 .red-background {
-	@apply bg-[var(--web-red)];
+	@apply bg-[var(--red)];
 }
 
 .red-background-gradient {
-	background: linear-gradient(to bottom, var(--web-red), #000);
+	background: linear-gradient(to bottom, var(--red), #000);
 }
 
 .red-background-transparent-01 {
-	@apply bg-[var(--web-red-transparent-01)];
+	@apply bg-[var(--red-transparent-01)];
 }
 
 .red-border {
-	@apply border border-[var(--web-red)];
+	@apply border border-[var(--red)];
 }
 
 .red-bottom-border {
-	@apply border-b border-b-[var(--web-red)];
+	@apply border-b border-b-[var(--red)];
 }
 
 .red-button-transparent-background {
-	@apply bg-[var(--web-red-transparent-01)] border border-[var(--web-red)] flex font-normal h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-base text-[var(--web-red)];
-	font-family: var(--web-font-family);
+	@apply bg-[var(--red-transparent-01)] border border-[var(--red)] flex font-normal h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-base text-[var(--red)];
+	font-family: var(--font-family);
 }
 
 .red-tag {
@@ -624,20 +623,20 @@ html {
 }
 
 .red-tag-transparent-01 {
-	@apply bg-[var(--web-red-transparent-01)] border border-[var(--web-red)] p-1 rounded text-sm text-[var(--web-red)];
-	font-family: var(--web-font-family);
+	@apply bg-[var(--red-transparent-01)] border border-[var(--red)] p-1 rounded text-xs text-[var(--red)];
+	font-family: var(--font-family);
 }
 
 .red-tag-transparent-02 {
-	@apply bg-[var(--web-red-transparent-01)] border border-[var(--web-red)] py-0.5 px-1.5 rounded text-[var(--web-red)];
+	@apply bg-[var(--red-transparent-01)] border border-[var(--red)] py-0.5 px-1.5 rounded text-[var(--red)];
 }
 
 .red-text {
-	@apply text-[var(--web-red)];
+	@apply text-[var(--red)];
 }
 
 .right-border {
-	@apply border-r border-[var(--web-primary-border)];
+	@apply border-r border-[var(--primary-border)];
 }
 
 .scrollbar-gutter {
@@ -672,7 +671,7 @@ html {
 	margin-left: -8px;
 	border-radius: 50%;
 	border: 2px solid #ccc;
-	border-top-color: var(--web-primary);
+	border-top-color: var(--primary);
 	animation: spinner 0.5s linear infinite;
 }
 
@@ -688,7 +687,7 @@ html {
 	margin-left: -20px;
 	border-radius: 50%;
 	border: 2px solid #ccc;
-	border-top-color: var(--web-primary);
+	border-top-color: var(--primary);
 	animation: spinner 0.5s linear infinite;
 }
 
@@ -704,35 +703,35 @@ html {
 	margin-left: -7.5px;
 	border-radius: 50%;
 	border: 2px solid #fff;
-	border-top-color: var(--web-primary);
+	border-top-color: var(--primary);
 	animation: spinner 0.5s linear infinite;
 }
 
 .textarea-inputs {
 	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 resize-none text-base black-text w-full;
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 }
 
 .Toastify__toast-body {
-	font-family: var(--web-font-family);
+	font-family: var(--font-family);
 	font-size: medium;
 	white-space: pre-line;
 }
 
 .top-border {
-	@apply border-t border-t-[var(--web-primary-border)];
+	@apply border-t border-t-[var(--primary-border)];
 }
 
 .black-text {
-	@apply text-[var(--web-white)];
+	@apply text-[var(--white)];
 }
 
 .yellow-background-transparent-01 {
-	@apply bg-[var(--web-yellow-transparent-01)];
+	@apply bg-[var(--yellow-transparent-01)];
 }
 
 .yellow-border {
-	@apply border border-[var(--web-yellow)];
+	@apply border border-[var(--yellow)];
 }
 
 @keyframes spinner {
@@ -817,5 +816,5 @@ html {
 }
 
 .gradient {
-	background: linear-gradient(to bottom, var(--web-green-transparent-1), #000);
+	background: linear-gradient(to bottom, var(--green-transparent-01), #000);
 }

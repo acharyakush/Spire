@@ -51,7 +51,7 @@ export default function NewInquiryPreview({ mount, selectedInquiry, unmount }) {
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setIsBoxDragged(true)} onStop={() => setIsBoxDragged(false)}>
-					<DialogPanel className="w-[600px] transform overflow-hidden rounded shadow black-white-background">
+					<DialogPanel className="w-[600px] transform overflow-hidden rounded shadow contrast-background">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full py-3 space-y-3 justify-between items-center light-gray-background">
 							{uiRow("Client", selectedInquiry.client.name)}
