@@ -377,7 +377,7 @@ export const TextInput = ({ disable = false, icon, id, isReadOnly = false, label
 };
 
 export const TextInputNative = ({ id, icon, onChange, onClearButtonClick, placeholder, showClearButton, tabIndex, value, width }) => {
-	const wrapper = `flex ${width} h-9 px-3 justify-start items-center rounded bottom-shadow contrast-background`;
+	const wrapper = `flex ${width} px-3 justify-start items-center rounded shadow contrast-background`;
 
 	return (
 		<div className={wrapper}>
@@ -385,7 +385,7 @@ export const TextInputNative = ({ id, icon, onChange, onClearButtonClick, placeh
 			<input
 				autoComplete="off"
 				autoFocus
-				className="inputs"
+				className="inputs !h-[30px]"
 				id={id}
 				onChange={onChange}
 				placeholder={placeholder}

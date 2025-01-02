@@ -14,6 +14,7 @@ import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { SpinnerBig, SpinnerSmall, TooltipList } from "@/components/Elements";
+import { EditQuote, ManageGovernmentId } from "@/modals/singleProject/project";
 import {
 	faBars,
 	faBriefcase,
@@ -27,11 +28,9 @@ import {
 	faIdBadge,
 	faIdCardClip,
 	faIndianRupeeSign,
-	faReceipt,
 	faStopwatch,
 	faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
-import { EditQuote, ManageGovernmentId } from "@/modals/singleProject/project";
 
 export default function SingleProject({ reloadProjects, reloadNotes, selectedClient, selectedProject, source, unmount }) {
 	// Business Logic
@@ -383,7 +382,7 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 					</div>
 				</div>
 				<div className="flex flex-col w-full h-full justify-start items-center transition bottom-border">
-					<Tasks reloadProjects={{}} selectedClient={selectedClient} selectedProject={selectedProject} source={source} />
+					<Tasks selectedClient={selectedClient} selectedProject={selectedProject} source={source} />
 				</div>
 
 				{hasMounted.governmentId && (

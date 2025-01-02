@@ -39,7 +39,7 @@ export function AddParticularAndRemark({ mount, reloadTasks, selectedTask, unmou
 			particular: MyGlobal.EscapeString(state.particular),
 			projectId: selectedTask.project_id,
 			remark: MyGlobal.EscapeString(state.remark),
-			taskId: selectedTask.task_id,
+			taskId: selectedTask.id,
 			type: "add-tasks-particular-and-remark",
 		};
 
@@ -140,16 +140,16 @@ export function AddParticularAndRemark({ mount, reloadTasks, selectedTask, unmou
 	);
 }
 
-export function AddTask({ addTask, mount, unmount }) {
+export function AddTask({ mount, reloadTasks, selectedProject, unmount }) {
 	// Business Logic
 	const today = dayjs();
 	const sevenDaysFromToday = today.add(7, "day");
 
 	const [state, setState] = useState({
-		due_on: sevenDaysFromToday.toDate(),
+		dueOn: sevenDaysFromToday.toDate(),
 		expense: 0,
-		id: "TK000000",
 		isBoxDragged: false,
+		isLoading: false,
 		task: "",
 	});
 
@@ -160,16 +160,35 @@ export function AddTask({ addTask, mount, unmount }) {
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
 	// Functions
-	const doInsertion = () => {
-		addTask(state);
+	const doInsertion = async () => {
+		setState((old) => ({ ...old, isLoading: true }));
 
-		setState({
-			due_on: sevenDaysFromToday.toDate(),
-			expense: 0,
-			id: "TK000000",
-			isBoxDragged: false,
-			task: "",
-		});
+		const body = {
+			clientId: selectedProject.client_id,
+			dueOn: dayjs(state.dueOn).format("YYYY-MM-DD"),
+			expense: Number(state.expense),
+			projectId: selectedProject.id,
+			task: MyGlobal.EscapeString(state.task),
+			userId: MyGlobal.GetUserId(),
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Tasks.AddTask, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reloadTasks();
+
+				MyGlobal.AddActivity(`Added <b>${response.data}</b> in <b>${selectedProject.id}</b>`, MyConstants.Modules.Base.Tasks);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskAdded);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Add Task");
+		} finally {
+			setState((old) => ({ ...old, isLoading: false }));
+			unmount();
+		}
 	};
 
 	const setBoxDrag = () => {
@@ -224,9 +243,9 @@ export function AddTask({ addTask, mount, unmount }) {
 								<DatePicker
 									icon={faCalendar}
 									label="Due On"
-									onChange={(event) => setInputs("due_on", event)}
+									onChange={(event) => setInputs("dueOn", event)}
 									tabIndex={2}
-									value={state.due_on}
+									value={state.dueOn}
 									width="w-full"
 								/>
 								<TextInput
@@ -245,6 +264,114 @@ export function AddTask({ addTask, mount, unmount }) {
 								</button>
 							</footer>
 						</div>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
+export function DeleteTask({ mount, reloadTasks, selectedTask, unmount }) {
+	// Business Logic
+	const [state, setState] = useState({
+		isBoxDragged: false,
+		isLoading: false,
+		reason: "",
+	});
+
+	const disableDeleteButton = state.isLoading || !state.reason ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	const disableButtonStyle = `primary-button-condensed ${disableDeleteButton}`;
+
+	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+
+	// Functions
+	const doDeletion = async () => {
+		setState((old) => ({ ...old, isLoading: true }));
+
+		const body = {
+			taskId: selectedTask.id,
+			type: "delete-task",
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reloadTasks();
+
+				MyGlobal.AddActivity(`Deleted <b>${selectedTask.id}</b> in <b>${selectedTask.project_id}</b>`, MyConstants.Modules.Base.Tasks);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskDeleted);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Delete Task");
+		} finally {
+			setState((old) => ({ ...old, isLoading: false }));
+			unmount();
+		}
+	};
+
+	const setBoxDrag = () => {
+		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
+	};
+
+	const setReason = (reason) => {
+		setState((old) => ({ ...old, reason }));
+	};
+
+	// UI Components
+	const uiButton = () => {
+		if (state.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Delete";
+		}
+	};
+
+	const uiTitleBar = () => {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Delete Task</span>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+			</DialogTitle>
+		);
+	};
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
+						{uiTitleBar()}
+						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text">
+							Are you sure you want to delete this task? You are required to write a reason below.
+						</span>
+						<div className="flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center">
+							<TextArea
+								icon={faNoteSticky}
+								key={1}
+								label="Reason"
+								onChange={(event) => setReason(event.target.value)}
+								onKeyDown={() => {}}
+								rows={3}
+								tabIndex={1}
+								value={state.reason}
+								width="w-full"
+							/>
+						</div>
+						<footer className="dialog-footer">
+							<button className={disableButtonStyle} onClick={() => doDeletion()}>
+								{uiButton()}
+							</button>
+						</footer>
 					</DialogPanel>
 				</Draggable>
 			</div>

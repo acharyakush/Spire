@@ -4,8 +4,10 @@
 
 import axios from "axios";
 import Dashboard from "./dashboard";
-import Projects from "@/modules/project";
-import Inquiries from "@/modules/inquiry";
+import Clients from "@/modules/clients";
+import Projects from "@/modules/projects";
+import Inquiries from "@/modules/inquiries";
+import Affiliates from "@/modules/affiliates";
 import MyConstants from "@/utilities/constants";
 
 import { useRouter } from "next/navigation";
@@ -295,28 +297,37 @@ export default function Home() {
 
 	const uiSelectedModule = () => {
 		switch (mainData.selectedModule.name) {
+			case baseModules.Affiliates:
+				return (
+					<ErrorBoundary
+						key={`ErrorBoundary_${baseModules.Affiliates}`}
+						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Affiliates)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<Affiliates />
+					</ErrorBoundary>
+				);
+			case baseModules.Clients:
+				return (
+					<ErrorBoundary
+						key={`ErrorBoundary_${baseModules.Clients}`}
+						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Clients)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<Clients />
+					</ErrorBoundary>
+				);
 			case baseModules.Dashboard:
 				return (
 					<ErrorBoundary
-						key="ErrorBoundary_Dashboard"
+						key={`ErrorBoundary_${baseModules.Dashboard}`}
 						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Dashboard)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Dashboard />
 					</ErrorBoundary>
 				);
-			// case Constants.primaryModules.clients.name:
-			// 	return (
-			// 		<ErrorBoundary
-			// 			key="ErrorBoundary_Clients"
-			// 			onError={(error) => Global.handleErrors(error.message, "Clients")}
-			// 			FallbackComponent={ErrorFallbackComponent}>
-			// 			<Clients />
-			// 		</ErrorBoundary>
-			// 	);
 			case baseModules.Inquiries:
 				return (
 					<ErrorBoundary
-						key="ErrorBoundary_Inquiries"
+						key={`ErrorBoundary_${baseModules.Inquiries}`}
 						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Inquiries)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Inquiries />
@@ -325,21 +336,12 @@ export default function Home() {
 			case baseModules.Projects:
 				return (
 					<ErrorBoundary
-						key="ErrorBoundary_Projects"
+						key={`ErrorBoundary_${baseModules.Projects}`}
 						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Projects)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Projects />
 					</ErrorBoundary>
 				);
-			// case Constants.primaryModules.affiliates.name:
-			// 	return (
-			// 		<ErrorBoundary
-			// 			key="ErrorBoundary_Affiliates"
-			// 			onError={(error) => Global.handleErrors(error.message, "Affiliates")}
-			// 			FallbackComponent={ErrorFallbackComponent}>
-			// 			<Affiliates />
-			// 		</ErrorBoundary>
-			// 	);
 			// case Constants.primaryModules.admins.name:
 			// 	return (
 			// 		<ErrorBoundary

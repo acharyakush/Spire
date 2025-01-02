@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 01, 2025 at 08:15 PM
+-- Generation Time: Jan 02, 2025 at 07:29 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -206,7 +206,11 @@ INSERT INTO `activities` (`id`, `user_id`, `module`, `activity`, `ip_address`, `
 (121, 'A3', 'Tasks', 'Edited Remark from <b>Get them from storage servers.</b> to <b>Get them from storage servers</b> of <b>3</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:32:50', '', ''),
 (122, 'A3', 'Tasks', 'Edited Remark from <b>Make sure the internet connectivity is normal</b> to <b>Make sure the internet connectivity is normal.</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:33:42', '', ''),
 (123, 'A3', 'Tasks', 'Added a particular and remark in <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:45:36', '', ''),
-(124, 'A3', 'Tasks', 'Edited Task from <b>Task #21</b> to <b>Task #1</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:53:30', '', '');
+(124, 'A3', 'Tasks', 'Edited Task from <b>Task #21</b> to <b>Task #1</b> of <b>TK000001</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-01 23:53:30', '', ''),
+(125, 'A3', 'General', 'Logged out.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-02 00:46:01', '', ''),
+(126, '', 'General', 'Logged in.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-02 20:02:33', 'EHSj3VAOz4e6g97yt4KYjUTPv/5PFhw2l7dTwzMcGjCerXNt5PHZK5Gf7dGZavGSe5VLQp96+rTCczAHzoEaZw==', ''),
+(127, 'A3', 'Tasks', 'Added <b>TK000002</b> in <b>PJ000001</b>', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-02 20:19:22', '', ''),
+(128, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', '2025-01-02 20:27:04', '', '');
 
 -- --------------------------------------------------------
 
@@ -297,6 +301,33 @@ INSERT INTO `administrators_companies_banks` (`id`, `administrator_company_id`, 
 ('BK02', 'AC02', 'Bandhan Bank', '10210010518171', 'BDBL0001474', 'Panchwati Branch', '2024-12-17 20:03:18', 'A1', NULL),
 ('BK03', 'AC03', 'HDFC Bank', '50200061991892', 'HDFC0005064', 'Motera Branch', '2024-12-17 20:03:18', 'A1', NULL),
 ('BK04', 'AC04', 'Bank Of Baroda', '18260100014353', 'BARB0BHAIRA', 'Bhairavnath Ahmedabad', '2024-12-17 20:03:18', 'A1', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `affiliates`
+--
+
+CREATE TABLE `affiliates` (
+  `id` char(8) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `contact_number` varchar(15) DEFAULT NULL,
+  `email_address` varchar(255) DEFAULT NULL,
+  `details` text DEFAULT NULL,
+  `joined_on` date DEFAULT current_timestamp(),
+  `status` enum('Active','Inactive') DEFAULT 'Active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `created_by` char(8) NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_by` char(8) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `affiliates`
+--
+
+INSERT INTO `affiliates` (`id`, `name`, `contact_number`, `email_address`, `details`, `joined_on`, `status`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
+('AF000001', 'Drashti Vyas', '9978075347', 'vyas.drashti@gmail.com', '\'[{\\\"adjusted_fees\\\":0,\\\"adjusted_project_id\\\":\\\"\\\",\\\"client_id\\\":\\\"CN000001\\\",\\\"id\\\":\\\"AF000001\\\",\\\"name\\\":\\\"Drashti Vyas\\\",\\\"paid_fees\\\":0,\\\"project_id\\\":\\\"PJ000001\\\",\\\"rowId\\\":1,\\\"total_fees\\\":2500}]\'', '2025-01-02', 'Active', '2025-01-02 18:21:53', 'A3', '2025-01-02 18:21:53', '');
 
 -- --------------------------------------------------------
 
@@ -652,7 +683,8 @@ INSERT INTO `permissions` (`id`, `name`, `module`, `type`, `sequence`) VALUES
 (40, 'Mark Task Completed', 'Tasks', 'Derived', 0),
 (41, 'Delete Task From Reimbursement Voucher', 'Tasks', 'Derived', 0),
 (42, 'Delete Particular And Remark', 'Tasks', 'Derived', 0),
-(43, 'Edit Particular And Remark', 'Tasks', 'Derived', 0);
+(43, 'Edit Particular And Remark', 'Tasks', 'Derived', 0),
+(44, 'Delete Task', 'Tasks', 'Derived', 0);
 
 -- --------------------------------------------------------
 
@@ -1088,7 +1120,8 @@ CREATE TABLE `tasks` (
 --
 
 INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `input_by`, `expense`, `is_completed`, `is_disabled`, `reason`, `completed_on`) VALUES
-('TK000001', 'CN000001', 'PJ000001', 'Task #1', '2025-01-21', 'A3', 5100.00, 0, 0, NULL, NULL);
+('TK000001', 'CN000001', 'PJ000001', 'Task #1', '2025-01-21', 'A3', 5100.00, 0, 0, NULL, NULL),
+('TK000002', 'CN000001', 'PJ000001', 'Task #3', '2025-01-15', 'A3', 450.00, 0, 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1118,7 +1151,8 @@ INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particu
 (5, 'TK000001', 'PJ000001', 'Check status online', 'Make sure the internet connectivity is normal.', 'A3', '2024-12-27 19:52:15'),
 (6, 'TK000001', 'PJ000001', 'Pay & Upload', 'No remarks here.', 'A3', '2024-12-27 19:52:15'),
 (7, 'TK000001', 'PJ000001', 'Hello', 'Bellow', 'A3', '2025-01-01 23:44:39'),
-(8, 'TK000001', 'PJ000001', 'Hi', 'Bye', 'A3', '2025-01-01 23:45:36');
+(8, 'TK000001', 'PJ000001', 'Hi', 'Bye', 'A3', '2025-01-01 23:45:36'),
+(9, 'TK000002', 'PJ000001', 'Particular #1', 'Remark #1', 'A3', '2025-01-02 20:27:03');
 
 -- --------------------------------------------------------
 
@@ -1185,6 +1219,13 @@ ALTER TABLE `administrators_companies`
 ALTER TABLE `administrators_companies_banks`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_administrators_companies_banks_administrator_company_id` (`administrator_company_id`);
+
+--
+-- Indexes for table `affiliates`
+--
+ALTER TABLE `affiliates`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email_address` (`email_address`);
 
 --
 -- Indexes for table `clients`
@@ -1442,7 +1483,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=129;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -1472,7 +1513,7 @@ ALTER TABLE `notes`
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `pma__bookmark`
@@ -1520,7 +1561,7 @@ ALTER TABLE `statuses`
 -- AUTO_INCREMENT for table `tasks_particulars_remarks`
 --
 ALTER TABLE `tasks_particulars_remarks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Constraints for dumped tables

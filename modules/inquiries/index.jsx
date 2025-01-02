@@ -12,7 +12,7 @@ import NewInquiry from "./NewInquiry";
 import EditInquiry from "./EditInquiry";
 import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
-import NewProject from "../project/NewProject";
+import NewProject from "../projects/NewProject";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
@@ -573,7 +573,7 @@ export default function Inquiries() {
 				<div className="flex flex-col w-full h-full justify-center items-start full-border">
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
 					<Virtuoso
-						className="w-full h-full overflow-y-auto bottom-border"
+						className="w-full h-full overflow-y-auto bottom-border contrast-background"
 						data={doSorting()}
 						itemContent={(index, inquiry) => uiRows(inquiry, index)}
 						totalCount={apiData.inquiries.api.length}
@@ -753,7 +753,7 @@ export default function Inquiries() {
 	};
 
 	const uiRows = (inquiry, rowId) => {
-		const style = "flex flex-wrap w-[9.09%] min-h-9 justify-center items-center text-center right-border";
+		const style = "flex flex-wrap w-[9.09%] min-h-9 justify-center items-center text-center";
 
 		const clientId = MyGlobal.HighlightText(inquiry.client_id, mainData.searchTerm);
 		const clientName = MyGlobal.HighlightText(getClientName(inquiry.client_id), mainData.searchTerm);
@@ -818,7 +818,7 @@ export default function Inquiries() {
 					icon={faSearch}
 					onChange={(e) => setInputs("searchTerm", e.target.value)}
 					onClearButtonClick={() => setInputs("searchTerm", "")}
-					placeholder="Search"
+					placeholder=""
 					showClearButton={showFindClearButton}
 					tabIndex={3}
 					value={mainData.searchTerm}
@@ -932,13 +932,17 @@ export default function Inquiries() {
 					<ReactDatePicker
 						className="w-20 h-6 bg-transparent outline-none font-medium-11"
 						dateFormat="dd-MM-YYYY"
+						dropdownMode="select"
 						endDate={mainData.entryDate.to}
 						onChange={(e) => setInputs("to", e)}
 						placeholderText="To"
-						tabIndex={2}
+						peekNextMonth
 						selected={mainData.entryDate.to}
 						selectsEnd
 						startDate={mainData.entryDate.to}
+						showMonthDropdown
+						showYearDropdown
+						tabIndex={2}
 					/>
 					<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
 				</div>

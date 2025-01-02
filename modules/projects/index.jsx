@@ -18,19 +18,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { UpdateStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
 import { Badge, BadgeSmall, SpinnerBig, SpinnerSmall, Tooltip } from "@/components/Elements";
-import {
-	faBolt,
-	faCheck,
-	faChevronDown,
-	faEye,
-	faEyeSlash,
-	faFileExcel,
-	faPencil,
-	faSearch,
-	faSortAmountAsc,
-	faSortAmountDesc,
-	faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBolt, faCheck, faChevronDown, faFileExcel, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects() {
 	// Business Logic
@@ -135,6 +123,9 @@ export default function Projects() {
 
 	const doSorting = () => {
 		return apiData.allProjects.api.sort((a, b) => {
+			const aStartedOn = new Date(a.started_on);
+			const bStartedOn = new Date(b.started_on);
+
 			const aClient = getClientName(a.client_id);
 			const bClient = getClientName(b.client_id);
 
@@ -147,45 +138,40 @@ export default function Projects() {
 			const aSubProject = getSubProjectName(a.sub_project_id);
 			const bSubProject = getSubProjectName(b.sub_project_id);
 
-			const aDueOn = new Date(a.due_on);
-			const bDueOn = new Date(b.due_on);
+			const { column, isAscending } = mainData.sort;
 
 			switch (true) {
-				case mainData.sort.column == tableHeaders.Id && mainData.sort.isAscending:
-					return a.id.localeCompare(b.id);
-				case mainData.sort.column == tableHeaders.Id && !mainData.sort.isAscending:
-					return b.id.localeCompare(a.id);
-				case mainData.sort.column == tableHeaders.GovermentId && mainData.sort.isAscending:
+				case column == tableHeaders.Started && isAscending:
+					return aStartedOn - bStartedOn;
+				case column == tableHeaders.Started && !isAscending:
+					return bStartedOn - aStartedOn;
+				case column == tableHeaders.GovermentId && isAscending:
 					if (a.government_id) {
 						return a.government_id.localeCompare(b.government_id);
 					}
-				case mainData.sort.column == tableHeaders.GovermentId && !mainData.sort.isAscending:
+				case column == tableHeaders.GovermentId && !isAscending:
 					if (b.government_id) {
 						return b.government_id.localeCompare(a.government_id);
 					}
-				case mainData.sort.column == tableHeaders.Client && mainData.sort.isAscending:
+				case column == tableHeaders.Client && isAscending:
 					return aClient.localeCompare(bClient);
-				case mainData.sort.column == tableHeaders.Client && !mainData.sort.isAscending:
+				case column == tableHeaders.Client && !isAscending:
 					return bClient.localeCompare(aClient);
-				case mainData.sort.column == tableHeaders.Company && mainData.sort.isAscending:
+				case column == tableHeaders.Company && isAscending:
 					return aCompany.localeCompare(bCompany);
-				case mainData.sort.column == tableHeaders.Company && !mainData.sort.isAscending:
+				case column == tableHeaders.Company && !isAscending:
 					return bCompany.localeCompare(aCompany);
-				case mainData.sort.column == tableHeaders.MainProject && mainData.sort.isAscending:
+				case column == tableHeaders.MainProject && isAscending:
 					return aMainProject.localeCompare(bMainProject);
-				case mainData.sort.column == tableHeaders.MainProject && !mainData.sort.isAscending:
+				case column == tableHeaders.MainProject && !isAscending:
 					return bMainProject.localeCompare(aMainProject);
-				case mainData.sort.column == tableHeaders.SubProject && mainData.sort.isAscending:
+				case column == tableHeaders.SubProject && isAscending:
 					return aSubProject.localeCompare(bSubProject);
-				case mainData.sort.column == tableHeaders.SubProject && !mainData.sort.isAscending:
+				case column == tableHeaders.SubProject && !isAscending:
 					return bSubProject.localeCompare(aSubProject);
-				case mainData.sort.column == tableHeaders.DueOn && mainData.sort.isAscending:
-					return aDueOn - bDueOn;
-				case mainData.sort.column == tableHeaders.DueOn && !mainData.sort.isAscending:
-					return bDueOn - aDueOn;
-				case mainData.sort.column == tableHeaders.Status && mainData.sort.isAscending:
+				case column == tableHeaders.Status && isAscending:
 					return a.status.localeCompare(b.status);
-				case mainData.sort.column == tableHeaders.Status && !mainData.sort.isAscending:
+				case column == tableHeaders.Status && !isAscending:
 					return b.status.localeCompare(a.status);
 			}
 		});
@@ -442,15 +428,33 @@ export default function Projects() {
 	};
 
 	// UI Components
+	const uiAllProjectsList = () => {
+		const allModules = apiData.allProjects.apiCopy.length > 0 ? getAggregatedProjects() : {};
+
+		return allModules.map((module, index) => {
+			const selectedProjectStyle =
+				module.key == mainData.activeModule.name ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+
+			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedProjectStyle} font-regular-10 hovered-rows`;
+
+			return (
+				<button className={wrapper} key={index} onClick={() => setModule(module)}>
+					<span>{module.key}</span>
+					{module.key != "All" && module.items.length && <span className="font-regular-10 gray-text">{module.items.length}</span>}
+				</button>
+			);
+		});
+	};
+
 	const uiBody = () => {
 		return (
 			<div className="flex w-full h-full justify-center items-start">
-				<div className="flex flex-col w-[10%] justify-start items-center">{uiTabs()}</div>
-				<div className="flex flex-col w-[90%] h-full justify-start items-center contrast-background">
+				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiAllProjectsList()}</div>
+				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center">
 					<div className="flex flex-col w-full h-full justify-center items-start full-border">
 						<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
 						<Virtuoso
-							className="w-full h-full overflow-y-auto bottom-border"
+							className="w-full h-full overflow-y-auto bottom-border contrast-background"
 							data={doSorting()}
 							itemContent={(index, project) => uiRows(project, index)}
 							totalCount={apiData.allProjects.api.length}
@@ -477,39 +481,12 @@ export default function Projects() {
 			const showIndicator = header == mainData.sort.column ? "visible" : "invisible";
 
 			return (
-				<span className="w-[10%] space-x-1 cursor-pointer text-center text-white font-medium-10" onClick={() => setSort(header)} key={index}>
+				<span className="w-[12.5%] space-x-1 cursor-pointer text-center text-white font-medium-10" onClick={() => setSort(header)} key={index}>
 					<span>{header}</span>
 					<span className={showIndicator}>{uiSortArrows(header)}</span>
 				</span>
 			);
 		});
-	};
-
-	const uiLastNote = (projectId, style) => {
-		const lastNote = apiData.allNotes
-			.filter((note) => note.project_id == projectId)
-			.sort((a, b) => b.id - a.id)
-			.at(0);
-
-		const lastNoteIcon = !lastNote.content ? faEyeSlash : faEye;
-		const lastNoteIconStyle = !lastNote.content ? "gray-text" : "black-text";
-
-		return (
-			<Tippy
-				allowHTML
-				content={
-					<>
-						<>{dayjs(lastNote.entry_date).format("hh:mm:ss A - DD MMM YYYY")}</>
-						<br />
-						<>{lastNote.content}</>
-					</>
-				}
-				disabled={!lastNote.content}>
-				<span className={`${style} cursor-help`}>
-					<FontAwesomeIcon className={lastNoteIconStyle} icon={lastNoteIcon} />
-				</span>
-			</Tippy>
-		);
 	};
 
 	const uiMain = () => {
@@ -549,10 +526,10 @@ export default function Projects() {
 	};
 
 	const uiRows = (project) => {
-		const style = `flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center right-border`;
+		const style = `flex flex-wrap w-[12.5%] min-h-9 justify-center items-center text-center`;
 		const projectActionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text";
 
-		const projectId = MyGlobal.HighlightText(project.id, mainData.searchTerm);
+		const startedOn = dayjs(project.started_on).format("DD MMM, YYYY");
 
 		const governmentId = MyGlobal.HighlightText(project.government_id ?? "", mainData.searchTerm);
 		const governmentIdTextColour = !project.government_id ? "gray-text" : "primary-text";
@@ -561,6 +538,7 @@ export default function Projects() {
 		const company = MyGlobal.HighlightText(getCompanyName(project.company_id), mainData.searchTerm);
 
 		const mainProject = MyGlobal.HighlightText(getMainProjectName(project.main_project_id), mainData.searchTerm);
+
 		const subProject = MyGlobal.HighlightText(getSubProjectName(project.sub_project_id), mainData.searchTerm);
 
 		const dueOn = dayjs(project.due_on).format("DD MMM, YYYY");
@@ -568,9 +546,9 @@ export default function Projects() {
 		return (
 			<div
 				className="flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text"
-				key={projectId}
-				onMouseEnter={() => setMouseEnter(projectId)}
-				onMouseLeave={() => setMouseLeave(projectId)}>
+				key={project.id}
+				onMouseEnter={() => setMouseEnter(project.id)}
+				onMouseLeave={() => setMouseLeave(project.id)}>
 				<div className={`${style} cursor-help primary-text`}>
 					<Tippy
 						arrow
@@ -590,7 +568,7 @@ export default function Projects() {
 						interactive
 						placement="right"
 						theme="light">
-						<span dangerouslySetInnerHTML={{ __html: projectId }} />
+						<span dangerouslySetInnerHTML={{ __html: startedOn }} />
 					</Tippy>
 				</div>
 
@@ -608,12 +586,12 @@ export default function Projects() {
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: company }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: mainProject }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: subProject }} />
+
+				<Tippy arrow allowHTML content={`Due On: ${dueOn}`} placement="bottom">
+					<span className={style} dangerouslySetInnerHTML={{ __html: subProject }} />
+				</Tippy>
+
 				<span className={`${style} space-x-1`}>{uiTeams(project)}</span>
-				<span className={style}>{dueOn}</span>
-
-				{uiLastNote(project.id, style)}
-
 				<span className={style}>{uiStatusMenu(client, project)}</span>
 			</div>
 		);
@@ -631,7 +609,7 @@ export default function Projects() {
 					showClearButton={showSearchBoxClearButton}
 					tabIndex={1}
 					value={mainData.searchTerm}
-					width="w-44"
+					width="w-60"
 				/>
 			);
 		}
@@ -679,26 +657,6 @@ export default function Projects() {
 					<span className="font-regular-11">{status}</span>
 					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
 				</MenuItem>
-			);
-		});
-	};
-
-	const uiTabs = () => {
-		const allModules = apiData.allProjects.apiCopy.length > 0 ? getAggregatedProjects() : {};
-
-		return allModules.map((module, index) => {
-			const backgroundAndText = module.key == mainData.activeModule.name ? "primary-background-transparent-01 primary-text" : "bg-transparent black-text";
-
-			const labelStyle = "flex w-4/5 justify-start items-center";
-			const countStyle = module.key != "All" && module.items.length ? "flex w-1/5 justify-end items-center font-regular-9 gray-text" : "hidden";
-
-			const wrapper = `flex w-full py-2 px-4 space-x-2 justify-between items-center border-y hovered-rows ${backgroundAndText} font-regular-9`;
-
-			return (
-				<button className={wrapper} key={index} onClick={() => setModule(module)}>
-					<span className={labelStyle}>{module.key}</span>
-					<span className={countStyle}>{module.items.length}</span>
-				</button>
 			);
 		});
 	};
@@ -780,14 +738,12 @@ export default function Projects() {
 			<>
 				{!hasMounted.editProject && !hasMounted.singleProject && (
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
-						<div className="flex w-1/5 space-x-2 justify-start items-center">
+						<div className="flex w-1/3 space-x-2 justify-start items-center">
 							<span className="view-heading">{thisView}</span>
 							{apiData.allProjects.api.length > 0 && <Badge value={getDataCount()} />}
 						</div>
-						<div className="flex w-1/2 space-x-2 justify-end items-center">
-							{uiSearch()}
-							{uiExport()}
-						</div>
+						<div className="flex w-1/3 justify-center items-center">{uiSearch()}</div>
+						<div className="flex w-1/3 justify-end items-center">{uiExport()}</div>
 					</div>
 				)}
 				{uiMain()}

@@ -76,6 +76,9 @@ export default async function handler(req, res) {
 			} else if (request.type == "edit-tasks-particular-and-remark") {
 				queryString = "UPDATE tasks_particulars_remarks SET particular=?, remark=? WHERE id=? AND task_id=? AND project_id=?";
 				queryParameters = [request.particular, request.remark, request.rowId, request.taskId, request.projectId];
+			} else if (request.type == "delete-task") {
+				queryString = "DELETE FROM tasks WHERE id=?";
+				queryParameters = [request.taskId];
 			}
 
 			const response = await query(queryString, queryParameters);

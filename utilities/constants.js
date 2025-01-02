@@ -2,7 +2,13 @@
 
 const MyConstants = Object.freeze({
 	ApiEndpoints: Object.freeze({
+		Affiliates: Object.freeze({
+			GetAffiliates: "api/affiliates/getAffiliates",
+		}),
 		Authenticate: "/api/authenticate",
+		Clients: Object.freeze({
+			GetClients: "api/clients/getClients",
+		}),
 		ErrorLogger: "api/errorLogger",
 		Getter: "api/getter",
 		Inquiries: Object.freeze({
@@ -59,17 +65,18 @@ const MyConstants = Object.freeze({
 		ProfileEdited: "Profile edited.",
 		ProjectClosed: "Project closed.",
 		ProjectDeleted: "Project deleted.",
-		ProjectStatusEdited: "Project status edited.",
 		ProjectEdited: "Project edited.",
+		ProjectStatusEdited: "Project status edited.",
 		QuoteEdited: "Quote edited.",
 		SettingsEdited: "Settings edited.",
 		SomeErrorOccurred: "Something went wrong. Contact help desk.",
 		SpireDomainOnly: "Domain must exactly be spire.com.",
 		StatusEdited: "Status edited.",
 		TaskAdded: "New task added.",
+		TaskDeleted: "Task deleted",
 		TaskDisabled: "Task disabled.",
-		TaskEnabled: "Task enabled.",
 		TaskEdited: "Task edited.",
+		TaskEnabled: "Task enabled.",
 		TaskParticularAndRemarkAdded: "Task Particular/Remark added.",
 		TaskParticularAndRemarkEdited: "Task Particular/Remark edited.",
 		UnauthorizedAccess: "Unauthorized access.",
@@ -117,6 +124,7 @@ const MyConstants = Object.freeze({
 			EnableTask: "Enable Task",
 			NewTask: "New Task",
 			EditTask: "Edit Task",
+			DeleteTask: "Delete Task",
 			DisableTask: "Disable Task",
 			MarkTaskCompleted: "Mark Task Completed",
 			DeleteTaskFromReimbursementVoucher: "Delete Task From Reimbursement Voucher",
@@ -145,6 +153,13 @@ const MyConstants = Object.freeze({
 		}),
 	}),
 	TableHeaders: Object.freeze({
+		Clients: Object.freeze({
+			Id: "ID",
+			Name: "Name",
+			ContactNumber: "Contact Number",
+			EmailAddress: "Email Address",
+			JoinedOn: "Joined On",
+		}),
 		Inquiries: Object.freeze({
 			EntryDate: "Date",
 			Client: "Client",
@@ -164,15 +179,13 @@ const MyConstants = Object.freeze({
 			writer: "Writer",
 		}),
 		Projects: Object.freeze({
-			Id: "ID",
+			Started: "Started On",
 			GovermentId: "Gov ID",
 			Client: "Client",
 			Company: "Company",
 			MainProject: "Main Project",
 			SubProject: "Sub Project",
 			Teams: "Teams",
-			DueOn: "Due On",
-			LastNote: "Last Note",
 			Status: "Status",
 		}),
 		Tasks: Object.freeze({
