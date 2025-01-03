@@ -15,6 +15,7 @@ import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, SpinnerBig, Tooltip } from "@/components/Elements";
 import { faFileExcel, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import SingleClient from "../singleClient";
 
 export default function Clients() {
 	// Business Logic
@@ -25,7 +26,7 @@ export default function Clients() {
 	const [mainData, setMainData] = useState({
 		isLoading: false,
 		searchTerm: "",
-		selectedClientId: 0,
+		selectedClient: {},
 		sort: { column: "ID", isAscending: false },
 	});
 
@@ -36,16 +37,16 @@ export default function Clients() {
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
 	// Functions
-	const detectKeystrokes = (event) => {
+	function detectKeystrokes(event) {
 		switch (true) {
 			case event.ctrlKey && event.key == "f":
 				event.preventDefault();
 				document.getElementById("searchBox").focus();
 				break;
 		}
-	};
+	}
 
-	const doFiltering = () => {
+	function doFiltering() {
 		const filteredData = apiData.allClients.apiCopy.filter((client) => {
 			const searchedText = mainData.searchTerm.toLowerCase();
 
@@ -63,9 +64,9 @@ export default function Clients() {
 		});
 
 		setApiData((s) => ({ ...s, allClients: { ...s.allClients, api: filteredData } }));
-	};
+	}
 
-	const doSorting = () => {
+	function doSorting() {
 		return apiData.allClients.api.sort((a, b) => {
 			const aJoinedOn = new Date(a.joined_on);
 			const bJoinedOn = new Date(b.joined_on);
@@ -91,9 +92,9 @@ export default function Clients() {
 					return bJoinedOn - aJoinedOn;
 			}
 		});
-	};
+	}
 
-	const exportAsExcel = () => {
+	function exportAsExcel() {
 		const records = [];
 		const _records = [];
 
@@ -166,9 +167,9 @@ export default function Clients() {
 			columns: columnsWidth,
 			fileName: `${thisView}.xlsx`,
 		});
-	};
+	}
 
-	const getDataCount = () => {
+	function getDataCount() {
 		const apiCount = apiData.allClients.api.length;
 		const apiCopyCount = apiData.allClients.apiCopy.length;
 
@@ -177,9 +178,9 @@ export default function Clients() {
 		} else {
 			return apiCount;
 		}
-	};
+	}
 
-	const getAllClients = async () => {
+	async function getAllClients() {
 		setMainData((old) => ({ ...old, isLoading: true }));
 
 		try {
@@ -194,28 +195,28 @@ export default function Clients() {
 		} finally {
 			setMainData((old) => ({ ...old, isLoading: false }));
 		}
-	};
+	}
 
-	const openEmailClient = (emailAddress) => {
+	function openEmailClient(emailAddress) {
 		globalThis.window.open(`mailto:${emailAddress}`, "_blank");
-	};
+	}
 
-	const openWhatsApp = (phone) => {
+	function openWhatsApp(phone) {
 		globalThis.window.open(`https://wa.me/1${phone}`, "_blank");
-	};
+	}
 
-	const setInputs = (key, value) => {
+	function setInputs(key, value) {
 		setMainData((old) => ({ ...old, [key]: value }));
-	};
+	}
 
-	const setSort = (column) => {
+	function setSort(column) {
 		setMainData((old) => ({ ...old, sort: { column, isAscending: !mainData.sort.isAscending } }));
-	};
+	}
 
-	const toggleSingleClientView = (clientId) => {
-		setMainData((old) => ({ ...old, selectedClientId: clientId ?? {} }));
+	function toggleSingleClientView(clientId) {
+		setMainData((old) => ({ ...old, selectedClient: clientId ?? {} }));
 		setHasMounted((old) => ({ ...old, singleClientView: clientId ? true : false }));
-	};
+	}
 
 	// UI Components
 	const uiBody = () => {
@@ -276,7 +277,7 @@ export default function Clients() {
 				</div>
 			);
 		} else if (hasMounted.singleClientView) {
-			return "";
+			return <SingleClient selectedClient={mainData.selectedClient} unmount={toggleSingleClientView} />;
 		} else {
 			return uiBody();
 		}
@@ -298,7 +299,7 @@ export default function Clients() {
 				<span className={style} dangerouslySetInnerHTML={{ __html: clientId }} />
 
 				<Tippy allowHTML content={<Tooltip text={"Open this client's detailed view."} />}>
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleClientView(client.id)} />
+					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleClientView(client)} />
 				</Tippy>
 
 				<Tippy allowHTML content={<Tooltip text={"Open this contact on WhatsApp Web."} />}>
