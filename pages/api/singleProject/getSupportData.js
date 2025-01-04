@@ -13,21 +13,18 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const [allAdministratorsCompanies, allAdministratorsCompaniesBanks, affiliates, companies, cashFlows, mainProjects, subProjects, invoices] =
-			await Promise.all([
-				query("SELECT * FROM administrators_companies", []), // Queries
-				query("SELECT * FROM administrators_companies_banks", []),
-				query("SELECT * FROM affiliates", []),
-				query("SELECT * FROM companies", []),
-				query("SELECT * FROM cash_flows", []),
-				query("SELECT * FROM main_projects", []),
-				query("SELECT * FROM sub_projects", []),
-				query("SELECT * FROM invoices", []),
-			]);
+		const [affiliates, companies, cashFlows, mainProjects, ownerFirms, ownerFirmsBanks, subProjects, invoices] = await Promise.all([
+			query("SELECT * FROM affiliates", []), // Queries
+			query("SELECT * FROM companies", []),
+			query("SELECT * FROM cash_flows", []),
+			query("SELECT * FROM main_projects", []),
+			query("SELECT * FROM owner_firms", []),
+			query("SELECT * FROM owner_firms_banks", []),
+			query("SELECT * FROM sub_projects", []),
+			query("SELECT * FROM invoices", []),
+		]);
 
-		return res
-			.status(200)
-			.json({ allAdministratorsCompanies, allAdministratorsCompaniesBanks, affiliates, companies, cashFlows, mainProjects, subProjects, invoices });
+		return res.status(200).json({ affiliates, companies, cashFlows, mainProjects, ownerFirms, ownerFirmsBanks, subProjects, invoices });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");

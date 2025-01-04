@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { client, contactNumber, emailAddress, entryDate, followUps, id, mainProjectId, quote, reference, subProject, userId } = req.body;
+		const { client, phoneNumber, emailAddress, entryDate, followUps, id, mainProjectId, quote, reference, subProject, userId } = req.body;
 
 		let newReferenceId = reference.id;
 
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
 		}
 
 		if (subProject.id == 0) {
-			const response = await query("INSERT INTO sub_projects (id, name, created_by) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
+			const response = await query("INSERT INTO sub_projects (id, name, entry_by) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
 
 			if (response.affectedRows == 0) {
 				return res.status(400).send("Could not add Sub Project.");
@@ -59,11 +59,11 @@ export default async function handler(req, res) {
 		}
 
 		if (client.id == 0) {
-			const response = await query("INSERT INTO clients (id, reference_id, name, contact_number, email_address) VALUES (?, ?, ?, ?, ?)", [
+			const response = await query("INSERT INTO clients (id, reference_id, name, phone_number, email_address) VALUES (?, ?, ?, ?, ?)", [
 				newClientId,
 				newReferenceId,
 				client.name,
-				contactNumber,
+				phoneNumber,
 				emailAddress,
 			]);
 
@@ -73,8 +73,8 @@ export default async function handler(req, res) {
 		}
 
 		const inquiryUpdateResult = await query(
-			`UPDATE inquiries SET client_id=?, reference_id=?, main_project_id=?, sub_project_id=?, entry_date=?, contact_number=?, email_address=?, follow_ups=?, quote=?, updated_at=? WHERE id=?`,
-			[newClientId, newReferenceId, mainProjectId, subProject.id, entryDate, contactNumber, emailAddress, followUps, quote, "NOW()", id],
+			`UPDATE inquiries SET client_id=?, reference_id=?, main_project_id=?, sub_project_id=?, entry_date=?, phone_number=?, email_address=?, follow_ups=?, quote=?, updated_at=? WHERE id=?`,
+			[newClientId, newReferenceId, mainProjectId, subProject.id, entryDate, phoneNumber, emailAddress, followUps, quote, "NOW()", id],
 		);
 
 		if (inquiryUpdateResult.affectedRows == 0) {

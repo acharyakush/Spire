@@ -181,7 +181,7 @@ export function UpdateStatus({ mount, reloadInquiries, selectedInquiry, unmount 
 
 					let activityMessage = `Update status of <b>${selectedInquiry.id}</b> to <b>${selectedInquiry.new_status}</b> from <b>${selectedInquiry.status}</b>.`;
 
-					let successMessage = MyConstants.Messages.InquiryUpdated;
+					let successMessage = MyConstants.Messages.InquiryEdited;
 
 					if (isStatusCloseInquiry) {
 						activityMessage = `Closed <b>${selectedInquiry.id}</b> due to <b>${state.reason}</b>.`;

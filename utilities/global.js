@@ -23,7 +23,7 @@ let fullName = "";
 export const MyGlobal = Object.freeze({
 	AddActivity: async (activity, module = "General") => {
 		try {
-			const body = { activity, module, sessionToken, type: "add-user-activity", userId };
+			const body = { activity, module, type: "add-user-activity", userId };
 			await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Add Activity");

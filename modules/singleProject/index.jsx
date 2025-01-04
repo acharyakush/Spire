@@ -40,14 +40,14 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 	dayjs.extend(relativeTime);
 
 	const [apiData, setApiData] = useState({
-		allAdministratorsCompanies: [],
-		allAdministratorsCompaniesBanks: [],
 		allAffiliates: [],
 		allCompanies: [],
 		allCashFlows: [],
 		allMainProjects: [],
 		allSubProjects: [],
 		allInvoices: [],
+		ownerFirms: [],
+		ownerFirmsBanks: [],
 	});
 
 	const [hasMounted, setHasMounted] = useState({
@@ -99,14 +99,14 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 
 			if (response.status === 200) {
 				setApiData({
-					allAdministratorsCompanies: response.data.allAdministratorsCompanies,
-					allAdministratorsCompaniesBanks: response.data.allAdministratorsCompaniesBanks,
 					allAffiliates: [],
 					allCompanies: response.data.companies,
 					allCashFlows: [],
 					allMainProjects: response.data.mainProjects,
 					allSubProjects: response.data.subProjects,
 					allInvoices: response.data.invoices,
+					ownerFirms: response.data.ownerFirms,
+					ownerFirmsBanks: response.data.ownerFirmsBanks,
 				});
 
 				setHasMounted((old) => ({ ...old, mainComponent: true }));
@@ -122,8 +122,8 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 		globalThis.window.open(`mailto:${emailAddress}`, "_blank");
 	};
 
-	const openWhatsApp = (contactNumber) => {
-		globalThis.window.open(`https://wa.me/1${contactNumber}`, "_blank");
+	const openWhatsApp = (phoneNumber) => {
+		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
 	};
 
 	const toggleGovernmentIdBox = () => {
@@ -144,9 +144,9 @@ export default function SingleProject({ reloadProjects, reloadNotes, selectedCli
 						{selectedClient.name} ({selectedClient.id})
 					</span>
 				</div>
-				<div className="w-full p-2 space-x-2.5 hovered-rows-white" onClick={() => openWhatsApp(selectedClient.contact_number)}>
+				<div className="w-full p-2 space-x-2.5 hovered-rows-white" onClick={() => openWhatsApp(selectedClient.phone_number)}>
 					<FontAwesomeIcon icon={faWhatsapp} />
-					<span>{selectedClient.contact_number}</span>
+					<span>{selectedClient.phone_number}</span>
 				</div>
 				<div className="w-full p-2 space-x-2.5 hovered-rows-white" onClick={() => openEmailClient(selectedClient.email_address)}>
 					<FontAwesomeIcon icon={faEnvelope} />

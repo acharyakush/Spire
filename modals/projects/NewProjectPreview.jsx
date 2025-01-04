@@ -57,7 +57,7 @@ export default function NewProjectPreview({ mount, projectData, unmount }) {
 						<div className="flex flex-col w-full h-[410px] py-3 space-y-3 justify-between items-center overflow-y-auto light-gray-background">
 							{uiRow("Client", projectData.clientName)}
 							{uiRow("Company", projectData.company.name)}
-							{uiRow("Contact Number", projectData.contactNumber)}
+							{uiRow("Phone Number", projectData.phoneNumber)}
 							{uiRow("Main Project", projectData.mainProject.name)}
 							{uiRow("Sub Project", projectData.subProject.name)}
 							{uiRow("Due On", dayjs(projectData.dueOn).format("DD-MM-YYYY"))}

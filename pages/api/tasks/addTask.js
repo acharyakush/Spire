@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 		const [storedProcedureResult] = await query("SELECT @new_task_id AS new_id;", []);
 
 		const taskInsertQueryResult = await query(
-			"INSERT INTO tasks (id, client_id, project_id, task, due_on, input_by, expense) VALUES (?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO tasks (id, client_id, project_id, task, due_on, entry_by, expense) VALUES (?, ?, ?, ?, ?, ?, ?)",
 			[storedProcedureResult.new_id, clientId, projectId, task, dueOn, userId, expense],
 		);
 

@@ -93,7 +93,7 @@ export default function Tasks({ selectedClient, selectedProject, source }) {
 			const isNewTask = apiData.allTasks.apiCopy.filter((_task) => _task.id == task.id && _task.project_id == selectedProject.id);
 
 			if (isNewTask.length) {
-				const insertedBy = MyGlobal.GetAnyDataFromId(task.input_by, "full_name");
+				const insertedBy = MyGlobal.GetAnyDataFromId(task.entry_by, "full_name");
 				const dueOn = dayjs(task.due_on).format("DD MMM, YYYY");
 				const formattedExpenses = MyGlobal.ThousandSeparator(task.expense);
 
@@ -191,9 +191,9 @@ export default function Tasks({ selectedClient, selectedProject, source }) {
 
 			const allTasksRemarks = allTasksParticularsAndRemarksResult.data.map((record) => {
 				const taskName = allTasksResult.data.filter((task) => task.id == record.task_id).at(0).task;
-				const writtenBy = MyGlobal.GetAnyDataFromId(record.created_by, "full_name");
+				const writtenBy = MyGlobal.GetAnyDataFromId(record.entry_by, "full_name");
 
-				return { ...record, created_by: writtenBy, task_name: taskName };
+				return { ...record, entry_by: writtenBy, task_name: taskName };
 			});
 
 			setApiData({
@@ -227,8 +227,8 @@ export default function Tasks({ selectedClient, selectedProject, source }) {
 
 	const sortAllTasksRemarksRows = () => {
 		return apiData.allTasksRemarks.api.sort((a, b) => {
-			const aCreatedAt = new Date(a.created_at);
-			const bCreatedAt = new Date(b.created_at);
+			const aCreatedAt = new Date(a.entry_at);
+			const bCreatedAt = new Date(b.entry_at);
 
 			const { column, isAscending } = mainData.sortAllTasksRemarks;
 
@@ -245,9 +245,9 @@ export default function Tasks({ selectedClient, selectedProject, source }) {
 			} else if (column == allTasksRemarksTableHeaders.Date && !isAscending) {
 				return bCreatedAt - aCreatedAt;
 			} else if (column == allTasksRemarksTableHeaders.WrittenBy && !isAscending) {
-				return a.created_by.localeCompare(b.created_by);
+				return a.entry_by.localeCompare(b.entry_by);
 			} else if (column == allTasksRemarksTableHeaders.WrittenBy && !isAscending) {
-				return b.created_by.localeCompare(a.created_by);
+				return b.entry_by.localeCompare(a.entry_by);
 			}
 		});
 	};
@@ -407,9 +407,9 @@ export default function Tasks({ selectedClient, selectedProject, source }) {
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(remark.remark, mainData.searchTerm) }} />
 
-				<span className={style}>{dayjs(remark.created_at).format("hh:mm:ss a, DD MMM, YYYY")}</span>
+				<span className={style}>{dayjs(remark.entry_at).format("hh:mm:ss a, DD MMM, YYYY")}</span>
 
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(remark.created_by, mainData.searchTerm) }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(remark.entry_by, mainData.searchTerm) }} />
 			</div>
 		);
 	};

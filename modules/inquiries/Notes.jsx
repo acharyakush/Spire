@@ -41,7 +41,7 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 			const content = String(note.content).toLowerCase();
 
 			const writer = MyGlobal.GetAllUsers()
-				?.filter((user) => user.id == note.user_id)
+				?.filter((user) => user.id == note.entry_by)
 				.at(0);
 
 			const writerFullName = String(writer.full_name).toLowerCase();
@@ -67,8 +67,8 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 			const aEntryDate = new Date(a.entry_date);
 			const bEntryDate = new Date(b.entry_date);
 
-			const aWriter = MyGlobal.GetAnyDataFromId(a.user_id, "full_name");
-			const bWriter = MyGlobal.GetAnyDataFromId(b.user_id, "full_name");
+			const aWriter = MyGlobal.GetAnyDataFromId(a.entry_by, "full_name");
+			const bWriter = MyGlobal.GetAnyDataFromId(b.entry_by, "full_name");
 
 			if (mainData.sort.column == "Date" && mainData.sort.isAscending) {
 				return aEntryDate - bEntryDate;
@@ -202,7 +202,7 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 		const content = MyGlobal.HighlightText(note.content, mainData.searchTerm);
 
 		const writer = MyGlobal.GetAllUsers()
-			?.filter((user) => user.id == note.user_id)
+			?.filter((user) => user.id == note.entry_by)
 			.at(0);
 
 		const writerFullName = MyGlobal.HighlightText(writer?.full_name, mainData.searchTerm);

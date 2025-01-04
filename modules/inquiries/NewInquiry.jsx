@@ -34,7 +34,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 
 	const [mainData, setMainData] = useState({
 		client: { id: "", name: "" },
-		contactNumber: "",
+		phoneNumber: "",
 		entryDate: new Date(),
 		emailAddress: "",
 		followUps: [],
@@ -246,7 +246,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			const isExistingClient = client.id !== 0;
 
 			const emailAddress = isExistingClient ? client.email_address : "";
-			const contactNumber = isExistingClient ? client.contact_number : "";
+			const phoneNumber = isExistingClient ? client.phone_number : "";
 
 			const referenceId = isExistingClient ? client.reference_id : "";
 			const referenceName = isExistingClient ? apiData.allReferences.apiCopy.filter((reference) => reference.id == referenceId).at(0)?.name : "";
@@ -258,7 +258,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 			setMainData((s) => ({
 				...s,
 				client: { id: value.id, name: value.name },
-				contactNumber,
+				phoneNumber,
 				emailAddress,
 				reference: { id: referenceId, name: referenceName },
 			}));
@@ -314,16 +314,16 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 		);
 	};
 
-	const uiContactNumber = () => {
+	const uiPhoneNumber = () => {
 		return (
 			<TextInput
 				icon={faPhone}
-				label="Contact Number"
+				label="Phone Number"
 				maxLength={10}
-				onChange={(event) => setInputs("contactNumber", event.target.value)}
+				onChange={(event) => setInputs("phoneNumber", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={2}
-				value={mainData.contactNumber}
+				value={mainData.phoneNumber}
 				width="w-full"
 			/>
 		);
@@ -528,7 +528,7 @@ export default function NewInquiry({ reloadInquiries, unmount }) {
 				<div className="flex flex-col w-3/5 h-full space-y-3 justify-start items-center">
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">
 						{uiClient()}
-						{uiContactNumber()}
+						{uiPhoneNumber()}
 						{uiEmailAddress()}
 					</div>
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">

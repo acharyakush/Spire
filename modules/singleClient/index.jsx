@@ -11,6 +11,7 @@ import MyConstants from "@/utilities/constants";
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
+import { EditCompany } from "@/modals/singleClient";
 import { TextInputNative } from "@/components/Inputs";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -29,6 +30,7 @@ import {
 	faSortAmountDesc,
 	faUserTag,
 } from "@fortawesome/free-solid-svg-icons";
+import writeXlsxFile from "write-excel-file";
 
 export default function SingleClient({ selectedClient, unmount }) {
 	// Business Logic
@@ -36,11 +38,13 @@ export default function SingleClient({ selectedClient, unmount }) {
 
 	const [apiData, setApiData] = useState({
 		allProjects: { api: [], apiCopy: [] },
+		cashFlows: [],
+		companies: [],
 		mainProjects: [],
 		subProjects: [],
-		companies: [],
 		ownerFirms: [],
 		reference: {},
+		tasks: [],
 		uploadedFiles: [],
 	});
 
@@ -62,6 +66,7 @@ export default function SingleClient({ selectedClient, unmount }) {
 	});
 
 	const [mounted, setMounted] = useState({
+		editCompany: false,
 		mainComponent: false,
 		uploadedFiles: false,
 	});
@@ -73,7 +78,176 @@ export default function SingleClient({ selectedClient, unmount }) {
 	const showToDateClearButton = main.filter.date.to ? "cursor-pointer primary-text" : "hidden";
 
 	// Functions
-	function doFiltering() {}
+	function doExcelExport() {
+		const records = [];
+		const _records = [];
+
+		const columnsWidth = [];
+		const dataHeaders = [];
+
+		const rowHeight = 34;
+		const headerHeight = 44;
+		const maximumColumnWidth = 20;
+
+		const headers = Object.values(tableHeaders);
+		const blankRows = [{ span: headers.length, height: rowHeight, colSpan: 2 }];
+
+		doSorting().forEach((fe) => {
+			records.push(
+				fe.id,
+				`${dayjs(fe.started_on).format("hh:mm:ss A")}\n${dayjs(fe.started_on).format("DD MMMM, YYYY")}`,
+				`${fe.main_project}\n${fe.sub_project}`,
+				fe.teams.map((m) => m.full_name),
+				fe.invoice_firm,
+				fe.invoice_fees,
+				fe.reimbursement_voucher,
+				fe.amoun_received,
+				fe.amount_pending,
+				fe.total_fees,
+				fe.status,
+			);
+		});
+
+		records.forEach((record) => {
+			_records.push({
+				align: "center",
+				alignVertical: "center",
+				color: "#000000",
+				height: rowHeight,
+				type: String,
+				value: String(record),
+				wrap: true,
+			});
+		});
+
+		headers.forEach((header) => {
+			dataHeaders.push({
+				align: "center",
+				alignVertical: "center",
+				fontWeight: "bold",
+				height: rowHeight,
+				value: header,
+				width: maximumColumnWidth,
+			});
+
+			columnsWidth.push({ width: maximumColumnWidth });
+		});
+
+		const separatedRowValues = MyGlobal.SeparateObjectsIntoArrays(_records, headers.length);
+		const headerText = `${selectedClient.id} - ${selectedClient.name} (${apiData.allProjects.api.length})`;
+
+		const header = [
+			{
+				align: "center",
+				alignVertical: "center",
+				fontSize: 16,
+				fontWeight: "bold",
+				height: headerHeight,
+				span: headers.length,
+				value: headerText,
+			},
+		];
+
+		const finalData = [header, blankRows, dataHeaders];
+		separatedRowValues.forEach((fe) => finalData.push(fe));
+
+		writeXlsxFile(finalData, {
+			fontFamily: "Segoe UI",
+			fontSize: 10,
+			columns: columnsWidth,
+			fileName: `${selectedClient.id}_${selectedClient.name}_(${apiData.allProjects.api.length}).xlsx`,
+		});
+	}
+
+	function doFiltering(source) {
+		const filtered = getRevisedSelectedCompanyProject().filter((f) => {
+			if (source == "date") {
+				const checkDate = new Date(f.started_on);
+				const startDate = main.filter.date.from;
+				const endDate = main.filter.date.to;
+
+				if (checkDate >= startDate && checkDate <= endDate) {
+					return f;
+				}
+			} else {
+				const searchText = main.filter.search.toLowerCase();
+
+				const id = String(f.id).toLowerCase();
+				const company = String(f.company).toLowerCase();
+				const subProject = String(f.sub_project).toLowerCase();
+				const invoiceFirm = String(f.invoice_firm).toLowerCase();
+				const status = String(f.status).toLowerCase();
+
+				return (
+					id.includes(searchText) ||
+					company.includes(searchText) ||
+					subProject.includes(searchText) ||
+					invoiceFirm.includes(searchText) ||
+					String(f.invoice_fees).includes(searchText) ||
+					String(f.reimbursement_voucher).includes(searchText) ||
+					String(f.amount_received).includes(searchText) ||
+					String(f.amount_pending).includes(searchText) ||
+					String(f.total_fees).includes(searchText) ||
+					status.includes(searchText)
+				);
+			}
+		});
+
+		setMain((s) => ({ ...s, projects: filtered }));
+	}
+
+	function doSorting() {
+		return getRevisedSelectedCompanyProject().sort((a, b) => {
+			const aStartedOn = new Date(a.started_on);
+			const bStartedOn = new Date(b.started_on);
+
+			const { column, isAscending } = main.sort;
+
+			if (column == tableHeaders.Id && isAscending) {
+				return a.id.localeCompare(b.id);
+			} else if (column == tableHeaders.Id && !isAscending) {
+				return b.id.localeCompare(a.id);
+			} else if (column == tableHeaders.StartedOn && isAscending) {
+				return aStartedOn - bStartedOn;
+			} else if (column == tableHeaders.StartedOn && !isAscending) {
+				return bStartedOn - aStartedOn;
+			} else if (column == tableHeaders.SubProject && isAscending) {
+				return a.sub_project.localeCompare(b.sub_project);
+			} else if (column == tableHeaders.SubProject && !isAscending) {
+				return b.sub_project.localeCompare(a.sub_project);
+			} else if (column == tableHeaders.Company && isAscending) {
+				return a.company.localeCompare(b.company);
+			} else if (column == tableHeaders.Company && !isAscending) {
+				return b.company.localeCompare(a.company);
+			} else if (column == tableHeaders.Teams && isAscending) {
+				return a.teams.localeCompare(b.teams);
+			} else if (column == tableHeaders.Teams && !isAscending) {
+				return b.teams.localeCompare(a.teams);
+			} else if (column == tableHeaders.InvoiceFirm && isAscending) {
+				return a.invoice_firm.localeCompare(b.invoice_firm);
+			} else if (column == tableHeaders.InvoiceFirm && !isAscending) {
+				return b.invoice_firm.localeCompare(a.invoice_firm);
+			} else if (column == tableHeaders.InvoiceFees && isAscending) {
+				return a.invoice_fees - b.invoice_fees;
+			} else if (column == tableHeaders.InvoiceFees && !isAscending) {
+				return b.invoice_fees - a.invoice_fees;
+			} else if (column == tableHeaders.ReimbursementVoucher && isAscending) {
+				return a.reimbursement_voucher - b.reimbursement_voucher;
+			} else if (column == tableHeaders.ReimbursementVoucher && !isAscending) {
+				return b.reimbursement_voucher - a.reimbursement_voucher;
+			} else if (column == tableHeaders.Total && isAscending) {
+				return a.total_fees - b.total_fees;
+			} else if (column == tableHeaders.Total && !isAscending) {
+				return b.total_fees - a.total_fees;
+			} else if (column == tableHeaders.Status && isAscending) {
+				return a.status.localeCompare(b.status);
+			} else if (column == tableHeaders.Status && !isAscending) {
+				return b.status.localeCompare(a.status);
+			} else {
+				return b.id.localeCompare(a.id);
+			}
+		});
+	}
 
 	function getCompanyName(project) {
 		let name = "";
@@ -95,12 +269,48 @@ export default function SingleClient({ selectedClient, unmount }) {
 		return name;
 	}
 
-	function getOwnerFirmName(ownerFirmId) {
+	function getOwnerFirmName(project) {
+		let name = "";
+
 		if (apiData.ownerFirms.length) {
-			return apiData.ownerFirms.filter((f) => f.id == ownerFirmId).at(0).name;
+			name = apiData.ownerFirms.filter((f) => f.id == project.invoice_firm_id).at(0).name;
 		} else {
-			return "";
+			name = "";
 		}
+
+		return name;
+	}
+
+	function getRevisedSelectedCompanyProject() {
+		return main.projects.map((m) => {
+			const invoiceFees = Number(m.invoice_fees);
+			const invoiceFirm = getOwnerFirmName(m);
+			const teams = MyGlobal.GetFullDetailsFromIds(m.teams);
+
+			const reimbursementVoucher = apiData.tasks.filter((f) => f.project_id == m.id).reduce((acc, v) => acc + Number(v.expense), 0);
+
+			const amountReceived = apiData.cashFlows.filter((f) => f.project_id == m.id).reduce((acc, v) => acc + Number(v.amount_received), 0);
+
+			const totalFees = invoiceFees + reimbursementVoucher;
+			const amountPending = totalFees - amountReceived;
+
+			return {
+				...m,
+				amount_pending: amountPending,
+				amount_received: amountReceived,
+				company: getCompanyName(m),
+				completed_on: dayjs(m.completed_on).format("hh:mm:ss A - DD/MM/YYYY"),
+				invoice_fees: invoiceFees,
+				invoice_firm: invoiceFirm,
+				invoice_firm_initials: MyGlobal.GetInitials(invoiceFirm),
+				main_project: getMainProjectName(m),
+				reimbursement_voucher: reimbursementVoucher,
+				sub_project: getSubProjectName(m),
+				teams,
+				teams_list: teams.map((m) => m.full_name),
+				total_fees: totalFees,
+			};
+		});
 	}
 
 	function getSubProjectName(project) {
@@ -122,13 +332,17 @@ export default function SingleClient({ selectedClient, unmount }) {
 			if (response.status === 200) {
 				setApiData((s) => ({
 					...s,
-					ownerFirms: response.data.administratorsCompanies,
+					allProjects: { api: response.data.projects, apiCopy: response.data.projects },
+					cashFlows: response.data.cashFlows,
 					companies: response.data.companies,
 					mainProjects: response.data.mainProjects,
-					allProjects: { api: response.data.projects, apiCopy: response.data.projects },
+					ownerFirms: response.data.ownerFirms,
 					reference: response.data.reference.at(0),
 					subProjects: response.data.subProjects,
+					tasks: response.data.tasks,
 				}));
+
+				setMain((s) => ({ ...s, projects: response.data.projects.filter((f) => f.client_id == selectedClient.id) }));
 
 				setMounted((s) => ({ ...s, mainComponent: true }));
 			}
@@ -140,10 +354,10 @@ export default function SingleClient({ selectedClient, unmount }) {
 	}
 
 	function getTotalValues() {
-		let total = {
+		const total = {
 			amountPending: 0,
 			amountReceived: 0,
-			professionalFees: 0,
+			invoiceFees: 0,
 			reimbursementVoucherCharges: 0,
 			totalFees: 0,
 		};
@@ -151,14 +365,14 @@ export default function SingleClient({ selectedClient, unmount }) {
 		for (const project of apiData.allProjects.api) {
 			total.amountPending += Number(project.amount_pending);
 			total.amountReceived += Number(project.amount_received);
-			total.professionalFees += Number(project.professional_fees);
+			total.invoiceFees += Number(project.invoice_fees);
 			total.reimbursementVoucherCharges += Number(project.reimbursement_voucher);
 			total.totalFees += Number(project.total_fees);
 		}
 
 		total.amountPending = MyGlobal.ThousandSeparator(total.amountPending);
 		total.amountReceived = MyGlobal.ThousandSeparator(total.amountReceived);
-		total.professionalFees = MyGlobal.ThousandSeparator(total.professionalFees);
+		total.invoiceFees = MyGlobal.ThousandSeparator(total.invoiceFees);
 		total.reimbursementVoucherCharges = MyGlobal.ThousandSeparator(total.reimbursementVoucherCharges);
 		total.totalFees = MyGlobal.ThousandSeparator(total.totalFees);
 
@@ -185,8 +399,8 @@ export default function SingleClient({ selectedClient, unmount }) {
 		globalThis.window.open(`mailto:${emailAddress}`, "_blank");
 	}
 
-	function openWhatsApp(contactNumber) {
-		globalThis.window.open(`https://wa.me/1${contactNumber}`, "_blank");
+	function openWhatsApp(phoneNumber) {
+		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
 	}
 
 	function setInputs(key, value) {
@@ -237,9 +451,9 @@ export default function SingleClient({ selectedClient, unmount }) {
 						<FontAwesomeIcon className="primary-text" icon={faIdBadge} />
 						<span>{selectedClient.id}</span>
 					</span>
-					<span className={wrapper} onClick={() => openWhatsApp(selectedClient.contact_number)}>
+					<span className={wrapper} onClick={() => openWhatsApp(selectedClient.phone_number)}>
 						<FontAwesomeIcon className="primary-text" icon={faWhatsapp} />
-						<span>{selectedClient.contact_number}</span>
+						<span>{selectedClient.phone_number}</span>
 					</span>
 					<span className={wrapper} onClick={() => openEmailAddress(selectedClient.email_address)}>
 						<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
@@ -255,7 +469,7 @@ export default function SingleClient({ selectedClient, unmount }) {
 					</span>
 				</div>
 				<div className="flex w-1/5 space-x-2.5 justify-end items-center cursor-pointer font-regular-10 primary-text">
-					<button className="space-x-1.5 primary-button-transparent-background" onClick={() => exportAsExcel()}>
+					<button className="space-x-1.5 primary-button-transparent-background" onClick={() => doExcelExport()}>
 						<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 						<span>Export</span>
 					</button>
@@ -282,12 +496,6 @@ export default function SingleClient({ selectedClient, unmount }) {
 		});
 	}
 
-	function uiEditCompany(selectedCompanyName) {
-		if (selectedCompanyName != "All") {
-			return <FontAwesomeIcon className="primary-text" icon={faPencil} onClick={() => toggleEditCompanyBox()} size="sm" />;
-		}
-	}
-
 	function uiFooter() {
 		const totalValues = getTotalValues();
 
@@ -297,7 +505,7 @@ export default function SingleClient({ selectedClient, unmount }) {
 
 			return (
 				<span className={wrapper} key={index}>
-					<span>{index == 6 && totalValues.professionalFees}</span>
+					<span>{index == 6 && totalValues.invoiceFees}</span>
 					<span>{index == 7 && totalValues.reimbursementVoucherCharges}</span>
 					<span>{index == 8 && totalValues.amountReceived}</span>
 					<span>{index == 9 && totalValues.amountPending}</span>
@@ -332,23 +540,33 @@ export default function SingleClient({ selectedClient, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(tableHeaders).map((label, index) => {
-			const showArrow = label == main.sort.column ? "visible" : "invisible";
+		return Object.values(tableHeaders)
+			.filter((f) => {
+				if (main.selectedCompany.id != 0) {
+					return f != tableHeaders.Company;
+				}
+				return f;
+			})
+			.map((m, i) => {
+				const showArrow = m == main.sort.column ? "visible" : "invisible";
+				const width = main.selectedCompany.id != 0 ? "w-[14.28%]" : "w-[8.33%]";
+				const wrapper = `flex ${width} h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-10`;
 
-			return (
-				<span
-					className="flex w-[8.33%] h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-10"
-					onClick={() => setSort(label)}
-					key={index}>
-					<span>{label}</span>
-					<span className={showArrow}>{uiSortArrows(label)}</span>
-				</span>
-			);
-		});
+				return (
+					<span className={wrapper} onClick={() => setSort(m)} key={i}>
+						<span>{m}</span>
+						<span className={showArrow}>{uiSortArrows(m)}</span>
+					</span>
+				);
+			});
 	}
 
 	function uiMain() {
 		if (!mounted.uploadedFiles) {
+			const selectedCompanyNameStyle = main.selectedCompany.name != "All" ? "flex w-1/2 space-x-2.5 justify-start items-center visible" : "invisible";
+
+			const showEditCompanyIcon = allowEditingCompany && main.selectedCompany.name != "All" ? "cursor-pointer visible green-text" : "invisible";
+
 			return (
 				<>
 					<div className="flex w-full px-5 py-2.5 space-x-3 justify-center items-center">
@@ -356,11 +574,18 @@ export default function SingleClient({ selectedClient, unmount }) {
 						{uiClientDetails()}
 					</div>
 					<div className="flex flex-col w-full h-full space-y-2 justify-start items-center">
-						<div className="flex w-full px-5 justify-between items-center">
-							<div className="flex w-3/5 justify-end items-center">{uiSearch()}</div>
-							<div className="flex w-2/5 space-x-5 justify-end items-center">
-								{uiFromDate()}
-								{uiToDate()}
+						<div className="flex w-full px-5 space-x-5 justify-between items-center">
+							<div className="w-[10%] h-7" />
+							<div className="flex w-[90%] justify-between items-center">
+								<div className={selectedCompanyNameStyle}>
+									<span className="view-heading !text-lg">{main.selectedCompany.name}</span>
+									<FontAwesomeIcon className={showEditCompanyIcon} icon={faPencil} onClick={() => toggleEditCompanyBox()} size="sm" />
+								</div>
+								<div className="flex w-1/2 space-x-5 justify-end items-center">
+									{uiFromDate()}
+									{uiToDate()}
+									{uiSearch()}
+								</div>
 							</div>
 						</div>
 						<div className="flex w-full h-full px-5 space-x-5 justify-center items-start">
@@ -369,7 +594,7 @@ export default function SingleClient({ selectedClient, unmount }) {
 								<div className="flex w-full primary-background">{uiHeaders()}</div>
 								<Virtuoso
 									className="w-full h-full overflow-y-auto bottom-border contrast-background"
-									data={main.projects}
+									data={doSorting()}
 									itemContent={(index, project) => uiRows(project, index)}
 									totalCount={apiData.allProjects.api.length}
 								/>
@@ -382,60 +607,54 @@ export default function SingleClient({ selectedClient, unmount }) {
 		}
 	}
 
-	function uiRows(project, rowIndex) {
-		const style = "flex flex-wrap w-[8.33%] min-h-9 justify-center items-center text-center";
+	function uiRows(object, i) {
+		const width = main.selectedCompany.id != 0 ? "w-[14.28%]" : "w-[8.33%]";
+		const style = `flex flex-wrap ${width} min-h-9 justify-center items-center text-center`;
 		const tooltipStyle = `${style} cursor-help primary-text`;
-
-		const wrapper = `flex w-full justify-center items-center black-white-background bottom-border font-regular-11 black-text`;
-
-		const company = getCompanyName(project);
-		const mainProject = getMainProjectName(project);
-		const subProject = getSubProjectName(project);
-
-		const ownerFirmName = getOwnerFirmName(project.invoice_firm_id);
-		const ownerFirmNameInitials = MyGlobal.GetInitials(ownerFirmName);
 
 		const amountPendingStyle = `${style} font-semibold-11 red-text`;
 		const amountReceivedStyle = `${style} font-semibold-11 green-text`;
 		const totalFeesStyle = `${style} font-semibold-11 primary-text`;
 
-		const completionDate = dayjs(project.completed_on).format("hh:mm:ss A - DD/MM/YYYY");
-
 		return (
-			<div className={wrapper} key={rowIndex}>
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(project.id, main.filter.search) }} />
+			<div className="flex w-full justify-center items-center black-white-background bottom-border font-regular-11 black-text" key={i}>
+				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.id, main.filter.search) }} />
 
-				<Tippy allowHTML content={dayjs(project.started_on).format("hh:mm:ss A")}>
-					<span className={tooltipStyle}>{dayjs(project.started_on).format("DD/MM/YYYY")}</span>
+				<Tippy allowHTML content={dayjs(object.started_on).format("hh:mm:ss A")}>
+					<span className={tooltipStyle}>{dayjs(object.started_on).format("DD/MM/YYYY")}</span>
 				</Tippy>
 
-				<Tippy allowHTML content={mainProject}>
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(subProject, main.filter.search) }} />
+				<Tippy allowHTML content={object.main_project}>
+					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.sub_project, main.filter.search) }} />
 				</Tippy>
 
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(company, main.filter.search) }} />
+				{main.selectedCompany.id == 0 && (
+					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.company, main.filter.search) }} />
+				)}
 
-				<span className={`${style} space-x-1`}>{uiTeams(project.teams)}</span>
-
-				<Tippy allowHTML content={<Tooltip text={ownerFirmName} />}>
-					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(ownerFirmNameInitials, main.filter.search) }} />
+				<Tippy allowHTML content={<TooltipList payload={object.teams_list} />}>
+					<span className={`${style} space-x-1 cursor-help primary-text`}>{object.teams.length}</span>
 				</Tippy>
 
-				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(project.invoice_fees, main.filter.search) }} />
+				<Tippy allowHTML content={<Tooltip text={object.invoice_firm} />}>
+					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.invoice_firm_initials, main.filter.search) }} />
+				</Tippy>
+
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.invoice_fees, main.filter.search) }} />
+
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.reimbursement_voucher, main.filter.search) }} />
 
 				<span
-					className={tooltipStyle}
-					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(project.reimbursement_voucher, main.filter.search) }}
+					className={amountReceivedStyle}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.amount_received, main.filter.search) }}
 				/>
 
-				<span className={amountReceivedStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(0, main.filter.search) }} />
+				<span className={amountPendingStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.amount_pending, main.filter.search) }} />
 
-				<span className={amountPendingStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(0, main.filter.search) }} />
+				<span className={totalFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.total_fees, main.filter.search) }} />
 
-				<span className={totalFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(0, main.filter.search) }} />
-
-				<Tippy allowHTML content={completionDate} disabled={project.status != "Completed"}>
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(project.status, main.filter.search) }} />
+				<Tippy allowHTML content={object.completed_on} disabled={object.status != "Completed"}>
+					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.status, main.filter.search) }} />
 				</Tippy>
 			</div>
 		);
@@ -448,11 +667,11 @@ export default function SingleClient({ selectedClient, unmount }) {
 				icon={faSearch}
 				onChange={(e) => setInputs("search", e.target.value)}
 				onClearButtonClick={() => setInputs("search", "")}
-				placeholder=""
+				placeholder="Search"
 				showClearButton={showClearSearchButton}
 				tabIndex={1}
 				value={main.filter.search}
-				width="w-60"
+				width="w-44"
 			/>
 		);
 	}
@@ -465,17 +684,6 @@ export default function SingleClient({ selectedClient, unmount }) {
 				return <FontAwesomeIcon icon={faSortAmountDesc} />;
 			}
 		}
-	}
-
-	function uiTeams(teamsIds) {
-		const teams = MyGlobal.GetFullDetailsFromIds(teamsIds);
-		const names = teams.map((m) => m.full_name);
-
-		return (
-			<Tippy allowHTML content={<TooltipList payload={names.join(",")} />}>
-				<span className="cursor-help primary-text">{names.length}</span>
-			</Tippy>
-		);
 	}
 
 	function uiToDate() {
@@ -531,8 +739,6 @@ export default function SingleClient({ selectedClient, unmount }) {
 	useEffect(() => {
 		if (main.filter.date.from && main.filter.date.to) {
 			doFiltering("date");
-		} else {
-			doFiltering();
 		}
 	}, [main.filter.date]);
 
@@ -541,5 +747,18 @@ export default function SingleClient({ selectedClient, unmount }) {
 	}, [main.filter.search]);
 
 	// Main UI
-	return uiMain();
+	return (
+		<>
+			{uiMain()}
+
+			{mounted.editCompany && (
+				<EditCompany
+					mount={mounted.editCompany}
+					reloadProjects={getSupportData}
+					selectedCompany={main.selectedCompany}
+					unmount={toggleEditCompanyBox}
+				/>
+			)}
+		</>
+	);
 }

@@ -56,7 +56,7 @@ export default function NewInquiryPreview({ mount, selectedInquiry, unmount }) {
 						<div className="flex flex-col w-full py-3 space-y-3 justify-between items-center light-gray-background">
 							{uiRow("Client", selectedInquiry.client.name)}
 							{uiRow("Email Address", selectedInquiry.emailAddress)}
-							{uiRow("Contact Number", selectedInquiry.contactNumber)}
+							{uiRow("Phone Number", selectedInquiry.phoneNumber)}
 							{uiRow("Main Project", selectedInquiry.mainProject.name)}
 							{uiRow("Sub Project", selectedInquiry.subProject.name)}
 							{uiRow("Reference", selectedInquiry.reference.name)}

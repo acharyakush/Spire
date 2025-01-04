@@ -113,7 +113,7 @@ export default function Inquiries() {
 				const clientId = String(client.id).toLowerCase();
 				const clientName = String(getClientName(client.id)).toLowerCase();
 
-				const createdBy = MyGlobal.GetAnyDataFromId(inquiry.created_by, "full_name");
+				const createdBy = MyGlobal.GetAnyDataFromId(inquiry.entry_by, "full_name");
 				const _createdBy = String(createdBy).toLowerCase();
 
 				const reference = apiData.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0);
@@ -131,7 +131,7 @@ export default function Inquiries() {
 				return (
 					clientId.includes(searchTerm) ||
 					clientName.includes(searchTerm) ||
-					String(inquiry.contact_number).includes(searchTerm) ||
+					String(inquiry.phone_number).includes(searchTerm) ||
 					mainProject.includes(searchTerm) ||
 					subProject.includes(searchTerm) ||
 					referenceId.includes(searchTerm) ||
@@ -154,8 +154,8 @@ export default function Inquiries() {
 			const aClient = getClientName(a.client_id);
 			const bClient = getClientName(b.client_id);
 
-			const aCreatedBy = MyGlobal.GetAnyDataFromId(a.created_by, "full_name");
-			const bCreatedBy = MyGlobal.GetAnyDataFromId(b.created_by, "full_name");
+			const aCreatedBy = MyGlobal.GetAnyDataFromId(a.entry_by, "full_name");
+			const bCreatedBy = MyGlobal.GetAnyDataFromId(b.entry_by, "full_name");
 
 			const aEntryDate = new Date(a.entry_date);
 			const bEntryDate = new Date(b.entry_date);
@@ -245,7 +245,7 @@ export default function Inquiries() {
 			records.push(
 				entryDate,
 				clientDetails,
-				inquiry.contact_number,
+				inquiry.phone_number,
 				getMainProjectName(inquiry.main_project_id),
 				getSubProjectName(inquiry.sub_project_id),
 				referenceDetails,
@@ -509,8 +509,8 @@ export default function Inquiries() {
 		setApiData((old) => ({ ...old, inquiries: { ...old.inquiries, mergedWithNotes: mergedArray } }));
 	};
 
-	const openWhatsAppWeb = (contactNumber) => {
-		globalThis.window.open(`https://wa.me/1${contactNumber}`, "_blank");
+	const openWhatsAppWeb = (phoneNumber) => {
+		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
 	};
 
 	const prepareInquiryStatusChangeData = (inquiry, newStatus) => {
@@ -526,7 +526,7 @@ export default function Inquiries() {
 	};
 
 	const setSort = (header) => {
-		if (header != tableHeaders.ContactNumber) {
+		if (header != tableHeaders.PhoneNumber) {
 			setMainData((old) => ({ ...old, sort: { column: header, isAscending: !mainData.sort.isAscending } }));
 		}
 	};
@@ -760,7 +760,7 @@ export default function Inquiries() {
 
 		const clientNameTextStyle = inquiry.status == STATUSES.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
 
-		const contactNumber = MyGlobal.HighlightText(inquiry.contact_number, mainData.searchTerm);
+		const phoneNumber = MyGlobal.HighlightText(inquiry.phone_number, mainData.searchTerm);
 		const mainProject = MyGlobal.HighlightText(getMainProjectName(inquiry.main_project_id), mainData.searchTerm);
 		const subProject = MyGlobal.HighlightText(getSubProjectName(inquiry.sub_project_id), mainData.searchTerm);
 
@@ -771,9 +771,9 @@ export default function Inquiries() {
 
 		const quote = MyGlobal.HighlightText(inquiry.quote, mainData.searchTerm);
 
-		const createdBy = MyGlobal.GetAnyDataFromId(inquiry.created_by, "full_name");
+		const createdBy = MyGlobal.GetAnyDataFromId(inquiry.entry_by, "full_name");
 		const _createdBy = MyGlobal.HighlightText(createdBy, mainData.searchTerm);
-		const createdByIdAndName = `${inquiry.created_by} - ${createdBy}`;
+		const createdByIdAndName = `${inquiry.entry_by} - ${createdBy}`;
 
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={rowId}>
@@ -783,7 +783,7 @@ export default function Inquiries() {
 
 				<span className={`${style} cursor-pointer primary-text`}>
 					<Tippy allowHTML={true} content={<Tooltip text={"Open this contact on WhatsApp Web."} />}>
-						<span dangerouslySetInnerHTML={{ __html: contactNumber }} onClick={() => openWhatsAppWeb(inquiry.phone)} />
+						<span dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsAppWeb(inquiry.phone)} />
 					</Tippy>
 				</span>
 

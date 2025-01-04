@@ -34,9 +34,9 @@ export default async function handler(req, res) {
 
 				const userAgent = req.headers["user-agent"] || "";
 
-				queryString = "INSERT INTO activities (user_id, module, activity, ip_address, user_agent, session_token, details) VALUES (?, ?, ?, ?, ?, ?, ?)";
+				queryString = "INSERT INTO activities (entry_by, module, activity, ip_address, user_agent, details) VALUES (?, ?, ?, ?, ?, ?)";
 
-				queryParameters = [request.userId, request.module, request.activity, ipAddress, userAgent, request.sessionToken, ""];
+				queryParameters = [request.userId, request.module, request.activity, ipAddress, userAgent, ""];
 			} else if (request.type == "set-user-status") {
 				queryString = "UPDATE employees SET is_active=? WHERE id=?";
 				queryParameters = [request.status, request.userId];
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
 				queryString = "UPDATE inquiries SET status=?, is_closed=1, closure_reason=?, updated_at=NOW() WHERE id=?";
 				queryParameters = [request.status, request.reason, request.inquiryId];
 			} else if (request.type == "add-note") {
-				queryString = "INSERT INTO notes (inquiry_id, user_id, content, source) VALUES (?, ?, ?, ?)";
+				queryString = "INSERT INTO notes (inquiry_id, entry_by, content, source) VALUES (?, ?, ?, ?)";
 				queryParameters = [request.id, request.userId, request.content, request.source];
 			} else if (request.type == "edit-project-status") {
 				queryString = "UPDATE projects SET status=? WHERE id=? AND client_id=? AND company_id=? AND inquiry_id=?";
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
 				queryString = "UPDATE tasks SET is_completed=?, is_disabled=?, reason=? WHERE id=?";
 				queryParameters = [request.isCompleted, request.isDisabled, request.reason, request.taskId];
 			} else if (request.type == "add-tasks-particular-and-remark") {
-				queryString = "INSERT INTO tasks_particulars_remarks (task_id, project_id, particular, remark, created_by) VALUES (?, ?, ?, ?, ?)";
+				queryString = "INSERT INTO tasks_particulars_remarks (task_id, project_id, particular, remark, entry_by) VALUES (?, ?, ?, ?, ?)";
 				queryParameters = [request.taskId, request.projectId, request.particular, request.remark, request.createdBy];
 			} else if (request.type == "edit-tasks-particular-and-remark") {
 				queryString = "UPDATE tasks_particulars_remarks SET particular=?, remark=? WHERE id=? AND task_id=? AND project_id=?";
@@ -79,6 +79,9 @@ export default async function handler(req, res) {
 			} else if (request.type == "delete-task") {
 				queryString = "DELETE FROM tasks WHERE id=?";
 				queryParameters = [request.taskId];
+			} else if (request.type == "edit-company") {
+				queryString = "UPDATE companies SET name=?, phone_number=?, email_address=?, address=?, pan=?, gstin=? WHERE id=?";
+				queryParameters = [request.name, request.phoneNumber, request.emailAddress, request.address, request.pan, request.gstin, request.id];
 			}
 
 			const response = await query(queryString, queryParameters);

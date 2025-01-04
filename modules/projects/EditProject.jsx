@@ -16,11 +16,11 @@ import { faBriefcase, faCalendar, faChevronLeft, faFile, faIndianRupee, faPhone,
 export default function EditProject({ reloadProjects, selectedProject, unmount }) {
 	// Business Logic
 	const [apiData, setApiData] = useState({
-		allAdministratorsCompanies: [],
 		allClients: [],
 		allMainProjects: { api: [], apiCopy: [] },
 		allSubProjects: { api: [], apiCopy: [] },
 		companiesByClients: { api: [], apiCopy: [] },
+		ownerFirms: [],
 	});
 
 	const [hasMounted, setHasMounted] = useState({
@@ -32,7 +32,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 	const [mainData, setMainData] = useState({
 		client: { id: 0, name: "" },
 		company: { id: 0, name: "" },
-		contactNumber: 0,
+		phoneNumber: 0,
 		dueOn: "",
 		invoiceFees: 0,
 		invoiceFirm: { id: 0, name: "" },
@@ -95,7 +95,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 			const body = {
 				client: mainData.client,
 				company: mainData.company,
-				contactNumber: mainData.contactNumber,
+				phoneNumber: mainData.phoneNumber,
 				dueOn: mainData.dueOn,
 				id: selectedProject.id,
 				invoiceFees: MyGlobal.GetNumbers(mainData.invoiceFees),
@@ -171,10 +171,10 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const allAdministratorsCompanies = response.data.administratorsCompanies;
 				const allClients = response.data.clients;
 				const allMainProjects = response.data.mainProjects;
 				const allSubProjects = response.data.subProjects;
+				const ownerFirms = response.data.ownerFirms;
 
 				const clientName = allClients.filter((client) => client.id == selectedProject.client_id).at(0).name;
 
@@ -182,7 +182,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 
 				const inquiry = response.data.inquiries.filter((inquiry) => inquiry.id == selectedProject.inquiry_id).at(0);
 
-				const invoiceFirm = allAdministratorsCompanies.filter((company) => company.id == selectedProject.invoice_firm_id).at(0);
+				const invoiceFirm = ownerFirms.filter((company) => company.id == selectedProject.invoice_firm_id).at(0);
 
 				const mainProjectName = allMainProjects.filter((mainProject) => mainProject.id == selectedProject.main_project_id).at(0).name;
 
@@ -193,7 +193,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				const revisedProjectData = {
 					client: { id: selectedProject.client_id, name: clientName },
 					company: { id: selectedProject.company_id, name: companyName },
-					contactNumber: inquiry.contact_number,
+					phoneNumber: inquiry.phone_number,
 					dueOn: selectedProject.due_on,
 					invoiceFees: Number(selectedProject.invoice_fees),
 					invoiceFirm: { id: invoiceFirm.id, name: invoiceFirm.name },
@@ -205,7 +205,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				};
 
 				setApiData({
-					allAdministratorsCompanies,
+					ownerFirms: ownerFirms,
 					allClients,
 					allMainProjects: { api: allMainProjects, apiCopy: allMainProjects },
 					allSubProjects: { api: allSubProjects, apiCopy: allSubProjects },
@@ -305,16 +305,16 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 		);
 	};
 
-	const uiContactNumber = () => {
+	const uiPhoneNumber = () => {
 		return (
 			<TextInput
 				icon={faPhone}
 				isReadOnly={true}
-				label="Contact Number"
+				label="Phone Number"
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={3}
-				value={mainData.contactNumber}
+				value={mainData.phoneNumber}
 				width="w-full"
 			/>
 		);
@@ -350,7 +350,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 				comparingValue1="name"
 				comparingValue2={mainData.invoiceFirm.name}
 				displayValue="name"
-				filteredData={apiData.allAdministratorsCompanies}
+				filteredData={apiData.ownerFirms}
 				hasDataObject={true}
 				icon={faBriefcase}
 				isReadOnly={false}
@@ -506,7 +506,7 @@ export default function EditProject({ reloadProjects, selectedProject, unmount }
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">
 						{uiClient()}
 						{uiCompany()}
-						{uiContactNumber()}
+						{uiPhoneNumber()}
 					</div>
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">
 						{uiMainProjects()}

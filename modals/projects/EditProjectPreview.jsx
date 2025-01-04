@@ -58,7 +58,7 @@ export default function EditProjectPreview({ mount, newProject, oldProject, unmo
 							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
 								{uiRow("Client", oldProject.client.name)}
 								{uiRow("Company", oldProject.company.name)}
-								{uiRow("Contact Number", oldProject.contactNumber)}
+								{uiRow("Phone Number", oldProject.phoneNumber)}
 								{uiRow("Main Project", oldProject.mainProject.name)}
 								{uiRow("Sub Project", oldProject.subProject.name)}
 								{uiRow("Due On", dayjs(oldProject.dueOn).format("DD MMMM, YYYY"))}
@@ -71,7 +71,7 @@ export default function EditProjectPreview({ mount, newProject, oldProject, unmo
 							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
 								{uiRow("Client", newProject.client.name)}
 								{uiRow("Company", newProject.company.name)}
-								{uiRow("Contact Number", newProject.contactNumber)}
+								{uiRow("Phone Number", newProject.phoneNumber)}
 								{uiRow("Main Project", newProject.mainProject.name)}
 								{uiRow("Sub Project", newProject.subProject.name)}
 								{uiRow("Due On", dayjs(newProject.dueOn).format("DD MMMM, YYYY"))}

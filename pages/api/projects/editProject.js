@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { client, company, contactNumber, dueOn, id, invoiceFees, invoiceFirmId, mainProjectId, quote, reimbursementVoucher, subProject, teams, userId } =
+		const { client, company, phoneNumber, dueOn, id, invoiceFees, invoiceFirmId, mainProjectId, quote, reimbursementVoucher, subProject, teams, userId } =
 			req.body;
 
 		// New Client ID
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
 
 			newClientId = storedProcedureResult.new_id;
 
-			const queryResult = await query("INSERT INTO clients (id, name, contact_number) VALUES (?, ?, ?)", [newClientId, client.name, contactNumber]);
+			const queryResult = await query("INSERT INTO clients (id, name, phone_number) VALUES (?, ?, ?)", [newClientId, client.name, phoneNumber]);
 
 			if (queryResult.affectedRows == 0) {
 				return res.status(400).send("Could not add Client.");
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
 
 			newCompanyId = storedProcedureResult.new_id;
 
-			const queryResult = await query(`INSERT INTO companies (id, client_id, name, created_by) VALUES (?, ?, ?, ?)`, [
+			const queryResult = await query(`INSERT INTO companies (id, client_id, name, entry_by) VALUES (?, ?, ?, ?)`, [
 				newCompanyId,
 				newClientId,
 				company.name,
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
 
 			newSubProjectId = storedProcedureResult.new_id;
 
-			const queryResult = await query("INSERT INTO sub_projects (id, name, created_by) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
+			const queryResult = await query("INSERT INTO sub_projects (id, name, entry_by) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
 
 			if (queryResult.affectedRows == 0) {
 				res.status(400).send("Could not add Sub Project.");

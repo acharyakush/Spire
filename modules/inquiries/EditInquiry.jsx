@@ -25,7 +25,7 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 
 	const [mainData, setMainData] = useState({
 		client: { id: 0, name: "" },
-		contactNumber: "",
+		phoneNumber: "",
 		entryDate: new Date(),
 		emailAddress: "",
 		followUps: [],
@@ -37,7 +37,7 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 
 	const [oldInquiry, setOldInquiry] = useState({
 		client: { id: 0, name: "" },
-		contactNumber: "",
+		phoneNumber: "",
 		entryDate: new Date(),
 		emailAddress: "",
 		followUps: [],
@@ -122,7 +122,7 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 				reloadInquiries();
 
 				MyGlobal.AddActivity(`Edited <b>${selectedInquiry.id}</b>.`, MyConstants.Modules.Base.Inquiries);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryUpdated);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryEdited);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
@@ -220,7 +220,7 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 
 				setMainData({
 					client: { id: selectedInquiry.client_id, name: clientName },
-					contactNumber: selectedInquiry.contact_number,
+					phoneNumber: selectedInquiry.phone_number,
 					entryDate: new Date(selectedInquiry.entry_date),
 					emailAddress: selectedInquiry.email_address,
 					followUps,
@@ -232,7 +232,7 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 
 				setOldInquiry({
 					client: { id: selectedInquiry.client_id, name: clientName },
-					contactNumber: selectedInquiry.contact_number,
+					phoneNumber: selectedInquiry.phone_number,
 					entryDate: new Date(selectedInquiry.entry_date),
 					emailAddress: selectedInquiry.email_address,
 					followUps,
@@ -277,7 +277,7 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 			const isExistingClient = client.id !== 0;
 
 			const emailAddress = isExistingClient ? client.email_address : "";
-			const contactNumber = isExistingClient ? client.contact_number : "";
+			const phoneNumber = isExistingClient ? client.phone_number : "";
 
 			const referenceId = isExistingClient ? client.reference_id : "";
 			const referenceName = isExistingClient ? apiData.allReferences.apiCopy.filter((reference) => reference.id == referenceId).at(0)?.name : "";
@@ -289,7 +289,7 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 			setMainData((s) => ({
 				...s,
 				client: { id: value.id, name: value.name },
-				contactNumber,
+				phoneNumber,
 				emailAddress,
 				reference: { id: referenceId, name: referenceName },
 			}));
@@ -345,17 +345,17 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 		);
 	};
 
-	const uiContactNumber = () => {
+	const uiPhoneNumber = () => {
 		return (
 			<TextInput
 				icon={faPhone}
 				isReadOnly={!isUserAdministrator}
-				label="Contact Number"
+				label="Phone Number"
 				maxLength={10}
-				onChange={(event) => handleInputs("contactNumber", event.target.value)}
+				onChange={(event) => handleInputs("phoneNumber", event.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
 				tabIndex={2}
-				value={mainData.contactNumber}
+				value={mainData.phoneNumber}
 				width="w-full"
 			/>
 		);
@@ -526,7 +526,7 @@ export default function EditInquiry({ reloadInquiries, selectedInquiry, unmount 
 				<div className="flex flex-col w-3/5 h-full space-y-3 justify-start items-center">
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">
 						{uiClient()}
-						{uiContactNumber()}
+						{uiPhoneNumber()}
 						{uiEmailAddress()}
 					</div>
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">

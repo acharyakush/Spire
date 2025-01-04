@@ -16,11 +16,11 @@ import { faBriefcase, faCalendar, faChevronLeft, faFile, faIndianRupee, faNoteSt
 export default function NewProject({ reloadInquiries, selectedInquiry, unmount }) {
 	// Business Logic
 	const [apiData, setApiData] = useState({
-		allAdministratorsCompanies: [],
 		allClients: [],
 		allMainProjects: { api: [], apiCopy: [] },
 		allSubProjects: { api: [], apiCopy: [] },
 		companiesByClients: { api: [], apiCopy: [] },
+		ownerFirms: [],
 	});
 
 	const [hasMounted, setHasMounted] = useState({
@@ -31,7 +31,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 	const [mainData, setMainData] = useState({
 		company: { id: 0, name: "" },
-		contactNumber: "",
+		phoneNumber: "",
 		dueOn: "",
 		invoiceFees: "",
 		invoiceFirm: { id: 0, name: "" },
@@ -166,9 +166,9 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const allAdministratorsCompanies = response.data.administratorsCompanies;
 				const allMainProjects = response.data.mainProjects;
 				const allSubProjects = response.data.subProjects;
+				const ownerFirms = response.data.ownerFirms;
 
 				const companiesByClient = response.data.companies.filter((company) => company.client_id == selectedInquiry.client_id);
 
@@ -177,7 +177,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				const subProjectName = allSubProjects.filter((subProject) => subProject.id == selectedInquiry.sub_project_id).at(0).name;
 
 				setApiData({
-					allAdministratorsCompanies,
+					ownerFirms: ownerFirms,
 					allClients: response.data.clients,
 					allMainProjects: { api: allMainProjects, apiCopy: allMainProjects },
 					allSubProjects: { api: allSubProjects, apiCopy: allSubProjects },
@@ -186,11 +186,11 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 
 				setMainData((old) => ({
 					...old,
-					contactNumber: selectedInquiry.contact_number,
+					phoneNumber: selectedInquiry.phone_number,
 					dueOn: selectedInquiry.entry_date,
 					invoiceFirm: {
-						id: allAdministratorsCompanies.at(0).id,
-						name: allAdministratorsCompanies.at(0).name,
+						id: ownerFirms.at(0).id,
+						name: ownerFirms.at(0).name,
 					},
 					mainProject: { id: selectedInquiry.main_project_id, name: mainProjectName },
 					quote: Number(selectedInquiry.quote),
@@ -288,16 +288,16 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 		);
 	};
 
-	const uiContactNumber = () => {
+	const uiPhoneNumber = () => {
 		return (
 			<TextInput
 				icon={faPhone}
 				isReadOnly={true}
-				label="Contact Number"
+				label="Phone Number"
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={3}
-				value={mainData.contactNumber}
+				value={mainData.phoneNumber}
 				width="w-full"
 			/>
 		);
@@ -333,7 +333,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 				comparingValue1="name"
 				comparingValue2={mainData.invoiceFirm.name}
 				displayValue="name"
-				filteredData={apiData.allAdministratorsCompanies}
+				filteredData={apiData.ownerFirms}
 				hasDataObject={true}
 				icon={faBriefcase}
 				isReadOnly={false}
@@ -505,7 +505,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">
 						{uiClient()}
 						{uiCompany()}
-						{uiContactNumber()}
+						{uiPhoneNumber()}
 					</div>
 					<div className="flex w-full px-3 space-x-6 justify-between items-center">
 						{uiMainProjects()}

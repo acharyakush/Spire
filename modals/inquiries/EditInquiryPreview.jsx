@@ -58,7 +58,7 @@ export default function EditInquiryPreview({ editInquiry, mount, oldInquiry, unm
 							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
 								{uiRow("Client", oldInquiry.client.name)}
 								{uiRow("Email Address", oldInquiry.emailAddress)}
-								{uiRow("Contact Number", oldInquiry.contactNumber)}
+								{uiRow("Phone Number", oldInquiry.phoneNumber)}
 								{uiRow("Main Project", oldInquiry.mainProject.name)}
 								{uiRow("Sub Project", oldInquiry.subProject.name)}
 								{uiRow("Reference", oldInquiry.reference.name)}
@@ -70,7 +70,7 @@ export default function EditInquiryPreview({ editInquiry, mount, oldInquiry, unm
 							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
 								{uiRow("Client", editInquiry.client.name)}
 								{uiRow("Email Address", editInquiry.emailAddress)}
-								{uiRow("Contact Number", editInquiry.contactNumber)}
+								{uiRow("Phone Number", editInquiry.phoneNumber)}
 								{uiRow("Main Project", editInquiry.mainProject.name)}
 								{uiRow("Sub Project", editInquiry.subProject.name)}
 								{uiRow("Reference", editInquiry.reference.name)}

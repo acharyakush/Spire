@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { client, contactNumber, emailAddress, entryDate, followUps, mainProjectId, note, quote, reference, status, subProject, userId } = req.body;
+		const { client, phoneNumber, emailAddress, entryDate, followUps, mainProjectId, note, quote, reference, status, subProject, userId } = req.body;
 
 		await query("CALL generate_dynamic_id('IQ', 'inquiries', @new_inquiry_id)", []);
 		const [inquiryResponse] = await query("SELECT @new_inquiry_id AS new_id;", []);
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
 		}
 
 		if (subProject.id == 0) {
-			const response = await query("INSERT INTO sub_projects (id, name, created_by) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
+			const response = await query("INSERT INTO sub_projects (id, name, entry_by) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
 
 			if (response.affectedRows == 0) {
 				return res.status(400).send("Could not add Sub Project.");
@@ -62,11 +62,11 @@ export default async function handler(req, res) {
 		}
 
 		if (client.id == 0) {
-			const response = await query("INSERT INTO clients (id, reference_id, name, contact_number, email_address) VALUES (?, ?, ?, ?, ?)", [
+			const response = await query("INSERT INTO clients (id, reference_id, name, phone_number, email_address) VALUES (?, ?, ?, ?, ?)", [
 				newClientId,
 				newReferenceId,
 				client.name,
-				contactNumber,
+				phoneNumber,
 				emailAddress,
 			]);
 
@@ -76,7 +76,7 @@ export default async function handler(req, res) {
 		}
 
 		const inquiryInsertResult = await query(
-			"INSERT INTO inquiries (id, client_id, reference_id, main_project_id, sub_project_id, entry_date, contact_number, email_address, follow_ups, quote, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO inquiries (id, client_id, reference_id, main_project_id, sub_project_id, entry_date, phone_number, email_address, follow_ups, quote, status, entry_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 			[
 				inquiryResponse.new_id,
 				newClientId,
@@ -84,7 +84,7 @@ export default async function handler(req, res) {
 				mainProjectId,
 				subProject.id,
 				entryDate,
-				contactNumber,
+				phoneNumber,
 				emailAddress,
 				followUps,
 				quote,
@@ -97,7 +97,7 @@ export default async function handler(req, res) {
 			return res.status(400).send("Could not add Inquiry.");
 		}
 
-		const noteInsertResult = await query("INSERT INTO notes (inquiry_id, user_id, content, source) VALUES (?, ?, ?, ?)", [
+		const noteInsertResult = await query("INSERT INTO notes (inquiry_id, entry_by, content, source) VALUES (?, ?, ?, ?)", [
 			inquiryResponse.new_id,
 			userId,
 			note,

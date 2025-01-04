@@ -52,13 +52,13 @@ export default function Clients() {
 
 			const clientId = String(client.id).toLowerCase();
 			const clientName = String(client.name).toLowerCase();
-			const contactNumber = String(client.contact_number);
+			const phoneNumber = String(client.phone_number);
 			const emailAddress = String(client.email_address).toLowerCase();
 
 			return (
 				clientId.includes(searchedText) ||
 				clientName.includes(searchedText) ||
-				contactNumber.includes(searchedText) ||
+				phoneNumber.includes(searchedText) ||
 				emailAddress.includes(searchedText)
 			);
 		});
@@ -112,7 +112,7 @@ export default function Clients() {
 			records.push(
 				client.id,
 				client.name,
-				client.contact_number,
+				client.phone_number,
 				client.email_address,
 				`${dayjs(client.joined_on).format("hh:mm:ss A")}\n${dayjs(client.joined_on).format("DD MMM YYYY")}`,
 			);
@@ -289,7 +289,7 @@ export default function Clients() {
 
 		const clientId = MyGlobal.HighlightText(client.id, mainData.searchTerm);
 		const clientName = MyGlobal.HighlightText(client.name, mainData.searchTerm);
-		const contactNumber = MyGlobal.HighlightText(client.contact_number, mainData.searchTerm);
+		const phoneNumber = MyGlobal.HighlightText(client.phone_number, mainData.searchTerm);
 		const emailAddress = MyGlobal.HighlightText(client.email_address, mainData.searchTerm);
 
 		const joinedOn = dayjs(client.joined_on).format("DD MMM, YYYY");
@@ -303,7 +303,7 @@ export default function Clients() {
 				</Tippy>
 
 				<Tippy allowHTML content={<Tooltip text={"Open this contact on WhatsApp Web."} />}>
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: contactNumber }} onClick={() => openWhatsApp(client.contact_number)} />
+					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsApp(client.phone_number)} />
 				</Tippy>
 
 				<Tippy allowHTML content={<Tooltip text={client.email_address} />}>
