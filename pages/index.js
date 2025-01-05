@@ -61,11 +61,10 @@ export default function Home() {
 
 				const response = await axios.post(MyConstants.ApiEndpoints.Authenticate, body);
 
-				MyGlobal.SetSessionToken(sessionToken);
-
 				MyGlobal.Storages.Local.Set(`${applicationName}UserDetails`, response.data);
 				MyGlobal.Storages.Session.Set(`${applicationName}Token`, sessionToken);
 
+				MyGlobal.SetUserData();
 				MyGlobal.AddActivity("Logged in.");
 
 				router.replace("/home");

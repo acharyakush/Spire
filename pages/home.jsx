@@ -24,38 +24,39 @@ export default function Home() {
 	const router = useRouter();
 	const baseModules = MyConstants.Modules.Base;
 
-	const [apiData, setApiData] = useState({
+	const [api, setApi] = useState({
 		allPermissions: [],
 		allUsers: [],
 		modules: [],
 		settings: [],
 	});
 
-	const [mainData, setMainData] = useState({
+	const [main, setMain] = useState({
 		isDarkModeEnabled: false,
 		loggedInUser: {},
 		selectedModule: { name: baseModules.Dashboard, sequence: 0 },
 		singleProjectObject: {},
+		status: { inquiries: "", projects: "", tasks: "" },
 		theme: null,
 	});
 
-	const [hasMounted, setHasMounted] = useState({
-		activitiesView: false,
-		employeesView: false,
-		profileView: false,
-		settingsView: false,
+	const [mounted, setMounted] = useState({
+		activities: false,
+		employees: false,
+		profile: false,
+		settings: false,
 	});
 
 	// Functions
 	const changeTheme = () => {
-		const newTheme = mainData.theme == "light" ? "dark" : "light";
+		const newTheme = main.theme == "light" ? "dark" : "light";
 		MyGlobal.Storages.Local.Set("AppMode", newTheme);
 
-		setMainData((old) => ({ ...old, isDarkModeEnabled: !mainData.isDarkModeEnabled, theme: newTheme }));
+		setMain((old) => ({ ...old, isDarkModeEnabled: !main.isDarkModeEnabled, theme: newTheme }));
 	};
 
 	const closeProjectsView = () => {
-		setMainData((old) => ({
+		setMain((old) => ({
 			...old,
 			selectedModule: { name: baseModules.Dashboard, sequence: 0 },
 			singleProjectObject: {},
@@ -69,9 +70,9 @@ export default function Home() {
 		const isDarkModeEnabled = MyGlobal.GetTheme() !== "light";
 
 		const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
-		colorScheme.addEventListener("change", (e) => setMainData((old) => ({ ...old, isDarkModeEnabled: e.matches, theme: e.matches ? "dark" : "light" })));
+		colorScheme.addEventListener("change", (e) => setMain((old) => ({ ...old, isDarkModeEnabled: e.matches, theme: e.matches ? "dark" : "light" })));
 
-		setMainData((old) => ({ ...old, isDarkModeEnabled: isDarkModeEnabled, theme: initialTheme }));
+		setMain((old) => ({ ...old, isDarkModeEnabled: isDarkModeEnabled, theme: initialTheme }));
 	};
 
 	const getPermissions = async () => {
@@ -79,20 +80,20 @@ export default function Home() {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-permissions" }));
 
 			const modules = [];
-			const getLoggedInUserData = MyGlobal.GetUserFullDetails();
+			const userData = MyGlobal.GetUserData();
 
 			response.data
-				.filter((permission) => permission.type == "Base")
-				.filter((permission) => {
-					if (getLoggedInUserData.permissions != -1) {
-						const permissions = String(getLoggedInUserData.permissions).split(",");
-						const permissionId = String(permission.id);
+				.filter((f) => f.type == "Base")
+				.filter((f) => {
+					if (userData.permissions != -1) {
+						const permissions = String(userData.permissions).split(",");
+						const permissionId = String(f.id);
 
 						if (permissions.includes(permissionId)) {
-							modules.push(permission);
+							modules.push(f);
 						}
 					} else {
-						modules.push(permission);
+						modules.push(f);
 					}
 				});
 
@@ -100,8 +101,15 @@ export default function Home() {
 
 			MyGlobal.SetPermission(response.data);
 
-			setApiData((old) => ({ ...old, allPermissions: response.data, modules: sequentialModules }));
-			setMainData((old) => ({ ...old, selectedModule: { name: sequentialModules.at(0).module, sequence: sequentialModules.at(0).sequence - 1 } }));
+			setApi((s) => ({ ...s, allPermissions: response.data, modules: sequentialModules }));
+
+			setMain((s) => ({
+				...s,
+				selectedModule: {
+					name: sequentialModules.at(0).module,
+					sequence: sequentialModules.at(0).sequence - 1,
+				},
+			}));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get All Permissions");
 		}
@@ -112,7 +120,7 @@ export default function Home() {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-settings" }));
 
 			if (response.status == 200) {
-				setApiData((old) => ({ ...old, settings: response.data }));
+				setApi((old) => ({ ...old, settings: response.data }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get Settings");
@@ -125,7 +133,7 @@ export default function Home() {
 			router.replace("/");
 		} else {
 			MyGlobal.SetUserStatus(1);
-			setMainData((old) => ({ ...old, loggedInUser: MyGlobal.GetUserFullDetails() }));
+			setMain((old) => ({ ...old, loggedInUser: MyGlobal.GetUserData() }));
 		}
 	};
 
@@ -176,7 +184,7 @@ export default function Home() {
 				response.data.administrators.forEach((administrator) => allUsers.push(administrator));
 				response.data.employees.forEach((employee) => allUsers.push(employee));
 
-				setApiData((old) => ({ ...old, allUsers }));
+				setApi((old) => ({ ...old, allUsers }));
 				MyGlobal.SetAllUsers(allUsers);
 			}
 		} catch (error) {
@@ -202,57 +210,61 @@ export default function Home() {
 	};
 
 	const setModule = (module, sequence) => {
-		setMainData((old) => ({ ...old, selectedModule: { name: module.name, sequence: sequence - 1 } }));
+		setMain((old) => ({ ...old, selectedModule: { name: module.name, sequence: sequence - 1 } }));
 	};
 
+	function setModuleProps(key, value) {
+		const _key = String(key).toLowerCase();
+		setMain((s) => ({ ...s, status: { ...s.status, [_key]: value } }));
+	}
+
 	const toggleActivitiesView = () => {
-		setHasMounted((s) => ({ ...s, activitiesView: !hasMounted.activitiesView }));
+		setMounted((s) => ({ ...s, activities: !mounted.activities }));
 	};
 
 	const toggleEmployeeView = () => {
-		setHasMounted((s) => ({ ...s, employeesView: !hasMounted.employeesView }));
+		setMounted((s) => ({ ...s, employees: !mounted.employees }));
 	};
 
 	const toggleProfileView = () => {
-		setHasMounted((s) => ({ ...s, profileView: !hasMounted.profileView }));
+		setMounted((s) => ({ ...s, profile: !mounted.profile }));
 	};
 
 	const toggleSettingsView = () => {
-		setHasMounted((s) => ({ ...s, settingsView: !hasMounted.settingsView }));
+		setMounted((s) => ({ ...s, settings: !mounted.settings }));
 	};
 
 	const toggleTheme = () => {
-		setMainData((old) => ({ ...old, isDarkModeEnabled: !mainData.isDarkModeEnabled }));
+		setMain((old) => ({ ...old, isDarkModeEnabled: !main.isDarkModeEnabled }));
 	};
 
 	// UI Components
 	const uiMain = () => {
-		if (hasMounted.activitiesView) {
-			return <Activities staff={apiData.allUsers} close={toggleActivitiesView} />;
-		} else if (hasMounted.employeesView) {
-			return <EmployeeManagement close={toggleEmployeeView} staffData={apiData.allUsers} />;
-		} else if (hasMounted.settingsView) {
-			return <Settings close={toggleSettingsView} reloadAllSettings={getSettings} settings={apiData.settings} staff={apiData.allUsers} />;
-		} else if (hasMounted.profileView) {
-			return <ProfileManagement close={toggleProfileView} payload={mainData.loggedInUser} />;
+		if (mounted.activities) {
+			// return <Activities staff={apiData.allUsers} close={toggleActivitiesView} />;
+		} else if (mounted.employees) {
+			return <EmployeeManagement close={toggleEmployeeView} staffData={api.allUsers} />;
+		} else if (mounted.settings) {
+			return <Settings close={toggleSettingsView} reloadAllSettings={getSettings} settings={api.settings} staff={api.allUsers} />;
+		} else if (mounted.profile) {
+			return <ProfileManagement close={toggleProfileView} payload={main.loggedInUser} />;
 		} else {
 			return uiSelectedModule();
 		}
 	};
 
 	const uiModules = () => {
-		return apiData.modules
-			.filter((module) => module.sequence <= 8)
-			.map((module, index) => {
+		return api.modules
+			.filter((f) => f.sequence <= 8)
+			.map((m, i) => {
 				const aesthetics =
-					index == mainData.selectedModule.sequence
-						? "primary-border-colour primary-background-transparent-01 primary-text"
-						: "border-transparent gray-text";
+					i == main.selectedModule.sequence ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
+
 				const wrapper = `p-2 border-b-4 whitespace-nowrap font-regular-12 ${aesthetics}`;
 
 				return (
-					<button key={index} className={wrapper} onClick={() => setModule(module, module.sequence)}>
-						{module.name}
+					<button className={wrapper} key={i} onClick={() => setModule(m, m.sequence)}>
+						{m.name}
 					</button>
 				);
 			});
@@ -260,7 +272,7 @@ export default function Home() {
 
 	const uiOtherModules = () => {
 		const aesthetics =
-			mainData.selectedModule.sequence == -1 ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
+			main.selectedModule.sequence == -1 ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
 		const wrapper = `p-2 border-b-4 whitespace-nowrap font-regular-12 ${aesthetics}`;
 
 		return (
@@ -276,27 +288,23 @@ export default function Home() {
 	};
 
 	const uiOtherModulesList = () => {
-		return apiData.modules
-			.filter((module) => module.sequence > 8)
-			.map((module, index) => {
-				const isSelected = module.name == mainData.selectedModule.name;
-				const selectedModuleTextStyle = isSelected ? "primary-background-transparent-01 primary-text" : "gray-text";
+		return api.modules
+			.filter((f) => f.sequence > 8)
+			.map((m, i) => {
+				const isSelected = m.name == main.selectedModule.name;
+				const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "gray-text";
 
 				return (
-					<MenuItem
-						as="div"
-						className={`p-2 space-x-2.5 cursor-pointer border-y ${selectedModuleTextStyle} hovered-rows`}
-						key={index}
-						onClick={() => setModule(module, 0)}>
+					<MenuItem as="div" className={`p-2 space-x-2.5 cursor-pointer border-y ${aesthetics} hovered-rows`} key={i} onClick={() => setModule(m, 0)}>
 						{isSelected && <FontAwesomeIcon icon={faCheck} />}
-						<span>{module.name}</span>
+						<span>{m.name}</span>
 					</MenuItem>
 				);
 			});
 	};
 
 	const uiSelectedModule = () => {
-		switch (mainData.selectedModule.name) {
+		switch (main.selectedModule.name) {
 			case baseModules.Affiliates:
 				return (
 					<ErrorBoundary
@@ -321,7 +329,7 @@ export default function Home() {
 						key={`ErrorBoundary_${baseModules.Dashboard}`}
 						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Dashboard)}
 						FallbackComponent={ErrorFallbackComponent}>
-						<Dashboard />
+						<Dashboard setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Inquiries:
@@ -330,7 +338,7 @@ export default function Home() {
 						key={`ErrorBoundary_${baseModules.Inquiries}`}
 						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Inquiries)}
 						FallbackComponent={ErrorFallbackComponent}>
-						<Inquiries />
+						<Inquiries status={main.status.inquiries} />
 					</ErrorBoundary>
 				);
 			case baseModules.Projects:
@@ -380,8 +388,8 @@ export default function Home() {
 				</MenuButton>
 				<MenuItems anchor="bottom" className="absolute w-max mt-2 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
 					<div className="flex flex-col p-2 font-medium-14">
-						<span>{mainData.loggedInUser.full_name || ""}</span>
-						<span className="font-regular-10 gray-text">{mainData.loggedInUser.designation || ""}</span>
+						<span>{main.loggedInUser.full_name || ""}</span>
+						<span className="font-regular-10 gray-text">{main.loggedInUser.designation || ""}</span>
 					</div>
 					{uiUserMenuList()}
 				</MenuItems>
@@ -392,7 +400,7 @@ export default function Home() {
 	const uiUserMenuList = () => {
 		return Object.values(MyConstants.UserMenu)
 			.filter((item) => {
-				if (mainData.loggedInUser.role == MyConstants.UserType.Employees) {
+				if (main.loggedInUser.role == MyConstants.UserType.Employees) {
 					return ![MyConstants.UserMenu.Activity, MyConstants.UserMenu.Employees, MyConstants.UserMenu.Storage].includes(item);
 				} else {
 					return item;
@@ -429,14 +437,24 @@ export default function Home() {
 	}, []);
 
 	useEffect(() => {
-		document.body.setAttribute("app-theme", mainData.theme);
-	}, [mainData.theme]);
+		if (main.loggedInUser) {
+			document.title = `${main.loggedInUser.full_name || ""} ${String.fromCharCode(183)} ${applicationName}`;
+		}
+	}, [main.loggedInUser]);
 
 	useEffect(() => {
-		if (mainData.loggedInUser) {
-			document.title = `${mainData.loggedInUser.full_name || ""} ${String.fromCharCode(183)} ${applicationName}`;
+		if (main.status.inquiries) {
+			setModule({ name: baseModules.Inquiries }, MyGlobal.GetModuleSequence(baseModules.Inquiries));
+		} else if (main.status.projects) {
+			setModule({ name: baseModules.Projects }, MyGlobal.GetModuleSequence(baseModules.Projects));
+		} else if (main.status.tasks) {
+			setModule({ name: baseModules.Tasks }, MyGlobal.GetModuleSequence(baseModules.Tasks));
 		}
-	}, [mainData.loggedInUser]);
+	}, [main.status]);
+
+	useEffect(() => {
+		document.body.setAttribute("app-theme", main.theme);
+	}, [main.theme]);
 
 	// Main UI
 	return (
@@ -452,7 +470,7 @@ export default function Home() {
 				</div>
 				<div className="flex w-full justify-end items-center">{uiUserMenu()}</div>
 			</div>
-			<div className="flex w-full h-[calc(100vh-45px)] justify-center items-center">{uiMain()}</div>
+			<div className="flex w-full h-[calc(100vh-45px)] justify-center items-center overflow-y-auto">{uiMain()}</div>
 		</main>
 	);
 }

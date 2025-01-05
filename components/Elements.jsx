@@ -1,7 +1,13 @@
 "use client";
 
 export const Badge = ({ value }) => {
-	return <span className="flex h-5 px-1.5 justify-center items-end rounded-full text-white font-regular-9 primary-border primary-background">{value}</span>;
+	return (
+		<div className="relative inline-block">
+			<span className="flex min-w-[1.5rem] h-6 px-2 justify-center items-center rounded-full text-white text-xs font-bold primary-background">
+				{value}
+			</span>
+		</div>
+	);
 };
 
 export const BadgeSmall = ({ value }) => {

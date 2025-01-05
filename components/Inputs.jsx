@@ -346,7 +346,20 @@ export const Password = ({ eyeIconStyle, eyeIconUi, onChange, reference, toggleC
 	);
 };
 
-export const TextInput = ({ disable = false, icon, id, isReadOnly = false, label, maxLength = 255, onChange, onKeyPress, tabIndex, value, width }) => {
+export const TextInput = ({
+	disable = false,
+	icon,
+	iconSize = "1x",
+	id,
+	isReadOnly = false,
+	label,
+	maxLength = 255,
+	onChange,
+	onKeyPress,
+	tabIndex,
+	value,
+	width,
+}) => {
 	const aesthetics = disable || isReadOnly ? "opacity-50" : " opacity-100";
 	const clickEvent = isReadOnly ? `pointer-events-none ${aesthetics}` : "pointer-events-auto";
 	const cursor = isReadOnly ? "cursor-not-allowed" : "cursor-default";
@@ -358,7 +371,7 @@ export const TextInput = ({ disable = false, icon, id, isReadOnly = false, label
 		<div className={wrapper}>
 			<span className="flex w-full justify-start items-center font-regular-11 light-slate-gray-text">{label}</span>
 			<div className={inputWrapper}>
-				<FontAwesomeIcon className="primary-text" icon={icon} />
+				<FontAwesomeIcon className="primary-text" icon={icon} size={iconSize} />
 				<input
 					autoComplete="off"
 					className="inputs"

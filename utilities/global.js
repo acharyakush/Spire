@@ -15,10 +15,10 @@ export const applicationName = process.env.NEXT_PUBLIC_APPLICATION_NAME;
 export const isDevelopment = process.env.NODE_ENV !== "production";
 
 let allUsers = [];
-let permissions = [];
-let sessionToken = "";
-let userId = "";
 let fullName = "";
+let permissions = [];
+let userId = "";
+let userFullData = {};
 
 export const MyGlobal = Object.freeze({
 	AddActivity: async (activity, module = "General") => {
@@ -157,6 +157,10 @@ export const MyGlobal = Object.freeze({
 		return initialsArray;
 	},
 
+	GetModuleSequence: (module) => {
+		return permissions.find((f) => f.module == module).sequence;
+	},
+
 	GetMultipleInitials: (payload) => {
 		if (!payload) return "";
 
@@ -168,10 +172,6 @@ export const MyGlobal = Object.freeze({
 		return Number(String(payload).replace(/[^0-9]/g, ""));
 	},
 
-	GetSessionToken: () => {
-		return sessionToken;
-	},
-
 	GetStrings: (payload) => {
 		return String(payload).replace(/[^a-zA-Z]/g, "");
 	},
@@ -180,18 +180,8 @@ export const MyGlobal = Object.freeze({
 		return MyGlobal.Storages.Local.Get(`${applicationName}Theme`);
 	},
 
-	GetUserFullDetails: () => {
-		const userDetails = MyGlobal.Storages.Local.DoesExist(`${applicationName}UserDetails`);
-
-		if (userDetails) {
-			const decryptedUserDetails = MyGlobal.Decrypt(userDetails);
-			const parsedUserDetails = JSON.parse(decryptedUserDetails);
-
-			userId = parsedUserDetails.id;
-			fullName = parsedUserDetails.full_name;
-
-			return parsedUserDetails;
-		}
+	GetUserData: () => {
+		return userFullData;
 	},
 
 	GetUserFullName: () => {
@@ -275,7 +265,7 @@ export const MyGlobal = Object.freeze({
 	},
 
 	IsUserAdministrator: () => {
-		return MyGlobal.GetUserFullDetails().role == "Administrator";
+		return userFullData.role == "Administrator";
 	},
 
 	LogErrors: async (errorText, source) => {
@@ -294,8 +284,17 @@ export const MyGlobal = Object.freeze({
 		permissions = permission;
 	},
 
-	SetSessionToken: (token) => {
-		sessionToken = token;
+	SetUserData: () => {
+		const userDetails = MyGlobal.Storages.Local.DoesExist(`${applicationName}UserDetails`);
+
+		if (userDetails) {
+			const decryptedUserDetails = MyGlobal.Decrypt(userDetails);
+			const parsedUserDetails = JSON.parse(decryptedUserDetails);
+
+			userId = parsedUserDetails.id;
+			fullName = parsedUserDetails.full_name;
+			userFullData = parsedUserDetails;
+		}
 	},
 
 	SetUserStatus: async (status) => {

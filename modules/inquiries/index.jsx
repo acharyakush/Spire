@@ -36,7 +36,7 @@ import {
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function Inquiries() {
+export default function Inquiries({ status }) {
 	// Business Logic
 	const [apiData, setApiData] = useState({
 		allMainProjects: [],
@@ -60,7 +60,7 @@ export default function Inquiries() {
 		entryDate: { from: "", to: "" },
 		hasMounted: false,
 		isLoading: false,
-		searchTerm: "",
+		searchTerm: status ?? "",
 		selectedInquiryForNotes: {},
 		selectedInquiryForStatusChange: {},
 		sort: { column: "", isAscending: false },
@@ -901,23 +901,23 @@ export default function Inquiries() {
 
 	const uiStatusMenuList = (inquiry) => {
 		return Object.values(STATUSES)
-			.filter((status) => status != inquiry.status)
-			.filter((status) => {
-				if (status == STATUSES.Confirmed && !allowConvertingToProject) {
-					return status != STATUSES.Confirmed;
+			.filter((f) => f != inquiry.status)
+			.filter((f) => {
+				if (f == STATUSES.Confirmed && !allowConvertingToProject) {
+					return f != STATUSES.Confirmed;
 				}
 
-				return status;
+				return f;
 			})
-			.map((status, index) => {
-				const label = status == STATUSES.Closed ? "Close" : status == STATUSES.Confirmed ? "Confirm" : status;
+			.map((m, i) => {
+				const label = m == STATUSES.Closed ? "Close" : m == STATUSES.Confirmed ? "Confirm" : m;
 
 				return (
 					<MenuItem
 						as="div"
 						className="p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text text-left hovered-rows"
-						key={index}
-						onClick={() => prepareInquiryStatusChangeData(inquiry, status)}>
+						key={i}
+						onClick={() => prepareInquiryStatusChangeData(inquiry, m)}>
 						<span>{label}</span>
 					</MenuItem>
 				);

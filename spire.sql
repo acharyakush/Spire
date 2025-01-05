@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 04, 2025 at 07:59 PM
+-- Generation Time: Jan 05, 2025 at 06:02 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -218,7 +218,9 @@ INSERT INTO `activities` (`id`, `entry_by`, `module`, `activity`, `ip_address`, 
 (135, 'A3', 'Single Client', 'Edited  of <b>CP000001</b> of <b>undefined</b>.', 'Localhost', '2025-01-04 22:54:41', ''),
 (136, 'A3', 'Single Client', 'Edited Contact Number from <b></b> to <b>07925462408</b> of <b>CP000001</b> of <b>CN000001</b>.', 'Localhost', '2025-01-04 23:03:53', ''),
 (137, 'A3', 'Single Client', 'Edited Pan from <b>blank</b> to <b>BBXPA8126Q</b> of <b>CP000001</b> of <b>CN000001</b>.', 'Localhost', '2025-01-04 23:05:22', ''),
-(138, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-05 00:21:24', '');
+(138, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-05 00:21:24', ''),
+(139, '', 'General', 'Logged in.', 'Localhost', '2025-01-05 22:25:58', ''),
+(140, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-05 22:31:50', '');
 
 -- --------------------------------------------------------
 
@@ -261,12 +263,12 @@ INSERT INTO `administrators` (`id`, `first_name`, `last_name`, `full_name`, `use
 CREATE TABLE `affiliates` (
   `id` char(8) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `phone_number` varchar(15) DEFAULT NULL,
   `email_address` varchar(255) DEFAULT NULL,
+  `phone_number` varchar(15) DEFAULT NULL,
   `upi_id` varchar(200) DEFAULT NULL,
   `joined_on` timestamp NULL DEFAULT current_timestamp(),
   `status` enum('Active','Inactive') DEFAULT 'Active',
-  `entry_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `entry_at` timestamp NULL DEFAULT current_timestamp(),
   `entry_by` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -274,8 +276,8 @@ CREATE TABLE `affiliates` (
 -- Dumping data for table `affiliates`
 --
 
-INSERT INTO `affiliates` (`id`, `name`, `phone_number`, `email_address`, `upi_id`, `joined_on`, `status`, `entry_at`, `entry_by`) VALUES
-('AF000001', 'Drashti Vyas', '9978075347', 'vyas.drashti@gmail.com', 'acharyakush2604@axl.com', '2025-01-02 12:51:53', 'Active', '2025-01-02 12:51:53', 'A3');
+INSERT INTO `affiliates` (`id`, `name`, `email_address`, `phone_number`, `upi_id`, `joined_on`, `status`, `entry_at`, `entry_by`) VALUES
+('AF000001', 'Drashti Vyas', 'vyas.drashti@gmail.com', '9978075347', 'acharyakush2604@axl.com', '2025-01-02 12:51:53', 'Active', '2025-01-02 12:51:53', 'A3');
 
 -- --------------------------------------------------------
 
@@ -291,6 +293,7 @@ CREATE TABLE `affiliates_projects` (
   `client_id` char(8) DEFAULT NULL,
   `project_id` char(8) DEFAULT NULL,
   `paid_fees` decimal(10,2) DEFAULT 0.00,
+  `payment_mode` enum('Cash','Cheque','Credit Card','Debit Card','Net Banking','UPI') DEFAULT NULL,
   `total_fees` decimal(10,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -298,8 +301,10 @@ CREATE TABLE `affiliates_projects` (
 -- Dumping data for table `affiliates_projects`
 --
 
-INSERT INTO `affiliates_projects` (`id`, `affiliate_id`, `adjusted_fees`, `adjusted_project_id`, `client_id`, `project_id`, `paid_fees`, `total_fees`) VALUES
-(1, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 0.00, 2500.00);
+INSERT INTO `affiliates_projects` (`id`, `affiliate_id`, `adjusted_fees`, `adjusted_project_id`, `client_id`, `project_id`, `paid_fees`, `payment_mode`, `total_fees`) VALUES
+(1, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 0.00, 'Cash', 2500.00),
+(2, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 1250.00, 'Credit Card', 7500.00),
+(3, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 1000.00, 'Net Banking', 5000.00);
 
 -- --------------------------------------------------------
 
@@ -704,11 +709,11 @@ INSERT INTO `permissions` (`id`, `name`, `module`, `type`, `sequence`) VALUES
 (14, 'Employees', 'Employees', 'Base', 10),
 (15, 'Delete Employee ', 'Employees', 'Derived', 0),
 (16, 'Edit Employee', 'Employees', 'Derived', 0),
-(17, 'Inquiries', 'Inquiry', 'Base', 2),
-(18, 'New Inquiry', 'Inquiry', 'Derived', 0),
-(19, 'Delete Inquiry', 'Inquiry', 'Derived', 0),
-(20, 'Edit Inquiry', 'Inquiry', 'Derived', 0),
-(21, 'Convert Inquiry To Project', 'Inquiry', 'Derived', 0),
+(17, 'Inquiries', 'Inquiries', 'Base', 2),
+(18, 'New Inquiry', 'Inquiries', 'Derived', 0),
+(19, 'Delete Inquiry', 'Inquiries', 'Derived', 0),
+(20, 'Edit Inquiry', 'Inquiries', 'Derived', 0),
+(21, 'Convert Inquiry To Project', 'Inquiries', 'Derived', 0),
 (22, 'Invoices', 'Invoices', 'Base', 7),
 (23, 'Delete Invoice', 'Invoices', 'Derived', 0),
 (24, 'Edit Invoice', 'Invoices', 'Derived', 0),
@@ -877,7 +882,7 @@ CREATE TABLE `pma__recent` (
 --
 
 INSERT INTO `pma__recent` (`username`, `tables`) VALUES
-('spire', '[{\"db\":\"spire\",\"table\":\"tasks_particulars_remarks\"}]');
+('spire', '[{\"db\":\"spire\",\"table\":\"permissions\"},{\"db\":\"spire\",\"table\":\"invoices\"},{\"db\":\"spire\",\"table\":\"tasks\"},{\"db\":\"spire\",\"table\":\"projects\"},{\"db\":\"spire\",\"table\":\"inquiries\"},{\"db\":\"spire\",\"table\":\"affiliates\"},{\"db\":\"spire\",\"table\":\"affiliates_projects\"},{\"db\":\"spire\",\"table\":\"tasks_particulars_remarks\"}]');
 
 -- --------------------------------------------------------
 
@@ -984,7 +989,7 @@ CREATE TABLE `pma__userconfig` (
 --
 
 INSERT INTO `pma__userconfig` (`username`, `timevalue`, `config_data`) VALUES
-('spire', '2024-12-29 17:29:39', '{\"Console\\/Mode\":\"collapse\"}');
+('spire', '2025-01-05 13:10:39', '{\"Console\\/Mode\":\"collapse\"}');
 
 -- --------------------------------------------------------
 
@@ -1544,13 +1549,13 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=139;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
 --
 ALTER TABLE `affiliates_projects`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `cash_flows`

@@ -3,6 +3,7 @@
 const MyConstants = Object.freeze({
 	ApiEndpoints: Object.freeze({
 		Affiliates: Object.freeze({
+			AddAffiliate: "api/affiliates/addAffiliate",
 			GetAffiliates: "api/affiliates/getAffiliates",
 		}),
 		Authenticate: "/api/authenticate",
@@ -11,6 +12,7 @@ const MyConstants = Object.freeze({
 			GetSupportData: "api/clients/getSupportData",
 			GetUploadedFiles: "api/clients/getUploadedFiles",
 		}),
+		Dashboard: "api/dashboard/getSupportData",
 		ErrorLogger: "api/errorLogger",
 		Getter: "api/getter",
 		Inquiries: Object.freeze({
@@ -114,13 +116,13 @@ const MyConstants = Object.freeze({
 			DeleteTask: "Delete Task",
 			DeleteTaskFromReimbursementVoucher: "Delete Task From Reimbursement Voucher",
 			DisableTask: "Disable Task",
-			EditAdminCompany: "Edit Admin Company",
 			EditAffiliate: "Edit Affiliate",
 			EditCashFlow: "Edit Cash Flow",
 			EditClient: "Edit Client",
 			EditCompany: "Edit Company",
 			EditEmployee: "Edit Employee",
 			EditInquiry: "Edit Inquiry",
+			EditOwnerFirm: "Edit Owner Firm",
 			EditParticularAndRemark: "Edit Particular And Remark",
 			EditProject: "Edit Project",
 			EditReference: "Edit Reference",
@@ -128,8 +130,8 @@ const MyConstants = Object.freeze({
 			EnableTask: "Enable Task",
 			GenerateInvoice: "Generate Invoice",
 			MarkTaskCompleted: "Mark Task Completed",
-			NewAdminCompany: "New Admin Company",
 			NewInquiry: "New Inquiry",
+			NewOwnerFirm: "New Owner Firm",
 			NewTask: "New Task",
 			PaymentReceived: "Payment Received",
 			SingleClient: "Single Client",

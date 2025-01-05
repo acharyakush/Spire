@@ -32,11 +32,9 @@ export default async function handler(req, res) {
 					ipAddress = "Localhost";
 				}
 
-				const userAgent = req.headers["user-agent"] || "";
+				queryString = "INSERT INTO activities (entry_by, module, activity, ip_address, details) VALUES (?, ?, ?, ?, ?)";
 
-				queryString = "INSERT INTO activities (entry_by, module, activity, ip_address, user_agent, details) VALUES (?, ?, ?, ?, ?, ?)";
-
-				queryParameters = [request.userId, request.module, request.activity, ipAddress, userAgent, ""];
+				queryParameters = [request.userId, request.module, request.activity, ipAddress, ""];
 			} else if (request.type == "set-user-status") {
 				queryString = "UPDATE employees SET is_active=? WHERE id=?";
 				queryParameters = [request.status, request.userId];
