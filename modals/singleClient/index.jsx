@@ -55,7 +55,7 @@ export function EditCompany({ mount, reloadProjects, selectedCompany, unmount })
 			if (response.status === 200) {
 				reloadProjects();
 
-				MyGlobal.AddActivity(getActivityMessage(), MyConstants.Modules.Derived.SingleClient);
+				MyGlobal.AddActivity(getActivityMessage(), MyConstants.Modules.Other.SingleClient);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.CompanyEdited);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
