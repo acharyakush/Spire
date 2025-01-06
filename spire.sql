@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 05, 2025 at 06:02 PM
+-- Generation Time: Jan 06, 2025 at 06:41 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -329,6 +329,26 @@ CREATE TABLE `cash_flows` (
   `entry_by` char(8) NOT NULL,
   `entry_date` date NOT NULL DEFAULT curdate()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cash_flows_settings`
+--
+
+CREATE TABLE `cash_flows_settings` (
+  `id` int(11) NOT NULL,
+  `key` varchar(200) NOT NULL,
+  `value` varchar(5000) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cash_flows_settings`
+--
+
+INSERT INTO `cash_flows_settings` (`id`, `key`, `value`) VALUES
+(1, 'income_bifurcation', '{\"categories\":{\"A1\":10,\"A2\":10,\"Provision\":80},\"effect_date\":\"2024-11-27T00:00:00.000Z\"}'),
+(2, 'payment_types', '[\"Professional Fees\", \"Reimbursement Voucher\"]');
 
 -- --------------------------------------------------------
 
@@ -1055,6 +1075,25 @@ INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inqui
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `projects_settings`
+--
+
+CREATE TABLE `projects_settings` (
+  `id` int(11) NOT NULL,
+  `key` varchar(200) NOT NULL,
+  `value` varchar(5000) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `projects_settings`
+--
+
+INSERT INTO `projects_settings` (`id`, `key`, `value`) VALUES
+(1, 'statuses', '[\"Active\", \"Cancelled\", \"Closed\", \"Completed\", \"Hold\"]');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `statuses`
 --
 
@@ -1211,6 +1250,25 @@ INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particu
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `tasks_settings`
+--
+
+CREATE TABLE `tasks_settings` (
+  `id` int(11) NOT NULL,
+  `key` varchar(200) NOT NULL,
+  `value` varchar(5000) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tasks_settings`
+--
+
+INSERT INTO `tasks_settings` (`id`, `key`, `value`) VALUES
+(1, 'due_date_days_from_today', '7');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `the_references`
 --
 
@@ -1277,6 +1335,12 @@ ALTER TABLE `affiliates_projects`
 -- Indexes for table `cash_flows`
 --
 ALTER TABLE `cash_flows`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `cash_flows_settings`
+--
+ALTER TABLE `cash_flows_settings`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1507,6 +1571,12 @@ ALTER TABLE `projects`
   ADD KEY `fk_project_invoice_firm_id` (`invoice_firm_id`);
 
 --
+-- Indexes for table `projects_settings`
+--
+ALTER TABLE `projects_settings`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `statuses`
 --
 ALTER TABLE `statuses`
@@ -1536,6 +1606,12 @@ ALTER TABLE `tasks_particulars_remarks`
   ADD KEY `fk_task_particulars_remarks_project_id` (`project_id`);
 
 --
+-- Indexes for table `tasks_settings`
+--
+ALTER TABLE `tasks_settings`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `the_references`
 --
 ALTER TABLE `the_references`
@@ -1562,6 +1638,12 @@ ALTER TABLE `affiliates_projects`
 --
 ALTER TABLE `cash_flows`
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `cash_flows_settings`
+--
+ALTER TABLE `cash_flows_settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -1630,6 +1712,12 @@ ALTER TABLE `pma__savedsearches`
   MODIFY `id` int(5) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `projects_settings`
+--
+ALTER TABLE `projects_settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `statuses`
 --
 ALTER TABLE `statuses`
@@ -1640,6 +1728,12 @@ ALTER TABLE `statuses`
 --
 ALTER TABLE `tasks_particulars_remarks`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT for table `tasks_settings`
+--
+ALTER TABLE `tasks_settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables
