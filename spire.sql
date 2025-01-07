@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 06, 2025 at 06:41 PM
+-- Generation Time: Jan 07, 2025 at 06:49 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -220,7 +220,12 @@ INSERT INTO `activities` (`id`, `entry_by`, `module`, `activity`, `ip_address`, 
 (137, 'A3', 'Single Client', 'Edited Pan from <b>blank</b> to <b>BBXPA8126Q</b> of <b>CP000001</b> of <b>CN000001</b>.', 'Localhost', '2025-01-04 23:05:22', ''),
 (138, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-05 00:21:24', ''),
 (139, '', 'General', 'Logged in.', 'Localhost', '2025-01-05 22:25:58', ''),
-(140, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-05 22:31:50', '');
+(140, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-05 22:31:50', ''),
+(141, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-07 18:49:28', ''),
+(142, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-07 20:07:02', ''),
+(143, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-07 23:17:28', ''),
+(144, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-07 23:19:06', ''),
+(145, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-07 23:19:34', '');
 
 -- --------------------------------------------------------
 
@@ -317,8 +322,8 @@ CREATE TABLE `cash_flows` (
   `affiliate_id` char(8) DEFAULT NULL,
   `client_id` char(8) DEFAULT NULL,
   `company_id` char(8) DEFAULT NULL,
-  `project_id` char(8) NOT NULL,
-  `owner_firm_id` char(8) NOT NULL,
+  `project_id` char(8) DEFAULT NULL,
+  `owner_firm_id` char(8) DEFAULT NULL,
   `owner_firm_bank_id` char(8) DEFAULT NULL,
   `particulars` varchar(1000) DEFAULT NULL,
   `payment_for` varchar(500) DEFAULT NULL,
@@ -326,8 +331,8 @@ CREATE TABLE `cash_flows` (
   `amount_received` decimal(10,2) DEFAULT NULL,
   `is_deleted` tinyint(1) NOT NULL DEFAULT 0,
   `is_office_expense` tinyint(1) NOT NULL DEFAULT 0,
-  `entry_by` char(8) NOT NULL,
-  `entry_date` date NOT NULL DEFAULT curdate()
+  `entry_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `entry_by` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -525,11 +530,11 @@ CREATE TABLE `invoices` (
   `project_id` char(8) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL CHECK (`amount` >= 0),
   `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
-  `creation_date` date NOT NULL DEFAULT current_timestamp(),
+  `creation_date` datetime NOT NULL DEFAULT current_timestamp(),
   `rv_id` varchar(16) NOT NULL,
   `rv_full_id` varchar(50) NOT NULL,
   `rv_creation_date` date DEFAULT NULL,
-  `receipt_date` date DEFAULT NULL,
+  `receipt_date` datetime DEFAULT current_timestamp(),
   `payment_received` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -751,7 +756,7 @@ INSERT INTO `permissions` (`id`, `name`, `module`, `type`, `sequence`) VALUES
 (36, 'Tasks', 'Tasks', 'Base', 12),
 (37, 'Delete Particular And Remark', 'Tasks', 'Derived', 0),
 (38, 'Delete Task', 'Tasks', 'Derived', 0),
-(39, 'Delete Task From Reimbursement Voucher', 'Tasks', 'Derived', 0),
+(39, 'Delete Task From Reimburse Voucher', 'Tasks', 'Derived', 0),
 (40, 'Disable Task', 'Tasks', 'Derived', 0),
 (41, 'Edit Particular And Remark', 'Tasks', 'Derived', 0),
 (42, 'Edit Task', 'Tasks', 'Derived', 0),
@@ -1090,6 +1095,24 @@ CREATE TABLE `projects_settings` (
 
 INSERT INTO `projects_settings` (`id`, `key`, `value`) VALUES
 (1, 'statuses', '[\"Active\", \"Cancelled\", \"Closed\", \"Completed\", \"Hold\"]');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reimburse_vouchers`
+--
+
+CREATE TABLE `reimburse_vouchers` (
+  `id` int(11) NOT NULL,
+  `custom_id` varchar(100) NOT NULL,
+  `client_id` char(8) DEFAULT NULL,
+  `project_id` char(8) DEFAULT NULL,
+  `amount` decimal(10,2) NOT NULL CHECK (`amount` >= 0),
+  `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
+  `creation_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `receipt_date` datetime DEFAULT current_timestamp(),
+  `payment_received` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -1577,6 +1600,14 @@ ALTER TABLE `projects_settings`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `reimburse_vouchers`
+--
+ALTER TABLE `reimburse_vouchers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_reimburse_vouchers_client_id` (`client_id`),
+  ADD KEY `fk_reimburse_vouchers_project_id` (`project_id`);
+
+--
 -- Indexes for table `statuses`
 --
 ALTER TABLE `statuses`
@@ -1625,7 +1656,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=146;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
@@ -1716,6 +1747,12 @@ ALTER TABLE `pma__savedsearches`
 --
 ALTER TABLE `projects_settings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `reimburse_vouchers`
+--
+ALTER TABLE `reimburse_vouchers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `statuses`

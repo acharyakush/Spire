@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 			query("SELECT * FROM companies", []),
 			query("SELECT * FROM main_projects", []),
 			query("SELECT * FROM projects", []),
-			query("SELECT * FROM cash_flows_settings WHERE key='payment_types'", []),
+			query("SELECT * FROM cash_flows_settings WHERE `key`='payment_types'", []),
 		]);
 
 		return res.status(200).json({ affiliates, clients, companies, mainProjects, projects, settings });

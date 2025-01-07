@@ -8,16 +8,15 @@ import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Spinner } from "@/components/Elements";
+import { Spinner, SpinnerBig } from "@/components/Elements";
+import { faCircle } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { DatePicker, TextArea, TextInput } from "@/components/Inputs";
-import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
+import { ComboBox, ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
 import {
-	faAngleDown,
 	faBriefcase,
 	faCalendar,
-	faCheck,
 	faChevronLeft,
+	faCircleCheck,
 	faDiagramProject,
 	faFile,
 	faIndianRupee,
@@ -25,8 +24,6 @@ import {
 	faMinusCircle,
 	faNoteSticky,
 	faPlusCircle,
-	faSquare,
-	faSquareCheck,
 	faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -42,15 +39,14 @@ export default function NewCashFlow({ reload, unmount }) {
 	});
 
 	const [main, setMain] = useState({
-		affiliate: { details: "", id: "", isActive: false, name: "" },
+		affiliate: { id: "", isActive: false, name: "" },
 		amountPaid: "",
 		amountReceived: "",
 		client: { id: "", isActive: true, list: [], name: "" },
 		company: { id: "", list: [], name: "" },
-		entryDate: new Date(),
+		entryAt: new Date(),
 		find: { affiliate: "", client: "", company: "", project: "" },
 		hasMounted: false,
-		isLoading: false,
 		isOfficeExpense: false,
 		particulars: "",
 		paymentDetails: [{ amountPaid: 0, amountReceived: 0, paymentType: "", rowId: 0 }],
@@ -63,7 +59,7 @@ export default function NewCashFlow({ reload, unmount }) {
 		supportData: false,
 	});
 
-	const disableAddButton = main.isLoading ? "pointer-events-none" : "pointer-events-auto";
+	const disableAddButton = loading.addToDatabase ? "pointer-events-none" : "pointer-events-auto";
 	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
 
 	// Functions
@@ -87,36 +83,22 @@ export default function NewCashFlow({ reload, unmount }) {
 			object[fe.paymentType] = fe;
 		});
 
-		const amountPaid = Object.values(object).reduce((total, object) => total + object.amountPaid, 0);
+		const amountPaid = Object.values(object).reduce((pv, cv) => pv + cv.amountPaid, 0);
 
-		const amountReceived = Object.values(object).reduce((total, object) => total + object.amountReceived, 0);
-
-		const parsedAffiliatesDetails = JSON.parse(main.affiliate.details);
-		const revisedAffiliateDetails = parsedAffiliatesDetails?.filter((aff) => aff.project_id == main.project.id);
-
-		let revisedAffiliates = [];
-		let newObject = {};
-
-		if (revisedAffiliateDetails?.length) {
-			newObject = revisedAffiliateDetails?.at(0);
-			newObject.paid_fees = amountPaid;
-
-			const revisedAffiliates1 = parsedAffiliatesDetails?.filter((aff) => aff.project_id != main.project.id);
-			revisedAffiliates = [...revisedAffiliates1, newObject];
-		}
+		const amountReceived = Object.values(object).reduce((pv, cv) => pv + cv.amountReceived, 0);
 
 		const body = {
-			affiliate: { ...main.affiliate, details: revisedAffiliates },
+			affiliate: main.affiliate,
 			amountPaid,
 			amountReceived,
 			client: main.client,
 			companyId: main.company.id,
-			date: dayjs(main.date).format("YYYY-MM-DD"),
+			entryAt: dayjs(main.entryAt),
 			isOfficeExpense: main.isOfficeExpense,
 			particulars: main.particulars,
-			paymentDetails: JSON.stringify(object),
 			paymentFor: main.paymentFor,
 			projectId: main.project.id,
+			userId: MyGlobal.GetUserId(),
 		};
 
 		try {
@@ -125,6 +107,8 @@ export default function NewCashFlow({ reload, unmount }) {
 			if (response.status === 200) {
 				reload();
 				unmount();
+
+				MyGlobal.AddActivity("Added cash flow entry", MyConstants.Modules.Base.Tasks);
 
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.CashFlowAdded);
 			} else {
@@ -186,14 +170,6 @@ export default function NewCashFlow({ reload, unmount }) {
 		return companies;
 	}
 
-	function getMainProjectName(id) {
-		if (api.mainProjects.length) {
-			return api.mainProjects.find((f) => f.id == id).name;
-		}
-
-		return "";
-	}
-
 	async function getSupportData() {
 		setLoading((s) => ({ ...s, supportData: true }));
 
@@ -201,14 +177,21 @@ export default function NewCashFlow({ reload, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
+				const revisedProjects = response.data.projects.map((m) => {
+					const name = response.data.mainProjects.find((f) => f.id == m.main_project_id).name;
+
+					return { ...m, id_and_name: `${m.id} - ${name}`, name };
+				});
 				setApi({
 					affiliates: response.data.affiliates,
 					clients: response.data.clients,
 					companies: response.data.companies,
 					mainProjects: response.data.mainProjects,
-					projects: response.data.projects,
-					paymentTypes: JSON.parse(response.data.settings),
+					projects: revisedProjects,
+					paymentTypes: JSON.parse(response.data.settings.at(0).value),
 				});
+
+				setMain((s) => ({ ...s, hasMounted: true, project: { ...s.project, list: revisedProjects } }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => New Cash Flow => Get Support Data`);
@@ -222,65 +205,68 @@ export default function NewCashFlow({ reload, unmount }) {
 	}
 
 	function setInputs(key, value) {
-		if (key == "affiliate") {
-			setMain((s) => ({
-				...s,
-				affiliate: { ...s.affiliate, details: value.details, id: value.id, name: value.name },
-				search: { ...s.search, affiliate: "", project: "" },
-			}));
-		} else if (key == "client") {
-			setMain((s) => ({
-				...s,
-				client: { ...s.client, id: value.id, name: value.name },
-				search: { ...s.search, client: "" },
-			}));
-		} else if (key == "company") {
-			const project = api.projects.filter((f) => f.company_id == value.id);
-
-			if (project.length) {
-				const mainProject = api.mainProjects.find((f) => f.id == project.at(0).main_project_id);
-
+		if (value) {
+			if (key == "affiliate") {
 				setMain((s) => ({
 					...s,
-					company: { ...s.company, id: value.id, name: value.name },
-					search: { ...s.search, company: "" },
-					project: {
-						...s.project,
-						id: project.at(0).id,
-						main_project: mainProject.name,
-					},
+					affiliate: { ...s.affiliate, id: value.id, name: value.name },
+					client: { ...s.client, id: "", name: "" },
+					find: { affiliate: "", client: "", company: "", project: "" },
+					project: { ...s.project, id: "", name: "" },
 				}));
-			} else {
+			} else if (key == "client") {
 				setMain((s) => ({
 					...s,
-					company: { ...s.company, id: value.id, name: value.name },
-					search: { ...s.search, company: "" },
+					affiliate: { ...s.affiliate, id: "", name: "" },
+					client: { ...s.client, id: value.id, name: value.name },
+					find: { affiliate: "", client: "", company: "", project: "" },
 				}));
-			}
-		} else if (key == "project") {
-			const project = api.projects.filter((f) => f.id == value.id);
-			let company = [];
+			} else if (key == "company") {
+				const project = api.projects.filter((f) => f.company_id == value.id);
 
-			if (project.length) {
-				company = api.companies.filter((f) => f.id == project.at(0).company_id);
-
-				if (company.length) {
+				if (project.length) {
 					setMain((s) => ({
 						...s,
-						company: { ...s.company, id: company.id, name: company.name },
-						search: { ...s.search, project: "" },
-						project: { ...s.project, id: value.id, main_project: value.name },
+						company: { ...s.company, id: value.id, name: value.name },
+						find: { affiliate: "", client: "", company: "", project: "" },
+						project: {
+							...s.project,
+							id: project.at(0).id,
+							name: project.at(0).name,
+						},
 					}));
 				} else {
 					setMain((s) => ({
 						...s,
-						search: { ...s.search, project: "" },
-						project: { ...s.project, id: value.id, main_project: value.name },
+						company: { ...s.company, id: value.id, name: value.name },
+						find: { affiliate: "", client: "", company: "", project: "" },
 					}));
 				}
+			} else if (key == "project") {
+				const project = api.projects.filter((f) => f.id == value.id);
+				let company = [];
+
+				if (project.length) {
+					company = api.companies.filter((f) => f.id == project.at(0).company_id);
+
+					if (company.length) {
+						setMain((s) => ({
+							...s,
+							company: { ...s.company, id: company.id, name: company.name },
+							find: { affiliate: "", client: "", company: "", project: "" },
+							project: { ...s.project, id: value.id, name: value.name },
+						}));
+					} else {
+						setMain((s) => ({
+							...s,
+							find: { affiliate: "", client: "", company: "", project: "" },
+							project: { ...s.project, id: value.id, name: value.name },
+						}));
+					}
+				}
+			} else {
+				setMain((s) => ({ ...s, [key]: value }));
 			}
-		} else {
-			setMain((s) => ({ ...s, [key]: value }));
 		}
 	}
 
@@ -298,21 +284,25 @@ export default function NewCashFlow({ reload, unmount }) {
 
 	function setSelectedAffiliatesProjects() {
 		const project = api.projects.filter((f) => {
-			const names = f.affiliate_ids.includes(",") ? f.affiliate_ids.split(",") : [f.affiliate_ids];
+			if (f.affiliate_ids) {
+				const affiliateIds = String(f.affiliate_ids);
 
-			return names.length ? names.includes(main.affiliate.id) : false;
+				const names = affiliateIds.includes(",") ? affiliateIds.split(",") : [f.affiliate_ids];
+
+				return names.length ? names.includes(main.affiliate.id) : false;
+			}
 		});
 
-		const projectName = getMainProjectName(project.at(0).main_project_id);
-
-		setMain((s) => ({
-			...s,
-			project: {
-				id: project.at(0).id,
-				list: project,
-				name: projectName,
-			},
-		}));
+		if (project.length) {
+			setMain((s) => ({
+				...s,
+				project: {
+					id: project.at(0).id,
+					list: project,
+					name: project.at(0).name,
+				},
+			}));
+		}
 	}
 
 	function setSelectedClientData() {
@@ -322,8 +312,7 @@ export default function NewCashFlow({ reload, unmount }) {
 
 		const project = api.projects.filter((f) => f.client_id == main.client.id);
 		const projectId = project.length ? project.at(0).id : 0;
-
-		const projectName = project.length ? getMainProjectName(project.at(0).main_project_id) : "";
+		const projectName = project.length ? project.at(0).name : "";
 
 		setMain((s) => ({
 			...s,
@@ -358,8 +347,8 @@ export default function NewCashFlow({ reload, unmount }) {
 	}
 
 	// UI Components
-	const uiAdd = () => {
-		if (main.isLoading) {
+	function uiAdd() {
+		if (loading.addToDatabase) {
 			return (
 				<span className="px-3.5">
 					<Spinner />
@@ -368,67 +357,41 @@ export default function NewCashFlow({ reload, unmount }) {
 		} else {
 			return "Add";
 		}
-	};
-
-	function uiAffiliates() {
-		const icon = main.affiliate.isActive ? faSquareCheck : faSquare;
-		const clickEvent = !main.affiliate.isActive ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
-		const wrapper = `flex flex-col w-full py-2 ${clickEvent}`;
-
-		return (
-			<div className="flex flex-col w-full p-2">
-				<span
-					className="w-fit space-x-2 cursor-pointer font-regular-10 light-slate-gray-text"
-					onClick={() => toggleInputs("affiliate", !main.affiliate.isActive)}>
-					<FontAwesomeIcon className="primary-text" icon={icon} size="lg" />
-					<span>Affiliates</span>
-				</span>
-				<div className={wrapper}>
-					<div className="flex w-full justify-start items-center">
-						<Combobox onChange={(e) => setInputs("affiliate", e)} value={main.affiliate.name}>
-							<div className="relative w-full">
-								<div className="flex w-full h-[30px] px-2.5 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow black-white-background full-border">
-									<FontAwesomeIcon className="primary-text" icon={faUserGroup} />
-									<ComboboxInput
-										autoComplete="off"
-										className="w-full p-2 font-regular-10 bg-transparent black-text outline-none"
-										displayValue={(m) => m}
-										onChange={(e) => setFind("affiliate", e.target.value)}
-										tabIndex={3}
-									/>
-									<ComboboxButton className="flex absolute pr-2 items-center inset-y-0 right-0 outline-none">
-										<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
-									</ComboboxButton>
-								</div>
-								<ComboboxOptions className="absolute w-full max-h-[148px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border black-white-background">
-									{uiAffiliatesList()}
-								</ComboboxOptions>
-							</div>
-						</Combobox>
-					</div>
-				</div>
-			</div>
-		);
 	}
 
-	function uiAffiliatesList() {
-		return getFilteredAffiliates().map((m, i) => {
-			const isSelected = m.id == main.affiliate.id;
+	function uiAffiliates() {
+		const icon = main.affiliate.isActive ? faCircleCheck : faCircle;
+		const iconColour = main.affiliate.isActive ? "green-text" : "primary-text";
 
-			const nameStyle = isSelected ? "font-medium-10 primary-text" : "font-regular-10 black-text";
-			const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer hovered-rows ${
-				isSelected && "primary-background-transparent-01"
-			}`;
+		const cursor = !main.affiliate.isActive ? "cursor-not-allowed" : "cursor-default";
+		const wrapper = `flex w-full space-x-2 justify-center items-center ${cursor}`;
 
-			return (
-				<ComboboxOption className={wrapper} key={i} value={{ details: m.details, id: m.id, name: m.name }}>
-					<span className={nameStyle}>
-						<span>{m.name}</span>
-					</span>
-					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
-				</ComboboxOption>
-			);
-		});
+		return (
+			<div className={wrapper}>
+				<button className="flex h-11 justify-center items-end cursor-pointer" onClick={() => toggleInputs("affiliate", !main.affiliate.isActive)}>
+					<FontAwesomeIcon className={iconColour} icon={icon} size="xl" />
+				</button>
+				<ComboBox2
+					allowCreatingNewItem={false}
+					comparingValue1="name"
+					comparingValue2={main.affiliate.name}
+					displayValue="name"
+					filteredData={getFilteredAffiliates}
+					hasDataObject={true}
+					icon={faUserGroup}
+					isReadOnly={!main.affiliate.isActive}
+					label="Affiliates"
+					onChange={(e) => setInputs("affiliate", e)}
+					onClick={() => {}}
+					onInputChange={(e) => setFind("affiliate", e.target.value)}
+					onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+					searchedItem={main.find.affiliate}
+					tabIndex={3}
+					value={main.affiliate.name}
+					width="w-full"
+				/>
+			</div>
+		);
 	}
 
 	function uiAmountPaid(record, rowId) {
@@ -470,143 +433,120 @@ export default function NewCashFlow({ reload, unmount }) {
 	}
 
 	function uiClients() {
-		const icon = main.client.isActive ? faSquareCheck : faSquare;
-		const clickEvent = !main.client.isActive || main.isOfficeExpense ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
-		const wrapper = `flex flex-col w-full py-2 ${clickEvent}`;
+		const icon = main.client.isActive ? faCircleCheck : faCircle;
+		const iconColour = main.client.isActive ? "green-text" : "primary-text";
 
-		return (
-			<div className="flex flex-col w-full py-2">
-				<div
-					className="w-fit space-x-2 cursor-pointer font-regular-10 light-slate-gray-text"
-					onClick={() => toggleInputs("client", !main.client.isActive)}>
-					<FontAwesomeIcon className="primary-text" icon={icon} size="lg" />
-					<span>Clients</span>
-				</div>
-				<div className={wrapper}>
-					<div className="flex w-full justify-start items-center">
-						<Combobox onChange={(e) => setInputs("client", e)} value={main.client.name}>
-							<div className="relative w-full">
-								<div className="flex w-full h-[30px] px-2.5 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow black-white-background full-border">
-									<FontAwesomeIcon className="primary-text" icon={faUserGroup} />
-									<ComboboxInput
-										autoComplete="off"
-										className="w-full p-2 font-regular-10 bg-transparent black-text outline-none"
-										displayValue={(m) => m}
-										onChange={(e) => setFind("client", e.target.value)}
-										tabIndex={4}
-									/>
-									<ComboboxButton className="flex absolute pr-2 items-center inset-y-0 right-0 outline-none">
-										<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
-									</ComboboxButton>
-								</div>
-								<ComboboxOptions className="absolute w-full max-h-[148px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border black-white-background">
-									{uiClientsList()}
-								</ComboboxOptions>
-							</div>
-						</Combobox>
-					</div>
-				</div>
-			</div>
-		);
-	}
-
-	function uiClientsList() {
-		return getFilteredClients().map((m, i) => {
-			const isSelected = m.id == main.client.id;
-
-			const textStyle = isSelected ? "font-medium-10 primary-text" : "font-regular-10 black-text";
-
-			const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer hovered-rows ${
-				isSelected && "primary-background-transparent-01"
-			}`;
-
-			return (
-				<ComboboxOption className={wrapper} key={i} value={{ id: m.id, name: m.name }}>
-					<span className={textStyle}>{m.name}</span>
-					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
-				</ComboboxOption>
-			);
-		});
-	}
-
-	function uiCompanies() {
-		const clickEvent = !main.client.isActive ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
-		const wrapper = `flex flex-col w-full p-2 space-y-1 ${clickEvent}`;
+		const cursor = !main.client.isActive || main.isOfficeExpense ? "cursor-not-allowed" : "cursor-default";
+		const wrapper = `flex w-full space-x-2 justify-center items-center ${cursor}`;
 
 		return (
 			<div className={wrapper}>
-				<span className="font-regular-10 light-slate-gray-text">Companies</span>
-				<div className="flex w-full justify-start items-center">
-					<Combobox onChange={(e) => setInputs("company", e)} value={main.company.name}>
-						<div className="relative w-full">
-							<div className="flex w-full h-[30px] px-2.5 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow black-white-background full-border">
-								<FontAwesomeIcon className="primary-text" icon={faBriefcase} />
-								<ComboboxInput
-									autoComplete="off"
-									className="w-full p-2 font-regular-10 bg-transparent black-text outline-none"
-									displayValue={(m) => m}
-									onChange={(e) => setFind("company", e.target.value)}
-									tabIndex={5}
-								/>
-								<ComboboxButton className="flex absolute pr-2 items-center inset-y-0 right-0 outline-none">
-									<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
-								</ComboboxButton>
-							</div>
-							<ComboboxOptions className="absolute w-full max-h-[148px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border black-white-background">
-								{uiCompaniesList()}
-							</ComboboxOptions>
-						</div>
-					</Combobox>
-				</div>
+				<button className="flex h-11 justify-center items-end cursor-pointer" onClick={() => toggleInputs("client", !main.client.isActive)}>
+					<FontAwesomeIcon className={iconColour} icon={icon} size="xl" />
+				</button>
+				<ComboBox2
+					allowCreatingNewItem={false}
+					comparingValue1="name"
+					comparingValue2={main.client.name}
+					displayValue="name"
+					filteredData={getFilteredClients}
+					hasDataObject={true}
+					icon={faUserGroup}
+					isReadOnly={!main.client.isActive}
+					label="Clients"
+					onChange={(e) => setInputs("client", e)}
+					onClick={() => {}}
+					onInputChange={(e) => setFind("client", e.target.value)}
+					onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+					searchedItem={main.find.client}
+					tabIndex={4}
+					value={main.client.name}
+					width="w-full"
+				/>
 			</div>
 		);
 	}
 
-	function uiCompaniesList() {
-		return getFilteredCompanies().map((m, i) => {
-			const isSelected = m.id == main.company.id;
+	function uiCompanies() {
+		return (
+			<ComboBox2
+				allowCreatingNewItem={false}
+				comparingValue1="name"
+				comparingValue2={main.company.name}
+				displayValue="name"
+				filteredData={getFilteredCompanies}
+				hasDataObject={true}
+				icon={faBriefcase}
+				isReadOnly={!main.client.isActive}
+				label="Companies"
+				onChange={(e) => setInputs("company", e)}
+				onClick={() => {}}
+				onInputChange={(e) => setFind("company", e.target.value)}
+				onKeyPress={() => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				searchedItem={main.find.company}
+				tabIndex={5}
+				value={main.company.name}
+				width="w-full"
+			/>
+		);
+	}
 
-			const textStyle = isSelected ? "font-medium-10 primary-text" : "font-regular-10 black-text";
+	function uiEntryAt() {
+		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryAt", e)} tabIndex={1} value={main.entryAt} width="w-full" />;
+	}
 
-			const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer hovered-rows ${
-				isSelected && "primary-background-transparent-01"
-			}`;
-
+	function uiFooter() {
+		if (loading.supportData) {
 			return (
-				<ComboboxOption className={wrapper} key={i} value={{ id: m.id, name: m.name }}>
-					<span className={textStyle}>{m.name}</span>
-					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
-				</ComboboxOption>
+				<footer className="w-full dialog-footer">
+					<button className={addButtonStyle} onClick={() => addToDatabase()} tabIndex={9}>
+						{uiAdd()}
+					</button>
+				</footer>
 			);
-		});
+		}
 	}
 
-	function uiEntryDate() {
-		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryDate", e)} tabIndex={1} value={main.entryDate} width="w-full" />;
-	}
-
-	function uiOfficeExpense() {
-		const icon = main.isOfficeExpense ? faSquareCheck : faSquare;
-		const clickEvent = main.affiliate.isActive ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
-		const wrapper = `flex w-full h-full py-2 ${clickEvent}`;
+	function uiIsOfficeExpense() {
+		const icon = main.isOfficeExpense ? faCircleCheck : faCircle;
+		const iconColour = main.isOfficeExpense ? "green-text" : "primary-text";
 
 		return (
-			<div className="flex flex-col w-full py-2">
-				<span
-					className="w-fit space-x-2 cursor-pointer font-regular-10 light-slate-gray-text"
-					onClick={() => toggleInputs("officeExpense", !main.isOfficeExpense)}>
-					<FontAwesomeIcon className="primary-text" icon={icon} size="lg" />
-					<span>Is Office Expense?</span>
-				</span>
-				<div className={wrapper}>
-					<div className="flex w-full justify-center items-center">
-						<span className="flex w-full h-[30px] px-2.5 space-x-1 justify-start items-center relative overflow-hidden rounded shadow contrast-background font-regular-10 gray-text full-border">
-							This is office's internal expense.
-						</span>
-					</div>
-				</div>
+			<div className="flex w-full space-x-4 justify-start items-end">
+				<button className="flex h-11 justify-center items-end cursor-pointer" onClick={() => toggleInputs("officeExpense", !main.isOfficeExpense)}>
+					<FontAwesomeIcon className={iconColour} icon={icon} size="xl" />
+				</button>
+				<span className="block font-medium-11 light-slate-gray-text">Is Office Expense?</span>
 			</div>
 		);
+	}
+
+	function uiMain() {
+		if (loading.supportData) {
+			return <SpinnerBig />;
+		} else {
+			return (
+				<div className="flex flex-col w-3/5 h-full space-y-2 justify-start items-center">
+					<div className="flex w-full space-x-7 justify-between items-center">
+						{uiIsOfficeExpense()}
+						{uiEntryAt()}
+					</div>
+					<div className="flex w-full space-x-7 justify-between items-center">
+						{uiAffiliates()}
+						{uiClients()}
+					</div>
+					<div className="flex w-full space-x-7 justify-between items-center">
+						{uiCompanies()}
+						{uiProjects()}
+					</div>
+					<div className="flex flex-col w-full justify-between items-center">{uiRows()}</div>
+					<div className="flex w-full space-x-7 justify-center items-start">
+						{uiParticulars()}
+						{uiPaymentFor()}
+					</div>
+				</div>
+			);
+		}
 	}
 
 	function uiParticulars() {
@@ -616,7 +556,7 @@ export default function NewCashFlow({ reload, unmount }) {
 				label="Particulars"
 				onChange={(e) => setInputs("particulars", e.target.value)}
 				onKeyDown={() => {}}
-				rows={3}
+				rows={2}
 				tabIndex={7}
 				value={main.particulars}
 				width="w-full"
@@ -631,7 +571,7 @@ export default function NewCashFlow({ reload, unmount }) {
 				label="Payment For"
 				onChange={(e) => setInputs("paymentFor", MyGlobal.Capitalize(e.target.value))}
 				onKeyDown={() => {}}
-				rows={3}
+				rows={2}
 				tabIndex={8}
 				value={main.paymentFor}
 				width="w-full"
@@ -641,120 +581,60 @@ export default function NewCashFlow({ reload, unmount }) {
 
 	function uiPaymentType(record, rowId) {
 		return (
-			<div className="flex flex-col w-full p-2 space-y-1">
-				<span className="font-regular-10 light-slate-gray-text">Payment Type #{rowId + 1}</span>
-				<div className="flex w-full justify-start items-center">
-					<Combobox onChange={(e) => setPayments("paymentType", rowId, e)} value={MyGlobal.GetInitials(record.paymentType)}>
-						<div className="relative w-full">
-							<div className="flex w-full h-[30px] px-2.5 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow black-white-background full-border">
-								<FontAwesomeIcon className="primary-text" icon={faFile} />
-								<ComboboxInput
-									autoComplete="off"
-									className="w-full p-2 font-regular-10 bg-transparent black-text outline-none"
-									displayValue={(m) => m}
-									onChange={{}}
-									tabIndex={`${rowId}3`}
-								/>
-								<ComboboxButton className="flex absolute pr-2 items-center inset-y-0 right-0 outline-none">
-									<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
-								</ComboboxButton>
-							</div>
-							<ComboboxOptions className="absolute w-full max-h-[148px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border black-white-background">
-								{uiPaymentTypeList(record, rowId)}
-							</ComboboxOptions>
-						</div>
-					</Combobox>
-				</div>
-			</div>
+			<ComboBox
+				allowCreatingNewItem={false}
+				comparisonValue={record.paymentType}
+				filteredData={api.paymentTypes}
+				icon={faFile}
+				label={`Payment Type #${rowId + 1}`}
+				onChange={(e) => setPayments("paymentType", rowId, e)}
+				onClick={() => {}}
+				onKeyPress={() => {}}
+				searchedItem={""}
+				tabIndex={`${rowId}3`}
+				value={MyGlobal.GetInitials(record.paymentType)}
+				width="w-full"
+			/>
 		);
-	}
-
-	function uiPaymentTypeList(record) {
-		return api.paymentTypes.map((m, i) => {
-			const isSelected = m == record.paymentType;
-
-			const textStyle = isSelected ? "font-medium-10 primary-text" : "font-regular-10 black-text";
-
-			const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer hovered-rows ${
-				isSelected && "primary-background-transparent-01"
-			}`;
-
-			return (
-				<ComboboxOption className={wrapper} key={i} value={m}>
-					<span className={textStyle}>{m}</span>
-					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
-				</ComboboxOption>
-			);
-		});
 	}
 
 	function uiProjects() {
-		const value = `${main.project.id} - ${main.project.name}`;
-		const clickEvent = main.isOfficeExpense ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
-		const wrapper = `flex flex-col w-full py-2 space-y-1 ${clickEvent}`;
+		const value = main.project.id && main.project.name ? `${main.project.id} - ${main.project.name}` : "";
 
 		return (
-			<div className={wrapper}>
-				<span className="font-regular-10 light-slate-gray-text">Projects</span>
-				<div className="flex w-full justify-start items-center">
-					<Combobox onChange={(e) => setInputs("project", e)} value={value}>
-						<div className="relative w-full">
-							<div className="flex w-full h-[30px] px-2.5 space-x-1 justify-center items-center relative overflow-hidden rounded bottom-shadow black-white-background full-border">
-								<FontAwesomeIcon className="primary-text" icon={faDiagramProject} />
-								<ComboboxInput
-									autoComplete="off"
-									className="w-full p-2 font-regular-10 bg-transparent black-text outline-none"
-									displayValue={(m) => m}
-									onChange={(e) => setFind("project", e.target.value)}
-									tabIndex={6}
-								/>
-								<ComboboxButton className="flex absolute pr-2 items-center inset-y-0 right-0 outline-none">
-									<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
-								</ComboboxButton>
-							</div>
-							<ComboboxOptions className="absolute w-full max-h-[148px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border black-white-background">
-								{uiProjectsList()}
-							</ComboboxOptions>
-						</div>
-					</Combobox>
-				</div>
-			</div>
+			<ComboBox2
+				allowCreatingNewItem={false}
+				comparingValue1="name"
+				comparingValue2={main.project.name}
+				displayValue="id_and_name"
+				filteredData={main.project.list}
+				hasDataObject={true}
+				icon={faDiagramProject}
+				isReadOnly={main.isOfficeExpense}
+				label="Projects"
+				onChange={(e) => setInputs("project", e)}
+				onClick={() => {}}
+				onInputChange={(e) => setFind("project", e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				searchedItem={main.find.project}
+				tabIndex={6}
+				value={value}
+				width="w-full"
+			/>
 		);
-	}
-
-	function uiProjectsList() {
-		return api.projects.list.map((m, i) => {
-			const projectName = getMainProjectName(m.main_project_id);
-			const isSelected = m.id == main.project.id;
-
-			const textStyle = isSelected ? "font-medium-10 primary-text" : "font-regular-10 black-text";
-
-			const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer hovered-rows ${
-				isSelected && "primary-background-transparent-01"
-			}`;
-
-			return (
-				<ComboboxOption className={wrapper} key={i} value={{ id: m.id, name: projectName }}>
-					<span className={textStyle}>
-						{m.id} - {projectName}
-					</span>
-					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
-				</ComboboxOption>
-			);
-		});
 	}
 
 	function uiRows() {
 		return main.paymentDetails
 			.sort((a, b) => a.rowId - b.rowId)
 			.map((m, i) => {
-				const showAddButton = i == main.paymentDetails.length - 1 && main.paymentDetails.length != api.paymentTypes.length ? "visible" : "invisible";
+				const showAddButton = i == main.paymentDetails.length - 1 && main.paymentDetails.length != api.paymentTypes.length ? "flex" : "hidden";
 
-				const showDeleteButton = main.paymentDetails.length > 1 ? "visible" : "invisible";
+				const showDeleteButton = main.paymentDetails.length > 1 ? "flex" : "hidden";
 
-				const addButtonWrapper = `flex w-fit h-[55px] justify-center items-center ${showAddButton}`;
+				const addButtonWrapper = `${showAddButton} w-fit h-[55px] justify-center items-center`;
 
-				const deleteButtonWrapper = `flex w-fit h-[55px] justify-center items-center ${showDeleteButton}`;
+				const deleteButtonWrapper = `${showDeleteButton} w-fit h-[55px] justify-center items-center`;
 
 				return (
 					<div className="flex w-full space-x-3 justify-between items-end" key={m.rowId}>
@@ -762,7 +642,7 @@ export default function NewCashFlow({ reload, unmount }) {
 						{uiAmountReceived(m, i)}
 						{uiPaymentType(m, i)}
 						<div className={addButtonWrapper}>
-							<FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => addPayment()} size="lg" />
+							<FontAwesomeIcon className="cursor-pointer green-text" icon={faPlusCircle} onClick={() => addPayment()} size="lg" />
 						</div>
 						<div className={deleteButtonWrapper}>
 							<FontAwesomeIcon className="cursor-pointer red-text" icon={faMinusCircle} onClick={() => deletePayment(m)} size="lg" />
@@ -795,8 +675,8 @@ export default function NewCashFlow({ reload, unmount }) {
 	}
 
 	return (
-		<>
-			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border black-white-background">
+		<div className="flex flex-col w-full h-full justify-start items-center contrast-background">
+			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
 				<div className="flex w-full space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 					<div className="flex w-full justify-start items-center">
@@ -804,32 +684,8 @@ export default function NewCashFlow({ reload, unmount }) {
 					</div>
 				</div>
 			</div>
-			<div className="flex flex-col w-full h-[calc(100vh-102px)] justify-center items-center overflow-y-auto">
-				<div className="flex flex-col w-2/5 h-full space-y-2 justify-start items-center">
-					<div className="flex w-full space-x-7 justify-between items-center">
-						{uiEntryDate()}
-						{uiOfficeExpense()}
-					</div>
-					<div className="flex w-full space-x-7 justify-between items-center">
-						{uiAffiliates()}
-						{uiClients()}
-					</div>
-					<div className="flex w-full space-x-7 justify-between items-center">
-						{uiCompanies()}
-						{uiProjects()}
-					</div>
-					<div className="flex flex-col w-full justify-between items-center">{uiRows()}</div>
-					<div className="flex w-full space-x-7 justify-center items-start">
-						{uiParticulars()}
-						{uiPaymentFor()}
-					</div>
-				</div>
-			</div>
-			<footer className="w-full dialog-footer">
-				<button className={addButtonStyle} onClick={() => addToDatabase()} tabIndex={9}>
-					{uiAdd()}
-				</button>
-			</footer>
-		</>
+			<div className="flex flex-col w-full h-[calc(100vh-102px)] justify-center items-center overflow-y-auto scrollbar-gutter">{uiMain()}</div>
+			{uiFooter()}
+		</div>
 	);
 }

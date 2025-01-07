@@ -7,6 +7,7 @@ import Dashboard from "./dashboard";
 import Clients from "@/modules/clients";
 import Projects from "@/modules/projects";
 import Inquiries from "@/modules/inquiries";
+import CashFlows from "@/modules/cashFlows";
 import Affiliates from "@/modules/affiliates";
 import MyConstants from "@/utilities/constants";
 
@@ -28,7 +29,6 @@ export default function Home() {
 		allPermissions: [],
 		allUsers: [],
 		modules: [],
-		settings: [],
 	});
 
 	const [main, setMain] = useState({
@@ -112,18 +112,6 @@ export default function Home() {
 			}));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get All Permissions");
-		}
-	};
-
-	const getSettings = async () => {
-		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-settings" }));
-
-			if (response.status == 200) {
-				setApi((old) => ({ ...old, settings: response.data }));
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "Get Settings");
 		}
 	};
 
@@ -245,7 +233,7 @@ export default function Home() {
 		} else if (mounted.employees) {
 			return <EmployeeManagement close={toggleEmployeeView} staffData={api.allUsers} />;
 		} else if (mounted.settings) {
-			return <Settings close={toggleSettingsView} reloadAllSettings={getSettings} settings={api.settings} staff={api.allUsers} />;
+			return <Settings close={toggleSettingsView} settings={api.settings} staff={api.allUsers} />;
 		} else if (mounted.profile) {
 			return <ProfileManagement close={toggleProfileView} payload={main.loggedInUser} />;
 		} else {
@@ -314,6 +302,15 @@ export default function Home() {
 						<Affiliates />
 					</ErrorBoundary>
 				);
+			case baseModules.CashFlow:
+				return (
+					<ErrorBoundary
+						key={`ErrorBoundary_${baseModules.CashFlow}`}
+						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.CashFlow)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<CashFlows />
+					</ErrorBoundary>
+				);
 			case baseModules.Clients:
 				return (
 					<ErrorBoundary
@@ -366,15 +363,6 @@ export default function Home() {
 			// 			onError={(error) => Global.handleErrors(error.message, "Invoices")}
 			// 			FallbackComponent={ErrorFallbackComponent}>
 			// 			<Invoices />
-			// 		</ErrorBoundary>
-			// 	);
-			// case Constants.primaryModules.cashFlow.name:
-			// 	return (
-			// 		<ErrorBoundary
-			// 			key="ErrorBoundary_Cash Flow"
-			// 			onError={(error) => Global.handleErrors(error.message, "Cash Flow")}
-			// 			FallbackComponent={ErrorFallbackComponent}>
-			// 			<CashFlow settings={cashFlowSettings} />
 			// 		</ErrorBoundary>
 			// 	);
 		}
@@ -432,7 +420,6 @@ export default function Home() {
 			getUsers();
 
 			getPermissions();
-			getSettings();
 		}
 	}, []);
 

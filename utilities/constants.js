@@ -118,7 +118,7 @@ const MyConstants = Object.freeze({
 			DeleteProject: "Delete Project",
 			DeleteReference: "Delete Reference",
 			DeleteTask: "Delete Task",
-			DeleteTaskFromReimbursementVoucher: "Delete Task From Reimbursement Voucher",
+			DeleteTaskFromReimburseVoucher: "Delete Task From Reimburse Voucher",
 			DisableTask: "Disable Task",
 			EditAffiliate: "Edit Affiliate",
 			EditCashFlow: "Edit Cash Flow",
