@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 07, 2025 at 06:49 PM
+-- Generation Time: Jan 08, 2025 at 08:30 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -225,7 +225,10 @@ INSERT INTO `activities` (`id`, `entry_by`, `module`, `activity`, `ip_address`, 
 (142, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-07 20:07:02', ''),
 (143, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-07 23:17:28', ''),
 (144, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-07 23:19:06', ''),
-(145, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-07 23:19:34', '');
+(145, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-07 23:19:34', ''),
+(146, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-08 20:11:14', ''),
+(147, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-08 21:30:38', ''),
+(148, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-08 21:36:17', '');
 
 -- --------------------------------------------------------
 
@@ -530,10 +533,7 @@ CREATE TABLE `invoices` (
   `project_id` char(8) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL CHECK (`amount` >= 0),
   `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
-  `creation_date` datetime NOT NULL DEFAULT current_timestamp(),
-  `rv_id` varchar(16) NOT NULL,
-  `rv_full_id` varchar(50) NOT NULL,
-  `rv_creation_date` date DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `receipt_date` datetime DEFAULT current_timestamp(),
   `payment_received` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -735,17 +735,17 @@ INSERT INTO `permissions` (`id`, `name`, `module`, `type`, `sequence`) VALUES
 (15, 'Delete Employee ', 'Employees', 'Derived', 0),
 (16, 'Edit Employee', 'Employees', 'Derived', 0),
 (17, 'Inquiries', 'Inquiries', 'Base', 2),
-(18, 'New Inquiry', 'Inquiries', 'Derived', 0),
-(19, 'Delete Inquiry', 'Inquiries', 'Derived', 0),
-(20, 'Edit Inquiry', 'Inquiries', 'Derived', 0),
-(21, 'Convert Inquiry To Project', 'Inquiries', 'Derived', 0),
+(18, 'Delete Inquiry', 'Inquiries', 'Derived', 0),
+(19, 'Edit Inquiry', 'Inquiries', 'Derived', 0),
+(20, 'New Inquiry', 'Inquiries', 'Derived', 0),
+(21, 'New Project', 'Inquiries', 'Derived', 0),
 (22, 'Invoices', 'Invoices', 'Base', 7),
 (23, 'Delete Invoice', 'Invoices', 'Derived', 0),
 (24, 'Edit Invoice', 'Invoices', 'Derived', 0),
-(25, 'Generate Invoice', 'Invoices', 'Derived', 0),
+(25, 'New Invoice', 'Invoices', 'Derived', 0),
 (26, 'Owners', 'Owners', 'Base', 6),
-(27, 'Edit Owner Company', 'Owners', 'Derived', 0),
-(28, 'New Owner Company', 'Owners', 'Derived', 0),
+(27, 'Edit Owner Firm', 'Owners', 'Derived', 0),
+(28, 'New Owner Firm', 'Owners', 'Derived', 0),
 (29, 'Projects', 'Projects', 'Base', 3),
 (30, 'Delete Project', 'Projects', 'Derived', 0),
 (31, 'Edit Project', 'Projects', 'Derived', 0),
@@ -907,7 +907,7 @@ CREATE TABLE `pma__recent` (
 --
 
 INSERT INTO `pma__recent` (`username`, `tables`) VALUES
-('spire', '[{\"db\":\"spire\",\"table\":\"permissions\"},{\"db\":\"spire\",\"table\":\"invoices\"},{\"db\":\"spire\",\"table\":\"tasks\"},{\"db\":\"spire\",\"table\":\"projects\"},{\"db\":\"spire\",\"table\":\"inquiries\"},{\"db\":\"spire\",\"table\":\"affiliates\"},{\"db\":\"spire\",\"table\":\"affiliates_projects\"},{\"db\":\"spire\",\"table\":\"tasks_particulars_remarks\"}]');
+('spire', '[{\"db\":\"spire\",\"table\":\"projects\"},{\"db\":\"spire\",\"table\":\"invoices\"},{\"db\":\"spire\",\"table\":\"clients\"},{\"db\":\"spire\",\"table\":\"cash_flows\"},{\"db\":\"spire\",\"table\":\"reimburse_vouchers\"},{\"db\":\"spire\",\"table\":\"permissions\"},{\"db\":\"spire\",\"table\":\"owner_firms\"},{\"db\":\"spire\",\"table\":\"owner_firms_banks\"},{\"db\":\"spire\",\"table\":\"tasks\"},{\"db\":\"spire\",\"table\":\"inquiries\"}]');
 
 -- --------------------------------------------------------
 
@@ -964,6 +964,14 @@ CREATE TABLE `pma__table_info` (
   `display_field` varchar(64) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Table information for phpMyAdmin';
 
+--
+-- Dumping data for table `pma__table_info`
+--
+
+INSERT INTO `pma__table_info` (`db_name`, `table_name`, `display_field`) VALUES
+('spire', 'invoices', 'custom_id'),
+('spire', 'reimburse_vouchers', 'custom_id');
+
 -- --------------------------------------------------------
 
 --
@@ -1014,7 +1022,7 @@ CREATE TABLE `pma__userconfig` (
 --
 
 INSERT INTO `pma__userconfig` (`username`, `timevalue`, `config_data`) VALUES
-('spire', '2025-01-05 13:10:39', '{\"Console\\/Mode\":\"collapse\"}');
+('spire', '2025-01-08 17:09:15', '{\"Console\\/Mode\":\"collapse\"}');
 
 -- --------------------------------------------------------
 
@@ -1109,7 +1117,7 @@ CREATE TABLE `reimburse_vouchers` (
   `project_id` char(8) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL CHECK (`amount` >= 0),
   `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
-  `creation_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `receipt_date` datetime DEFAULT current_timestamp(),
   `payment_received` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1457,9 +1465,7 @@ ALTER TABLE `owner_firms_banks`
 -- Indexes for table `permissions`
 --
 ALTER TABLE `permissions`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `name` (`name`),
-  ADD KEY `module` (`module`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `pma__bookmark`
@@ -1656,7 +1662,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=146;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=149;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
@@ -1699,12 +1705,6 @@ ALTER TABLE `licenses`
 --
 ALTER TABLE `notes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
-
---
--- AUTO_INCREMENT for table `permissions`
---
-ALTER TABLE `permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `pma__bookmark`
@@ -1846,6 +1846,13 @@ ALTER TABLE `projects`
   ADD CONSTRAINT `fk_project_invoice_firm_id` FOREIGN KEY (`invoice_firm_id`) REFERENCES `owner_firms` (`id`),
   ADD CONSTRAINT `fk_project_main_project_id` FOREIGN KEY (`main_project_id`) REFERENCES `main_projects` (`id`),
   ADD CONSTRAINT `fk_project_sub_project_id` FOREIGN KEY (`sub_project_id`) REFERENCES `sub_projects` (`id`);
+
+--
+-- Constraints for table `reimburse_vouchers`
+--
+ALTER TABLE `reimburse_vouchers`
+  ADD CONSTRAINT `fk_reimburse_vouchers_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
+  ADD CONSTRAINT `fk_reimburse_vouchers_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
 
 --
 -- Constraints for table `tasks`
