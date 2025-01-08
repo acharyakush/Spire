@@ -25,6 +25,10 @@ const MyConstants = Object.freeze({
 			GetInquiries: "api/inquiries/getInquiries",
 			GetSupportData: "api/inquiries/getSupportData",
 		}),
+		Invoices: Object.freeze({
+			GetSupportData: "api/invoices/getSupportData",
+			GetNewInvoiceSupportData: "api/invoices/getNewInvoiceSupportData",
+		}),
 		Projects: Object.freeze({
 			AddProject: "api/projects/addProject",
 			EditProject: "api/projects/editProject",
@@ -106,7 +110,6 @@ const MyConstants = Object.freeze({
 			Tasks: "Tasks",
 		}),
 		Derived: Object.freeze({
-			ConvertInquiryToProject: "Convert Inquiry To Project",
 			DeleteAffiliate: "Delete Affiliate",
 			DeleteCashFlow: "Delete Cash Flow",
 			DeleteClient: "Delete Client",
@@ -132,9 +135,10 @@ const MyConstants = Object.freeze({
 			EditReference: "Edit Reference",
 			EditTask: "Edit Task",
 			EnableTask: "Enable Task",
-			GenerateInvoice: "Generate Invoice",
 			MarkTaskCompleted: "Mark Task Completed",
 			NewInquiry: "New Inquiry",
+			NewInvoice: "New Invoice",
+			NewProject: "New Project",
 			NewOwnerFirm: "New Owner Firm",
 			NewTask: "New Task",
 			PaymentReceived: "Payment Received",
@@ -188,6 +192,17 @@ const MyConstants = Object.freeze({
 			Status: "Status",
 			Notes: "Notes",
 			CreatedBy: "Created By",
+		}),
+		Invoices: Object.freeze({
+			Id: "ID",
+			Company: "Company",
+			MainProject: "Main Project",
+			SubProject: "Sub Project",
+			CreatedAt: "Created At",
+			Amount: "Amount",
+			AmountReceived: "Amt Received",
+			Status: "Status",
+			File: "File",
 		}),
 		Notes: Object.freeze({
 			date: "Date",

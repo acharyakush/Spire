@@ -13,7 +13,8 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { affiliate, amountPaid, amountReceived, client, companyId, entryAt, isOfficeExpense, particulars, paymentFor, projectId, userId } = req.body;
+		const { affiliate, amountPaid, amountReceived, client, companyId, entryAt, isOfficeExpense, ownerFirm, particulars, paymentFor, projectId, userId } =
+			req.body;
 
 		const isAffiliate = affiliate.isActive && !client.isActive && !isOfficeExpense;
 		const isClient = !affiliate.isActive && client.isActive && !isOfficeExpense;
@@ -30,8 +31,22 @@ export default async function handler(req, res) {
 		const clientId = isClient ? client.id : "";
 
 		const response = await query(
-			"INSERT INTO cash_flows (affiliate_id, client_id, company_id, project_id, particulars, payment_for, amount_paid, amount_received, is_office_expense, entry_at, entry_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-			[affiliateId, clientId, companyId, projectId, particulars, paymentFor, amountPaid, amountReceived, !isOfficeExpense ? 0 : 1, entryAt, userId],
+			"INSERT INTO cash_flows (affiliate_id, client_id, company_id, project_id, owner_firm_id, owner_firm_bank_id, particulars, payment_for, amount_paid, amount_received, is_office_expense, entry_at, entry_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			[
+				affiliateId,
+				clientId,
+				companyId,
+				projectId,
+				ownerFirm.id,
+				ownerFirm.bankId,
+				particulars,
+				paymentFor,
+				amountPaid,
+				amountReceived,
+				!isOfficeExpense ? 0 : 1,
+				entryAt,
+				userId,
+			],
 		);
 
 		if (response.affectedRows == 0) {

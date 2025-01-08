@@ -6,6 +6,7 @@ import axios from "axios";
 import Dashboard from "./dashboard";
 import Clients from "@/modules/clients";
 import Projects from "@/modules/projects";
+import Invoices from "@/modules/invoices";
 import Inquiries from "@/modules/inquiries";
 import CashFlows from "@/modules/cashFlows";
 import Affiliates from "@/modules/affiliates";
@@ -36,7 +37,7 @@ export default function Home() {
 		loggedInUser: {},
 		selectedModule: { name: baseModules.Dashboard, sequence: 0 },
 		singleProjectObject: {},
-		status: { inquiries: "", projects: "", tasks: "" },
+		status: { inquiries: "", invoices: "", projects: "", tasks: "" },
 		theme: null,
 	});
 
@@ -48,22 +49,14 @@ export default function Home() {
 	});
 
 	// Functions
-	const changeTheme = () => {
+	function changeTheme() {
 		const newTheme = main.theme == "light" ? "dark" : "light";
 		MyGlobal.Storages.Local.Set("AppMode", newTheme);
 
 		setMain((old) => ({ ...old, isDarkModeEnabled: !main.isDarkModeEnabled, theme: newTheme }));
-	};
+	}
 
-	const closeProjectsView = () => {
-		setMain((old) => ({
-			...old,
-			selectedModule: { name: baseModules.Dashboard, sequence: 0 },
-			singleProjectObject: {},
-		}));
-	};
-
-	const doPreRenderingOperations = () => {
+	function doPreRenderingOperations() {
 		document.body.setAttribute("app-theme", "light");
 
 		const initialTheme = MyGlobal.GetTheme() ?? "light";
@@ -73,9 +66,9 @@ export default function Home() {
 		colorScheme.addEventListener("change", (e) => setMain((old) => ({ ...old, isDarkModeEnabled: e.matches, theme: e.matches ? "dark" : "light" })));
 
 		setMain((old) => ({ ...old, isDarkModeEnabled: isDarkModeEnabled, theme: initialTheme }));
-	};
+	}
 
-	const getPermissions = async () => {
+	async function getPermissions() {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-permissions" }));
 
@@ -113,9 +106,9 @@ export default function Home() {
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get All Permissions");
 		}
-	};
+	}
 
-	const getUserData = () => {
+	function getUserData() {
 		if (!MyGlobal.Storages.Session.DoesExist(`${applicationName}Token`)) {
 			MyGlobal.ShowErrorToast(MyConstants.Messages.UnauthorizedAccess);
 			router.replace("/");
@@ -123,9 +116,9 @@ export default function Home() {
 			MyGlobal.SetUserStatus(1);
 			setMain((old) => ({ ...old, loggedInUser: MyGlobal.GetUserData() }));
 		}
-	};
+	}
 
-	const getUserMenuClickAction = (menuItem) => {
+	function getUserMenuClickAction(menuItem) {
 		switch (menuItem) {
 			case MyConstants.UserMenu.Activity:
 				toggleActivitiesView();
@@ -143,9 +136,9 @@ export default function Home() {
 				logout();
 				break;
 		}
-	};
+	}
 
-	const getUserMenuIcons = (menuItem) => {
+	function getUserMenuIcons(menuItem) {
 		switch (menuItem) {
 			case MyConstants.UserMenu.Activity:
 				return faUserClock;
@@ -160,9 +153,9 @@ export default function Home() {
 			case MyConstants.UserMenu.Logout:
 				return faSignOut;
 		}
-	};
+	}
 
-	const getUsers = async () => {
+	async function getUsers() {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-users" }));
 
@@ -178,56 +171,43 @@ export default function Home() {
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get Users");
 		}
-	};
+	}
 
-	const goToProjects = (object) => {
-		// setData((s) => ({
-		// 	...s,
-		// 	activeViewIndex: 2,
-		// 	activeView: Constants.primaryModules.projects.name,
-		// 	singleProjectObject: object,
-		// }));
-	};
-
-	const logout = () => {
+	function logout() {
 		MyGlobal.AddActivity("Logged out.");
 		MyGlobal.SetUserStatus(0);
 		MyGlobal.ClearAllUserData();
 
 		router.replace("/");
-	};
+	}
 
-	const setModule = (module, sequence) => {
+	function setModule(module, sequence) {
 		setMain((old) => ({ ...old, selectedModule: { name: module.name, sequence: sequence - 1 } }));
-	};
+	}
 
 	function setModuleProps(key, value) {
 		const _key = String(key).toLowerCase();
 		setMain((s) => ({ ...s, status: { ...s.status, [_key]: value } }));
 	}
 
-	const toggleActivitiesView = () => {
+	function toggleActivitiesView() {
 		setMounted((s) => ({ ...s, activities: !mounted.activities }));
-	};
+	}
 
-	const toggleEmployeeView = () => {
+	function toggleEmployeeView() {
 		setMounted((s) => ({ ...s, employees: !mounted.employees }));
-	};
+	}
 
-	const toggleProfileView = () => {
+	function toggleProfileView() {
 		setMounted((s) => ({ ...s, profile: !mounted.profile }));
-	};
+	}
 
-	const toggleSettingsView = () => {
+	function toggleSettingsView() {
 		setMounted((s) => ({ ...s, settings: !mounted.settings }));
-	};
-
-	const toggleTheme = () => {
-		setMain((old) => ({ ...old, isDarkModeEnabled: !main.isDarkModeEnabled }));
-	};
+	}
 
 	// UI Components
-	const uiMain = () => {
+	function uiMain() {
 		if (mounted.activities) {
 			// return <Activities staff={apiData.allUsers} close={toggleActivitiesView} />;
 		} else if (mounted.employees) {
@@ -239,9 +219,9 @@ export default function Home() {
 		} else {
 			return uiSelectedModule();
 		}
-	};
+	}
 
-	const uiModules = () => {
+	function uiModules() {
 		return api.modules
 			.filter((f) => f.sequence <= 8)
 			.map((m, i) => {
@@ -256,9 +236,9 @@ export default function Home() {
 					</button>
 				);
 			});
-	};
+	}
 
-	const uiOtherModules = () => {
+	function uiOtherModules() {
 		const aesthetics =
 			main.selectedModule.sequence == -1 ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
 		const wrapper = `p-2 border-b-4 whitespace-nowrap font-regular-12 ${aesthetics}`;
@@ -273,9 +253,9 @@ export default function Home() {
 				</MenuItems>
 			</Menu>
 		);
-	};
+	}
 
-	const uiOtherModulesList = () => {
+	function uiOtherModulesList() {
 		return api.modules
 			.filter((f) => f.sequence > 8)
 			.map((m, i) => {
@@ -289,9 +269,9 @@ export default function Home() {
 					</MenuItem>
 				);
 			});
-	};
+	}
 
-	const uiSelectedModule = () => {
+	function uiSelectedModule() {
 		switch (main.selectedModule.name) {
 			case baseModules.Affiliates:
 				return (
@@ -338,6 +318,15 @@ export default function Home() {
 						<Inquiries status={main.status.inquiries} />
 					</ErrorBoundary>
 				);
+			case baseModules.Invoices:
+				return (
+					<ErrorBoundary
+						key={`ErrorBoundary_${baseModules.Invoices}`}
+						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Invoices)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<Invoices status={main.status.invoices} />
+					</ErrorBoundary>
+				);
 			case baseModules.Projects:
 				return (
 					<ErrorBoundary
@@ -356,19 +345,10 @@ export default function Home() {
 			// 			<Admins />
 			// 		</ErrorBoundary>
 			// 	);
-			// case Constants.primaryModules.invoices.name:
-			// 	return (
-			// 		<ErrorBoundary
-			// 			key="ErrorBoundary_Invoices"
-			// 			onError={(error) => Global.handleErrors(error.message, "Invoices")}
-			// 			FallbackComponent={ErrorFallbackComponent}>
-			// 			<Invoices />
-			// 		</ErrorBoundary>
-			// 	);
 		}
-	};
+	}
 
-	const uiUserMenu = () => {
+	function uiUserMenu() {
 		return (
 			<Menu as="div" className="relative z-50 inline-block text-left">
 				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
@@ -383,9 +363,9 @@ export default function Home() {
 				</MenuItems>
 			</Menu>
 		);
-	};
+	}
 
-	const uiUserMenuList = () => {
+	function uiUserMenuList() {
 		return Object.values(MyConstants.UserMenu)
 			.filter((item) => {
 				if (main.loggedInUser.role == MyConstants.UserType.Employees) {
@@ -406,7 +386,7 @@ export default function Home() {
 					</MenuItem>
 				);
 			});
-	};
+	}
 
 	// Hooks
 	useLayoutEffect(() => {

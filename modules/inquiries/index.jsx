@@ -66,7 +66,7 @@ export default function Inquiries({ status }) {
 		sort: { column: "", isAscending: false },
 	});
 
-	const allowConvertingToProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.ConvertInquiryToProject);
+	const allowConvertingToProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewProject);
 
 	const tableHeaders = MyConstants.TableHeaders.Inquiries;
 	const thisView = MyConstants.Modules.Base.Inquiries;

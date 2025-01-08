@@ -276,6 +276,23 @@ export const MyGlobal = Object.freeze({
 		}
 	},
 
+	MakeNewInvoiceId: (payload) => {
+		if (payload.length) {
+			const getLatestId = [...payload].sort((a, b) => b.id.localeCompare(a.id)).at(0).id;
+
+			if (!getLatestId) {
+				return "00001";
+			} else {
+				const incrementedId = (parseInt(getLatestId, 10) + 1).toString();
+				const newId = incrementedId.padStart(String(getLatestId).length, "0");
+
+				return String(newId).padStart(5, "0");
+			}
+		} else {
+			return "00001";
+		}
+	},
+
 	SetAllUsers: (allUsersArray) => {
 		allUsers = allUsersArray;
 	},

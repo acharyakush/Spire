@@ -13,7 +13,9 @@ import { faCircle } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox, ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
 import {
+	faBank,
 	faBriefcase,
+	faBuilding,
 	faCalendar,
 	faChevronLeft,
 	faCircleCheck,
@@ -34,6 +36,8 @@ export default function NewCashFlow({ reload, unmount }) {
 		clients: [],
 		companies: [],
 		mainProjects: [],
+		ownerFirms: [],
+		ownerFirmsBanks: [],
 		projects: [],
 		paymentTypes: [],
 	});
@@ -45,9 +49,10 @@ export default function NewCashFlow({ reload, unmount }) {
 		client: { id: "", isActive: true, list: [], name: "" },
 		company: { id: "", list: [], name: "" },
 		entryAt: new Date(),
-		find: { affiliate: "", client: "", company: "", project: "" },
+		find: { affiliate: "", client: "", company: "", ownerFirm: "", ownerFirmsBank: "", project: "" },
 		hasMounted: false,
 		isOfficeExpense: false,
+		ownerFirm: { banks: [], id: "", name: "", selectedBank: { id: "", name: "" } },
 		particulars: "",
 		paymentDetails: [{ amountPaid: 0, amountReceived: 0, paymentType: "", rowId: 0 }],
 		paymentFor: "",
@@ -91,10 +96,15 @@ export default function NewCashFlow({ reload, unmount }) {
 			affiliate: main.affiliate,
 			amountPaid,
 			amountReceived,
-			client: main.client,
+			client: {
+				id: main.client.id,
+				isActive: main.client.isActive,
+				name: main.client.name,
+			},
 			companyId: main.company.id,
 			entryAt: dayjs(main.entryAt),
 			isOfficeExpense: main.isOfficeExpense,
+			ownerFirm: { bankId: main.ownerFirm.selectedBank.id, id: main.ownerFirm.id },
 			particulars: main.particulars,
 			paymentFor: main.paymentFor,
 			projectId: main.project.id,
@@ -119,6 +129,13 @@ export default function NewCashFlow({ reload, unmount }) {
 		} finally {
 			setLoading((s) => ({ ...s, addToDatabase: false }));
 		}
+	}
+
+	function clearFind() {
+		setMain((s) => ({
+			...s,
+			find: { affiliate: "", client: "", company: "", ownerFirm: "", ownerFirmsBank: "", project: "" },
+		}));
 	}
 
 	function deletePayment(record) {
@@ -170,6 +187,32 @@ export default function NewCashFlow({ reload, unmount }) {
 		return companies;
 	}
 
+	function getFilteredOwnerFirms() {
+		const value = String(main.find.ownerFirm);
+		let firms = api.ownerFirms;
+
+		if (value !== "undefined") {
+			firms = api.ownerFirms.filter((f) => {
+				return String(f.name).toLowerCase().includes(value.toLowerCase());
+			});
+		}
+
+		return firms;
+	}
+
+	function getFilteredOwnerFirmsBanks() {
+		const value = String(main.find.ownerFirmsBank);
+		let banks = api.ownerFirmsBanks;
+
+		if (value !== "undefined") {
+			banks = api.ownerFirmsBanks.filter((f) => {
+				return String(f.name).toLowerCase().includes(value.toLowerCase());
+			});
+		}
+
+		return banks;
+	}
+
 	async function getSupportData() {
 		setLoading((s) => ({ ...s, supportData: true }));
 
@@ -182,11 +225,14 @@ export default function NewCashFlow({ reload, unmount }) {
 
 					return { ...m, id_and_name: `${m.id} - ${name}`, name };
 				});
+
 				setApi({
 					affiliates: response.data.affiliates,
 					clients: response.data.clients,
 					companies: response.data.companies,
 					mainProjects: response.data.mainProjects,
+					ownerFirms: response.data.ownerFirms,
+					ownerFirmsBanks: response.data.ownerFirmsBanks,
 					projects: revisedProjects,
 					paymentTypes: JSON.parse(response.data.settings.at(0).value),
 				});
@@ -211,7 +257,6 @@ export default function NewCashFlow({ reload, unmount }) {
 					...s,
 					affiliate: { ...s.affiliate, id: value.id, name: value.name },
 					client: { ...s.client, id: "", name: "" },
-					find: { affiliate: "", client: "", company: "", project: "" },
 					project: { ...s.project, id: "", name: "" },
 				}));
 			} else if (key == "client") {
@@ -219,7 +264,6 @@ export default function NewCashFlow({ reload, unmount }) {
 					...s,
 					affiliate: { ...s.affiliate, id: "", name: "" },
 					client: { ...s.client, id: value.id, name: value.name },
-					find: { affiliate: "", client: "", company: "", project: "" },
 				}));
 			} else if (key == "company") {
 				const project = api.projects.filter((f) => f.company_id == value.id);
@@ -227,21 +271,29 @@ export default function NewCashFlow({ reload, unmount }) {
 				if (project.length) {
 					setMain((s) => ({
 						...s,
-						company: { ...s.company, id: value.id, name: value.name },
-						find: { affiliate: "", client: "", company: "", project: "" },
 						project: {
 							...s.project,
 							id: project.at(0).id,
 							name: project.at(0).name,
 						},
 					}));
-				} else {
-					setMain((s) => ({
-						...s,
-						company: { ...s.company, id: value.id, name: value.name },
-						find: { affiliate: "", client: "", company: "", project: "" },
-					}));
 				}
+
+				setMain((s) => ({ ...s, company: { ...s.company, id: value.id, name: value.name } }));
+			} else if (key == "ownerFirm") {
+				const banks = api.ownerFirmsBanks.filter((f) => f.owner_firm_id == value.id);
+
+				setMain((s) => ({
+					...s,
+					ownerFirm: {
+						banks,
+						id: value.id,
+						name: value.name,
+						selectedBank: { id: banks.at(0).id, name: banks.at(0).name },
+					},
+				}));
+			} else if (key == "ownerFirmsBank") {
+				setMain((s) => ({ ...s, ownerFirm: { ...s.ownerFirm, selectedBank: { id: value.id, name: value.name } } }));
 			} else if (key == "project") {
 				const project = api.projects.filter((f) => f.id == value.id);
 				let company = [];
@@ -250,23 +302,16 @@ export default function NewCashFlow({ reload, unmount }) {
 					company = api.companies.filter((f) => f.id == project.at(0).company_id);
 
 					if (company.length) {
-						setMain((s) => ({
-							...s,
-							company: { ...s.company, id: company.id, name: company.name },
-							find: { affiliate: "", client: "", company: "", project: "" },
-							project: { ...s.project, id: value.id, name: value.name },
-						}));
-					} else {
-						setMain((s) => ({
-							...s,
-							find: { affiliate: "", client: "", company: "", project: "" },
-							project: { ...s.project, id: value.id, name: value.name },
-						}));
+						setMain((s) => ({ ...s, company: { ...s.company, id: company.id, name: company.name } }));
 					}
+
+					setMain((s) => ({ ...s, project: { ...s.project, id: value.id, name: value.name } }));
 				}
 			} else {
 				setMain((s) => ({ ...s, [key]: value }));
 			}
+
+			clearFind();
 		}
 	}
 
@@ -364,7 +409,7 @@ export default function NewCashFlow({ reload, unmount }) {
 		const iconColour = main.affiliate.isActive ? "green-text" : "primary-text";
 
 		const cursor = !main.affiliate.isActive ? "cursor-not-allowed" : "cursor-default";
-		const wrapper = `flex w-full space-x-2 justify-center items-center ${cursor}`;
+		const wrapper = `flex w-full pl-2 space-x-2 justify-center items-center ${cursor}`;
 
 		return (
 			<div className={wrapper}>
@@ -386,7 +431,7 @@ export default function NewCashFlow({ reload, unmount }) {
 					onInputChange={(e) => setFind("affiliate", e.target.value)}
 					onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
 					searchedItem={main.find.affiliate}
-					tabIndex={3}
+					tabIndex={5}
 					value={main.affiliate.name}
 					width="w-full"
 				/>
@@ -459,7 +504,7 @@ export default function NewCashFlow({ reload, unmount }) {
 					onInputChange={(e) => setFind("client", e.target.value)}
 					onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
 					searchedItem={main.find.client}
-					tabIndex={4}
+					tabIndex={6}
 					value={main.client.name}
 					width="w-full"
 				/>
@@ -484,7 +529,7 @@ export default function NewCashFlow({ reload, unmount }) {
 				onInputChange={(e) => setFind("company", e.target.value)}
 				onKeyPress={() => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
 				searchedItem={main.find.company}
-				tabIndex={5}
+				tabIndex={7}
 				value={main.company.name}
 				width="w-full"
 			/>
@@ -492,14 +537,14 @@ export default function NewCashFlow({ reload, unmount }) {
 	}
 
 	function uiEntryAt() {
-		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryAt", e)} tabIndex={1} value={main.entryAt} width="w-full" />;
+		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryAt", e)} tabIndex={4} value={main.entryAt} width="w-full" />;
 	}
 
 	function uiFooter() {
-		if (loading.supportData) {
+		if (!loading.supportData) {
 			return (
 				<footer className="w-full dialog-footer">
-					<button className={addButtonStyle} onClick={() => addToDatabase()} tabIndex={9}>
+					<button className={addButtonStyle} onClick={() => addToDatabase()} tabIndex={11}>
 						{uiAdd()}
 					</button>
 				</footer>
@@ -512,9 +557,9 @@ export default function NewCashFlow({ reload, unmount }) {
 		const iconColour = main.isOfficeExpense ? "green-text" : "primary-text";
 
 		return (
-			<div className="flex w-full space-x-4 justify-start items-end">
+			<div className="flex w-full pl-2 space-x-4 justify-start items-end">
 				<button className="flex h-11 justify-center items-end cursor-pointer" onClick={() => toggleInputs("officeExpense", !main.isOfficeExpense)}>
-					<FontAwesomeIcon className={iconColour} icon={icon} size="xl" />
+					<FontAwesomeIcon className={iconColour} icon={icon} tabIndex={3} size="xl" />
 				</button>
 				<span className="block font-medium-11 light-slate-gray-text">Is Office Expense?</span>
 			</div>
@@ -528,10 +573,14 @@ export default function NewCashFlow({ reload, unmount }) {
 			return (
 				<div className="flex flex-col w-3/5 h-full space-y-2 justify-start items-center">
 					<div className="flex w-full space-x-7 justify-between items-center">
+						{uiOwnerFirms()}
+						{uiOwnerFirmsBanks()}
+					</div>
+					<div className="flex w-full space-x-8 justify-between items-center">
 						{uiIsOfficeExpense()}
 						{uiEntryAt()}
 					</div>
-					<div className="flex w-full space-x-7 justify-between items-center">
+					<div className="flex w-full space-x-9 justify-between items-center">
 						{uiAffiliates()}
 						{uiClients()}
 					</div>
@@ -549,6 +598,54 @@ export default function NewCashFlow({ reload, unmount }) {
 		}
 	}
 
+	function uiOwnerFirms() {
+		return (
+			<ComboBox2
+				allowCreatingNewItem={false}
+				comparingValue1="name"
+				comparingValue2={main.ownerFirm.name}
+				displayValue="name"
+				filteredData={getFilteredOwnerFirms}
+				hasDataObject={true}
+				icon={faBuilding}
+				isReadOnly={false}
+				label="Firm"
+				onChange={(e) => setInputs("ownerFirm", e)}
+				onClick={() => {}}
+				onInputChange={(e) => setFind("ownerFirm", e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				searchedItem={main.find.ownerFirm}
+				tabIndex={1}
+				value={main.ownerFirm.name}
+				width="w-full"
+			/>
+		);
+	}
+
+	function uiOwnerFirmsBanks() {
+		return (
+			<ComboBox2
+				allowCreatingNewItem={false}
+				comparingValue1="name"
+				comparingValue2={main.ownerFirm.selectedBank.name}
+				displayValue="name"
+				filteredData={!main.ownerFirm.banks.length ? getFilteredOwnerFirmsBanks : main.ownerFirm.banks}
+				hasDataObject={true}
+				icon={faBank}
+				isReadOnly={false}
+				label="Banks"
+				onChange={(e) => setInputs("ownerFirmsBank", e)}
+				onClick={() => {}}
+				onInputChange={(e) => setFind("ownerFirmsBank", e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				searchedItem={main.find.ownerFirmsBank}
+				tabIndex={2}
+				value={main.ownerFirm.selectedBank.name}
+				width="w-full"
+			/>
+		);
+	}
+
 	function uiParticulars() {
 		return (
 			<TextArea
@@ -557,7 +654,7 @@ export default function NewCashFlow({ reload, unmount }) {
 				onChange={(e) => setInputs("particulars", e.target.value)}
 				onKeyDown={() => {}}
 				rows={2}
-				tabIndex={7}
+				tabIndex={9}
 				value={main.particulars}
 				width="w-full"
 			/>
@@ -572,7 +669,7 @@ export default function NewCashFlow({ reload, unmount }) {
 				onChange={(e) => setInputs("paymentFor", MyGlobal.Capitalize(e.target.value))}
 				onKeyDown={() => {}}
 				rows={2}
-				tabIndex={8}
+				tabIndex={10}
 				value={main.paymentFor}
 				width="w-full"
 			/>
@@ -617,7 +714,7 @@ export default function NewCashFlow({ reload, unmount }) {
 				onInputChange={(e) => setFind("project", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
 				searchedItem={main.find.project}
-				tabIndex={6}
+				tabIndex={8}
 				value={value}
 				width="w-full"
 			/>
@@ -638,9 +735,9 @@ export default function NewCashFlow({ reload, unmount }) {
 
 				return (
 					<div className="flex w-full space-x-3 justify-between items-end" key={m.rowId}>
-						{uiAmountPaid(m, i)}
-						{uiAmountReceived(m, i)}
-						{uiPaymentType(m, i)}
+						{uiAmountPaid(m, 8 + i)}
+						{uiAmountReceived(m, 8 + i)}
+						{uiPaymentType(m, 8 + i)}
 						<div className={addButtonWrapper}>
 							<FontAwesomeIcon className="cursor-pointer green-text" icon={faPlusCircle} onClick={() => addPayment()} size="lg" />
 						</div>
