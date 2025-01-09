@@ -18,7 +18,17 @@ import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendar, faFileExcel, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import {
+	faCalendar,
+	faCoins,
+	faFileDownload,
+	faFileExcel,
+	faMultiply,
+	faPlusCircle,
+	faSearch,
+	faSortAmountAsc,
+	faSortAmountDesc,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function Invoices({ status }) {
 	// Business Logic
@@ -26,8 +36,8 @@ export default function Invoices({ status }) {
 	const thisView = MyConstants.Modules.Base.Invoices;
 
 	const [api, setApi] = useState({
-		invoices: [],
-		invoicesCopy: [],
+		projects: [],
+		projectsCopy: [],
 		uploadedFiles: [],
 	});
 
@@ -76,7 +86,7 @@ export default function Invoices({ status }) {
 
 		doSorting().forEach((fe) => {
 			records.push(
-				fe.custom_id,
+				fe.id,
 				fe.company,
 				fe.main_project,
 				fe.sub_project,
@@ -121,7 +131,7 @@ export default function Invoices({ status }) {
 				fontWeight: "bold",
 				height: 44,
 				span: rowHeaders.length,
-				value: `${thisView} (${api.invoices.length})`,
+				value: `${thisView} (${api.projects.length})`,
 			},
 		];
 
@@ -137,7 +147,7 @@ export default function Invoices({ status }) {
 	}
 
 	function doFiltering(query) {
-		const filteredData = api.invoicesCopy.filter((f) => {
+		const filteredData = api.projectsCopy.filter((f) => {
 			if (query == "createdAt") {
 				const createdAt = new Date(f.entry_date);
 				const startDate = main.filter.date.from;
@@ -150,7 +160,7 @@ export default function Invoices({ status }) {
 				const findText = main.filter.find.toLowerCase();
 
 				return (
-					f.custom_id.includes(findText) ||
+					f.id.includes(findText) ||
 					f.company.includes(findText) ||
 					f.main_project.includes(findText) ||
 					f.sub_project.includes(findText) ||
@@ -161,17 +171,17 @@ export default function Invoices({ status }) {
 			}
 		});
 
-		setApi((s) => ({ ...s, invoices: filteredData }));
+		setApi((s) => ({ ...s, projects: filteredData }));
 	}
 
 	function doSorting() {
-		return api.invoices.sort((a, b) => {
+		return api.projects.sort((a, b) => {
 			const { column, isAscending } = main.sort;
 
 			if (column == headers.Id && isAscending) {
-				return a.custom_id.localeCompare(b.custom_id);
+				return a.id.localeCompare(b.id);
 			} else if (column == headers.Id && !isAscending) {
-				return b.custom_id.localeCompare(a.custom_id);
+				return b.id.localeCompare(a.id);
 			} else if (column == headers.Company && isAscending) {
 				return a.company.localeCompare(b.company);
 			} else if (column == headers.Company && !isAscending) {
@@ -196,21 +206,21 @@ export default function Invoices({ status }) {
 				return a.amount_received - b.amount_received;
 			} else if (column == headers.AmountReceived && !isAscending) {
 				return b.amount_received - a.amount_received;
-			} else if (column == headers.Status && isAscending) {
+			} else if (column == headers.InvoiceId && isAscending) {
 				return a.status.localeCompare(b.status);
-			} else if (column == headers.Status && !isAscending) {
+			} else if (column == headers.InvoiceId && !isAscending) {
 				return b.status.localeCompare(a.status);
 			} else {
-				return b.custom_id.localeCompare(a.custom_id);
+				return b.id.localeCompare(a.id);
 			}
 		});
 	}
 
 	function getDataCount() {
-		if (api.invoices.length != api.invoicesCopy.length) {
-			return `${api.invoices.length} / ${api.invoicesCopy.length}`;
+		if (api.projects.length != api.projectsCopy.length) {
+			return `${api.projects.length} / ${api.projectsCopy.length}`;
 		} else {
-			return api.invoices.length;
+			return api.projects.length;
 		}
 	}
 
@@ -221,36 +231,50 @@ export default function Invoices({ status }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				const revised = response.data.invoices.map((m) => {
-					const amountReceived = response.data.cashFlows.find((f) => f.client_id == m.client_id).amount_received;
+				const revised = response.data.projects.map((m) => {
+					const cashFlow = response.data.cashFlows.find((f) => f.client_id == m.client_id);
+
+					let amountReceived = "";
+
+					if (typeof cashFlow === "object") {
+						amountReceived = cashFlow.amount_received;
+					}
 
 					const company = response.data.companies.find((f) => f.id == m.company_id).name;
 
-					const createdAt = dayjs(m.created_at).format("DD MMM, YYY");
-					const createdAtTime = dayjs(m.created_at).format("hh:mm:ss a");
+					const invoice = response.data.invoices.find((f) => f.project_id == m.id);
 
-					const project = response.data.projects.find((f) => f.id == m.project_id);
+					let invoiceId = "";
+					let invoiceCreatedAt = "";
+					let invoiceCreatedAtTime = "";
 
-					const mainProject = response.data.mainProjects.find((f) => f.id == project.main_project_id).name;
+					if (typeof invoice === "object") {
+						invoiceId = invoice.custom_id;
+						invoiceCreatedAt = dayjs(invoice.created_at).format("DD MMM, YYY");
+						invoiceCreatedAtTime = dayjs(invoice.created_at).format("hh:mm:ss a");
+					}
 
-					const subProject = response.data.subProjects.find((f) => f.id == project.sub_project_id).name;
+					const mainProject = response.data.mainProjects.find((f) => f.id == m.main_project_id).name;
+
+					const subProject = response.data.subProjects.find((f) => f.id == m.sub_project_id).name;
 
 					return {
 						...m,
+						amount: Number(m.quote),
 						amount_received: Number(amountReceived),
 						company,
-						created_at: createdAt,
-						created_at_time: createdAtTime,
+						created_at: invoiceCreatedAt,
+						created_at_time: invoiceCreatedAtTime,
+						invoice_id: invoiceId,
 						main_project: mainProject,
 						sub_project: subProject,
-						quote: project.quote,
 					};
 				});
 
 				setApi((s) => ({
 					...s,
-					invoices: revised,
-					invoicesCopy: revised,
+					projects: revised,
+					projectsCopy: revised,
 				}));
 			}
 		} catch (error) {
@@ -263,7 +287,7 @@ export default function Invoices({ status }) {
 	function getTotalAmount() {
 		let total = 0;
 
-		for (const i of api.invoices) {
+		for (const i of api.projects) {
 			total += Number(i.amount);
 		}
 
@@ -273,7 +297,7 @@ export default function Invoices({ status }) {
 	function getTotalAmountReceived() {
 		let total = 0;
 
-		for (const i of api.invoices) {
+		for (const i of api.projects) {
 			total += Number(i.amount_received);
 		}
 
@@ -304,12 +328,10 @@ export default function Invoices({ status }) {
 					<SpinnerBig />
 				</div>
 			);
-		} else if (!api.invoicesCopy.length) {
+		} else if (!api.projectsCopy.length) {
 			return <div className={blankDataWrapper}>No invoices generated.</div>;
-		} else if (!api.invoices.length) {
+		} else if (!api.projects.length) {
 			return <div className={blankDataWrapper}>No invoices found.</div>;
-		} else if (mounted.newInvoice) {
-			return <NewInvoice reload={getSupportData} unmount={toggleNewInvoice} />;
 		} else {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border">
@@ -318,7 +340,7 @@ export default function Invoices({ status }) {
 						className="w-full h-full overflow-y-auto bottom-border contrast-background"
 						data={doSorting()}
 						itemContent={(i, object) => uiRows(object, i)}
-						totalCount={api.invoices.length}
+						totalCount={api.projects.length}
 					/>
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 				</div>
@@ -327,7 +349,7 @@ export default function Invoices({ status }) {
 	}
 
 	function uiExport() {
-		if (api.invoices.length && api.invoicesCopy.length) {
+		if (api.projects.length && api.projectsCopy.length) {
 			return (
 				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => doExcelExport()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
@@ -352,7 +374,7 @@ export default function Invoices({ status }) {
 	}
 
 	function uiFromDate() {
-		if (api.invoicesCopy.length) {
+		if (api.projectsCopy.length) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
@@ -383,7 +405,7 @@ export default function Invoices({ status }) {
 
 			return (
 				<span
-					className="flex w-[11.11%] space-x-2 justify-center items-center cursor-pointer text-white font-medium-10"
+					className="flex w-[10%] space-x-2 justify-center items-center cursor-pointer text-white font-medium-10"
 					key={i}
 					onClick={() => setSort(m)}>
 					<span>{m}</span>
@@ -394,26 +416,30 @@ export default function Invoices({ status }) {
 	}
 
 	function uiMain() {
-		return (
-			<>
-				<div className="flex w-full px-5 py-2.5 justify-between items-center">
-					<div className="flex w-1/5 space-x-2 justify-start items-center">
-						<span className="view-heading">{thisView}</span>
-						{api.invoicesCopy.length > 0 && <Badge value={getDataCount()} />}
-					</div>
-					<div className="flex w-4/5 space-x-2 justify-end items-center">
-						<div className="flex w-1/2 space-x-2 justify-end items-center">
-							{uiFromDate()}
-							{uiToDate()}
+		if (!mounted.newInvoice) {
+			return (
+				<div className="flex flex-col w-full h-full justify-center items-center">
+					<div className="flex w-full px-5 py-2.5 justify-between items-center">
+						<div className="flex w-1/5 space-x-2 justify-start items-center">
+							<span className="view-heading">{thisView}</span>
+							{api.projectsCopy.length > 0 && <Badge value={getDataCount()} />}
 						</div>
-						{uiSearch()}
-						{uiNew()}
-						{uiExport()}
+						<div className="flex w-4/5 space-x-2 justify-end items-center">
+							<div className="flex w-1/2 space-x-2 justify-end items-center">
+								{uiFromDate()}
+								{uiToDate()}
+							</div>
+							{uiSearch()}
+							{uiNew()}
+							{uiExport()}
+						</div>
 					</div>
+					<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
 				</div>
-				<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
-			</>
-		);
+			);
+		} else {
+			return <NewInvoice project={api.projects.at(0)} reload={getSupportData} unmount={toggleNewInvoice} />;
+		}
 	}
 
 	function uiNew() {
@@ -426,9 +452,11 @@ export default function Invoices({ status }) {
 	}
 
 	function uiRows(row, i) {
-		const style = `flex flex-wrap w-[11.11%] min-h-9 justify-center items-center text-center`;
+		const style = `flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center`;
 
-		const id = MyGlobal.HighlightText(row.custom_id, main.filter.find);
+		const id = MyGlobal.HighlightText(row.id, main.filter.find);
+		const invoiceId = MyGlobal.HighlightText(row.invoice_id, main.filter.find);
+		const _invoiceId = !invoiceId ? "Generate" : invoiceId;
 		const company = MyGlobal.HighlightText(row.company, main.filter.find);
 		const mainProject = MyGlobal.HighlightText(row.main_project, main.filter.find);
 		const subProject = MyGlobal.HighlightText(row.sub_project, main.filter.find);
@@ -436,7 +464,7 @@ export default function Invoices({ status }) {
 
 		const amountReceived = MyGlobal.HighlightText(row.amount_received, main.filter.find);
 
-		const status = MyGlobal.HighlightText(row.status, main.filter.find);
+		const invoiceIdStyle = !row.invoice_id ? `${style} cursor-pointer primary-text` : `${style} cursor-help primary-text`;
 
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
@@ -455,14 +483,19 @@ export default function Invoices({ status }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
 
-				<span className={style} dangerouslySetInnerHTML={{ __html: status }} />
 				<span className={style} />
+				<span className={invoiceIdStyle} dangerouslySetInnerHTML={{ __html: _invoiceId }} onClick={() => toggleNewInvoice()} />
+
+				<span className={`${style} space-x-5`}>
+					<FontAwesomeIcon className="primary-text" icon={faFileDownload} size="lg" />
+					<FontAwesomeIcon className="primary-text" icon={faCoins} size="lg" />
+				</span>
 			</div>
 		);
 	}
 
 	function uiSearch() {
-		if (api.invoicesCopy.length) {
+		if (api.projectsCopy.length) {
 			return (
 				<TextInputNative
 					id="findBox"
@@ -490,7 +523,7 @@ export default function Invoices({ status }) {
 	}
 
 	function uiToDate() {
-		if (api.invoicesCopy.length) {
+		if (api.projectsCopy.length) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />

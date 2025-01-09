@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 08, 2025 at 08:30 PM
+-- Generation Time: Jan 09, 2025 at 07:29 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -228,7 +228,13 @@ INSERT INTO `activities` (`id`, `entry_by`, `module`, `activity`, `ip_address`, 
 (145, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-07 23:19:34', ''),
 (146, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-08 20:11:14', ''),
 (147, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-08 21:30:38', ''),
-(148, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-08 21:36:17', '');
+(148, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-08 21:36:17', ''),
+(149, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-09 19:10:30', ''),
+(150, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-09 19:45:06', ''),
+(151, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-09 20:12:30', ''),
+(152, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-09 20:39:08', ''),
+(153, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-09 21:14:09', ''),
+(154, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-09 23:48:47', '');
 
 -- --------------------------------------------------------
 
@@ -532,10 +538,9 @@ CREATE TABLE `invoices` (
   `client_id` char(8) DEFAULT NULL,
   `project_id` char(8) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL CHECK (`amount` >= 0),
-  `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
+  `amount_received` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `receipt_date` datetime DEFAULT current_timestamp(),
-  `payment_received` tinyint(1) NOT NULL DEFAULT 0
+  `receipt_date` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -667,9 +672,9 @@ CREATE TABLE `owner_firms` (
 --
 
 INSERT INTO `owner_firms` (`id`, `name`, `address`, `phone_number`, `email_address`, `pan`, `gstin`, `terms_conditions`, `entry_at`, `entry_by`) VALUES
-('AC01', 'Signiix Advisors', 'D-608, The First, Behind ITC Narmada, Vastrapur - 3800016', '9898110703', 'admin@signiixadvisors.com', 'BBXPA8126Q', '', '1. Payment is due within 30 days from the invoice date unless otherwise agreed in writing.nnn.2. A late fee of 1.5% per month will be applied to overdue balances.nnn.3. Any disputes regarding this invoice must be communicated within 15 days of receipts.nnn.4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A1'),
-('AC02', 'Branchitects Firm', 'AFF8, Aakansha Flats, Opp Jaymala Cross Roads, Isanpur, Ahmedabad - 3800008', '792265411259', 'support@branchitects.com', 'BBXPA8126A', '', '1. Payment is due within 15 days from the invoice date unless otherwise agreed in writing.nnn.2. A late fee of 3.5% per month will be applied to overdue balances.nnn.3. Any disputes regarding this invoice must be communicated within 30 days of receipt.nnn.4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A1'),
-('AC03', 'Pandya Sharma', 'D-608, The First, Behind ITC Narmada, Vastrapur - 3800016', '7925460175', 'support@pandya.sharma.com', 'BBXPA8126Q', '29GGGGG1314R9Z6', '1. Payment is due within 30 days from the invoice date unless otherwise agreed in writing.nnn.2. A late fee of 1.5% per month will be applied to overdue balances.nnn.3. Any disputes regarding this invoice must be communicated within 15 days of receipts.nnn.4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A3'),
+('AC01', 'Signiix Advisors', 'D-608, The First, Behind ITC Narmada, Vastrapur - 3800016', '9898110703', 'admin@signiixadvisors.com', 'BBXPA8126Q', '', '1. Payment is due within 30 days from the invoice date unless otherwise agreed in writing.\\n2. A late fee of 1.5% per month will be applied to overdue balances.\\n3. Any disputes regarding this invoice must be communicated within 15 days of receipts.\\n4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A1'),
+('AC02', 'Branchitects Firm', 'AFF8, Aakansha Flats, Opp Jaymala Cross Roads, Isanpur, Ahmedabad - 3800008', '792265411259', 'support@branchitects.com', 'BBXPA8126A', '', '1. Payment is due within 15 days from the invoice date unless otherwise agreed in writing.\\n2. A late fee of 3.5% per month will be applied to overdue balances.\\n3. Any disputes regarding this invoice must be communicated within 30 days of receipt.\\n4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A1'),
+('AC03', 'Pandya Sharma', 'D-608, The First, Behind ITC Narmada, Vastrapur - 3800016', '7925460175', 'support@pandya.sharma.com', 'BBXPA8126Q', '29GGGGG1314R9Z6', '1. Payment is due within 30 days from the invoice date unless otherwise agreed in writing.\\n2. A late fee of 1.5% per month will be applied to overdue balances.\\n3. Any disputes regarding this invoice must be communicated within 15 days of receipts.\\n4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A3'),
 ('AC04', 'Abhishek Gor', '101, Shakti Flora, 9B Prankunj Society, Kankaria, Ahmedabad', '8000721554', 'abhishekgor@hotmail.com', 'BADGP9433M', 'NA', 'General', '2024-12-17 20:02:11', 'A3');
 
 -- --------------------------------------------------------
@@ -1662,7 +1667,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=149;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=155;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`

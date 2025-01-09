@@ -200,9 +200,10 @@ const MyConstants = Object.freeze({
 			SubProject: "Sub Project",
 			CreatedAt: "Created At",
 			Amount: "Amount",
-			AmountReceived: "Amt Received",
-			Status: "Status",
-			File: "File",
+			AmountReceived: "Received",
+			AmountPending: "Pending",
+			InvoiceId: "Invoice ID",
+			Actions: "Actions",
 		}),
 		Notes: Object.freeze({
 			date: "Date",
