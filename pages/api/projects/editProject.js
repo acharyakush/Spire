@@ -41,7 +41,7 @@ export default async function handler(req, res) {
 
 			newCompanyId = storedProcedureResult.new_id;
 
-			const queryResult = await query(`INSERT INTO companies (id, client_id, name, entry_by) VALUES (?, ?, ?, ?)`, [
+			const queryResult = await query(`INSERT INTO companies (id, client_id, name, entry_by_id) VALUES (?, ?, ?, ?)`, [
 				newCompanyId,
 				newClientId,
 				company.name,
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
 
 			newSubProjectId = storedProcedureResult.new_id;
 
-			const queryResult = await query("INSERT INTO sub_projects (id, name, entry_by) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
+			const queryResult = await query("INSERT INTO sub_projects (id, name, entry_by_id) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
 
 			if (queryResult.affectedRows == 0) {
 				res.status(400).send("Could not add Sub Project.");

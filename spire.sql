@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 09, 2025 at 07:29 PM
+-- Generation Time: Jan 11, 2025 at 07:20 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -103,7 +103,7 @@ DELIMITER ;
 
 CREATE TABLE `activities` (
   `id` int(11) NOT NULL,
-  `entry_by` char(8) NOT NULL,
+  `entry_by_id` char(8) NOT NULL,
   `module` varchar(100) DEFAULT NULL,
   `activity` varchar(5000) NOT NULL,
   `ip_address` varchar(45) NOT NULL,
@@ -115,7 +115,7 @@ CREATE TABLE `activities` (
 -- Dumping data for table `activities`
 --
 
-INSERT INTO `activities` (`id`, `entry_by`, `module`, `activity`, `ip_address`, `entry_at`, `details`) VALUES
+INSERT INTO `activities` (`id`, `entry_by_id`, `module`, `activity`, `ip_address`, `entry_at`, `details`) VALUES
 (1, 'A3', 'Inquiries', 'Added <b>IQ000001</b>.', 'Localhost', '2024-12-15 15:28:07', ''),
 (2, 'A3', 'General', 'Logged out.', 'Localhost', '2024-12-15 23:32:18', ''),
 (3, 'A3', 'General', 'Logged in.', 'Localhost', '2024-12-16 19:05:52', ''),
@@ -234,7 +234,41 @@ INSERT INTO `activities` (`id`, `entry_by`, `module`, `activity`, `ip_address`, 
 (151, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-09 20:12:30', ''),
 (152, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-09 20:39:08', ''),
 (153, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-09 21:14:09', ''),
-(154, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-09 23:48:47', '');
+(154, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-09 23:48:47', ''),
+(155, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-10 00:00:13', ''),
+(156, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-10 18:25:35', ''),
+(157, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-10 18:26:56', ''),
+(158, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-10 18:30:56', ''),
+(159, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-10 18:34:12', ''),
+(160, '', 'General', 'Logged out.', 'Localhost', '2025-01-10 20:18:57', ''),
+(161, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-11 18:50:53', ''),
+(162, 'A3', 'Inquiries', 'Added <b>IQ000004</b>.', 'Localhost', '2025-01-11 19:32:47', ''),
+(163, 'A3', 'Inquiries', 'Added <b>IQ000005</b>.', 'Localhost', '2025-01-11 19:45:35', ''),
+(164, 'A3', 'Inquiries', 'Added <b>IQ000006</b>.', 'Localhost', '2025-01-11 19:54:39', ''),
+(165, 'A3', 'Inquiries', 'Closed <b>IQ000004</b> due to <b>Yes. I want to close this inquiry.</b>.', 'Localhost', '2025-01-11 20:10:19', ''),
+(166, 'A3', 'Inquiries', 'Update status of <b>IQ000004</b> to <b>Hold</b> from <b>Closed</b>.', 'Localhost', '2025-01-11 20:10:42', ''),
+(167, 'A3', 'Inquiries', 'Update status of <b>IQ000004</b> to <b>Open</b> from <b>Hold</b>.', 'Localhost', '2025-01-11 20:12:54', ''),
+(168, 'A3', 'Inquiries', 'Update status of <b>IQ000004</b> to <b>Hold</b> from <b>Open</b>.', 'Localhost', '2025-01-11 20:12:57', ''),
+(169, 'A3', 'Inquiries', 'Update status of <b>IQ000004</b> to <b>Open</b> from <b>Hold</b>.', 'Localhost', '2025-01-11 20:15:05', ''),
+(170, 'A3', 'Inquiries', 'Update status of <b>IQ000004</b> to <b>Hold</b> from <b>Open</b>.', 'Localhost', '2025-01-11 20:15:12', ''),
+(171, 'A3', 'Inquiries', 'Closed <b>IQ000006</b> due to <b>I am done with this work.</b>.', 'Localhost', '2025-01-11 20:15:28', ''),
+(172, '', 'Inquiries', 'Edited <b>IQ000002</b>.', 'Localhost', '2025-01-11 21:55:22', ''),
+(173, '', 'Inquiries', 'Edited <b>IQ000002</b>.', 'Localhost', '2025-01-11 21:55:31', ''),
+(174, '', 'Inquiries', 'Edited <b>IQ000002</b>.', 'Localhost', '2025-01-11 21:56:08', ''),
+(175, '', 'Inquiries', 'Edited <b>IQ000002</b>.', 'Localhost', '2025-01-11 21:56:23', ''),
+(176, '', 'Inquiries', 'Edited <b>IQ000002</b>.', 'Localhost', '2025-01-11 21:56:34', ''),
+(177, '', 'Inquiries', 'Edited <b>IQ000002</b>.', 'Localhost', '2025-01-11 21:57:34', ''),
+(178, '', 'Inquiries', 'Edited <b>IQ000002</b>.', 'Localhost', '2025-01-11 22:13:09', ''),
+(179, 'A3', 'Inquiries', 'Edited <b>IQ000002</b>.', 'Localhost', '2025-01-11 22:16:53', ''),
+(180, 'A3', 'Inquiries', 'Edited <b>IQ000002</b>.', 'Localhost', '2025-01-11 22:17:12', ''),
+(181, 'A3', 'Inquiries', 'Edited <b>IQ000002</b>.', 'Localhost', '2025-01-11 22:20:18', ''),
+(182, 'A3', 'Inquiries', 'Edited <b>IQ000004</b>.', 'Localhost', '2025-01-11 22:20:42', ''),
+(183, 'A3', 'Inquiries', 'Edited <b>IQ000003</b>.', 'Localhost', '2025-01-11 22:21:26', ''),
+(184, 'A3', 'Inquiries', 'Update status of <b>IQ000003</b> to <b>Hold</b> from <b>Open</b>.', 'Localhost', '2025-01-11 22:27:30', ''),
+(185, 'A3', 'Notes', 'Added in <b>IQ000001</b>.', 'Localhost', '2025-01-11 23:45:49', ''),
+(186, 'A3', 'Notes', 'Added in <b>IQ000001</b>.', 'Localhost', '2025-01-11 23:46:31', ''),
+(187, 'A3', 'Notes', 'Added in <b>IQ000004</b>.', 'Localhost', '2025-01-11 23:46:51', ''),
+(188, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-11 23:49:52', '');
 
 -- --------------------------------------------------------
 
@@ -283,14 +317,14 @@ CREATE TABLE `affiliates` (
   `joined_on` timestamp NULL DEFAULT current_timestamp(),
   `status` enum('Active','Inactive') DEFAULT 'Active',
   `entry_at` timestamp NULL DEFAULT current_timestamp(),
-  `entry_by` char(8) NOT NULL
+  `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `affiliates`
 --
 
-INSERT INTO `affiliates` (`id`, `name`, `email_address`, `phone_number`, `upi_id`, `joined_on`, `status`, `entry_at`, `entry_by`) VALUES
+INSERT INTO `affiliates` (`id`, `name`, `email_address`, `phone_number`, `upi_id`, `joined_on`, `status`, `entry_at`, `entry_by_id`) VALUES
 ('AF000001', 'Drashti Vyas', 'vyas.drashti@gmail.com', '9978075347', 'acharyakush2604@axl.com', '2025-01-02 12:51:53', 'Active', '2025-01-02 12:51:53', 'A3');
 
 -- --------------------------------------------------------
@@ -341,7 +375,7 @@ CREATE TABLE `cash_flows` (
   `is_deleted` tinyint(1) NOT NULL DEFAULT 0,
   `is_office_expense` tinyint(1) NOT NULL DEFAULT 0,
   `entry_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `entry_by` char(8) NOT NULL
+  `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -387,16 +421,18 @@ CREATE TABLE `clients` (
   `rating` tinyint(3) UNSIGNED DEFAULT 0,
   `tags` varchar(500) DEFAULT NULL,
   `entry_at` datetime DEFAULT current_timestamp(),
-  `entry_by` char(8) DEFAULT NULL
+  `entry_by_id` char(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `clients`
 --
 
-INSERT INTO `clients` (`id`, `affiliate_ids`, `company_id`, `reference_id`, `name`, `address`, `phone_number`, `email_address`, `industry`, `is_confirmed`, `is_deleted`, `joined_on`, `notes`, `rating`, `tags`, `entry_at`, `entry_by`) VALUES
+INSERT INTO `clients` (`id`, `affiliate_ids`, `company_id`, `reference_id`, `name`, `address`, `phone_number`, `email_address`, `industry`, `is_confirmed`, `is_deleted`, `joined_on`, `notes`, `rating`, `tags`, `entry_at`, `entry_by_id`) VALUES
 ('CN000001', NULL, 'CP000001', 'RF000001', 'Kush Acharya', NULL, 8780577704, 'acharyakush2604@gmail.com', NULL, 1, 0, '2024-12-15 15:28:07', NULL, 0, NULL, '2024-12-15 15:28:07', NULL),
-('CN000002', NULL, NULL, 'RF000002', 'Kevin Vyas', NULL, 8780577812, 'vyas.kevin@outlook.com', NULL, 0, 0, '2024-12-18 00:05:18', NULL, 0, NULL, '2024-12-18 00:05:18', NULL);
+('CN000002', NULL, NULL, 'RF000002', 'Kevin Vyas', NULL, 8780577812, 'vyas.kevin@outlook.com', NULL, 0, 0, '2024-12-18 00:05:18', NULL, 0, NULL, '2024-12-18 00:05:18', NULL),
+('CN000003', NULL, NULL, 'RF000003', 'Mudra Rawal', NULL, 9601432558, 'mudra.rawal@gmail.com', NULL, 0, 0, '2025-01-11 19:15:23', NULL, 0, NULL, '2025-01-11 19:15:23', NULL),
+('CN000004', NULL, NULL, 'RF000003', 'Parth Acharya', NULL, 8866359953, 'parth.acharya@gmail.com', NULL, 0, 0, '2025-01-11 19:45:34', NULL, 0, NULL, '2025-01-11 19:45:34', NULL);
 
 -- --------------------------------------------------------
 
@@ -417,14 +453,14 @@ CREATE TABLE `companies` (
   `invoice_fees` decimal(12,2) DEFAULT NULL CHECK (`invoice_fees` >= 0),
   `total_affiliate_fees` decimal(12,2) DEFAULT NULL CHECK (`total_affiliate_fees` >= 0),
   `entry_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `entry_by` char(8) NOT NULL
+  `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `companies`
 --
 
-INSERT INTO `companies` (`id`, `client_id`, `name`, `phone_number`, `email_address`, `address`, `pan`, `gstin`, `reimbursement_voucher`, `invoice_fees`, `total_affiliate_fees`, `entry_at`, `entry_by`) VALUES
+INSERT INTO `companies` (`id`, `client_id`, `name`, `phone_number`, `email_address`, `address`, `pan`, `gstin`, `reimbursement_voucher`, `invoice_fees`, `total_affiliate_fees`, `entry_at`, `entry_by_id`) VALUES
 ('CP000001', 'CN000001', 'Sun Pharma Pvt Ltd', '07925462408', 'support@sunpharma.com', NULL, 'BBXPA8126Q', NULL, NULL, NULL, NULL, '2024-12-17 23:48:41', 'A3');
 
 -- --------------------------------------------------------
@@ -489,7 +525,7 @@ CREATE TABLE `employees` (
   `last_login` datetime DEFAULT current_timestamp(),
   `is_active` tinyint(1) DEFAULT 1,
   `entry_at` datetime DEFAULT current_timestamp(),
-  `entry_by` char(8) NOT NULL,
+  `entry_by_id` char(8) NOT NULL,
   `notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -515,16 +551,20 @@ CREATE TABLE `inquiries` (
   `status` enum('Closed','Confirmed','Hold','Open') NOT NULL DEFAULT 'Open',
   `tags` varchar(255) DEFAULT NULL,
   `entry_at` datetime DEFAULT current_timestamp(),
-  `entry_by` char(8) NOT NULL
+  `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `inquiries`
 --
 
-INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `sub_project_id`, `entry_date`, `phone_number`, `email_address`, `follow_ups`, `is_closed`, `closure_reason`, `quote`, `status`, `tags`, `entry_at`, `entry_by`) VALUES
+INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `sub_project_id`, `entry_date`, `phone_number`, `email_address`, `follow_ups`, `is_closed`, `closure_reason`, `quote`, `status`, `tags`, `entry_at`, `entry_by_id`) VALUES
 ('IQ000001', 'CN000001', 'RF000001', 'MP000004', 'SP000003', '2024-12-15 09:39:42', 8780577704, 'acharyakush2604@gmail.com', 'A1,A2', 0, '', 2500.00, 'Confirmed', NULL, '2024-12-15 15:28:07', 'A3'),
-('IQ000002', 'CN000002', 'RF000002', 'MP000011', 'SP000006', '2024-12-17 18:23:01', 8780577812, 'vyas.kevin@outlook.com', 'A3', 0, '', 15000.00, 'Open', NULL, '2024-12-18 00:05:18', 'A3');
+('IQ000002', 'CN000002', 'RF000002', 'MP000011', 'SP000004', '2024-12-18 12:00:00', 8780577812, 'vyas.kevin@outlook.com', 'A1,A3', 0, '', 15080.00, 'Open', NULL, '2024-12-18 00:05:18', 'A3'),
+('IQ000003', 'CN000003', 'RF000003', 'MP000006', 'SP000012', '2025-01-10 12:00:00', 9601432558, 'mudra.rawal@gmail.com', 'A1,A2', 0, '', 7520.00, 'Hold', NULL, '2025-01-11 19:15:23', 'A3'),
+('IQ000004', 'CN000002', 'RF000004', 'MP000005', 'SP000011', '2025-01-06 12:00:00', 8780577812, 'vyas.kevin@outlook.com', 'A1,A3', 0, '', 8550.00, 'Hold', NULL, '2025-01-11 19:32:46', 'A3'),
+('IQ000005', 'CN000004', 'RF000003', 'MP000012', 'SP000023', '2025-01-05 14:13:11', 8866359953, 'parth.acharya@gmail.com', 'A1', 0, NULL, 2000.00, 'Open', NULL, '2025-01-11 19:45:34', 'A3'),
+('IQ000006', 'CN000003', 'RF000003', 'MP000003', 'SP000007', '2025-01-02 14:24:03', 9601432558, 'mudra.rawal@gmail.com', 'A2', 1, 'I am done with this work.', 10000.00, 'Closed', NULL, '2025-01-11 19:54:38', 'A3');
 
 -- --------------------------------------------------------
 
@@ -557,7 +597,7 @@ CREATE TABLE `licenses` (
   `expiration_date` datetime NOT NULL,
   `status` enum('Active','Expired','Revoked') DEFAULT 'Active',
   `entry_at` datetime DEFAULT current_timestamp(),
-  `entry_by` char(8) NOT NULL
+  `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -570,7 +610,7 @@ CREATE TABLE `main_projects` (
   `id` char(8) NOT NULL,
   `name` varchar(255) NOT NULL,
   `entry_at` datetime DEFAULT current_timestamp(),
-  `entry_by` char(8) NOT NULL,
+  `entry_by_id` char(8) NOT NULL,
   `updated_at` datetime DEFAULT current_timestamp(),
   `updated_by` char(8) DEFAULT NULL,
   `update_reason` text DEFAULT NULL
@@ -580,7 +620,7 @@ CREATE TABLE `main_projects` (
 -- Dumping data for table `main_projects`
 --
 
-INSERT INTO `main_projects` (`id`, `name`, `entry_at`, `entry_by`, `updated_at`, `updated_by`, `update_reason`) VALUES
+INSERT INTO `main_projects` (`id`, `name`, `entry_at`, `entry_by_id`, `updated_at`, `updated_by`, `update_reason`) VALUES
 ('MP000001', 'Accounting', '2024-11-08 21:35:04', 'A1', '2024-11-08 21:35:04', NULL, NULL),
 ('MP000002', 'Company Law', '2024-11-08 21:35:04', 'A1', '2024-11-08 21:35:04', NULL, NULL),
 ('MP000003', 'Consultancy', '2024-11-08 21:35:04', 'A1', '2024-11-08 21:35:04', NULL, NULL),
@@ -630,8 +670,8 @@ CREATE TABLE `notes` (
   `inquiry_id` char(8) DEFAULT NULL,
   `project_id` char(8) DEFAULT NULL,
   `task_id` char(8) DEFAULT NULL,
-  `original_entry_by` char(8) NOT NULL,
-  `entry_by` char(8) NOT NULL,
+  `original_entry_by_id` char(8) NOT NULL,
+  `entry_by_id` char(8) NOT NULL,
   `content` varchar(1000) NOT NULL,
   `source` varchar(20) NOT NULL,
   `entry_date` datetime DEFAULT current_timestamp()
@@ -641,12 +681,19 @@ CREATE TABLE `notes` (
 -- Dumping data for table `notes`
 --
 
-INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `task_id`, `original_entry_by`, `entry_by`, `content`, `source`, `entry_date`) VALUES
+INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `task_id`, `original_entry_by_id`, `entry_by_id`, `content`, `source`, `entry_date`) VALUES
 (1, 'IQ000001', NULL, NULL, 'A3', 'A3', 'New client. Reference from CharteredWorks.', 'Inquiries', '2024-12-15 15:28:07'),
 (2, 'IQ000001', NULL, NULL, 'A3', 'A3', 'Test inquiry.', 'Inquiries', '2024-12-16 20:52:47'),
 (3, 'IQ000001', NULL, NULL, 'A3', 'A3', 'Inquiry note #3', 'Inquiries', '2024-12-16 20:54:45'),
 (10, 'IQ000001', 'PJ000001', 'TK000001', 'A3', 'A3', 'First project. Wish me good luck.', 'Projects', '2024-12-17 23:48:41'),
-(11, 'IQ000002', NULL, NULL, 'A3', 'A3', 'Lives in Portugal.', 'Inquiries', '2024-12-18 00:05:18');
+(11, 'IQ000002', NULL, NULL, 'A3', 'A3', 'Lives in Portugal.', 'Inquiries', '2024-12-18 00:05:18'),
+(12, 'IQ000003', NULL, NULL, '', 'A3', 'This client is sister of Kush Acharya', 'Inquiries', '2025-01-11 19:15:23'),
+(13, 'IQ000004', NULL, NULL, '', 'A3', 'The client is the friend of brother of Kush Acharya', 'Inquiries', '2025-01-11 19:32:46'),
+(14, 'IQ000005', NULL, NULL, '', 'A3', 'The client is the first cousin of Kush Acharya', 'Inquiries', '2025-01-11 19:45:34'),
+(15, 'IQ000006', NULL, NULL, '', 'A3', 'The client is the sister of Kush Acharya', 'Inquiries', '2025-01-11 19:54:38'),
+(16, 'IQ000001', NULL, NULL, '', 'A3', '2025 Note.', 'Inquiries', '2025-01-11 23:45:49'),
+(17, 'IQ000001', NULL, NULL, '', 'A3', 'Hello.', 'Inquiries', '2025-01-11 23:46:31'),
+(18, 'IQ000004', NULL, NULL, '', 'A3', 'The client lives in Portugal.', 'Inquiries', '2025-01-11 23:46:51');
 
 -- --------------------------------------------------------
 
@@ -664,14 +711,14 @@ CREATE TABLE `owner_firms` (
   `gstin` varchar(15) NOT NULL,
   `terms_conditions` text NOT NULL,
   `entry_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `entry_by` char(8) NOT NULL
+  `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `owner_firms`
 --
 
-INSERT INTO `owner_firms` (`id`, `name`, `address`, `phone_number`, `email_address`, `pan`, `gstin`, `terms_conditions`, `entry_at`, `entry_by`) VALUES
+INSERT INTO `owner_firms` (`id`, `name`, `address`, `phone_number`, `email_address`, `pan`, `gstin`, `terms_conditions`, `entry_at`, `entry_by_id`) VALUES
 ('AC01', 'Signiix Advisors', 'D-608, The First, Behind ITC Narmada, Vastrapur - 3800016', '9898110703', 'admin@signiixadvisors.com', 'BBXPA8126Q', '', '1. Payment is due within 30 days from the invoice date unless otherwise agreed in writing.\\n2. A late fee of 1.5% per month will be applied to overdue balances.\\n3. Any disputes regarding this invoice must be communicated within 15 days of receipts.\\n4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A1'),
 ('AC02', 'Branchitects Firm', 'AFF8, Aakansha Flats, Opp Jaymala Cross Roads, Isanpur, Ahmedabad - 3800008', '792265411259', 'support@branchitects.com', 'BBXPA8126A', '', '1. Payment is due within 15 days from the invoice date unless otherwise agreed in writing.\\n2. A late fee of 3.5% per month will be applied to overdue balances.\\n3. Any disputes regarding this invoice must be communicated within 30 days of receipt.\\n4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A1'),
 ('AC03', 'Pandya Sharma', 'D-608, The First, Behind ITC Narmada, Vastrapur - 3800016', '7925460175', 'support@pandya.sharma.com', 'BBXPA8126Q', '29GGGGG1314R9Z6', '1. Payment is due within 30 days from the invoice date unless otherwise agreed in writing.\\n2. A late fee of 1.5% per month will be applied to overdue balances.\\n3. Any disputes regarding this invoice must be communicated within 15 days of receipts.\\n4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A3'),
@@ -691,14 +738,14 @@ CREATE TABLE `owner_firms_banks` (
   `ifsc_code` varchar(20) NOT NULL,
   `branch_name` varchar(100) NOT NULL,
   `entry_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `entry_by` char(8) NOT NULL
+  `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `owner_firms_banks`
 --
 
-INSERT INTO `owner_firms_banks` (`id`, `owner_firm_id`, `name`, `account_number`, `ifsc_code`, `branch_name`, `entry_at`, `entry_by`) VALUES
+INSERT INTO `owner_firms_banks` (`id`, `owner_firm_id`, `name`, `account_number`, `ifsc_code`, `branch_name`, `entry_at`, `entry_by_id`) VALUES
 ('BK01', 'AC01', 'HDFC Bank Limited', '50200093685321', 'HDFC0000383', 'Naranpura Branch', '2024-12-17 20:03:18', 'A1'),
 ('BK02', 'AC02', 'Bandhan Bank', '10210010518171', 'BDBL0001474', 'Panchwati Branch', '2024-12-17 20:03:18', 'A1'),
 ('BK03', 'AC03', 'HDFC Bank', '50200061991892', 'HDFC0005064', 'Motera Branch', '2024-12-17 20:03:18', 'A1'),
@@ -1079,7 +1126,7 @@ CREATE TABLE `projects` (
   `is_deleted` tinyint(1) DEFAULT 0,
   `is_edited` tinyint(1) DEFAULT 0,
   `entry_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `entry_by` char(8) NOT NULL,
+  `entry_by_id` char(8) NOT NULL,
   `completed_on` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -1087,7 +1134,7 @@ CREATE TABLE `projects` (
 -- Dumping data for table `projects`
 --
 
-INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `invoice_firm_id`, `government_id`, `main_project_id`, `sub_project_id`, `quote`, `due_on`, `total_affiliate_fees`, `reimbursement_voucher`, `invoice_fees`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `entry_at`, `entry_by`, `completed_on`) VALUES
+INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `invoice_firm_id`, `government_id`, `main_project_id`, `sub_project_id`, `quote`, `due_on`, `total_affiliate_fees`, `reimbursement_voucher`, `invoice_fees`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `entry_at`, `entry_by_id`, `completed_on`) VALUES
 ('PJ000001', 'CN000001', 'CP000001', NULL, 'IQ000001', 'AC01', 'PJ1/22/12/2024', 'MP000004', 'SP000003', 5750.00, '2024-12-15 04:09:42', NULL, 1250.00, 575.00, 'A3,A2', '2024-12-17 23:48:41', 'Active', 0, 0, '2024-12-17 23:48:41', 'A3', NULL);
 
 -- --------------------------------------------------------
@@ -1159,7 +1206,7 @@ CREATE TABLE `sub_projects` (
   `id` char(8) NOT NULL,
   `name` varchar(255) NOT NULL,
   `entry_at` datetime DEFAULT current_timestamp(),
-  `entry_by` char(8) NOT NULL,
+  `entry_by_id` char(8) NOT NULL,
   `updated_at` datetime DEFAULT current_timestamp(),
   `updated_by` char(8) DEFAULT NULL,
   `update_reason` text DEFAULT NULL
@@ -1169,7 +1216,7 @@ CREATE TABLE `sub_projects` (
 -- Dumping data for table `sub_projects`
 --
 
-INSERT INTO `sub_projects` (`id`, `name`, `entry_at`, `entry_by`, `updated_at`, `updated_by`, `update_reason`) VALUES
+INSERT INTO `sub_projects` (`id`, `name`, `entry_at`, `entry_by_id`, `updated_at`, `updated_by`, `update_reason`) VALUES
 ('SP000001', 'Accounting', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
 ('SP000002', 'Accounting And ITR', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
 ('SP000003', 'Annual Compliance', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
@@ -1198,7 +1245,9 @@ INSERT INTO `sub_projects` (`id`, `name`, `entry_at`, `entry_by`, `updated_at`, 
 ('SP000026', 'TDS Return', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
 ('SP000027', 'Trademark Assignment', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
 ('SP000028', 'Trademark Registration', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
-('SP000029', 'Trademark Reply', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL);
+('SP000029', 'Trademark Reply', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
+('SP000030', 'Test Sub Project', '2025-01-11 22:13:08', '', '2025-01-11 22:13:08', NULL, NULL),
+('SP000031', 'Test Sub Project One', '2025-01-11 22:17:12', 'A3', '2025-01-11 22:17:12', NULL, NULL);
 
 --
 -- Triggers `sub_projects`
@@ -1236,7 +1285,7 @@ CREATE TABLE `tasks` (
   `project_id` char(8) NOT NULL,
   `task` varchar(255) NOT NULL,
   `due_on` date NOT NULL,
-  `entry_by` char(8) NOT NULL,
+  `entry_by_id` char(8) NOT NULL,
   `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
   `is_completed` tinyint(1) NOT NULL DEFAULT 0,
   `is_disabled` tinyint(1) NOT NULL DEFAULT 0,
@@ -1248,7 +1297,7 @@ CREATE TABLE `tasks` (
 -- Dumping data for table `tasks`
 --
 
-INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `entry_by`, `expense`, `is_completed`, `is_disabled`, `reason`, `completed_on`) VALUES
+INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `entry_by_id`, `expense`, `is_completed`, `is_disabled`, `reason`, `completed_on`) VALUES
 ('TK000001', 'CN000001', 'PJ000001', 'Task #1', '2025-01-21', 'A3', 5100.00, 0, 0, NULL, NULL),
 ('TK000002', 'CN000001', 'PJ000001', 'Task #3', '2025-01-15', 'A3', 450.00, 0, 0, NULL, NULL);
 
@@ -1264,7 +1313,7 @@ CREATE TABLE `tasks_particulars_remarks` (
   `project_id` char(8) NOT NULL,
   `particular` varchar(500) NOT NULL,
   `remark` varchar(500) NOT NULL,
-  `entry_by` char(8) NOT NULL,
+  `entry_by_id` char(8) NOT NULL,
   `entry_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -1272,7 +1321,7 @@ CREATE TABLE `tasks_particulars_remarks` (
 -- Dumping data for table `tasks_particulars_remarks`
 --
 
-INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particular`, `remark`, `entry_by`, `entry_at`) VALUES
+INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particular`, `remark`, `entry_by_id`, `entry_at`) VALUES
 (1, 'TK000001', 'PJ000001', 'Accounts settlement', 'Send documents to CA', 'A3', '2024-12-27 19:50:22'),
 (2, 'TK000001', 'PJ000001', 'Ledger of Loans.', 'Check CIBIL score for loan eligibility.', 'A3', '2024-12-27 19:50:22'),
 (3, 'TK000001', 'PJ000001', 'Prepare documents for loads.', 'Get them from storage servers', 'A3', '2024-12-27 19:51:20'),
@@ -1323,16 +1372,18 @@ CREATE TABLE `the_references` (
   `relationship` varchar(100) DEFAULT NULL,
   `tags` varchar(500) DEFAULT NULL,
   `entry_at` datetime DEFAULT current_timestamp(),
-  `entry_by` char(8) DEFAULT NULL
+  `entry_by_id` char(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `the_references`
 --
 
-INSERT INTO `the_references` (`id`, `client_id`, `name`, `address`, `phone_number`, `email_address`, `is_deleted`, `joined_on`, `notes`, `organization`, `rating`, `relationship`, `tags`, `entry_at`, `entry_by`) VALUES
+INSERT INTO `the_references` (`id`, `client_id`, `name`, `address`, `phone_number`, `email_address`, `is_deleted`, `joined_on`, `notes`, `organization`, `rating`, `relationship`, `tags`, `entry_at`, `entry_by_id`) VALUES
 ('RF000001', 'CN000001', 'Yash Chopra', NULL, NULL, NULL, 0, '2024-12-15 15:28:07', NULL, NULL, 0, NULL, NULL, '2024-12-15 15:28:07', NULL),
-('RF000002', 'CN000002', 'Vrushank Soni', NULL, NULL, NULL, 0, '2024-12-18 00:05:18', NULL, NULL, 0, NULL, NULL, '2024-12-18 00:05:18', NULL);
+('RF000002', 'CN000002', 'Vrushank Soni', NULL, NULL, NULL, 0, '2024-12-18 00:05:18', NULL, NULL, 0, NULL, NULL, '2024-12-18 00:05:18', NULL),
+('RF000003', 'CN000003', 'Krishna Patel', NULL, NULL, NULL, 0, '2025-01-11 19:15:23', NULL, NULL, 0, NULL, NULL, '2025-01-11 19:15:23', NULL),
+('RF000004', 'CN000002', 'Ronak Patel', NULL, NULL, NULL, 0, '2025-01-11 19:32:46', NULL, NULL, 0, NULL, NULL, '2025-01-11 19:32:46', NULL);
 
 --
 -- Indexes for dumped tables
@@ -1667,7 +1718,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=155;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=189;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
@@ -1709,7 +1760,7 @@ ALTER TABLE `licenses`
 -- AUTO_INCREMENT for table `notes`
 --
 ALTER TABLE `notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `pma__bookmark`

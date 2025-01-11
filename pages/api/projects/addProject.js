@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
 			newCompanyId = companyResponse.new_id;
 
-			const response = await query(`INSERT INTO companies (id, client_id, name, entry_by) VALUES (?, ?, ?, ?)`, [
+			const response = await query(`INSERT INTO companies (id, client_id, name, entry_by_id) VALUES (?, ?, ?, ?)`, [
 				newCompanyId,
 				clientId,
 				company.name,
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
 
 			newSubProjectId = subProjectResponse.new_id;
 
-			const response = await query("INSERT INTO sub_projects (id, name, entry_by) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
+			const response = await query("INSERT INTO sub_projects (id, name, entry_by_id) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
 
 			if (response.affectedRows == 0) {
 				res.status(400).send("Could not add Sub Project.");
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
 		}
 
 		const response = await query(
-			`INSERT INTO projects (id, client_id, company_id, inquiry_id, main_project_id, sub_project_id, quote, due_on, reimbursement_voucher, invoice_fees, invoice_firm_id, teams, started_on, status, entry_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)`,
+			`INSERT INTO projects (id, client_id, company_id, inquiry_id, main_project_id, sub_project_id, quote, due_on, reimbursement_voucher, invoice_fees, invoice_firm_id, teams, started_on, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)`,
 			[
 				projectResponse.new_id,
 				clientId,
@@ -83,7 +83,7 @@ export default async function handler(req, res) {
 		const inquiryQuery = `UPDATE inquiries SET status=? WHERE id=?`;
 		const inquiryParameters = [MyConstants.Statuses.Inquiries.Confirmed, inquiryId];
 
-		const noteQuery = `INSERT INTO notes (inquiry_id, project_id, entry_by, content, source) VALUES (?, ?, ?, ?, ?)`;
+		const noteQuery = `INSERT INTO notes (inquiry_id, project_id, entry_by_id, content, source) VALUES (?, ?, ?, ?, ?)`;
 		const noteParameters = [inquiryId, projectResponse.new_id, userId, note, MyConstants.Modules.Base.Projects];
 
 		const [clientRows, inquiryRows, noteRows] = await Promise.all([

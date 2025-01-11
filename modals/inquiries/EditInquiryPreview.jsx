@@ -6,7 +6,6 @@ import dayjs from "dayjs";
 import Draggable from "react-draggable";
 
 import { useState } from "react";
-import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { faArrowsUpToLine, faXmark } from "@fortawesome/free-solid-svg-icons";
@@ -15,23 +14,35 @@ export default function EditInquiryPreview({ editInquiry, mount, oldInquiry, unm
 	// Business Logic
 	const [isBoxDragged, setIsBoxDragged] = useState(false);
 
-	const newFollowUps = editInquiry.followUps.length ? editInquiry.followUps.map((user) => user.full_name).join(", ") : "";
-	const oldFollowUps = oldInquiry.followUps.length ? oldInquiry.followUps.map((user) => user.full_name).join(", ") : "";
+	let newFollowUps = "";
+	let oldFollowUps = "";
+
+	if (Array.isArray(editInquiry.followUps)) {
+		if (editInquiry.followUps.length) {
+			newFollowUps = editInquiry.followUps.map((m) => m.full_name).join(", ");
+		}
+	}
+
+	if (Array.isArray(oldInquiry.followUps)) {
+		if (oldInquiry.followUps.length) {
+			oldFollowUps = oldInquiry.followUps.map((m) => m.full_name).join(", ");
+		}
+	}
 
 	const titleBarCursor = isBoxDragged ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
-	const wrapper = "flex w-full px-5 space-x-2.5 justify-center items-center";
-	const labelStyle = "flex w-1/4 h-6 justify-start items-center font-regular-10 gray-text bottom-border";
-	const valueStyle = "flex w-3/4 h-6 justify-start items-center font-medium-11 black-text bottom-border";
-
 	// UI Components
 	const uiRow = (label, value) => {
+		const labelStyle = "flex w-1/4 h-6 justify-start items-center font-regular-10 gray-text bottom-border";
+
+		const valueStyle = "flex w-3/4 h-6 justify-start items-center font-medium-11 black-text bottom-border";
+
 		const labelTextColour = !value ? "red-text red-bottom-border" : "gray-text bottom-border";
 		const valueTextColour = !value ? "red-text red-bottom-border" : "black-text bottom-border";
 
 		return (
-			<div className={wrapper}>
+			<div className="flex w-full px-5 space-x-2.5 justify-center items-center">
 				<span className={`${labelStyle} ${labelTextColour}`}>{label}</span>
 				<span className={`${valueStyle} ${valueTextColour}`}>{value}</span>
 			</div>
@@ -63,7 +74,7 @@ export default function EditInquiryPreview({ editInquiry, mount, oldInquiry, unm
 								{uiRow("Sub Project", oldInquiry.subProject.name)}
 								{uiRow("Reference", oldInquiry.reference.name)}
 								{uiRow("Entry Date", dayjs(oldInquiry.entryDate).format("DD MMMM, YYYY"))}
-								{uiRow("Quote", MyGlobal.FormatCurrency(oldInquiry.quote))}
+								{uiRow("Quote", oldInquiry.quote)}
 								{uiRow("Follow Ups", oldFollowUps)}
 							</div>
 							<FontAwesomeIcon icon={faArrowsUpToLine} rotation={90} />
@@ -75,7 +86,7 @@ export default function EditInquiryPreview({ editInquiry, mount, oldInquiry, unm
 								{uiRow("Sub Project", editInquiry.subProject.name)}
 								{uiRow("Reference", editInquiry.reference.name)}
 								{uiRow("Entry Date", dayjs(editInquiry.entryDate).format("DD MMMM, YYYY"))}
-								{uiRow("Quote", MyGlobal.FormatCurrency(editInquiry.quote))}
+								{uiRow("Quote", editInquiry.quote)}
 								{uiRow("Follow Ups", newFollowUps)}
 							</div>
 						</div>

@@ -109,30 +109,40 @@ export const MyGlobal = Object.freeze({
 	},
 
 	GetFullDetailsFromIds: (ids) => {
-		const idsAsArray = String(ids).split(",");
-		const idsArrayOfObjects = idsAsArray.map((value) => ({ id: value, label: "" }));
-		const fullDetailsOfIds = allUsers.filter((user) => idsArrayOfObjects.some((_user) => _user.id == user.id));
+		let array = [];
+		const _ids = String(ids);
 
-		return fullDetailsOfIds;
+		if (_ids.includes(",")) {
+			const idsAsArray = _ids.split(",");
+			const idsArrayOfObjects = idsAsArray.map((m) => ({ id: m, label: "" }));
+
+			array = allUsers.filter((f) => idsArrayOfObjects.some((s) => s.id == f.id));
+		} else {
+			array = allUsers.filter((f) => f.id == ids);
+		}
+
+		return array;
 	},
 
 	GetAnyDataFromId: (id, type) => {
-		if (String(id).includes(",")) {
+		const _id = String(id);
+
+		if (_id.includes(",")) {
 			const names = [];
-			const idsArray = String(id).split(",");
+			const idsArray = _id.split(",");
 
-			idsArray.forEach((id) => {
-				const object = allUsers.filter((user) => user.id == id).at(0);
+			idsArray.forEach((fe) => {
+				const object = allUsers.find((f) => f.id == fe);
 
-				if (object) {
+				if (typeof object === "object") {
 					names.push(object[type]);
 				}
 			});
 
 			return names.join(", ");
 		} else {
-			const user = allUsers.filter((_user) => _user.id == id);
-			return user.at(0)[type] ?? "Ex Employee";
+			const user = allUsers.find((f) => f.id == id);
+			return user[type] ?? "Ex User";
 		}
 	},
 
@@ -145,16 +155,18 @@ export const MyGlobal = Object.freeze({
 	},
 
 	GetInitials: (payload) => {
-		const initialsArray = [];
-		const namesArray = String(payload).split(",");
+		let result = [];
 
-		namesArray.forEach((word) => {
-			const names = word.trim().split(" ");
-			const initials = names.map((character) => character.charAt(0)).join("");
-			initialsArray.push(initials);
-		});
+		String(payload)
+			.split(",")
+			.forEach((fe) => {
+				const names = fe.trim().split(" ");
+				const initials = names.map((m) => m.charAt(0)).join("");
 
-		return initialsArray;
+				result.push(initials);
+			});
+
+		return result;
 	},
 
 	GetModuleSequence: (module) => {
@@ -181,7 +193,20 @@ export const MyGlobal = Object.freeze({
 	},
 
 	GetUserData: () => {
-		return userFullData;
+		const userData = MyGlobal.Storages.Local.DoesExist(`${applicationName}UserDetails`);
+
+		if (userData) {
+			const decrypted = MyGlobal.Decrypt(userData);
+			const parsed = JSON.parse(decrypted);
+
+			userId = parsed.id;
+			fullName = parsed.full_name;
+			userFullData = parsed;
+
+			return parsed;
+		}
+
+		return {};
 	},
 
 	GetUserFullName: () => {

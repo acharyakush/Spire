@@ -22,7 +22,7 @@ export default async function handler(req, res) {
 			await query("CALL generate_dynamic_id('AF', 'affiliates', @new_affiliate_id)", []);
 			const [response] = await query("SELECT @new_affiliate_id AS new_id;");
 
-			const result = await query(`INSERT INTO affiliates (id, name, email_address, phone_number, upi_id, entry_by) VALUES (?, ?, ?, ?, ?)`, [
+			const result = await query(`INSERT INTO affiliates (id, name, email_address, phone_number, upi_id, entry_by_id) VALUES (?, ?, ?, ?, ?)`, [
 				response.new_id,
 				name,
 				emailAddress,

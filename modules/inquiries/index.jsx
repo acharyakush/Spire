@@ -22,11 +22,11 @@ import { TextInputNative } from "@/components/Inputs";
 import { UpdateStatus } from "@/modals/inquiries/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { Badge, BadgeSmallWithBackground, SpinnerBig, Tooltip, TooltipList } from "@/components/Elements";
+import { Badge, BadgeSmallWithBackground, Spinner, Tooltip, TooltipList } from "@/components/Elements";
 import {
-	faBolt,
 	faCalendar,
 	faChevronDown,
+	faCircleCheck,
 	faFileExcel,
 	faFilter,
 	faMultiply,
@@ -36,190 +36,66 @@ import {
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function Inquiries({ status }) {
+export default function Inquiries({ presetStatus, setModuleProps }) {
 	// Business Logic
-	const [apiData, setApiData] = useState({
-		allMainProjects: [],
-		allNotes: [],
-		allReferences: [],
-		allSubProjects: [],
-		clients: { all: [], confirmed: [] },
-		inquiries: { api: [], apiCopy: [], mergedWithNotes: [] },
+	const [api, setApi] = useState({
+		clients: [],
+		inquiries: { copy: [], data: [], mergedWithNotes: [] },
+		notes: [],
 	});
 
-	const [hasMounted, setHasMounted] = useState({
+	const [main, setMain] = useState({
+		filter: { from: "", to: "" },
+		findText: presetStatus ?? "",
+		isLoading: false,
+		selectedInquiryForNotes: {},
+		selectedInquiryForStatusChange: {},
+		sort: { column: "", isAscending: false },
+	});
+
+	const [mounted, setMounted] = useState({
 		convertToProject: false,
 		editInquiry: false,
+		mainComponent: false,
 		newInquiry: false,
 		newProject: false,
 		notes: false,
 		updateStatus: false,
 	});
 
-	const [mainData, setMainData] = useState({
-		entryDate: { from: "", to: "" },
-		hasMounted: false,
-		isLoading: false,
-		searchTerm: status ?? "",
-		selectedInquiryForNotes: {},
-		selectedInquiryForStatusChange: {},
-		sort: { column: "", isAscending: false },
-	});
-
 	const allowConvertingToProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewProject);
 
-	const tableHeaders = MyConstants.TableHeaders.Inquiries;
+	const headers = MyConstants.TableHeaders.Inquiries;
 	const thisView = MyConstants.Modules.Base.Inquiries;
-	const STATUSES = MyConstants.Statuses.Inquiries;
+	const statuses = MyConstants.Statuses.Inquiries;
 
 	const newInquiryButton = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry)
 		? "block space-x-1.5 primary-button-transparent-background"
 		: "hidden";
 
-	const showFromDateClearButton = mainData.entryDate.from ? "cursor-pointer primary-text" : "hidden";
-	const showToDateClearButton = mainData.entryDate.to ? "cursor-pointer primary-text" : "hidden";
-	const showFindClearButton = mainData.searchTerm ? "cursor-pointer primary-text" : "hidden";
+	const showFromDateClearButton = main.filter.from ? "cursor-pointer primary-text" : "hidden";
+
+	const showToDateClearButton = main.filter.to ? "cursor-pointer primary-text" : "hidden";
+
+	const showFindClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
 
 	const blankDataWrapper = "flex w-full h-full justify-center items-center font-regular-12 gray-text contrast-background full-border";
 
 	// Functions
-	const closeNewProjectView = () => {
-		setHasMounted((old) => ({ ...old, newProject: false }));
-	};
+	function closeNewProjectView() {
+		setMounted((s) => ({ ...s, newProject: false }));
+	}
 
-	const detectKeystrokes = (event) => {
+	function detectKeystrokes(event) {
 		switch (true) {
 			case event.ctrlKey && event.key == "f":
 				event.preventDefault();
-				document.getElementById("searchBox").focus();
+				document.getElementById("findBox").focus();
 				break;
 		}
-	};
+	}
 
-	const doFiltering = (query) => {
-		const filteredData = apiData.inquiries.mergedWithNotes.filter((inquiry) => {
-			if (query == "date") {
-				const checkDate = new Date(inquiry.entry_date);
-				const startDate = mainData.entryDate.from;
-				const endDate = mainData.entryDate.to;
-
-				if (checkDate >= startDate && checkDate <= endDate) {
-					return inquiry;
-				}
-			} else {
-				const searchTerm = mainData.searchTerm.toLowerCase();
-
-				const client = apiData.clients.all.filter((client) => client.id == inquiry.client_id).at(0);
-				const clientId = String(client.id).toLowerCase();
-				const clientName = String(getClientName(client.id)).toLowerCase();
-
-				const createdBy = MyGlobal.GetAnyDataFromId(inquiry.entry_by, "full_name");
-				const _createdBy = String(createdBy).toLowerCase();
-
-				const reference = apiData.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0);
-				const referenceId = String(reference.id).toLowerCase();
-				const referenceName = String(getReferenceName(inquiry.reference_id)).toLowerCase();
-
-				const followUpsNames = MyGlobal.GetAnyDataFromId(inquiry.follow_ups, "full_name");
-				const followUpsInitials = getFollowUpsInitials(followUpsNames);
-
-				const mainProject = String(getMainProjectName(inquiry.main_project_id)).toLowerCase();
-				const notes = String(inquiry.notes).toLowerCase();
-				const status = String(inquiry.status).toLowerCase();
-				const subProject = String(getSubProjectName(inquiry.sub_project_id)).toLowerCase();
-
-				return (
-					clientId.includes(searchTerm) ||
-					clientName.includes(searchTerm) ||
-					String(inquiry.phone_number).includes(searchTerm) ||
-					mainProject.includes(searchTerm) ||
-					subProject.includes(searchTerm) ||
-					referenceId.includes(searchTerm) ||
-					referenceName.includes(searchTerm) ||
-					followUpsInitials.includes(searchTerm) ||
-					followUpsNames.includes(searchTerm) ||
-					String(inquiry.quote).includes(searchTerm) ||
-					status.includes(searchTerm) ||
-					notes.includes(searchTerm) ||
-					_createdBy.includes(searchTerm)
-				);
-			}
-		});
-
-		setApiData((old) => ({ ...old, inquiries: { ...old.inquiries, api: filteredData } }));
-	};
-
-	const doSorting = () => {
-		return apiData.inquiries.api.sort((a, b) => {
-			const aClient = getClientName(a.client_id);
-			const bClient = getClientName(b.client_id);
-
-			const aCreatedBy = MyGlobal.GetAnyDataFromId(a.entry_by, "full_name");
-			const bCreatedBy = MyGlobal.GetAnyDataFromId(b.entry_by, "full_name");
-
-			const aEntryDate = new Date(a.entry_date);
-			const bEntryDate = new Date(b.entry_date);
-
-			const aMainProject = getMainProjectName(a.main_project_id);
-			const bMainProject = getMainProjectName(b.main_project_id);
-
-			const aNotesCount = getTotalNotesByInquiry(a.id);
-			const bNotesCount = getTotalNotesByInquiry(b.id);
-
-			const aReference = apiData.allReferences.length ? apiData.allReferences.filter((reference) => reference.id == a.reference_id).at(0).name : "";
-
-			const bReference = apiData.allReferences.length ? apiData.allReferences.filter((reference) => reference.id == b.reference_id).at(0).name : "";
-
-			const aSubProject = getSubProjectName(a.sub_project_id);
-			const bSubProject = getSubProjectName(b.sub_project_id);
-
-			if (mainData.sort.column == tableHeaders.EntryDate && mainData.sort.isAscending) {
-				return aEntryDate - bEntryDate;
-			} else if (mainData.sort.column == tableHeaders.EntryDate && !mainData.sort.isAscending) {
-				return bEntryDate - aEntryDate;
-			} else if (mainData.sort.column == tableHeaders.Client && mainData.sort.isAscending) {
-				return aClient.localeCompare(bClient);
-			} else if (mainData.sort.column == tableHeaders.Client && !mainData.sort.isAscending) {
-				return bClient.localeCompare(aClient);
-			} else if (mainData.sort.column == tableHeaders.MainProject && mainData.sort.isAscending) {
-				return aMainProject.localeCompare(bMainProject);
-			} else if (mainData.sort.column == tableHeaders.MainProject && !mainData.sort.isAscending) {
-				return bMainProject.localeCompare(aMainProject);
-			} else if (mainData.sort.column == tableHeaders.SubProject && mainData.sort.isAscending) {
-				return aSubProject.localeCompare(bSubProject);
-			} else if (mainData.sort.column == tableHeaders.SubProject && !mainData.sort.isAscending) {
-				return bSubProject.localeCompare(aSubProject);
-			} else if (mainData.sort.column == tableHeaders.Reference && mainData.sort.isAscending) {
-				return aReference.localeCompare(bReference);
-			} else if (mainData.sort.column == tableHeaders.Reference && !mainData.sort.isAscending) {
-				return bReference.localeCompare(aReference);
-			} else if (mainData.sort.column == tableHeaders.FollowUps && mainData.sort.isAscending) {
-				return a.follow_ups.localeCompare(b.follow_ups);
-			} else if (mainData.sort.column == tableHeaders.FollowUps && !mainData.sort.isAscending) {
-				return b.follow_ups.localeCompare(a.follow_ups);
-			} else if (mainData.sort.column == tableHeaders.Quote && mainData.sort.isAscending) {
-				return a.quote - b.quote;
-			} else if (mainData.sort.column == tableHeaders.Quote && !mainData.sort.isAscending) {
-				return b.quote - a.quote;
-			} else if (mainData.sort.column == tableHeaders.Status && mainData.sort.isAscending) {
-				return a.status.localeCompare(b.status);
-			} else if (mainData.sort.column == tableHeaders.Status && !mainData.sort.isAscending) {
-				return b.status.localeCompare(a.status);
-			} else if (mainData.sort.column == tableHeaders.Notes && mainData.sort.isAscending) {
-				return aNotesCount - bNotesCount;
-			} else if (mainData.sort.column == tableHeaders.Notes && !mainData.sort.isAscending) {
-				return bNotesCount - aNotesCount;
-			} else if (mainData.sort.column == tableHeaders.CreatedBy && mainData.sort.isAscending) {
-				return aCreatedBy.localeCompare(bCreatedBy);
-			} else if (mainData.sort.column == tableHeaders.CreatedBy && !mainData.sort.isAscending) {
-				return bCreatedBy.localeCompare(aCreatedBy);
-			} else {
-				return b.id - a.id;
-			}
-		});
-	};
-
-	const exportAsExcel = () => {
+	function doExcelExport() {
 		const records = [];
 		const _records = [];
 
@@ -229,31 +105,22 @@ export default function Inquiries({ status }) {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const rowHeaders = Object.values(tableHeaders);
+		const rowHeaders = Object.values(headers);
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
-		doSorting().forEach((inquiry) => {
-			const entryDate = dayjs(inquiry.entry_date).format("DD MMM, YYYY");
-			const clientDetails = `${inquiry.client_id}\n${getClientName(inquiry.client_id)}`;
-
-			const followUps = MyGlobal.GetAnyDataFromId(inquiry.follow_ups, "full_name");
-			const _followUps = String(followUps).replace(",", "\n");
-
-			const referenceName = apiData.allReferences.filter((reference) => reference.id == inquiry.reference_id).at(0).name;
-			const referenceDetails = `${inquiry.reference_id}\n${referenceName}`;
-
+		doSorting().forEach((fe) => {
 			records.push(
-				entryDate,
-				clientDetails,
-				inquiry.phone_number,
-				getMainProjectName(inquiry.main_project_id),
-				getSubProjectName(inquiry.sub_project_id),
-				referenceDetails,
-				_followUps,
-				inquiry.quote,
-				inquiry.status,
-				getTotalNotesByInquiry(inquiry.id),
-				MyGlobal.GetUserFullName(),
+				fe.entry_date,
+				fe.client_id_and_name,
+				fe.phone_number,
+				fe.main_project,
+				fe.sub_project,
+				fe.reference_id_and_name,
+				fe.follow_ups,
+				fe.quote,
+				fe.status,
+				getTotalNotesByInquiry(fe.id),
+				fe.entry_by_id_and_name,
 			);
 		});
 
@@ -290,7 +157,7 @@ export default function Inquiries({ status }) {
 				fontWeight: "bold",
 				height: 44,
 				span: rowHeaders.length,
-				value: `${thisView} (${apiData.inquiries.api.length})`,
+				value: `${thisView} (${api.inquiries.data.length})`,
 			},
 		];
 
@@ -303,270 +170,409 @@ export default function Inquiries({ status }) {
 			fontFamily: "Segoe UI",
 			fontSize: 9,
 		});
-	};
+	}
 
-	const getClientName = (clientId) => {
-		if (apiData.clients.all.length) {
-			return apiData.clients.all.filter((client) => client.id == clientId).at(0).name;
-		} else {
-			return "";
-		}
-	};
+	function doFiltering(type) {
+		const filteredData = api.inquiries.mergedWithNotes.filter((f) => {
+			if (type == "entryDate") {
+				const checkDate = new Date(f.entry_date);
+				const startDate = main.filter.from;
+				const endDate = main.filter.to;
 
-	const getFollowUpsInitials = (names) => {
-		if (names) {
-			let initials = names;
+				if (checkDate >= startDate && checkDate <= endDate) {
+					return f;
+				}
+			} else {
+				const findText = main.findText.toLowerCase();
 
-			if (String(names).includes(",")) {
-				initials = MyGlobal.GetInitials(names);
+				return (
+					f.client_id.includes(findText) ||
+					f.client_name.includes(findText) ||
+					String(f.phone_number).includes(findText) ||
+					f.main_project.includes(findText) ||
+					f.sub_project.includes(findText) ||
+					f.reference_id.includes(findText) ||
+					f.reference_name.includes(findText) ||
+					f.follow_ups.includes(findText) ||
+					f.follow_ups_initials.includes(findText) ||
+					String(f.quote).includes(findText) ||
+					f.status.includes(findText) ||
+					f.notes.includes(findText) ||
+					f.entry_by_name.includes(findText)
+				);
 			}
+		});
 
-			return initials;
-		} else {
-			return "Ex Employee";
+		setApi((s) => ({ ...s, inquiries: { ...s.inquiries, data: filteredData } }));
+	}
+
+	function doSorting() {
+		return api.inquiries.data.sort((a, b) => {
+			const aNotesCount = getTotalNotesByInquiry(a.id);
+			const bNotesCount = getTotalNotesByInquiry(b.id);
+
+			const { column, isAscending } = main.sort;
+
+			if (column == headers.EntryDate && isAscending) {
+				return a.entry_date - b.entry_date;
+			} else if (column == headers.EntryDate && !isAscending) {
+				return b.entry_date - a.entry_date;
+			} else if (column == headers.Client && isAscending) {
+				return a.client_name.localeCompare(b.client_name);
+			} else if (column == headers.Client && !isAscending) {
+				return b.client_name.localeCompare(a.client_name);
+			} else if (column == headers.MainProject && isAscending) {
+				return a.main_project.localeCompare(b.main_project);
+			} else if (column == headers.MainProject && !isAscending) {
+				return b.main_project.localeCompare(a.main_project);
+			} else if (column == headers.SubProject && isAscending) {
+				return a.sub_project.localeCompare(b.sub_project);
+			} else if (column == headers.SubProject && !isAscending) {
+				return b.sub_project.localeCompare(a.sub_project);
+			} else if (column == headers.Reference && isAscending) {
+				return a.reference_name.localeCompare(b.reference_name);
+			} else if (column == headers.Reference && !isAscending) {
+				return b.reference_name.localeCompare(a.reference_name);
+			} else if (column == headers.FollowUps && isAscending) {
+				return a.follow_ups.localeCompare(b.follow_ups);
+			} else if (column == headers.FollowUps && !isAscending) {
+				return b.follow_ups.localeCompare(a.follow_ups);
+			} else if (column == headers.Quote && isAscending) {
+				return a.quote - b.quote;
+			} else if (column == headers.Quote && !isAscending) {
+				return b.quote - a.quote;
+			} else if (column == headers.Status && isAscending) {
+				return a.status.localeCompare(b.status);
+			} else if (column == headers.Status && !isAscending) {
+				return b.status.localeCompare(a.status);
+			} else if (column == headers.Notes && isAscending) {
+				return aNotesCount - bNotesCount;
+			} else if (column == headers.Notes && !isAscending) {
+				return bNotesCount - aNotesCount;
+			} else if (column == headers.CreatedBy && isAscending) {
+				return a.entry_by_name.localeCompare(b.entry_by_name);
+			} else if (column == headers.CreatedBy && !isAscending) {
+				return b.entry_by_name.localeCompare(a.entry_by_name);
+			} else {
+				return b.id - a.id;
+			}
+		});
+	}
+
+	function getClientName(id, source = []) {
+		let name = "";
+
+		if (source.length) {
+			const object = source.find((f) => f.id == id);
+
+			if (typeof object === "object") {
+				name = object.name;
+			}
 		}
-	};
 
-	const getInquiries = async () => {
-		setMainData((old) => ({ ...old, isLoading: true, hasMounted: false }));
+		return name;
+	}
+
+	function getIconOrBadge() {
+		if (main.isLoading) {
+			return (
+				<span className="pl-5 relative">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return api.inquiries.data.length > 0 && <Badge value={getRowsCount()} />;
+		}
+	}
+
+	async function getInquiries(supportData) {
+		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetInquiries, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				getSupportData();
+				let revised = [];
+				const revisedCopy = [];
 
-				const revised = response.data.map((inquiry) => ({ ...inquiry, notes: "" }));
-				setApiData((old) => ({ ...old, inquiries: { ...old.inquiries, api: revised, apiCopy: revised } }));
+				response.data.forEach((fe) => {
+					const clientName = getClientName(fe.client_id, supportData.clients);
+					const referenceName = getReferenceName(fe.reference_id, supportData.references);
+
+					const followUps = MyGlobal.GetAnyDataFromId(fe.follow_ups, "full_name");
+
+					const entryBy = MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name");
+
+					const data = {
+						...fe,
+						client_id_and_name: `${fe.client_id} - ${clientName}`,
+						client_name: clientName,
+						entry_by_id_and_name: `${fe.entry_by_id} - ${entryBy}`,
+						entry_date: dayjs(fe.entry_date).format("DD MMM, YYYY"),
+						entry_by_name: entryBy,
+						follow_ups: followUps,
+						follow_ups_data: MyGlobal.GetFullDetailsFromIds(fe.follow_ups),
+						follow_ups_initials: MyGlobal.GetInitials(followUps),
+						main_project: getMainProjectName(fe.main_project_id, supportData.mainProjects),
+						notes: "",
+						reference_id_and_name: `${fe.reference_id} - ${referenceName}`,
+						reference_name: referenceName,
+						sub_project: getSubProjectName(fe.sub_project_id, supportData.subProjects),
+					};
+
+					revised.push(data);
+					revisedCopy.push(data);
+				});
+
+				const status = String(presetStatus);
+
+				if (status.length && Object.values(statuses).includes(status)) {
+					const array = revised.filter((f) => f.status.includes(status));
+
+					revised.length = 0;
+					revised = array;
+				}
+
+				setApi((s) => ({ ...s, inquiries: { ...s.inquiries, copy: revisedCopy, data: revised } }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get Inquiries");
 		} finally {
-			setMainData((old) => ({ ...old, isLoading: false, hasMounted: true }));
+			setMain((s) => ({ ...s, isLoading: false }));
+			setMounted((s) => ({ ...s, mainComponent: true }));
 		}
-	};
+	}
 
-	const getMainProjectName = (mainProjectId) => {
-		if (apiData.allMainProjects.length) {
-			return apiData.allMainProjects.filter((mainProject) => mainProject.id == mainProjectId).at(0).name;
+	function getMainProjectName(id, source = []) {
+		let name = "";
+
+		if (source.length) {
+			const object = source.find((f) => f.id == id);
+
+			if (typeof object === "object") {
+				name = object.name;
+			}
+		}
+
+		return name;
+	}
+
+	function getReferenceName(id, source = []) {
+		let name = "";
+
+		if (source.length) {
+			const object = source.find((f) => f.id == id);
+
+			if (typeof object === "object") {
+				name = object.name;
+			}
+		}
+
+		return name;
+	}
+
+	function getRowsCount() {
+		if (api.inquiries.data.length != api.inquiries.copy.length) {
+			return `${api.inquiries.data.length} / ${api.inquiries.copy.length}`;
 		} else {
-			return "";
+			return api.inquiries.data.length;
 		}
-	};
+	}
 
-	const getProperCount = () => {
-		if (apiData.inquiries.api.length != apiData.inquiries.apiCopy.length) {
-			return `${apiData.inquiries.api.length} / ${apiData.inquiries.apiCopy.length}`;
-		} else {
-			return apiData.inquiries.api.length;
-		}
-	};
-
-	const getReferenceName = (referenceId) => {
-		if (apiData.allReferences.length) {
-			return apiData.allReferences.filter((reference) => reference.id == referenceId).at(0).name;
-		} else {
-			return "";
-		}
-	};
-
-	const getStatusSeverity = (status) => {
+	function getStatusSeverity(status) {
 		switch (status) {
-			case STATUSES.Open:
+			case statuses.Open:
 				return "orange-tag-transparent-01";
-			case STATUSES.Closed:
+			case statuses.Closed:
 				return "gray-tag-transparent-01";
-			case STATUSES.Hold:
-				return "red-tag-transparent-01";
-			case STATUSES.Confirmed:
+			case statuses.Hold:
+				return "red-tag-transparent-02";
+			case statuses.Confirmed:
 				return "green-tag-transparent-01 cursor-pointer";
 		}
-	};
+	}
 
-	const getStatusSeverityBackground = (status) => {
+	function getStatusSeverityBackground(status) {
 		switch (status) {
-			case STATUSES.Open:
+			case statuses.Open:
 				return {
 					background: "orange-background-transparent-01",
 					border: "orange-border",
 					text: "orange-text",
 				};
-			case STATUSES.Closed:
+			case statuses.Closed:
 				return {
 					background: "gray-background-transparent-01",
 					border: "gray-border",
 					text: "gray-text",
 				};
-			case STATUSES.Hold:
+			case statuses.Hold:
 				return {
 					background: "red-background-transparent-01",
 					border: "red-border",
 					text: "red-text",
 				};
-			case STATUSES.Confirmed:
+			case statuses.Confirmed:
 				return {
 					background: "green-background-transparent-01",
 					border: "green-border",
 					text: "green-text",
 				};
 		}
-	};
+	}
 
-	const getSubProjectName = (subProjectId) => {
-		if (apiData.allSubProjects.length) {
-			return apiData.allSubProjects.filter((subProject) => subProject.id == subProjectId).at(0).name;
-		} else {
-			return "";
-		}
-	};
+	function getSubProjectName(id, source = []) {
+		let name = "";
 
-	const getSupportData = async () => {
-		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
+		if (source.length) {
+			const object = source.find((f) => f.id == id);
 
-			if (response.status === 200) {
-				const confirmedClients = response.data.clients.filter((client) => client.is_confirmed == 1);
-
-				setApiData((old) => ({
-					...old,
-					clients: { all: response.data.clients, confirmed: confirmedClients },
-					allMainProjects: response.data.mainProjects,
-					allNotes: response.data.notes,
-					allReferences: response.data.references,
-					allSubProjects: response.data.subProjects,
-				}));
+			if (typeof object === "object") {
+				name = object.name;
 			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "Inquiries => Get Required Data");
 		}
-	};
 
-	const getTotalNotesByInquiry = (inquiryId) => {
-		return apiData.allNotes.filter((note) => note.inquiry_id == inquiryId && note.source == thisView).length;
-	};
+		return name;
+	}
 
-	const getTotalQuote = () => {
+	function getTotalNotesByInquiry(id) {
+		return api.notes.filter((f) => f.inquiry_id == id && f.source == thisView).length;
+	}
+
+	function getTotalQuote() {
 		let total = 0;
 
-		for (const inquiry of apiData.inquiries.api) {
-			total += Number(inquiry.quote);
+		for (const i of api.inquiries.data) {
+			total += Number(i.quote);
 		}
 
 		return MyGlobal.ThousandSeparator(total);
-	};
+	}
 
-	const highlightText = (isTag, text) => {
-		const regex = new RegExp(mainData.searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+	function highlightText(isTag, text) {
+		const regex = new RegExp(main.findText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
 		const classByTag = isTag ? "highlight-tag-characters" : "highlight-characters";
 
 		let result = text;
 
-		if (mainData.searchTerm) {
+		if (main.findText) {
 			result = String(text).replace(regex, (match) => `<span class=${classByTag}>${match}</span>`);
 		}
 
 		return MyGlobal.StripHtmlTags(result);
-	};
+	}
 
-	const mergeInquiriesAndNotesById = () => {
+	function mergeInquiriesAndNotesById() {
 		const newArray = [];
 		const mergedObject = {};
 		const mergedArray = [];
 
-		apiData.inquiries.apiCopy.forEach((inquiry) => {
-			apiData.allNotes.forEach((_note) => {
-				if (inquiry.id == _note.inquiry_id) {
-					newArray.push({ id: _note.inquiry_id, notes: _note.content });
+		api.inquiries.copy.forEach((fe) => {
+			api.notes.forEach((_fe) => {
+				if (fe.id == _fe.inquiry_id) {
+					newArray.push({ id: _fe.inquiry_id, notes: _fe.content });
 				}
 			});
 		});
 
-		newArray.forEach((_note) => {
-			if (!mergedObject[_note.id]) {
-				mergedObject[_note.id] = { id: _note.id, notes: _note.notes };
+		newArray.forEach((fe) => {
+			if (!mergedObject[fe.id]) {
+				mergedObject[fe.id] = { id: fe.id, notes: fe.notes };
 			} else {
-				mergedObject[_note.id].notes += `\n${_note.notes}`;
+				mergedObject[fe.id].notes += `\n${fe.notes}`;
 			}
 		});
 
-		apiData.inquiries.apiCopy.forEach((inquiry) => {
-			Object.values(mergedObject).forEach((note) => {
-				if (inquiry.id == note.id) {
-					mergedArray.push({ ...inquiry, notes: note.notes });
+		api.inquiries.copy.forEach((fe) => {
+			Object.values(mergedObject).forEach((_fe) => {
+				if (fe.id == _fe.id) {
+					mergedArray.push({ ...fe, notes: _fe.notes });
 				}
 			});
 		});
 
-		const idsOfInquiries = apiData.inquiries.apiCopy.map((inquiry) => inquiry.id);
-		const idsOfMergedArray = mergedArray.map((inquiry) => inquiry.id);
-		const missingIds = idsOfInquiries.filter((inquiryId) => !idsOfMergedArray.includes(inquiryId));
+		const idsOfInquiries = api.inquiries.copy.map((m) => m.id);
+		const idsOfMergedArray = mergedArray.map((m) => m.id);
+		const missingIds = idsOfInquiries.filter((f) => !idsOfMergedArray.includes(f));
 
-		missingIds.forEach((inquiryId) => {
-			const missingObject = apiData.inquiries.apiCopy.filter((inquiry) => inquiry.id == inquiryId).at(0);
+		missingIds.forEach((fe) => {
+			const missingObject = api.inquiries.copy.find((f) => f.id == fe);
 			mergedArray.push(missingObject);
 		});
 
-		setApiData((old) => ({ ...old, inquiries: { ...old.inquiries, mergedWithNotes: mergedArray } }));
-	};
+		setApi((s) => ({ ...s, inquiries: { ...s.inquiries, mergedWithNotes: mergedArray } }));
+	}
 
-	const openWhatsAppWeb = (phoneNumber) => {
+	function openWhatsAppWeb(phoneNumber) {
 		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
-	};
+	}
 
-	const prepareInquiryStatusChangeData = (inquiry, newStatus) => {
-		setMainData((old) => ({ ...old, selectedInquiryForStatusChange: { ...inquiry, new_status: newStatus } }));
-	};
+	function prepareInquiryStatusChangeData(inquiry, newStatus) {
+		setMain((s) => ({ ...s, selectedInquiryForStatusChange: { ...inquiry, new_status: newStatus } }));
+	}
 
-	const setInputs = (key, value) => {
+	function setInputs(key, value) {
 		if (key == "from" || key == "to") {
-			setMainData((old) => ({ ...old, entryDate: { ...old.entryDate, [key]: value } }));
+			setMain((s) => ({ ...s, filter: { ...s.filter, [key]: value } }));
 		} else {
-			setMainData((old) => ({ ...old, [key]: value }));
+			setMain((s) => ({ ...s, [key]: value }));
 		}
-	};
+	}
 
-	const setSort = (header) => {
-		if (header != tableHeaders.PhoneNumber) {
-			setMainData((old) => ({ ...old, sort: { column: header, isAscending: !mainData.sort.isAscending } }));
+	function setSort(header) {
+		if (header != headers.PhoneNumber) {
+			setMain((s) => ({ ...s, sort: { column: header, isAscending: !main.sort.isAscending } }));
 		}
-	};
+	}
 
-	const toggleEditInquiryView = (inquiry, type) => {
-		setMainData((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
-		setHasMounted((old) => ({ ...old, editInquiry: type }));
-	};
+	async function setSupportData() {
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
 
-	const toggleNewInquiryView = () => {
-		setHasMounted((old) => ({ ...old, newInquiry: !hasMounted.newInquiry }));
-	};
+			if (response.status === 200) {
+				setApi((s) => ({
+					...s,
+					clients: response.data.clients,
+					notes: response.data.notes,
+				}));
 
-	const toggleNotesView = (inquiry, type) => {
-		setMainData((old) => ({ ...old, selectedInquiryForNotes: inquiry }));
-		setHasMounted((old) => ({ ...old, notes: type }));
-	};
+				getInquiries(response.data);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Inquiries => Get Required Data");
+		}
+	}
 
-	const toggleUpdateStatus = (value) => {
+	function toggleEditInquiryView(inquiry, type) {
+		setMain((s) => ({ ...s, selectedInquiryForNotes: inquiry }));
+		setMounted((s) => ({ ...s, editInquiry: type }));
+	}
+
+	function toggleNewInquiryView() {
+		setMounted((s) => ({ ...s, newInquiry: !mounted.newInquiry }));
+	}
+
+	function toggleNotesView(inquiry, type) {
+		setMain((s) => ({ ...s, selectedInquiryForNotes: inquiry }));
+		setMounted((s) => ({ ...s, notes: type }));
+	}
+
+	function toggleUpdateStatus(value) {
 		if (value === true) {
-			setHasMounted((old) => ({ ...old, updateStatus: true }));
+			setMounted((s) => ({ ...s, updateStatus: true }));
 		} else if (value == "open-new-project") {
-			setHasMounted((old) => ({ ...old, updateStatus: false, newProject: true }));
+			setMounted((s) => ({ ...s, updateStatus: false, newProject: true }));
 		} else {
-			setMainData((old) => ({ ...old, selectedInquiryForStatusChange: {} }));
-			setHasMounted((old) => ({ ...old, updateStatus: false }));
+			setMain((s) => ({ ...s, selectedInquiryForStatusChange: {} }));
+			setMounted((s) => ({ ...s, updateStatus: false }));
 		}
-	};
+	}
 
 	// UI Components
-	const uiBody = () => {
-		if (mainData.isLoading) {
-			return (
-				<div className={blankDataWrapper}>
-					<SpinnerBig />
-				</div>
-			);
-		} else if (!apiData.inquiries.apiCopy.length) {
+	function uiBody() {
+		if (!api.inquiries.copy.length) {
 			return <div className={blankDataWrapper}>No inquiries generated.</div>;
-		} else if (!apiData.inquiries.api.length) {
+		} else if (!api.inquiries.data.length) {
 			return <div className={blankDataWrapper}>No inquiries found.</div>;
 		} else {
 			return (
@@ -575,40 +581,50 @@ export default function Inquiries({ status }) {
 					<Virtuoso
 						className="w-full h-full overflow-y-auto bottom-border contrast-background"
 						data={doSorting()}
-						itemContent={(index, inquiry) => uiRows(inquiry, index)}
-						totalCount={apiData.inquiries.api.length}
+						itemContent={(i, row) => uiRows(row, i)}
+						totalCount={api.inquiries.data.length}
 					/>
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 				</div>
 			);
 		}
-	};
+	}
 
-	const uiClientName = (clientId, clientName, inquiry) => {
-		return (
-			<Tippy allowHTML={true} content={<Tooltip text={`${clientId} - ${clientName}`} />}>
-				<span dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleEditInquiryView(inquiry, true)} />
-			</Tippy>
-		);
-	};
-
-	const uiExport = () => {
-		if (apiData.inquiries.api.length && apiData.inquiries.apiCopy.length) {
+	function uiExport() {
+		if (api.inquiries.data.length && api.inquiries.copy.length) {
 			return (
-				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => exportAsExcel()}>
+				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => doExcelExport()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 					<span>Export</span>
 				</button>
 			);
 		}
-	};
+	}
 
-	const uiFollowUps = (inquiry) => {
-		const getNames = MyGlobal.GetAnyDataFromId(inquiry.follow_ups, "full_name");
-		const singlePersonInitials = MyGlobal.GetInitials(getNames);
-		const total = String(getNames).split(",").length;
+	function uiFind() {
+		if (api.inquiries.copy.length) {
+			return (
+				<TextInputNative
+					id="findBox"
+					icon={faSearch}
+					onChange={(e) => setInputs("findText", e.target.value)}
+					onClearButtonClick={() => setInputs("findText", "")}
+					placeholder="Find"
+					showClearButton={showFindClearButton}
+					tabIndex={3}
+					value={main.findText}
+					width="w-36"
+				/>
+			);
+		}
+	}
 
-		if (String(getNames).includes(",")) {
+	function uiFollowUps(row) {
+		const getNames = String(row.follow_ups);
+		const singlePersonInitials = row.follow_ups_initials;
+		const total = getNames.split(",").length;
+
+		if (getNames.includes(",")) {
 			if (total > 2) {
 				return (
 					<Tippy allowHTML content={<TooltipList payload={getNames} />}>
@@ -616,16 +632,14 @@ export default function Inquiries({ status }) {
 					</Tippy>
 				);
 			} else {
-				return String(getNames)
-					.split(",")
-					.map((staffName) => uiFollowUpsTooltip(MyGlobal.GetInitials(staffName), inquiry, staffName));
+				return getNames.split(",").map((m) => uiFollowUpsTooltip(MyGlobal.GetInitials(m), row, m));
 			}
 		} else {
-			return uiFollowUpsTooltip(singlePersonInitials, inquiry, getNames);
+			return uiFollowUpsTooltip(singlePersonInitials, row, getNames);
 		}
-	};
+	}
 
-	const uiFollowUpsTooltip = (badgeText, inquiry, tooltipText) => {
+	function uiFollowUpsTooltip(badgeText, inquiry, tooltipText) {
 		return (
 			<Tippy allowHTML content={<Tooltip text={tooltipText} />}>
 				<span className="cursor-help">
@@ -633,38 +647,38 @@ export default function Inquiries({ status }) {
 				</span>
 			</Tippy>
 		);
-	};
+	}
 
-	const uiFooter = () => {
-		return Object.values(tableHeaders).map((label, index) => {
-			const showTotalQuote = index == 7 ? "visible" : "invisible";
+	function uiFooter() {
+		return Object.values(headers).map((m, i) => {
+			const showTotalQuote = i == 7 ? "visible" : "invisible";
 			const wrapper = `w-1/6 space-x-1 text-center text-white font-medium-10 ${showTotalQuote}`;
 
 			return (
-				<span className={wrapper} key={index}>
+				<span className={wrapper} key={i}>
 					<span>{getTotalQuote()}</span>
 				</span>
 			);
 		});
-	};
+	}
 
-	const uiFromDate = () => {
-		if (apiData.inquiries.apiCopy.length) {
+	function uiFromDate() {
+		if (api.inquiries.copy.length) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
-						className="w-20 h-6 bg-transparent outline-none font-medium-11"
+						className="w-20 h-6 bg-transparent outline-none font-regular-10"
 						dateFormat="dd-MM-YYYY"
 						dropdownMode="select"
-						endDate={mainData.entryDate.to}
+						endDate={main.filter.to}
 						onChange={(e) => setInputs("from", e)}
 						peekNextMonth
 						placeholderText="From"
 						tabIndex={1}
-						selected={mainData.entryDate.from}
+						selected={main.filter.from}
 						selectsStart
-						startDate={mainData.entryDate.from}
+						startDate={main.filter.from}
 						showMonthDropdown
 						showYearDropdown
 					/>
@@ -672,56 +686,48 @@ export default function Inquiries({ status }) {
 				</div>
 			);
 		}
-	};
+	}
 
-	const uiHeaders = () => {
-		return Object.values(tableHeaders).map((header, index) => {
-			const showSortArrow = header == mainData.sort.column ? "block" : "hidden";
-			const showStatusFilter = header == tableHeaders.Status ? "block" : "hidden";
+	function uiHeaders() {
+		return Object.values(headers).map((m, i) => {
+			const showSortArrow = m == main.sort.column ? "block" : "hidden";
+			const showStatusFilter = m == headers.Status ? "block" : "hidden";
 
 			return (
-				<span className="flex w-[9.09%] cursor-pointer justify-center items-center font-medium-10" key={index}>
-					<div className="flex w-full space-x-2 justify-center items-center text-white" onClick={() => setSort(header)}>
-						<span>{header}</span>
-						<span className={showSortArrow}>{uiSortArrows(header)}</span>
+				<span className="flex w-[9.09%] cursor-pointer justify-center items-center font-medium-10" key={i}>
+					<div className="flex w-full space-x-2 justify-center items-center text-white" onClick={() => setSort(m)}>
+						<span>{m}</span>
+						<span className={showSortArrow}>{uiSortArrows(m)}</span>
 					</div>
-					<span className={showStatusFilter}>{uiStatusFilter(header)}</span>
+					<span className={showStatusFilter}>{uiStatusFilter(m)}</span>
 				</span>
 			);
 		});
-	};
+	}
 
-	const uiMain = () => {
-		if (hasMounted.editInquiry) {
-			return <EditInquiry unmount={toggleEditInquiryView} selectedInquiry={mainData.selectedInquiryForNotes} reloadInquiries={getInquiries} />;
-		} else if (hasMounted.newInquiry) {
-			return <NewInquiry reloadInquiries={getInquiries} unmount={toggleNewInquiryView} />;
-		} else if (hasMounted.newProject) {
-			return <NewProject reloadInquiries={getInquiries} selectedInquiry={mainData.selectedInquiryForStatusChange} unmount={closeNewProjectView} />;
-		} else if (hasMounted.notes) {
-			return (
-				<Notes
-					allClients={apiData.clients.all}
-					allNotes={apiData.allNotes}
-					reloadInquiries={getInquiries}
-					selectedInquiry={mainData.selectedInquiryForNotes}
-					unmount={toggleNotesView}
-				/>
-			);
+	function uiMain() {
+		if (mounted.editInquiry) {
+			return <EditInquiry inquiry={main.selectedInquiryForNotes} reload={setSupportData} unmount={toggleEditInquiryView} />;
+		} else if (mounted.newInquiry) {
+			return <NewInquiry reload={setSupportData} unmount={toggleNewInquiryView} />;
+		} else if (mounted.newProject) {
+			return <NewProject reloadInquiries={setSupportData} selectedInquiry={main.selectedInquiryForStatusChange} unmount={closeNewProjectView} />;
+		} else if (mounted.notes) {
+			return <Notes reload={setSupportData} inquiry={main.selectedInquiryForNotes} unmount={toggleNotesView} />;
 		} else {
 			return (
 				<>
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
 						<div className="flex w-1/5 space-x-2 justify-start items-center">
 							<span className="view-heading">{thisView}</span>
-							{apiData.inquiries.api.length > 0 && <Badge value={getProperCount()} />}
+							{getIconOrBadge()}
 						</div>
 						<div className="flex w-4/5 space-x-2 justify-end items-center">
 							<div className="flex w-1/2 space-x-2 justify-end items-center">
 								{uiFromDate()}
 								{uiToDate()}
 							</div>
-							{uiSearch()}
+							{uiFind()}
 							{uiNew()}
 							{uiExport()}
 						</div>
@@ -730,60 +736,54 @@ export default function Inquiries({ status }) {
 				</>
 			);
 		}
-	};
+	}
 
-	const uiNew = () => {
+	function uiNew() {
 		return (
 			<button className={newInquiryButton} onClick={() => toggleNewInquiryView()}>
 				<FontAwesomeIcon icon={faPlusCircle} />
 				<span>New</span>
 			</button>
 		);
-	};
+	}
 
-	const uiNotes = (inquiry) => {
-		const totalNotes = getTotalNotesByInquiry(inquiry.id);
+	function uiNotes(row) {
+		const totalNotes = getTotalNotesByInquiry(row.id);
 		const wrapper = totalNotes > 0 ? "cursor-pointer primary-text" : "cursor-default black-text";
 
 		return (
-			<span className={wrapper} onClick={() => totalNotes && toggleNotesView(inquiry, true)}>
-				{totalNotes}
+			<span className={wrapper} onClick={() => totalNotes && toggleNotesView(row, true)}>
+				<BadgeSmallWithBackground style={getStatusSeverityBackground(row.status)} value={totalNotes} />
 			</span>
 		);
-	};
+	}
 
-	const uiRows = (inquiry, rowId) => {
+	function uiRows(row, i) {
 		const style = "flex flex-wrap w-[9.09%] min-h-9 justify-center items-center text-center";
 
-		const clientId = MyGlobal.HighlightText(inquiry.client_id, mainData.searchTerm);
-		const clientName = MyGlobal.HighlightText(getClientName(inquiry.client_id), mainData.searchTerm);
+		const clientNameTextStyle = row.status == statuses.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
 
-		const clientNameTextStyle = inquiry.status == STATUSES.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
-
-		const phoneNumber = MyGlobal.HighlightText(inquiry.phone_number, mainData.searchTerm);
-		const mainProject = MyGlobal.HighlightText(getMainProjectName(inquiry.main_project_id), mainData.searchTerm);
-		const subProject = MyGlobal.HighlightText(getSubProjectName(inquiry.sub_project_id), mainData.searchTerm);
-
-		const referenceId = MyGlobal.HighlightText(inquiry.reference_id, mainData.searchTerm);
-		const referenceName = getReferenceName(inquiry.reference_id) ?? referenceId;
-		const _referenceName = MyGlobal.HighlightText(referenceName, mainData.searchTerm);
-		const referenceIdAndName = `${referenceId} - ${referenceName}`;
-
-		const quote = MyGlobal.HighlightText(inquiry.quote, mainData.searchTerm);
-
-		const createdBy = MyGlobal.GetAnyDataFromId(inquiry.entry_by, "full_name");
-		const _createdBy = MyGlobal.HighlightText(createdBy, mainData.searchTerm);
-		const createdByIdAndName = `${inquiry.entry_by} - ${createdBy}`;
+		const clientName = MyGlobal.HighlightText(row.client_name, main.findText);
+		const phoneNumber = MyGlobal.HighlightText(row.phone_number, main.findText);
+		const mainProject = MyGlobal.HighlightText(row.main_project, main.findText);
+		const subProject = MyGlobal.HighlightText(row.sub_project, main.findText);
+		const referenceName = MyGlobal.HighlightText(row.reference_name, main.findText);
+		const quote = MyGlobal.HighlightText(row.quote, main.findText);
+		const entryBy = MyGlobal.HighlightText(row.entry_by_name, main.findText);
 
 		return (
-			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={rowId}>
-				<span className={style}>{dayjs(inquiry.entry_date).format("DD MMM, YYYY")}</span>
+			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
+				<span className={style}>{row.entry_date}</span>
 
-				<span className={`${style} space-x-2 ${clientNameTextStyle}`}>{uiClientName(clientId, clientName, inquiry)}</span>
+				<span className={`${style} space-x-2 ${clientNameTextStyle}`}>
+					<Tippy allowHTML content={<Tooltip text={row.client_id_and_name} />}>
+						<span dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleEditInquiryView(row, true)} />
+					</Tippy>
+				</span>
 
 				<span className={`${style} cursor-pointer primary-text`}>
-					<Tippy allowHTML={true} content={<Tooltip text={"Open this contact on WhatsApp Web."} />}>
-						<span dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsAppWeb(inquiry.phone)} />
+					<Tippy allowHTML content={<Tooltip text="Open this contact on WhatsApp Web." />}>
+						<span dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsAppWeb(row.phone_number)} />
 					</Tippy>
 				</span>
 
@@ -791,54 +791,36 @@ export default function Inquiries({ status }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: subProject }} />
 
 				<span className={`${style} cursor-help`}>
-					<Tippy allowHTML={true} content={<Tooltip text={referenceIdAndName} />}>
-						<span dangerouslySetInnerHTML={{ __html: _referenceName }} />
+					<Tippy allowHTML content={<Tooltip text={row.reference_id_and_name} />}>
+						<span dangerouslySetInnerHTML={{ __html: referenceName }} />
 					</Tippy>
 				</span>
 
-				<span className={`${style} space-x-1`}>{uiFollowUps(inquiry)}</span>
+				<span className={`${style} space-x-1`}>{uiFollowUps(row)}</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: quote }} />
-				<span className={style}>{uiStatusMenu(inquiry)}</span>
-				<span className={style}>{uiNotes(inquiry)}</span>
+				<span className={style}>{uiStatusMenu(row)}</span>
+				<span className={style}>{uiNotes(row)}</span>
 
 				<span className={`${style} cursor-help`}>
-					<Tippy allowHTML={true} content={<Tooltip text={createdByIdAndName} />}>
-						<span dangerouslySetInnerHTML={{ __html: _createdBy }} />
+					<Tippy allowHTML content={<Tooltip text={row.entry_by_id_and_name} />}>
+						<span dangerouslySetInnerHTML={{ __html: entryBy }} />
 					</Tippy>
 				</span>
 			</div>
 		);
-	};
+	}
 
-	const uiSearch = () => {
-		if (apiData.inquiries.apiCopy.length) {
-			return (
-				<TextInputNative
-					id="searchBox"
-					icon={faSearch}
-					onChange={(e) => setInputs("searchTerm", e.target.value)}
-					onClearButtonClick={() => setInputs("searchTerm", "")}
-					placeholder=""
-					showClearButton={showFindClearButton}
-					tabIndex={3}
-					value={mainData.searchTerm}
-					width="w-36"
-				/>
-			);
-		}
-	};
-
-	const uiSortArrows = (column) => {
-		if (mainData.sort.column == column) {
-			if (mainData.sort.isAscending) {
+	function uiSortArrows(column) {
+		if (main.sort.column == column) {
+			if (main.sort.isAscending) {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} size="sm" />;
 			} else {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} size="sm" />;
 			}
 		}
-	};
+	}
 
-	const uiStatusFilter = () => {
+	function uiStatusFilter() {
 		return (
 			<Menu as="div" className="w-fit relative text-left">
 				<MenuButton className="flex w-full justify-between items-center focus:outline-none relative z-40">
@@ -849,97 +831,98 @@ export default function Inquiries({ status }) {
 				</MenuItems>
 			</Menu>
 		);
-	};
+	}
 
-	const uiStatusFilterMenu = () => {
+	function uiStatusFilterMenu() {
 		const uniqueStatus = [];
 
-		apiData.inquiries.apiCopy.forEach((inquiry) => {
-			if (!uniqueStatus.includes(inquiry.status)) {
-				uniqueStatus.push(inquiry.status);
+		api.inquiries.copy.forEach((fe) => {
+			if (!uniqueStatus.includes(fe.status)) {
+				uniqueStatus.push(fe.status);
 			}
 		});
 
-		return uniqueStatus.map((status, index) => {
+		return uniqueStatus.map((m, i) => {
 			return (
 				<MenuItem
 					as="div"
 					className="w-full p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text hovered-rows"
-					key={index}
-					onClick={() => setMainData((old) => ({ ...old, searchTerm: status }))}>
-					<span>{status}</span>
+					key={i}
+					onClick={() => setMain((s) => ({ ...s, findText: m }))}>
+					<span>{m}</span>
 				</MenuItem>
 			);
 		});
-	};
+	}
 
-	const uiStatusMenu = (inquiry) => {
-		const isConfirmed = inquiry.status == STATUSES.Confirmed;
+	function uiStatusMenu(row) {
+		const isConfirmed = row.status == statuses.Confirmed;
+		const reverseIcon = isConfirmed ? "flex-row-reverse" : "";
 
 		const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none relative z-40 font-medium-10 ${getStatusSeverity(
-			inquiry.status,
-		)} !py-0`;
+			row.status,
+		)} ${reverseIcon} !py-0`;
 
-		const icon = isConfirmed ? <FontAwesomeIcon icon={faBolt} size="sm" /> : <FontAwesomeIcon icon={faChevronDown} size="sm" />;
+		const icon = isConfirmed ? <FontAwesomeIcon icon={faCircleCheck} size="sm" /> : <FontAwesomeIcon icon={faChevronDown} size="sm" />;
 
 		return (
-			<Tippy allowHTML={false} content={<Tooltip text={inquiry.closure_reason} />} disabled={inquiry.is_closed == 0 && !inquiry.closure_reason}>
+			<Tippy allowHTML={false} content={<Tooltip text={row.closure_reason} />} disabled={row.is_closed == 0 && !row.closure_reason}>
 				<Menu as="div" className="flex w-24 justify-center items-center relative">
 					<MenuButton className={wrapper}>
-						<span dangerouslySetInnerHTML={{ __html: highlightText(true, inquiry.status) }} />
+						<span dangerouslySetInnerHTML={{ __html: highlightText(true, row.status) }} />
 						{icon}
 					</MenuButton>
 					{!isConfirmed && (
 						<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">
-							{uiStatusMenuList(inquiry)}
+							{uiStatusMenuList(row)}
 						</MenuItems>
 					)}
 				</Menu>
 			</Tippy>
 		);
-	};
+	}
 
-	const uiStatusMenuList = (inquiry) => {
-		return Object.values(STATUSES)
-			.filter((f) => f != inquiry.status)
+	function uiStatusMenuList(row) {
+		return Object.values(statuses)
+			.filter((f) => f != row.status)
 			.filter((f) => {
-				if (f == STATUSES.Confirmed && !allowConvertingToProject) {
-					return f != STATUSES.Confirmed;
+				if (f == statuses.Confirmed && !allowConvertingToProject) {
+					return f != statuses.Confirmed;
 				}
 
 				return f;
 			})
 			.map((m, i) => {
-				const label = m == STATUSES.Closed ? "Close" : m == STATUSES.Confirmed ? "Confirm" : m;
+				const label = m == statuses.Closed ? "Close" : m == statuses.Confirmed ? "Confirm" : m;
 
 				return (
 					<MenuItem
 						as="div"
 						className="p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text text-left hovered-rows"
 						key={i}
-						onClick={() => prepareInquiryStatusChangeData(inquiry, m)}>
+						onClick={() => prepareInquiryStatusChangeData(row, m)}>
 						<span>{label}</span>
 					</MenuItem>
 				);
 			});
-	};
+	}
 
-	const uiToDate = () => {
-		if (apiData.inquiries.apiCopy.length) {
+	function uiToDate() {
+		if (api.inquiries.copy.length) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
-						className="w-20 h-6 bg-transparent outline-none font-medium-11"
+						className="w-20 h-6 bg-transparent outline-none font-regular-10"
 						dateFormat="dd-MM-YYYY"
 						dropdownMode="select"
-						endDate={mainData.entryDate.to}
+						endDate={main.filter.to}
 						onChange={(e) => setInputs("to", e)}
 						placeholderText="To"
 						peekNextMonth
-						selected={mainData.entryDate.to}
+						selected={main.filter.to}
 						selectsEnd
-						startDate={mainData.entryDate.to}
+						startDate={main.filter.to}
 						showMonthDropdown
 						showYearDropdown
 						tabIndex={2}
@@ -948,53 +931,52 @@ export default function Inquiries({ status }) {
 				</div>
 			);
 		}
-	};
+	}
 
 	// Hooks
 	useEffect(() => {
-		getInquiries();
+		setSupportData();
 
 		globalThis.addEventListener("keydown", detectKeystrokes);
-		return () => globalThis.removeEventListener("keydown", detectKeystrokes);
+
+		return () => {
+			setModuleProps(thisView, null);
+			globalThis.removeEventListener("keydown", detectKeystrokes);
+		};
 	}, []);
 
 	useEffect(() => {
-		if (apiData.inquiries.apiCopy.length) {
+		if (api.inquiries.copy.length) {
 			mergeInquiriesAndNotesById();
 		}
-	}, [apiData.inquiries.apiCopy]);
+	}, [api.inquiries.copy]);
 
 	useEffect(() => {
 		doFiltering("");
-	}, [mainData.searchTerm]);
+	}, [main.findText]);
 
 	useEffect(() => {
-		if (mainData.entryDate.from && mainData.entryDate.to) {
-			doFiltering("date");
+		if (main.filter.from && main.filter.to) {
+			doFiltering("entryDate");
 		} else {
 			doFiltering("");
 		}
-	}, [mainData.entryDate]);
+	}, [main.filter]);
 
 	useEffect(() => {
-		if (mainData.hasMounted) {
-			if (Object.keys(mainData.selectedInquiryForStatusChange).length) {
+		if (mounted.mainComponent) {
+			if (Object.keys(main.selectedInquiryForStatusChange).length) {
 				toggleUpdateStatus(true);
 			}
 		}
-	}, [mainData.selectedInquiryForStatusChange]);
+	}, [main.selectedInquiryForStatusChange]);
 
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center light-gray-background">
 			{uiMain()}
 
-			{hasMounted.updateStatus && (
-				<UpdateStatus
-					mount={hasMounted.updateStatus}
-					reloadInquiries={getInquiries}
-					selectedInquiry={mainData.selectedInquiryForStatusChange}
-					unmount={toggleUpdateStatus}
-				/>
+			{mounted.updateStatus && (
+				<UpdateStatus inquiry={main.selectedInquiryForStatusChange} mount={mounted.updateStatus} reload={setSupportData} unmount={toggleUpdateStatus} />
 			)}
 		</div>
 	);

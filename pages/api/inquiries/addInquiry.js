@@ -54,7 +54,7 @@ export default async function handler(req, res) {
 		}
 
 		if (subProject.id == 0) {
-			const response = await query("INSERT INTO sub_projects (id, name, entry_by) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
+			const response = await query("INSERT INTO sub_projects (id, name, entry_by_id) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
 
 			if (response.affectedRows == 0) {
 				return res.status(400).send("Could not add Sub Project.");
@@ -76,7 +76,7 @@ export default async function handler(req, res) {
 		}
 
 		const inquiryInsertResult = await query(
-			"INSERT INTO inquiries (id, client_id, reference_id, main_project_id, sub_project_id, entry_date, phone_number, email_address, follow_ups, quote, status, entry_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO inquiries (id, client_id, reference_id, main_project_id, sub_project_id, entry_date, phone_number, email_address, follow_ups, quote, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 			[
 				inquiryResponse.new_id,
 				newClientId,
@@ -97,7 +97,7 @@ export default async function handler(req, res) {
 			return res.status(400).send("Could not add Inquiry.");
 		}
 
-		const noteInsertResult = await query("INSERT INTO notes (inquiry_id, entry_by, content, source) VALUES (?, ?, ?, ?)", [
+		const noteInsertResult = await query("INSERT INTO notes (inquiry_id, entry_by_id, content, source) VALUES (?, ?, ?, ?)", [
 			inquiryResponse.new_id,
 			userId,
 			note,

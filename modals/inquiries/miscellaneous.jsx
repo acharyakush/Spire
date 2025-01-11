@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
+
 import axios from "axios";
 import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
@@ -118,57 +120,56 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 	);
 }
 
-export function UpdateStatus({ mount, reloadInquiries, selectedInquiry, unmount }) {
+export function UpdateStatus({ inquiry, mount, reload, unmount }) {
 	// Business Logic
-	const [state, setState] = useState({ isBoxDragged: false, isLoading: false, reason: "" });
+	const [main, setMain] = useState({
+		isBoxDragged: false,
+		isLoading: false,
+		reason: "",
+	});
 
-	const isStatusCloseInquiry = selectedInquiry?.new_status == MyConstants.Statuses.Inquiries.Closed;
+	const statuses = MyConstants.Statuses.Inquiries;
+	const newStatus = "new_status" in inquiry ? inquiry.new_status : "";
+
+	const isStatusCloseInquiry = newStatus == statuses.Closed;
 	const titleBarText = isStatusCloseInquiry ? "Close Inquiry" : "Update Status";
 	const buttonLabel = isStatusCloseInquiry ? "Close" : "Update";
 
 	const reasonBoxStyle = isStatusCloseInquiry ? "flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center" : "hidden";
-	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarCursor = main.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
-	let disableButton = state.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	let disableButton = main.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 
 	if (isStatusCloseInquiry) {
-		disableButton = state.isLoading || !state.reason ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+		disableButton = main.isLoading || !main.reason ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 	}
 
 	const buttonStyle = `primary-button-condensed ${disableButton}`;
 
 	let message = "";
 
-	if (selectedInquiry?.new_status == MyConstants.Statuses.Inquiries.Open) {
+	if (newStatus == statuses.Open) {
 		message = `Are you sure you want to re-open this inquiry?`;
 	} else if (isStatusCloseInquiry) {
 		message = `Are you sure you want to close this inquiry? You are required to write a reason below for the closure.`;
-	} else if (selectedInquiry?.new_status == MyConstants.Statuses.Inquiries.Confirmed) {
+	} else if (newStatus == statuses.Confirmed) {
 		message = `Are you sure you want to convert this inquiry to project? If you affirm to this, you will be redirected to <b>New Project</b> page.\n\nOnce affirmed, this action cannot be reversed.`;
-	} else if (selectedInquiry?.new_status == MyConstants.Statuses.Inquiries.Hold) {
+	} else if (newStatus == statuses.Hold) {
 		message = `Are you sure you want to keep this inquiry on hold?`;
 	}
 
 	// Functions
-	const setBoxDrag = () => {
-		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
-	};
-
-	const setReason = (reason) => {
-		setState((old) => ({ ...old, reason }));
-	};
-
-	const updateStatus = async () => {
-		if (selectedInquiry.new_status == MyConstants.Statuses.Inquiries.Confirmed) {
+	async function doStatusUpdate() {
+		if (newStatus == statuses.Confirmed) {
 			unmount("open-new-project");
 		} else {
-			setState((old) => ({ ...old, isLoading: true }));
+			setMain((s) => ({ ...s, isLoading: true }));
 
 			const body = {
-				inquiryId: selectedInquiry.id,
-				reason: state.reason,
-				status: isStatusCloseInquiry ? MyConstants.Statuses.Inquiries.Closed : selectedInquiry.new_status,
+				inquiryId: inquiry.id,
+				reason: main.reason,
+				status: isStatusCloseInquiry ? statuses.Closed : newStatus,
 				type: isStatusCloseInquiry ? "close-inquiry" : "update-inquiry-status",
 				userId: MyGlobal.GetUserId(),
 			};
@@ -177,14 +178,14 @@ export function UpdateStatus({ mount, reloadInquiries, selectedInquiry, unmount 
 				const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 				if (response.status === 200) {
-					reloadInquiries();
+					reload();
 
-					let activityMessage = `Update status of <b>${selectedInquiry.id}</b> to <b>${selectedInquiry.new_status}</b> from <b>${selectedInquiry.status}</b>.`;
+					let activityMessage = `Update status of <b>${inquiry.id}</b> to <b>${newStatus}</b> from <b>${inquiry.status}</b>.`;
 
 					let successMessage = MyConstants.Messages.InquiryEdited;
 
 					if (isStatusCloseInquiry) {
-						activityMessage = `Closed <b>${selectedInquiry.id}</b> due to <b>${state.reason}</b>.`;
+						activityMessage = `Closed <b>${inquiry.id}</b> due to <b>${main.reason}</b>.`;
 						successMessage = MyConstants.Messages.InquiryClosed;
 					}
 
@@ -197,15 +198,23 @@ export function UpdateStatus({ mount, reloadInquiries, selectedInquiry, unmount 
 				const errorSource = isStatusCloseInquiry ? "Close Inquiry" : "Update Inquiry Status";
 				MyGlobal.HandleErrors(error, errorSource);
 			} finally {
-				setState((old) => ({ ...old, isLoading: false, reason: "" }));
+				setMain((s) => ({ ...s, isLoading: false, reason: "" }));
 				unmount(false);
 			}
 		}
-	};
+	}
+
+	function setBoxDrag() {
+		setMain((s) => ({ ...s, isBoxDragged: !main.isBoxDragged }));
+	}
+
+	function setReason(reason) {
+		setMain((s) => ({ ...s, reason }));
+	}
 
 	// UI Components
-	const uiButton = () => {
-		if (state.isLoading) {
+	function uiButton() {
+		if (main.isLoading) {
 			return (
 				<span className="px-3.5">
 					<Spinner />
@@ -214,16 +223,16 @@ export function UpdateStatus({ mount, reloadInquiries, selectedInquiry, unmount 
 		} else {
 			return buttonLabel;
 		}
-	};
+	}
 
-	const uiTitleBar = () => {
+	function uiTitleBar() {
 		return (
 			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">{titleBarText}</span>
 				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
-	};
+	}
 
 	// Main UI
 	return (
@@ -243,12 +252,12 @@ export function UpdateStatus({ mount, reloadInquiries, selectedInquiry, unmount 
 								onKeyDown={() => {}}
 								rows={3}
 								tabIndex={1}
-								value={state.reason}
+								value={main.reason}
 								width="w-full"
 							/>
 						</div>
 						<footer className="dialog-footer">
-							<button className={buttonStyle} onClick={() => updateStatus()}>
+							<button className={buttonStyle} onClick={() => doStatusUpdate()}>
 								{uiButton()}
 							</button>
 						</footer>

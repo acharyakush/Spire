@@ -113,7 +113,6 @@ export default function Home() {
 			MyGlobal.ShowErrorToast(MyConstants.Messages.UnauthorizedAccess);
 			router.replace("/");
 		} else {
-			MyGlobal.SetUserStatus(1);
 			setMain((old) => ({ ...old, loggedInUser: MyGlobal.GetUserData() }));
 		}
 	}
@@ -315,7 +314,7 @@ export default function Home() {
 						key={`ErrorBoundary_${baseModules.Inquiries}`}
 						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Inquiries)}
 						FallbackComponent={ErrorFallbackComponent}>
-						<Inquiries status={main.status.inquiries} />
+						<Inquiries presetStatus={main.status.inquiries} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Invoices:

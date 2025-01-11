@@ -32,26 +32,26 @@ export default async function handler(req, res) {
 					ipAddress = "Localhost";
 				}
 
-				queryString = "INSERT INTO activities (entry_by, module, activity, ip_address, details) VALUES (?, ?, ?, ?, ?)";
+				queryString = "INSERT INTO activities (entry_by_id, module, activity, ip_address, details) VALUES (?, ?, ?, ?, ?)";
 
 				queryParameters = [request.userId, request.module, request.activity, ipAddress, ""];
 			} else if (request.type == "set-user-status") {
 				queryString = "UPDATE employees SET is_active=? WHERE id=?";
 				queryParameters = [request.status, request.userId];
 			} else if (request.type == "update-inquiry-status") {
-				queryString = `UPDATE inquiries SET status=?, is_closed=0, closure_reason="", updated_at=NOW() WHERE id=?`;
+				queryString = `UPDATE inquiries SET status=?, is_closed=0, closure_reason="" WHERE id=?`;
 				queryParameters = [request.status, request.inquiryId];
 			} else if (request.type == "close-inquiry") {
-				queryString = "UPDATE inquiries SET status=?, is_closed=1, closure_reason=?, updated_at=NOW() WHERE id=?";
+				queryString = "UPDATE inquiries SET status=?, is_closed=1, closure_reason=? WHERE id=?";
 				queryParameters = [request.status, request.reason, request.inquiryId];
 			} else if (request.type == "add-note") {
-				queryString = "INSERT INTO notes (inquiry_id, entry_by, content, source) VALUES (?, ?, ?, ?)";
+				queryString = "INSERT INTO notes (inquiry_id, entry_by_id, content, source) VALUES (?, ?, ?, ?)";
 				queryParameters = [request.id, request.userId, request.content, request.source];
 			} else if (request.type == "edit-project-status") {
 				queryString = "UPDATE projects SET status=? WHERE id=? AND client_id=? AND company_id=? AND inquiry_id=?";
 				queryParameters = [request.new_status, request.projectId, request.client_id, request.company_id, request.inquiry_id];
 			} else if (request.type == "delete-project") {
-				queryString = "UPDATE projects SET is_deleted=1, updated_at=NOW() WHERE id=?";
+				queryString = "UPDATE projects SET is_deleted=1 WHERE id=?";
 				queryParameters = [request.id];
 			} else if (request.type == "mark-task-as-completed") {
 				queryString = "UPDATE tasks SET is_completed=1, completed_on=? WHERE id=? AND project_id=?";
@@ -69,7 +69,7 @@ export default async function handler(req, res) {
 				queryString = "UPDATE tasks SET is_completed=?, is_disabled=?, reason=? WHERE id=?";
 				queryParameters = [request.isCompleted, request.isDisabled, request.reason, request.taskId];
 			} else if (request.type == "add-tasks-particular-and-remark") {
-				queryString = "INSERT INTO tasks_particulars_remarks (task_id, project_id, particular, remark, entry_by) VALUES (?, ?, ?, ?, ?)";
+				queryString = "INSERT INTO tasks_particulars_remarks (task_id, project_id, particular, remark, entry_by_id) VALUES (?, ?, ?, ?, ?)";
 				queryParameters = [request.taskId, request.projectId, request.particular, request.remark, request.createdBy];
 			} else if (request.type == "edit-tasks-particular-and-remark") {
 				queryString = "UPDATE tasks_particulars_remarks SET particular=?, remark=? WHERE id=? AND task_id=? AND project_id=?";

@@ -93,7 +93,7 @@ export default function Tasks({ selectedClient, selectedProject, source }) {
 			const isNewTask = apiData.allTasks.apiCopy.filter((_task) => _task.id == task.id && _task.project_id == selectedProject.id);
 
 			if (isNewTask.length) {
-				const insertedBy = MyGlobal.GetAnyDataFromId(task.entry_by, "full_name");
+				const insertedBy = MyGlobal.GetAnyDataFromId(task.entry_by_id, "full_name");
 				const dueOn = dayjs(task.due_on).format("DD MMM, YYYY");
 				const formattedExpenses = MyGlobal.ThousandSeparator(task.expense);
 
@@ -191,7 +191,7 @@ export default function Tasks({ selectedClient, selectedProject, source }) {
 
 			const allTasksRemarks = allTasksParticularsAndRemarksResult.data.map((record) => {
 				const taskName = allTasksResult.data.filter((task) => task.id == record.task_id).at(0).task;
-				const writtenBy = MyGlobal.GetAnyDataFromId(record.entry_by, "full_name");
+				const writtenBy = MyGlobal.GetAnyDataFromId(record.entry_by_id, "full_name");
 
 				return { ...record, entry_by: writtenBy, task_name: taskName };
 			});

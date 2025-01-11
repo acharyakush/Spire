@@ -31,7 +31,7 @@ export default async function handler(req, res) {
 		const clientId = isClient ? client.id : "";
 
 		const response = await query(
-			"INSERT INTO cash_flows (affiliate_id, client_id, company_id, project_id, owner_firm_id, owner_firm_bank_id, particulars, payment_for, amount_paid, amount_received, is_office_expense, entry_at, entry_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO cash_flows (affiliate_id, client_id, company_id, project_id, owner_firm_id, owner_firm_bank_id, particulars, payment_for, amount_paid, amount_received, is_office_expense, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 			[
 				affiliateId,
 				clientId,

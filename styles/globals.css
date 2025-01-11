@@ -524,6 +524,10 @@ html {
 	@apply border border-[var(--primary)];
 }
 
+.primary-bottom-border-transparent-05 {
+	@apply border-b-2 border-[var(--primary-transparent-05)];
+}
+
 .primary-border-colour {
 	@apply border-[var(--primary)];
 }

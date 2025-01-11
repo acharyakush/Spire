@@ -16,123 +16,156 @@ import { AddNote } from "@/modals/inquiries/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar, faChevronLeft, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
-export default function Notes({ allClients, allNotes, reloadInquiries, selectedInquiry, unmount }) {
+export default function Notes({ inquiry, reload, unmount }) {
 	// Business Logic
-	const [mainData, setMainState] = useState({
-		entryDate: { from: "", to: "" },
-		hasMounted: false,
-		isAddBoxOpen: false,
+	const [api, setApi] = useState({
+		notes: { copy: [], data: [] },
+	});
+
+	const [main, setMain] = useState({
+		filter: { from: "", to: "" },
+		findText: "",
 		isLoading: false,
-		notes: { api: [], apiCopy: [] },
-		searchTerm: "",
 		sort: { column: "Date", isAscending: false },
 	});
 
-	const clientName = allClients?.filter((client) => client.id == selectedInquiry?.client_id).at(0)?.name;
+	const [mounted, setMounted] = useState({
+		add: false,
+		mainComponent: false,
+	});
 
-	const showSearchClearButton = mainData.searchTerm ? "cursor-pointer primary-text" : "hidden";
-	const showFromDateClearButton = mainData.entryDate.from ? "cursor-pointer primary-text" : "hidden";
-	const showToDateClearButton = mainData.entryDate.to ? "cursor-pointer primary-text" : "hidden";
+	const showSearchClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
+	const showFromDateClearButton = main.filter.from ? "cursor-pointer primary-text" : "hidden";
+	const showToDateClearButton = main.filter.to ? "cursor-pointer primary-text" : "hidden";
 
 	// Functions
-	const doFiltering = (dataToFind) => {
-		const filteredData = mainData.notes.apiCopy.filter((note) => {
-			const searchTerm = mainData.searchTerm.toLowerCase();
-			const content = String(note.content).toLowerCase();
+	function doFiltering(type) {
+		const filteredData = api.notes.copy.filter((f) => {
+			const text = main.findText.toLowerCase();
+			const content = f.content.toLowerCase();
+			const entryBy = f.entry_by.toLowerCase();
 
-			const writer = MyGlobal.GetAllUsers()
-				?.filter((user) => user.id == note.entry_by)
-				.at(0);
+			const checkDate = new Date(f.entry_date);
+			const startDate = main.filter.from;
+			const endDate = main.filter.to;
 
-			const writerFullName = String(writer.full_name).toLowerCase();
-
-			const checkDate = new Date(note.entry_date);
-			const startDate = mainData.entryDate.from;
-			const endDate = mainData.entryDate.to;
-
-			if (dataToFind == "date") {
+			if (type == "entryDate") {
 				if (checkDate >= startDate && checkDate <= endDate) {
-					return note;
+					return f;
 				}
 			} else {
-				return content.includes(searchTerm) || writerFullName.includes(searchTerm);
+				return content.includes(text) || entryBy.includes(text);
 			}
 		});
 
-		setMainState((old) => ({ ...old, notes: { ...old.notes, api: filteredData } }));
-	};
+		setApi((s) => ({ ...s, notes: { ...s.notes, data: filteredData } }));
+	}
 
-	const doSorting = () => {
-		return mainData.notes.api.sort((a, b) => {
+	function doSorting() {
+		return api.notes.data.sort((a, b) => {
 			const aEntryDate = new Date(a.entry_date);
 			const bEntryDate = new Date(b.entry_date);
 
-			const aWriter = MyGlobal.GetAnyDataFromId(a.entry_by, "full_name");
-			const bWriter = MyGlobal.GetAnyDataFromId(b.entry_by, "full_name");
+			const { column, isAscending } = main.sort;
 
-			if (mainData.sort.column == "Date" && mainData.sort.isAscending) {
+			if (column == "Date" && isAscending) {
 				return aEntryDate - bEntryDate;
-			} else if (mainData.sort.column == "Date" && !mainData.sort.isAscending) {
+			} else if (column == "Date" && !isAscending) {
 				return bEntryDate - aEntryDate;
-			} else if (mainData.sort.column == "Note" && mainData.sort.isAscending) {
+			} else if (column == "Note" && isAscending) {
 				return a.note.localeCompare(b.note);
-			} else if (mainData.sort.column == "Note" && !mainData.sort.isAscending) {
+			} else if (column == "Note" && !isAscending) {
 				return b.note.localeCompare(a.note);
-			} else if (mainData.sort.column == "Writer" && mainData.sort.isAscending) {
-				return aWriter.localeCompare(bWriter);
-			} else if (mainData.sort.column == "Writer" && !mainData.sort.isAscending) {
-				return bWriter.localeCompare(aWriter);
+			} else if (column == "Entry By" && isAscending) {
+				return a.entry_by.localeCompare(b.entry_by);
+			} else if (column == "Entry By" && !isAscending) {
+				return b.entry_by.localeCompare(a.entry_by);
 			} else {
 				return bEntryDate - aEntryDate;
 			}
 		});
-	};
+	}
 
-	const getCounts = () => {
-		if (mainData.notes.api.length != mainData.notes.apiCopy.length) {
-			return `${mainData.notes.api.length} / ${mainData.notes.apiCopy.length}`;
+	function getIconOrBadge() {
+		if (main.isLoading) {
+			return (
+				<span className="pl-5 relative">
+					<Spinner />
+				</span>
+			);
 		} else {
-			return mainData.notes.api.length;
+			return api.notes.data.length > 0 && <Badge value={getRowsCount()} />;
 		}
-	};
+	}
 
-	const getNotes = async () => {
+	async function getNotes() {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-notes" }));
 
 			if (response.status === 200) {
-				reloadInquiries();
+				reload();
 				setNotesByInquiry(response.data);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `Inquiries => ${selectedInquiry.id} => Get Notes`);
+			MyGlobal.HandleErrors(error, `Inquiries => ${inquiry.id} => Get Notes`);
 		}
-	};
+	}
 
-	const setInputs = (key, value) => {
-		if (key == "from" || key == "to") {
-			setMainState((old) => ({ ...old, entryDate: { ...old.entryDate, [key]: value } }));
+	function getRowsCount() {
+		if (api.notes.data.length != api.notes.copy.length) {
+			return `${api.notes.data.length} / ${api.notes.copy.length}`;
 		} else {
-			setMainState((old) => ({ ...old, [key]: value }));
+			return api.notes.data.length;
 		}
-	};
+	}
 
-	const setNotesByInquiry = (source) => {
-		const notesByInquiry = source?.filter((note) => note.inquiry_id == selectedInquiry?.id);
-		setMainState((old) => ({ ...old, notes: { api: notesByInquiry, apiCopy: notesByInquiry } }));
-	};
+	function setInputs(key, value) {
+		if (key == "from" || key == "to") {
+			setMain((s) => ({ ...s, filter: { ...s.filter, [key]: value } }));
+		} else {
+			setMain((s) => ({ ...s, [key]: value }));
+		}
+	}
 
-	const setSort = (column) => {
-		setMainState((old) => ({ ...old, sort: { column, isAscending: !mainData.sort.isAscending } }));
-	};
+	function setNotesByInquiry(source = []) {
+		let notesByInquiry = [];
+		const array = source.filter((f) => f.inquiry_id == inquiry.id);
 
-	const toggleAddBox = () => {
-		setMainState((old) => ({ ...old, isAddBoxOpen: !mainData.isAddBoxOpen }));
-	};
+		if (array.length) {
+			array.forEach((fe) => {
+				const entryBy = MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name");
+				notesByInquiry.push({ ...fe, entry_by: entryBy });
+			});
+		}
+
+		setApi((s) => ({ ...s, notes: { copy: notesByInquiry, data: notesByInquiry } }));
+	}
+
+	function setSort(column) {
+		setMain((s) => ({ ...s, sort: { column, isAscending: !main.sort.isAscending } }));
+	}
+
+	async function setSupportData() {
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Notes.GetNotes, MyGlobal.GetHeaders({ inquiryId: inquiry.id }));
+
+			if (response.status === 200) {
+				setApi({ notes: { copy: response.data, data: response.data } });
+				setNotesByInquiry(response.data);
+				setMounted((s) => ({ ...s, mainComponent: true }));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Notes => Get Notes");
+		}
+	}
+
+	function toggleAddBox() {
+		setMounted((s) => ({ ...s, add: !mounted.add }));
+	}
 
 	// UI Components
-	const uiBody = () => {
-		if (!mainData.notes.api.length && mainData.notes.apiCopy.length) {
+	function uiBody() {
+		if (!api.notes.data.length && api.notes.copy.length) {
 			return (
 				<div className="flex w-full h-[calc(100vh-120px)] p-6 justify-center items-center rounded full-border">
 					<span className="font-regular-12 black-text">No notes found.</span>
@@ -145,171 +178,164 @@ export default function Notes({ allClients, allNotes, reloadInquiries, selectedI
 					<Virtuoso
 						className="w-full h-full overflow-y-auto"
 						data={doSorting()}
-						itemContent={(index, note) => uiRows(note, index)}
-						totalCount={mainData.notes.api.length}
+						itemContent={(i, row) => uiRows(row, i)}
+						totalCount={api.notes.data.length}
 					/>
 				</div>
 			);
 		}
-	};
+	}
 
-	const uiFromDate = () => {
+	function uiFind() {
+		return (
+			<TextInputNative
+				id=""
+				icon={faSearch}
+				onChange={(e) => setInputs("findText", e.target.value)}
+				onClearButtonClick={() => setInputs("findText", "")}
+				placeholder="Find"
+				showClearButton={showSearchClearButton}
+				tabIndex={3}
+				value={main.findText}
+				width="w-36"
+			/>
+		);
+	}
+
+	function uiFromDate() {
 		return (
 			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background full-border">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-medium-11"
 					dateFormat="dd-MM-YYYY"
-					endDate={mainData.entryDate.to}
+					endDate={main.filter.to}
 					onChange={(e) => setInputs("from", e)}
 					placeholderText="From"
 					tabIndex={1}
-					selected={mainData.entryDate.from}
+					selected={main.filter.from}
 					selectsStart
-					startDate={mainData.entryDate.from}
+					startDate={main.filter.from}
 				/>
 				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
 			</div>
 		);
-	};
+	}
 
-	const uiHeaders = () => {
-		return Object.values(MyConstants.TableHeaders.Notes).map((header, index) => {
-			const showIndicator = header == mainData.sort.column ? "visible" : "invisible";
+	function uiHeaders() {
+		return Object.values(MyConstants.TableHeaders.Notes).map((m, i) => {
+			const showArrow = m == main.sort.column ? "visible" : "invisible";
 
 			return (
-				<span className="w-1/3 space-x-1 cursor-pointer text-center font-medium-10 text-white" onClick={() => setSort(header)} key={index}>
-					<span>{header}</span>
-					<span className={showIndicator}>{uiSortArrows(header)}</span>
+				<span className="w-1/3 space-x-1 cursor-pointer text-center font-medium-10 text-white" onClick={() => setSort(m)} key={i}>
+					<span>{m}</span>
+					<span className={showArrow}>{uiSortArrows(m)}</span>
 				</span>
 			);
 		});
-	};
+	}
 
-	const uiNew = () => {
+	function uiNew() {
 		return (
 			<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddBox()} tabIndex={4}>
 				<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
 				<span>New</span>
 			</button>
 		);
-	};
+	}
 
-	const uiRows = (note, rowIndex) => {
-		const style = "flex w-1/3 min-h-9 justify-center items-center text-center right-border contrast-background";
+	function uiRows(row, i) {
+		const style = "flex w-1/3 min-h-9 justify-center items-center text-center contrast-background";
 
-		const entryDate = dayjs(note.entry_date).format("DD MMM, YYYY");
-		const content = MyGlobal.HighlightText(note.content, mainData.searchTerm);
+		const entryDate = dayjs(row.entry_date).format("DD MMM, YYYY");
 
-		const writer = MyGlobal.GetAllUsers()
-			?.filter((user) => user.id == note.entry_by)
-			.at(0);
-
-		const writerFullName = MyGlobal.HighlightText(writer?.full_name, mainData.searchTerm);
+		const content = MyGlobal.HighlightText(row.content, main.findText);
+		const entryBy = MyGlobal.HighlightText(row.entry_by, main.findText);
 
 		return (
-			<div className="flex w-full justify-center items-center bottom-border font-regular-10 black-text" key={rowIndex}>
+			<div className="flex w-full justify-center items-center bottom-border font-regular-10 black-text" key={i}>
 				<span className={style}>{entryDate}</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: content }} />
 				<span className={style}>
-					<span dangerouslySetInnerHTML={{ __html: writerFullName }} />
+					<span dangerouslySetInnerHTML={{ __html: entryBy }} />
 				</span>
 			</div>
 		);
-	};
+	}
 
-	const uiSearch = () => {
-		return (
-			<TextInputNative
-				id=""
-				icon={faSearch}
-				onChange={(e) => setInputs("searchTerm", e.target.value)}
-				onClearButtonClick={() => setInputs("searchTerm", "")}
-				placeholder="Search"
-				showClearButton={showSearchClearButton}
-				tabIndex={3}
-				value={mainData.searchTerm}
-				width="w-36"
-			/>
-		);
-	};
-
-	const uiSortArrows = (column) => {
-		if (mainData.sort.column == column) {
-			if (mainData.sort.isAscending) {
+	function uiSortArrows(column) {
+		if (main.sort.column == column) {
+			if (main.sort.isAscending) {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} />;
 			} else {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} />;
 			}
 		}
-	};
+	}
 
-	const uiToDate = () => {
+	function uiToDate() {
 		return (
 			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background full-border">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-medium-11"
 					dateFormat="dd-MM-YYYY"
-					endDate={mainData.entryDate.to}
+					endDate={main.filter.to}
 					onChange={(e) => setInputs("to", e)}
 					placeholderText="To"
 					tabIndex={2}
-					selected={mainData.entryDate.to}
+					selected={main.filter.to}
 					selectsEnd
-					startDate={mainData.entryDate.to}
+					startDate={main.filter.to}
 				/>
 				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
 			</div>
 		);
-	};
+	}
 
 	// Hooks
 	useEffect(() => {
-		setNotesByInquiry(allNotes);
-		setMainState((old) => ({ ...old, hasMounted: true }));
+		setSupportData();
 	}, []);
 
 	useEffect(() => {
-		if (mainData.hasMounted) {
+		if (mounted.mainComponent) {
 			doFiltering("");
 		}
-	}, [mainData.searchTerm]);
+	}, [main.findText]);
 
 	useEffect(() => {
-		if (mainData.hasMounted) {
-			if (mainData.entryDate.from && mainData.entryDate.to) {
-				doFiltering("date");
+		if (mounted.mainComponent) {
+			if (main.filter.from && main.filter.to) {
+				doFiltering("entryDate");
 			} else {
 				doFiltering("");
 			}
 		}
-	}, [mainData.entryDate]);
+	}, [main.filter]);
 
 	// Main UI
-	if (mainData.hasMounted) {
+	if (mounted.mainComponent) {
 		return (
 			<>
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-1/2 space-x-2 justify-start items-center">
 						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount("", false)} />
-						<span className="view-heading">{clientName}'s Notes</span>
-						<span className="flex h-8 justify-center items-center">{mainData.notes.api.length > 0 && <Badge value={getCounts()} />}</span>
+						<span className="view-heading">{inquiry.client_name}'s Notes</span>
+						<span className="flex h-8 justify-center items-center">{getIconOrBadge()}</span>
 					</div>
 					<div className="flex w-1/2 space-x-2 justify-end items-center">
 						<div className="flex w-1/2 space-x-2 justify-end items-center">
 							{uiFromDate()}
 							{uiToDate()}
 						</div>
-						{uiSearch()}
+						{uiFind()}
 						{uiNew()}
 					</div>
 				</div>
 				<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
 
-				{mainData.isAddBoxOpen && (
-					<AddNote mount={mainData.isAddBoxOpen} reloadNotes={getNotes} selectedInquiry={selectedInquiry} unmount={toggleAddBox} />
-				)}
+				{mounted.add && <AddNote mount={mounted.add} reloadNotes={getNotes} selectedInquiry={inquiry} unmount={toggleAddBox} />}
 			</>
 		);
 	}
