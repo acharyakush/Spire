@@ -6,91 +6,90 @@ import axios from "axios";
 import MyConstants from "@/utilities/constants";
 import NewProjectPreview from "@/modals/projects/NewProjectPreview";
 
-import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Spinner } from "@/components/Elements";
+import { useEffect, useRef, useState } from "react";
+import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, ComboBoxWithChips, DatePicker, TextArea, TextInput } from "@/components/Inputs";
 import { faBriefcase, faCalendar, faChevronLeft, faFile, faIndianRupee, faNoteSticky, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewProject({ reloadInquiries, selectedInquiry, unmount }) {
+export default function NewProject({ inquiry, reload, unmount }) {
 	// Business Logic
-	const [apiData, setApiData] = useState({
-		allClients: [],
-		allMainProjects: { api: [], apiCopy: [] },
-		allSubProjects: { api: [], apiCopy: [] },
-		companiesByClients: { api: [], apiCopy: [] },
+	const teamsMenuRef = useRef(null);
+
+	const [api, setApi] = useState({
+		clients: [],
+		clientsCompanies: { copy: [], data: [] },
+		mainProjects: { copy: [], data: [] },
 		ownerFirms: [],
+		subProjects: { copy: [], data: [] },
 	});
 
-	const [hasMounted, setHasMounted] = useState({
-		mainComponent: false,
-		preview: false,
-		teamsMenu: false,
-	});
-
-	const [mainData, setMainData] = useState({
+	const [main, setMain] = useState({
 		company: { id: 0, name: "" },
-		phoneNumber: "",
 		dueOn: "",
 		invoiceFees: "",
 		invoiceFirm: { id: 0, name: "" },
 		mainProject: { id: 0, name: "" },
 		note: "",
+		phoneNumber: "",
 		quote: 0,
-		reimbursementVoucher: "",
+		reimburseVoucher: "",
 		subProject: { id: 0, name: "" },
 		teams: [],
 	});
 
-	const [otherData, setOtherData] = useState({
-		isLoading: false,
-		searched: { affiliate: {}, company: {}, mainProject: {}, subProject: {} },
+	const [mounted, setMounted] = useState({
+		preview: false,
+		teamsMenu: false,
 	});
 
-	const selectedInquiryClient = apiData.allClients.length && apiData.allClients.filter((client) => client.id == selectedInquiry?.client_id).at(0);
+	const [other, setOther] = useState({
+		find: { affiliate: {}, company: {}, mainProject: {}, subProject: {} },
+		isLoading: false,
+	});
 
-	const showTeamsDropdown = hasMounted.teamsMenu
+	const showTeamsMenu = mounted.teamsMenu
 		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow light-gray-background full-border"
 		: "hidden";
 
-	const disableAddButton = otherData.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	const disableAddButton = other.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
 
 	// Functions
-	const addNewCompany = (company) => {
-		const copy = [...apiData.companiesByClients.apiCopy];
+	function addNewCompany(company) {
+		const copy = [...api.clientsCompanies.copy];
 		const name = MyGlobal.Capitalize(company);
 
-		const revisedCopy = copy.filter((_company) => _company.id != 0);
-		revisedCopy.unshift({ id: 0, name });
+		const revised = copy.filter((f) => f.id != 0);
+		revised.unshift({ id: 0, name });
 
-		setSearch("company", "");
+		setFind("company", "");
 
-		setMainData((old) => ({ ...old, company: { id: 0, name } }));
-		setApiData((old) => ({ ...old, companiesByClients: { api: revisedCopy, apiCopy: revisedCopy } }));
-	};
+		setMain((s) => ({ ...s, company: { id: 0, name } }));
+		setApi((s) => ({ ...s, clientsCompanies: { copy: revised, data: revised } }));
+	}
 
-	const addNewSubProject = (subProject) => {
-		const copy = [...apiData.allSubProjects.apiCopy];
+	function addNewSubProject(subProject) {
+		const copy = [...api.subProjects.copy];
 		copy.unshift({ id: 0, name: MyGlobal.Capitalize(subProject) });
 
-		setSearch("subProject", "");
+		setFind("subProject", "");
 
-		setMainData((s) => ({ ...s, subProject: copy.at(0) }));
-		setApiData((s) => ({ ...s, allSubProjects: { api: copy, apiCopy: copy } }));
-	};
+		setMain((s) => ({ ...s, subProject: copy.at(0) }));
+		setApi((s) => ({ ...s, subProjects: { copy, data: copy } }));
+	}
 
-	const addProject = async () => {
-		setOtherData((s) => ({ ...s, isLoading: true }));
+	async function addProject() {
+		setOther((s) => ({ ...s, isLoading: true }));
 
 		const body = {
-			...mainData,
-			clientId: selectedInquiry.client_id,
-			inquiryId: selectedInquiry.id,
-			invoiceFees: MyGlobal.GetNumbers(mainData.invoiceFees),
-			quote: MyGlobal.GetNumbers(mainData.quote),
-			reimbursementVoucher: MyGlobal.GetNumbers(mainData.reimbursementVoucher),
+			...main,
+			clientId: inquiry.client_id,
+			inquiryId: inquiry.id,
+			invoiceFees: MyGlobal.GetNumbers(main.invoiceFees),
+			quote: MyGlobal.GetNumbers(main.quote),
+			reimburseVoucher: MyGlobal.GetNumbers(main.reimburseVoucher),
 			teams: getTeamsIds(),
 			userId: MyGlobal.GetUserId(),
 		};
@@ -99,7 +98,7 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 			const response = await axios.post(MyConstants.ApiEndpoints.Projects.AddProject, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				reloadInquiries();
+				reload();
 
 				MyGlobal.AddActivity(`Added <b>${response.data}</b>.`, MyConstants.Modules.Base.Inquiries);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryConvertedToProject);
@@ -111,287 +110,322 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Inquiries => Add Project");
 		} finally {
-			setOtherData((s) => ({ ...s, isLoading: false }));
+			setOther((s) => ({ ...s, isLoading: false }));
 		}
-	};
+	}
 
-	const calculateQuote = () => {
-		const totalAmount = MyGlobal.GetNumbers(mainData.invoiceFees) + MyGlobal.GetNumbers(mainData.reimbursementVoucher);
-		const quote = MyGlobal.ThousandSeparator(totalAmount);
+	function calculateQuote() {
+		const totalAmount = MyGlobal.GetNumbers(main.invoiceFees) + MyGlobal.GetNumbers(main.reimburseVoucher);
 
-		setMainData((s) => ({ ...s, quote }));
-	};
+		setMain((s) => ({ ...s, quote: MyGlobal.ThousandSeparator(totalAmount) }));
+	}
 
-	const getFilteredCompanies = () => {
-		const value = String(otherData.searched.company.name);
-		let companies = apiData.companiesByClients.apiCopy;
-
-		if (value !== "undefined") {
-			companies = apiData.companiesByClients.apiCopy.filter((company) => {
-				return String(company.name).toLowerCase().includes(value.toLowerCase());
-			});
+	function detectEscapeKey(event) {
+		if (event.key === "Escape") {
+			setMounted((s) => ({ ...s, teamsMenu: false }));
 		}
+	}
 
-		return companies;
-	};
-
-	const getFilteredMainProjects = () => {
-		const value = String(otherData.searched.mainProject.name);
-		let mainProjects = apiData.allMainProjects.apiCopy;
-
-		if (value !== "undefined") {
-			mainProjects = apiData.allMainProjects.apiCopy.filter((mainProject) => {
-				return String(mainProject.name).toLowerCase().includes(value.toLowerCase());
-			});
+	function detectOutsideClick(event) {
+		if (teamsMenuRef.current && !teamsMenuRef.current.contains(event.target)) {
+			setMounted((s) => ({ ...s, teamsMenu: false }));
 		}
+	}
 
-		return mainProjects;
-	};
+	function getFilteredCompanies() {
+		let list = !api.clientsCompanies.copy.length ? [] : api.clientsCompanies.copy;
 
-	const getFilteredSubProjects = () => {
-		const value = String(otherData.searched.subProject.name);
-		let subProjects = apiData.allSubProjects.apiCopy;
+		if (list.length) {
+			const value = String(other.find.company.name);
 
-		if (value !== "undefined") {
-			subProjects = apiData.allSubProjects.apiCopy.filter((subProject) => {
-				return String(subProject.name).toLowerCase().includes(value.toLowerCase());
-			});
+			if (value !== "undefined") {
+				list = api.clientsCompanies.copy.filter((f) => {
+					return String(f.name).toLowerCase().includes(value.toLowerCase());
+				});
+			}
 		}
 
-		return subProjects;
-	};
+		return list;
+	}
 
-	const getSupportData = async () => {
+	function getFilteredMainProjects() {
+		let list = !api.mainProjects.copy.length ? [] : api.mainProjects.copy;
+
+		if (list.length) {
+			const value = String(other.find.mainProject.name);
+
+			if (value !== "undefined") {
+				list = api.mainProjects.copy.filter((f) => {
+					return String(f.name).toLowerCase().includes(value.toLowerCase());
+				});
+			}
+		}
+
+		return list;
+	}
+
+	function getFilteredSubProjects() {
+		let list = !api.subProjects.copy.length ? [] : api.subProjects.copy;
+
+		if (list.length) {
+			const value = String(other.find.subProject.name);
+
+			if (value !== "undefined") {
+				list = api.subProjects.copy.filter((f) => {
+					return String(f.name).toLowerCase().includes(value.toLowerCase());
+				});
+			}
+		}
+
+		return list;
+	}
+
+	function getTeamsIds() {
+		let ids = "";
+
+		if (main.teams.length) {
+			ids = main.teams.map((m) => m.id).join(",");
+		}
+
+		return ids;
+	}
+
+	function setFind(key, value) {
+		setOther((s) => ({ ...s, find: { ...s.find, [key]: { ...s.find[key], name: value } } }));
+	}
+
+	function setInputs(key, value) {
+		if (value) {
+			if (key == "dueOn" || key == "invoiceFees" || key == "reimburseVoucher" || key == "note") {
+				setMain((s) => ({ ...s, [key]: value }));
+			} else {
+				setFind(key, "");
+				setMain((s) => ({ ...s, [key]: { id: value.id, name: value.name } }));
+			}
+		}
+	}
+
+	async function setSupportData() {
 		try {
+			setOther((s) => ({ ...s, isLoading: true }));
+
 			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const allMainProjects = response.data.mainProjects;
-				const allSubProjects = response.data.subProjects;
 				const ownerFirms = response.data.ownerFirms;
 
-				const companiesByClient = response.data.companies.filter((company) => company.client_id == selectedInquiry.client_id);
+				const companiesByClient = response.data.companies.filter((f) => f.client_id == inquiry.client_id);
 
-				const mainProjectName = allMainProjects.filter((mainProject) => mainProject.id == selectedInquiry.main_project_id).at(0).name;
-
-				const subProjectName = allSubProjects.filter((subProject) => subProject.id == selectedInquiry.sub_project_id).at(0).name;
-
-				setApiData({
-					ownerFirms: ownerFirms,
-					allClients: response.data.clients,
-					allMainProjects: { api: allMainProjects, apiCopy: allMainProjects },
-					allSubProjects: { api: allSubProjects, apiCopy: allSubProjects },
-					companiesByClients: { api: companiesByClient, apiCopy: companiesByClient },
+				setApi({
+					clients: response.data.clients,
+					clientsCompanies: {
+						copy: companiesByClient,
+						data: companiesByClient,
+					},
+					mainProjects: {
+						copy: response.data.mainProjects,
+						data: response.data.mainProjects,
+					},
+					ownerFirms,
+					subProjects: {
+						copy: response.data.subProjects,
+						data: response.data.subProjects,
+					},
 				});
 
-				setMainData((old) => ({
-					...old,
-					phoneNumber: selectedInquiry.phone_number,
-					dueOn: selectedInquiry.entry_date,
+				setMain((s) => ({
+					...s,
+					dueOn: new Date(inquiry.entry_date),
 					invoiceFirm: {
 						id: ownerFirms.at(0).id,
 						name: ownerFirms.at(0).name,
 					},
-					mainProject: { id: selectedInquiry.main_project_id, name: mainProjectName },
-					quote: Number(selectedInquiry.quote),
-					subProject: { id: selectedInquiry.sub_project_id, name: subProjectName },
+					mainProject: {
+						id: inquiry.main_project_id,
+						name: inquiry.main_project,
+					},
+					phoneNumber: inquiry.phone_number,
+					quote: Number(inquiry.quote),
+					subProject: {
+						id: inquiry.sub_project_id,
+						name: inquiry.sub_project,
+					},
 				}));
-
-				setHasMounted((old) => ({ ...old, mainComponent: true }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "New Project => Get Support Data");
+		} finally {
+			setOther((s) => ({ ...s, isLoading: false }));
 		}
-	};
+	}
 
-	const getTeamsIds = () => {
-		return mainData.teams.map((user) => user.id).join(",");
-	};
-
-	const setInputs = (key, value) => {
-		if (key == "dueOn" || key == "invoiceFees" || key == "reimbursementVoucher" || key == "note") {
-			setMainData((s) => ({ ...s, [key]: value }));
-		} else {
-			setSearch(key, "");
-			setMainData((s) => ({ ...s, [key]: { id: value.id, name: value.name } }));
-		}
-	};
-
-	const setSearch = (key, value) => {
-		setOtherData((s) => ({ ...s, searched: { ...s.searched, [key]: { ...s.searched[key], name: value } } }));
-	};
-
-	const setTeamsSelection = (user) => {
-		let revisedData = [];
-		const copy = [...mainData.teams];
+	function setTeamsSelection(user) {
+		let revised = [];
+		const copy = [...main.teams];
 
 		if (copy.includes(user)) {
-			revisedData = copy.filter((_user) => _user != user);
+			revised = copy.filter((f) => f != user);
 		} else {
 			copy.push(user);
-			revisedData = copy;
+			revised = copy;
 		}
 
-		setMainData((s) => ({ ...s, teams: revisedData }));
-	};
+		setMain((s) => ({ ...s, teams: revised }));
+	}
 
-	const togglePreviewBox = (value) => {
-		setHasMounted((s) => ({ ...s, preview: !hasMounted.preview }));
+	function togglePreviewBox(value) {
+		setMounted((s) => ({ ...s, preview: !mounted.preview }));
 
 		if (value) {
 			addProject();
 		}
-	};
+	}
 
-	const toggleTeamsMenu = () => {
-		setHasMounted((s) => ({ ...s, teamsMenu: !hasMounted.teamsMenu }));
-	};
+	function toggleTeamsMenu() {
+		setMounted((s) => ({ ...s, teamsMenu: !mounted.teamsMenu }));
+	}
 
 	// UI Components
-	const uiClient = () => {
+	function uiClient() {
 		return (
 			<TextInput
 				icon={faUser}
 				id="newProjectClientName"
-				isReadOnly={true}
+				isReadOnly
 				label="Client"
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={1}
-				value={selectedInquiryClient?.name}
+				value={inquiry.client_name}
 				width="w-full"
 			/>
 		);
-	};
+	}
 
-	const uiCompany = () => {
+	function uiCompany() {
 		return (
 			<ComboBox2
-				allowCreatingNewItem={true}
+				allowCreatingNewItem
 				comparingValue1="name"
-				comparingValue2={mainData.company.name}
+				comparingValue2={main.company.name}
 				displayValue="name"
 				filteredData={getFilteredCompanies}
-				hasDataObject={true}
+				hasDataObject
 				icon={faBriefcase}
 				isReadOnly={false}
 				label="Company"
-				onChange={(event) => setInputs("company", event)}
-				onClick={() => addNewCompany(otherData.searched.company.name)}
-				onInputChange={(event) => setSearch("company", event.target.value)}
+				onChange={(e) => setInputs("company", e)}
+				onClick={() => addNewCompany(other.find.company.name)}
+				onInputChange={(e) => setFind("company", e.target.value)}
 				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
-				searchedItem={otherData.searched.company.name}
+				searchedItem={other.find.company.name}
 				tabIndex={2}
-				value={mainData.company.name}
+				value={main.company.name}
 				width="w-full"
 			/>
 		);
-	};
+	}
 
-	const uiPhoneNumber = () => {
-		return (
-			<TextInput
-				icon={faPhone}
-				isReadOnly={true}
-				label="Phone Number"
-				onChange={() => {}}
-				onKeyPress={() => {}}
-				tabIndex={3}
-				value={mainData.phoneNumber}
-				width="w-full"
-			/>
-		);
-	};
+	function uiDueOn() {
+		return <DatePicker icon={faCalendar} label="Due On" onChange={(e) => setInputs("dueOn", e)} tabIndex={6} value={main.dueOn} width="w-full" />;
+	}
 
-	const uiDueOn = () => {
-		return (
-			<DatePicker icon={faCalendar} label="Due On" onChange={(event) => setInputs("dueOn", event)} tabIndex={6} value={mainData.dueOn} width="w-full" />
-		);
-	};
-
-	const uiInvoiceFees = () => {
-		const label = `${mainData.invoiceFirm.name} Fees`;
-
+	function uiInvoiceFees() {
 		return (
 			<TextInput
 				icon={faIndianRupee}
 				id="newProjectFees"
-				label={label}
-				onChange={(event) => setInputs("invoiceFees", event.target.value)}
-				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
+				label={`${main.invoiceFirm.name} Fees`}
+				onChange={(e) => setInputs("invoiceFees", e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex={7}
-				value={mainData.invoiceFees}
+				value={main.invoiceFees}
 				width="w-full"
 			/>
 		);
-	};
+	}
 
-	const uiInvoiceFirm = () => {
+	function uiInvoiceFirm() {
 		return (
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={mainData.invoiceFirm.name}
+				comparingValue2={main.invoiceFirm.name}
 				displayValue="name"
-				filteredData={apiData.ownerFirms}
-				hasDataObject={true}
+				filteredData={api.ownerFirms}
+				hasDataObject
 				icon={faBriefcase}
 				isReadOnly={false}
 				label="Invoice Firm"
-				onChange={(event) => setInputs("invoiceFirm", event)}
+				onChange={(e) => setInputs("invoiceFirm", e)}
 				onClick={() => {}}
 				onInputChange={() => {}}
 				onKeyPress={() => {}}
 				searchedItem={{}}
 				tabIndex={9}
-				value={mainData.invoiceFirm.name}
+				value={main.invoiceFirm.name}
 				width="w-full"
 			/>
 		);
-	};
+	}
 
-	const uiMainProjects = () => {
+	function uiMainProjects() {
 		return (
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={mainData.mainProject.name}
+				comparingValue2={main.mainProject.name}
 				displayValue="name"
 				filteredData={getFilteredMainProjects}
-				hasDataObject={true}
+				hasDataObject
 				icon={faFile}
 				isReadOnly={false}
 				label="Main Project"
-				onChange={(event) => setInputs("mainProject", event)}
+				onChange={(e) => setInputs("mainProject", e)}
 				onClick={() => {}}
-				onInputChange={(event) => setSearch("mainProject", event.target.value)}
-				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
-				searchedItem={otherData.searched.mainProject.name}
+				onInputChange={(e) => setFind("mainProject", e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				searchedItem={other.find.mainProject.name}
 				tabIndex={4}
-				value={mainData.mainProject.name}
+				value={main.mainProject.name}
 				width="w-full"
 			/>
 		);
-	};
+	}
 
-	const uiNotes = () => {
+	function uiNotes() {
 		return (
 			<TextArea
 				icon={faNoteSticky}
 				key={1}
 				label="Notes"
-				onChange={(event) => setInputs("note", event.target.value)}
+				onChange={(e) => setInputs("note", e.target.value)}
 				onKeyDown={() => {}}
 				rows={2}
 				tabIndex={10}
-				value={mainData.note}
+				value={main.note}
 				width="w-full"
 			/>
 		);
-	};
+	}
 
-	const uiPreview = () => {
-		if (otherData.isLoading) {
+	function uiPhoneNumber() {
+		return (
+			<TextInput
+				icon={faPhone}
+				isReadOnly
+				label="Phone Number"
+				onChange={() => {}}
+				onKeyPress={() => {}}
+				tabIndex={3}
+				value={main.phoneNumber}
+				width="w-full"
+			/>
+		);
+	}
+
+	function uiPreview() {
+		if (other.isLoading) {
 			return (
 				<span className="px-3.5">
 					<Spinner />
@@ -400,143 +434,161 @@ export default function NewProject({ reloadInquiries, selectedInquiry, unmount }
 		} else {
 			return "Preview";
 		}
-	};
+	}
 
-	const uiQuote = () => {
+	function uiQuote() {
+		let label = "Quote";
+
+		if (inquiry.quote != main.quote) {
+			label = `Quote (Original ${inquiry.quote})`;
+		}
+
 		return (
 			<TextInput
 				icon={faIndianRupee}
-				isReadOnly={true}
-				label="Quote"
+				isReadOnly
+				label={label}
 				onChange={() => {}}
 				onKeyPress={() => {}}
 				tabIndex={9}
-				value={MyGlobal.ThousandSeparator(mainData.quote)}
+				value={MyGlobal.ThousandSeparator(main.quote)}
 				width="w-full"
 			/>
 		);
-	};
+	}
 
-	const uiReimbursementVoucher = () => {
+	function uiReimburseVoucher() {
 		return (
 			<TextInput
 				icon={faIndianRupee}
-				id="newProjectReimbursementVoucher"
+				id="newProjectReimburseVoucher"
 				label="Reimbursement Voucher"
-				onChange={(event) => setInputs("reimbursementVoucher", event.target.value)}
-				onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
+				onChange={(e) => setInputs("reimburseVoucher", e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex={8}
-				value={mainData.reimbursementVoucher}
+				value={main.reimburseVoucher}
 				width="w-full"
 			/>
 		);
-	};
+	}
 
-	const uiSubProjects = () => {
+	function uiSubProjects() {
 		return (
 			<ComboBox2
-				allowCreatingNewItem={true}
+				allowCreatingNewItem
 				comparingValue1="name"
-				comparingValue2={mainData.subProject.name}
+				comparingValue2={main.subProject.name}
 				displayValue="name"
 				filteredData={getFilteredSubProjects}
-				hasDataObject={true}
+				hasDataObject
 				icon={faFile}
 				isReadOnly={false}
 				label="Sub Project"
-				onChange={(event) => setInputs("subProject", event)}
-				onClick={() => addNewSubProject(otherData.searched.subProject.name)}
-				onInputChange={(event) => setSearch("subProject", event.target.value)}
-				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
-				searchedItem={otherData.searched.subProject.name}
+				onChange={(e) => setInputs("subProject", e)}
+				onClick={() => addNewSubProject(other.find.subProject.name)}
+				onInputChange={(e) => setFind("subProject", e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				searchedItem={other.find.subProject.name}
 				tabIndex={5}
-				value={mainData.subProject.name}
+				value={main.subProject.name}
 				width="w-full"
 			/>
 		);
-	};
+	}
 
-	const uiTeams = () => {
+	function uiTeams() {
 		return (
-			<ComboBoxWithChips
-				displayKey="full_name"
-				label="Teams"
-				icon={faUserGroup}
-				isMenuInverted={true}
-				onBlur={() => toggleTeamsMenu()}
-				onItemClick={(event) => setTeamsSelection(event)}
-				onSelectedItemClick={(event) => setTeamsSelection(event)}
-				selectedItems={mainData.teams}
-				showList={showTeamsDropdown}
-				source={MyGlobal.GetAllUsers()}
-				toggleMenu={() => toggleTeamsMenu()}
-			/>
+			<div className="w-full" ref={teamsMenuRef}>
+				<ComboBoxWithChips
+					displayKey="full_name"
+					label="Teams"
+					icon={faUserGroup}
+					isMenuInverted
+					onBlur={() => toggleTeamsMenu()}
+					onItemClick={(e) => setTeamsSelection(e)}
+					onSelectedItemClick={(e) => setTeamsSelection(e)}
+					selectedItems={main.teams}
+					showList={showTeamsMenu}
+					source={MyGlobal.GetAllUsers()}
+					toggleMenu={() => toggleTeamsMenu()}
+				/>
+			</div>
 		);
-	};
+	}
 
 	// Hooks
 	useEffect(() => {
-		getSupportData();
+		setSupportData();
 	}, []);
 
 	useEffect(() => {
-		if (mainData.invoiceFees || mainData.reimbursementVoucher) {
+		if (main.invoiceFees || main.reimburseVoucher) {
 			calculateQuote();
 		}
-	}, [mainData.invoiceFees, mainData.reimbursementVoucher]);
+	}, [main.invoiceFees, main.reimburseVoucher]);
 
-	if (!hasMounted.mainComponent) {
-		return;
-	}
+	useEffect(() => {
+		if (mounted.teamsMenu) {
+			document.addEventListener("mousedown", detectOutsideClick);
+			document.addEventListener("keydown", detectEscapeKey);
+		}
+
+		return () => {
+			document.removeEventListener("mousedown", detectOutsideClick);
+			document.removeEventListener("keydown", detectEscapeKey);
+		};
+	}, [mounted.teamsMenu]);
 
 	// Main UI
-	return (
-		<>
-			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
-				<div className="flex w-full space-x-2.5 justify-start items-center">
-					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
-					<div className="flex w-full justify-start items-center">
-						<span className="view-heading">New Project</span>
+	if (other.isLoading) {
+		return (
+			<div className="flex w-full h-full justify-center items-center font-regular-12 gray-text contrast-background full-border">
+				<SpinnerBig />
+			</div>
+		);
+	} else {
+		return (
+			<>
+				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
+					<div className="flex w-full space-x-2.5 justify-start items-center">
+						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
+						<div className="flex w-full justify-start items-center">
+							<span className="view-heading">New Project</span>
+						</div>
 					</div>
 				</div>
-			</div>
-			<div className="flex w-full h-full justify-center items-center contrast-background">
-				<div className="flex flex-col w-3/5 h-full space-y-3 justify-start items-center">
-					<div className="flex w-full px-3 space-x-6 justify-between items-center">
-						{uiClient()}
-						{uiCompany()}
-						{uiPhoneNumber()}
-					</div>
-					<div className="flex w-full px-3 space-x-6 justify-between items-center">
-						{uiMainProjects()}
-						{uiSubProjects()}
-						{uiDueOn()}
-					</div>
-					<div className="flex w-full px-3 space-x-6 justify-between items-center">
-						{uiInvoiceFees()}
-						{uiReimbursementVoucher()}
-						{uiQuote()}
-					</div>
-					<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiTeams()}</div>
-					<div className="flex w-full px-3 space-x-6 justify-between items-start">
-						{uiInvoiceFirm()}
-						{uiNotes()}
+				<div className="flex w-full h-full justify-center items-center contrast-background">
+					<div className="flex flex-col w-3/5 h-full space-y-3 justify-start items-center">
+						<div className="flex w-full px-3 space-x-6 justify-between items-center">
+							{uiClient()}
+							{uiCompany()}
+							{uiPhoneNumber()}
+						</div>
+						<div className="flex w-full px-3 space-x-6 justify-between items-center">
+							{uiMainProjects()}
+							{uiSubProjects()}
+							{uiDueOn()}
+						</div>
+						<div className="flex w-full px-3 space-x-6 justify-between items-center">
+							{uiInvoiceFees()}
+							{uiReimburseVoucher()}
+							{uiQuote()}
+						</div>
+						<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiTeams()}</div>
+						<div className="flex w-full px-3 space-x-6 justify-between items-start">
+							{uiInvoiceFirm()}
+							{uiNotes()}
+						</div>
 					</div>
 				</div>
-			</div>
-			<footer className="w-full dialog-footer">
-				<button className={addButtonStyle} onClick={() => togglePreviewBox(false)}>
-					{uiPreview()}
-				</button>
-			</footer>
+				<footer className="w-full dialog-footer">
+					<button className={addButtonStyle} onClick={() => togglePreviewBox(false)}>
+						{uiPreview()}
+					</button>
+				</footer>
 
-			{hasMounted.preview && (
-				<NewProjectPreview
-					mount={hasMounted.preview}
-					projectData={{ ...mainData, clientName: selectedInquiryClient.name }}
-					unmount={togglePreviewBox}
-				/>
-			)}
-		</>
-	);
+				{mounted.preview && <NewProjectPreview mount={mounted.preview} project={{ ...main, inquiry }} unmount={togglePreviewBox} />}
+			</>
+		);
+	}
 }

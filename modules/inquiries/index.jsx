@@ -570,7 +570,13 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	// UI Components
 	function uiBody() {
-		if (!api.inquiries.copy.length) {
+		if (main.isLoading) {
+			return (
+				<div className={blankDataWrapper}>
+					<span className="font-regular-12 gray-text">Loading Inquiries ...</span>
+				</div>
+			);
+		} else if (!api.inquiries.copy.length) {
 			return <div className={blankDataWrapper}>No inquiries generated.</div>;
 		} else if (!api.inquiries.data.length) {
 			return <div className={blankDataWrapper}>No inquiries found.</div>;
@@ -620,22 +626,22 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function uiFollowUps(row) {
-		const getNames = String(row.follow_ups);
-		const singlePersonInitials = row.follow_ups_initials;
-		const total = getNames.split(",").length;
+		const names = String(row.follow_ups);
+		const singleUserInitials = row.follow_ups_initials;
+		const total = names.split(",").length;
 
-		if (getNames.includes(",")) {
+		if (names.includes(",")) {
 			if (total > 2) {
 				return (
-					<Tippy allowHTML content={<TooltipList payload={getNames} />}>
+					<Tippy allowHTML content={<TooltipList payload={names} />}>
 						<span className="cursor-help primary-text">{total}</span>
 					</Tippy>
 				);
 			} else {
-				return getNames.split(",").map((m) => uiFollowUpsTooltip(MyGlobal.GetInitials(m), row, m));
+				return names.split(",").map((m) => uiFollowUpsTooltip(MyGlobal.GetInitials(m), row, m));
 			}
 		} else {
-			return uiFollowUpsTooltip(singlePersonInitials, row, getNames);
+			return uiFollowUpsTooltip(singleUserInitials, row, names);
 		}
 	}
 
@@ -711,9 +717,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		} else if (mounted.newInquiry) {
 			return <NewInquiry reload={setSupportData} unmount={toggleNewInquiryView} />;
 		} else if (mounted.newProject) {
-			return <NewProject reloadInquiries={setSupportData} selectedInquiry={main.selectedInquiryForStatusChange} unmount={closeNewProjectView} />;
+			return <NewProject inquiry={main.selectedInquiryForStatusChange} reload={setSupportData} unmount={closeNewProjectView} />;
 		} else if (mounted.notes) {
-			return <Notes reload={setSupportData} inquiry={main.selectedInquiryForNotes} unmount={toggleNotesView} />;
+			return <Notes inquiry={main.selectedInquiryForNotes} reload={setSupportData} unmount={toggleNotesView} />;
 		} else {
 			return (
 				<>

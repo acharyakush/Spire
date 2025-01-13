@@ -14,23 +14,27 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
+export function AddNote({ inquiry, mount, reload, unmount }) {
 	// Business Logic
-	const [state, setState] = useState({ isBoxDragged: false, isLoading: false, note: "" });
+	const [main, setMain] = useState({
+		isBoxMoved: false,
+		isLoading: false,
+		note: "",
+	});
 
-	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
-	const disableSaveButton = state.isLoading || !state.note ? "pointer-events-none" : "pointer-events-auto";
+	const disableSaveButton = main.isLoading || !main.note ? "pointer-events-none" : "pointer-events-auto";
 	const saveButtonStyle = `primary-button-condensed ${disableSaveButton}`;
 
 	// Functions
-	const addNote = async () => {
-		setState((old) => ({ ...old, isLoading: true }));
+	async function doNoteAdding() {
+		setMain((s) => ({ ...s, isLoading: true }));
 
 		const body = {
-			content: state.note,
-			id: selectedInquiry.id,
+			content: main.note,
+			id: inquiry.id,
 			source: MyConstants.Modules.Base.Inquiries,
 			type: "add-note",
 			userId: MyGlobal.GetUserId(),
@@ -40,9 +44,9 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				reloadNotes();
+				reload();
 
-				MyGlobal.AddActivity(`Added in <b>${selectedInquiry.id}</b>.`, MyConstants.Modules.Base.Notes);
+				MyGlobal.AddActivity(`Added in <b>${inquiry.id}</b>.`, MyConstants.Modules.Base.Notes);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.NoteAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
@@ -50,22 +54,22 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Inquiries => Add Note");
 		} finally {
-			setState((old) => ({ ...old, isLoading: false }));
+			setMain((s) => ({ ...s, isLoading: false }));
 			unmount(false);
 		}
-	};
+	}
 
-	const setBoxDrag = () => {
-		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
-	};
+	function setBoxDrag() {
+		setMain((s) => ({ ...s, isBoxMoved: !main.isBoxMoved }));
+	}
 
-	const setNote = (note) => {
-		setState((old) => ({ ...old, note }));
-	};
+	function setNote(note) {
+		setMain((s) => ({ ...s, note }));
+	}
 
 	// UI Components
-	const uiButton = () => {
-		if (state.isLoading) {
+	function uiButton() {
+		if (main.isLoading) {
 			return (
 				<span className="px-3.5">
 					<Spinner />
@@ -74,16 +78,16 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 		} else {
 			return "Add";
 		}
-	};
+	}
 
-	const uiTitleBar = () => {
+	function uiTitleBar() {
 		return (
 			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Add Note</span>
 				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
-	};
+	}
 
 	// Main UI
 	return (
@@ -103,13 +107,13 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 									onKeyDown={() => {}}
 									rows={3}
 									tabIndex={1}
-									value={state.note}
+									value={main.note}
 									width="w-full"
 								/>
 							</div>
 						</div>
 						<footer className="dialog-footer">
-							<button className={saveButtonStyle} onClick={() => addNote()}>
+							<button className={saveButtonStyle} onClick={() => doNoteAdding()}>
 								{uiButton()}
 							</button>
 						</footer>
@@ -123,7 +127,7 @@ export function AddNote({ mount, reloadNotes, selectedInquiry, unmount }) {
 export function UpdateStatus({ inquiry, mount, reload, unmount }) {
 	// Business Logic
 	const [main, setMain] = useState({
-		isBoxDragged: false,
+		isBoxMoved: false,
 		isLoading: false,
 		reason: "",
 	});
@@ -136,7 +140,7 @@ export function UpdateStatus({ inquiry, mount, reload, unmount }) {
 	const buttonLabel = isStatusCloseInquiry ? "Close" : "Update";
 
 	const reasonBoxStyle = isStatusCloseInquiry ? "flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center" : "hidden";
-	const titleBarCursor = main.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
 	let disableButton = main.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
@@ -205,7 +209,7 @@ export function UpdateStatus({ inquiry, mount, reload, unmount }) {
 	}
 
 	function setBoxDrag() {
-		setMain((s) => ({ ...s, isBoxDragged: !main.isBoxDragged }));
+		setMain((s) => ({ ...s, isBoxMoved: !main.isBoxMoved }));
 	}
 
 	function setReason(reason) {

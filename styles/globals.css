@@ -166,7 +166,7 @@ html {
 }
 
 .dialog-footer {
-	@apply bg-[var(--light-gray)] border-t border-t-[var(--primary-border)] flex items-center justify-center px-5 py-2.5 relative space-x-2 z-10;
+	@apply bg-[var(--primary-transparent-01)] border-t border-t-[var(--primary-border)] flex items-center justify-center px-5 py-2.5 relative space-x-2 z-10;
 }
 
 .dialog-header {
@@ -361,7 +361,7 @@ html {
 }
 
 .green-button-condensed {
-	@apply bg-[var(--green)] border border-[var(--green)] flex font-normal h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-[10pt] text-white;
+	@apply bg-[var(--green)] border border-[var(--green)] flex font-normal h-7 justify-center items-center outline-none px-2 relative rounded-full select-none space-x-2.5 text-[10pt] text-white;
 	font-family: var(--font-family);
 }
 
@@ -371,7 +371,7 @@ html {
 }
 
 .green-button-wide {
-	@apply bg-[var(--green)] block border border-[var(--green)] font-normal h-7 outline-none relative rounded select-none text-[10pt] text-white w-full;
+	@apply bg-[var(--green)] block border border-[var(--green)] font-normal h-7 outline-none relative rounded-full select-none text-[10pt] text-white w-full;
 	font-family: var(--font-family);
 }
 
@@ -431,7 +431,7 @@ html {
 }
 
 .light-gray-button {
-	@apply bg-[var(--light-gray-background)] border border-[var(--light-gray-background)] flex font-normal h-9 justify-center items-center outline-none px-2.5 relative rounded select-none space-x-2.5 text-base black-text;
+	@apply bg-[var(--light-gray-background)] border border-[var(--light-gray-background)] flex font-normal h-9 justify-center items-center outline-none px-2.5 relative rounded-full select-none space-x-2.5 text-base black-text;
 	font-family: var(--font-family);
 }
 
@@ -533,7 +533,7 @@ html {
 }
 
 .primary-button-condensed {
-	@apply bg-[var(--primary)] border border-[var(--primary)] flex font-normal h-7 justify-center items-center outline-none px-2 relative rounded select-none space-x-2.5 text-base text-white;
+	@apply bg-[var(--primary)] border border-[var(--primary)] flex font-normal h-7 justify-center items-center outline-none px-4 relative rounded-full select-none space-x-2.5 text-base text-white;
 	font-family: var(--font-family);
 }
 
@@ -551,17 +551,17 @@ html {
 }
 
 .primary-button-normal {
-	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
+	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-7 outline-none px-2 relative rounded-full select-none text-[10pt] text-white;
 	font-family: var(--font-family);
 }
 
 .primary-button-normal-2 {
-	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-7 outline-none px-2 relative rounded select-none text-[10pt] text-white;
+	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-7 outline-none px-2 relative rounded-full select-none text-[10pt] text-white;
 	font-family: var(--font-family);
 }
 
 .primary-button-transparent-background {
-	@apply bg-[var(--primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded select-none space-x-2.5 text-sm text-[var(--primary)];
+	@apply bg-[var(--primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded-full select-none space-x-2.5 text-sm text-[var(--primary)];
 	font-family: var(--font-family);
 }
 
@@ -571,7 +571,7 @@ html {
 }
 
 .primary-button-wide {
-	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-9 outline-none relative rounded select-none text-base text-white w-full;
+	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-9 outline-none relative rounded-full select-none text-base text-white w-full;
 	font-family: var(--font-family);
 }
 

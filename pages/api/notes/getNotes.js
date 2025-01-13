@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const rows = await query("SELECT * FROM notes WHERE inquiry_id=?", [req.query.inquiryId]);
+		const rows = await query("SELECT * FROM notes WHERE inquiry_id=? AND source=?", [req.query.inquiryId, MyConstants.Modules.Base.Inquiries]);
 
 		if (!rows.length) {
 			return res.status(204).end();

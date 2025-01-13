@@ -99,13 +99,29 @@ export const MyGlobal = Object.freeze({
 		const payloadArray = String(payload).split(",");
 
 		initials = payloadArray
-			.map((id) => {
-				const object = source.find((affiliate) => affiliate.id == id);
-				return affiliate ? MyGlobal.GetInitials(object.name) : "";
+			.map((m) => {
+				const object = source.find((f) => f.id == m);
+				return object ? MyGlobal.GetInitials(object.name) : "";
 			})
 			.filter(Boolean);
 
 		return initials;
+	},
+
+	GetChangedValues(obj1, obj2, path = "") {
+		const changes = [];
+
+		for (const key in obj1) {
+			const currentPath = path ? `${path}.${key}` : key;
+
+			if (obj1[key] && typeof obj1[key] === "object" && !Array.isArray(obj1[key])) {
+				changes.push(...this.GetChangedValues(obj1[key], obj2[key], currentPath));
+			} else if (obj1[key] !== obj2[key]) {
+				changes.push(currentPath);
+			}
+		}
+
+		return changes;
 	},
 
 	GetFullDetailsFromIds: (ids) => {

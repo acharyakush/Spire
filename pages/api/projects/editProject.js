@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { client, company, phoneNumber, dueOn, id, invoiceFees, invoiceFirmId, mainProjectId, quote, reimbursementVoucher, subProject, teams, userId } =
+		const { client, company, phoneNumber, dueOn, id, invoiceFees, invoiceFirmId, mainProjectId, quote, reimburseVoucher, subProject, teams, userId } =
 			req.body;
 
 		// New Client ID
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
 
 		const projectQueryResult = await query(
 			"UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, quote=?, due_on=?, reimbursement_voucher=?, invoice_fees=?, invoice_firm_id=?, teams=?, updated_at=NOW() WHERE id=?",
-			[newClientId, newCompanyId, mainProjectId, newSubProjectId, quote, dueOn, reimbursementVoucher, invoiceFees, invoiceFirmId, teams, id],
+			[newClientId, newCompanyId, mainProjectId, newSubProjectId, quote, dueOn, reimburseVoucher, invoiceFees, invoiceFirmId, teams, id],
 		);
 
 		if (client.id == 0) {

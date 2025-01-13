@@ -53,7 +53,7 @@ export default function Home() {
 		const newTheme = main.theme == "light" ? "dark" : "light";
 		MyGlobal.Storages.Local.Set("AppMode", newTheme);
 
-		setMain((old) => ({ ...old, isDarkModeEnabled: !main.isDarkModeEnabled, theme: newTheme }));
+		setMain((s) => ({ ...s, isDarkModeEnabled: !main.isDarkModeEnabled, theme: newTheme }));
 	}
 
 	function doPreRenderingOperations() {
@@ -63,9 +63,10 @@ export default function Home() {
 		const isDarkModeEnabled = MyGlobal.GetTheme() !== "light";
 
 		const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
-		colorScheme.addEventListener("change", (e) => setMain((old) => ({ ...old, isDarkModeEnabled: e.matches, theme: e.matches ? "dark" : "light" })));
 
-		setMain((old) => ({ ...old, isDarkModeEnabled: isDarkModeEnabled, theme: initialTheme }));
+		colorScheme.addEventListener("change", (e) => setMain((s) => ({ ...s, isDarkModeEnabled: e.matches, theme: e.matches ? "dark" : "light" })));
+
+		setMain((s) => ({ ...s, isDarkModeEnabled, theme: initialTheme }));
 	}
 
 	async function getPermissions() {
@@ -113,7 +114,7 @@ export default function Home() {
 			MyGlobal.ShowErrorToast(MyConstants.Messages.UnauthorizedAccess);
 			router.replace("/");
 		} else {
-			setMain((old) => ({ ...old, loggedInUser: MyGlobal.GetUserData() }));
+			setMain((s) => ({ ...s, loggedInUser: MyGlobal.GetUserData() }));
 		}
 	}
 
@@ -164,7 +165,7 @@ export default function Home() {
 				response.data.administrators.forEach((administrator) => allUsers.push(administrator));
 				response.data.employees.forEach((employee) => allUsers.push(employee));
 
-				setApi((old) => ({ ...old, allUsers }));
+				setApi((s) => ({ ...s, allUsers }));
 				MyGlobal.SetAllUsers(allUsers);
 			}
 		} catch (error) {
@@ -181,7 +182,7 @@ export default function Home() {
 	}
 
 	function setModule(module, sequence) {
-		setMain((old) => ({ ...old, selectedModule: { name: module.name, sequence: sequence - 1 } }));
+		setMain((s) => ({ ...s, selectedModule: { name: module.name, sequence: sequence - 1 } }));
 	}
 
 	function setModuleProps(key, value) {

@@ -181,19 +181,19 @@ export default function Clients() {
 	}
 
 	async function getAllClients() {
-		setMainData((old) => ({ ...old, isLoading: true }));
+		setMainData((s) => ({ ...s, isLoading: true }));
 
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetClients, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				setApiData({ allClients: { api: response.data, apiCopy: response.data } });
-				setHasMounted((old) => ({ ...old, mainComponent: true }));
+				setHasMounted((s) => ({ ...s, mainComponent: true }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Get All Clients`);
 		} finally {
-			setMainData((old) => ({ ...old, isLoading: false }));
+			setMainData((s) => ({ ...s, isLoading: false }));
 		}
 	}
 
@@ -206,16 +206,16 @@ export default function Clients() {
 	}
 
 	function setInputs(key, value) {
-		setMainData((old) => ({ ...old, [key]: value }));
+		setMainData((s) => ({ ...s, [key]: value }));
 	}
 
 	function setSort(column) {
-		setMainData((old) => ({ ...old, sort: { column, isAscending: !mainData.sort.isAscending } }));
+		setMainData((s) => ({ ...s, sort: { column, isAscending: !mainData.sort.isAscending } }));
 	}
 
 	function toggleSingleClientView(clientId) {
-		setMainData((old) => ({ ...old, selectedClient: clientId ?? {} }));
-		setHasMounted((old) => ({ ...old, singleClientView: clientId ? true : false }));
+		setMainData((s) => ({ ...s, selectedClient: clientId ?? {} }));
+		setHasMounted((s) => ({ ...s, singleClientView: clientId ? true : false }));
 	}
 
 	// UI Components

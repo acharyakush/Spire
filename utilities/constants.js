@@ -212,7 +212,7 @@ const MyConstants = Object.freeze({
 		Notes: Object.freeze({
 			date: "Date",
 			note: "Note",
-			writer: "Writer",
+			entryBy: "Entry By",
 		}),
 		Projects: Object.freeze({
 			Started: "Started On",

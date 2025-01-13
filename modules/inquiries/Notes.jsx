@@ -335,7 +335,7 @@ export default function Notes({ inquiry, reload, unmount }) {
 				</div>
 				<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
 
-				{mounted.add && <AddNote mount={mounted.add} reloadNotes={getNotes} selectedInquiry={inquiry} unmount={toggleAddBox} />}
+				{mounted.add && <AddNote inquiry={inquiry} mount={mounted.add} reload={getNotes} unmount={toggleAddBox} />}
 			</>
 		);
 	}

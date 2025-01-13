@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { clientId, company, dueOn, inquiryId, invoiceFees, invoiceFirm, mainProject, note, quote, reimbursementVoucher, subProject, teams, userId } =
+		const { clientId, company, dueOn, inquiryId, invoiceFees, invoiceFirm, mainProject, note, quote, reimburseVoucher, subProject, teams, userId } =
 			req.body;
 
 		// New Project ID
@@ -58,19 +58,19 @@ export default async function handler(req, res) {
 		}
 
 		const response = await query(
-			`INSERT INTO projects (id, client_id, company_id, inquiry_id, main_project_id, sub_project_id, quote, due_on, reimbursement_voucher, invoice_fees, invoice_firm_id, teams, started_on, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)`,
+			`INSERT INTO projects (id, client_id, company_id, inquiry_id, invoice_firm_id, main_project_id, sub_project_id, quote, due_on, reimbursement_voucher, invoice_fees, teams, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			[
 				projectResponse.new_id,
 				clientId,
 				newCompanyId,
 				inquiryId,
+				invoiceFirm.id,
 				mainProject.id,
 				newSubProjectId,
 				quote,
 				dueOn,
-				reimbursementVoucher,
+				reimburseVoucher,
 				invoiceFees,
-				invoiceFirm.id,
 				teams,
 				"Active",
 				userId,
@@ -83,8 +83,8 @@ export default async function handler(req, res) {
 		const inquiryQuery = `UPDATE inquiries SET status=? WHERE id=?`;
 		const inquiryParameters = [MyConstants.Statuses.Inquiries.Confirmed, inquiryId];
 
-		const noteQuery = `INSERT INTO notes (inquiry_id, project_id, entry_by_id, content, source) VALUES (?, ?, ?, ?, ?)`;
-		const noteParameters = [inquiryId, projectResponse.new_id, userId, note, MyConstants.Modules.Base.Projects];
+		const noteQuery = `INSERT INTO notes (inquiry_id, project_id, original_entry_by_id, entry_by_id, content, source) VALUES (?, ?, ?, ?, ?, ?)`;
+		const noteParameters = [inquiryId, projectResponse.new_id, userId, userId, note, MyConstants.Modules.Base.Projects];
 
 		const [clientRows, inquiryRows, noteRows] = await Promise.all([
 			query(clientQuery, clientParameters),

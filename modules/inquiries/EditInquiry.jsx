@@ -7,15 +7,17 @@ import dayjs from "dayjs";
 import MyConstants from "@/utilities/constants";
 import EditInquiryPreview from "@/modals/inquiries/EditInquiryPreview";
 
-import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Spinner } from "@/components/Elements";
+import { useEffect, useRef, useState } from "react";
+import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, ComboBoxWithChips, DatePicker, EmailAddress, TextInput } from "@/components/Inputs";
 import { faCalendar, faChevronLeft, faFile, faIndianRupee, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 export default function EditInquiry({ inquiry, reload, unmount }) {
 	// Business Logic
+	const followUpsMenuRef = useRef(null);
+
 	const [api, setApi] = useState({
 		clients: { copy: [], data: [] },
 		mainProjects: { copy: [], data: [] },
@@ -37,7 +39,6 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 
 	const [mounted, setMounted] = useState({
 		followUpsMenu: false,
-		mainComponent: false,
 		preview: false,
 	});
 
@@ -104,6 +105,18 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 		setApi((s) => ({ ...s, subProjects: { copy, data: copy } }));
 	}
 
+	function detectEscapeKey(event) {
+		if (event.key === "Escape") {
+			setMounted((s) => ({ ...s, followUpsMenu: false }));
+		}
+	}
+
+	function detectOutsideClick(event) {
+		if (followUpsMenuRef.current && !followUpsMenuRef.current.contains(event.target)) {
+			setMounted((s) => ({ ...s, followUpsMenu: false }));
+		}
+	}
+
 	async function doInquiryEdit() {
 		try {
 			setOther((s) => ({ ...s, isLoading: true }));
@@ -136,6 +149,20 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 		} finally {
 			setOther((s) => ({ ...s, isLoading: false }));
 		}
+	}
+
+	function getClientName() {
+		let name = "";
+
+		if (api.clients.copy.length) {
+			const client = api.clients.copy.find((f) => f.id == main.client.id);
+
+			if (typeof client === "object") {
+				name = client.name;
+			}
+		}
+
+		return name;
 	}
 
 	function getFilteredClients() {
@@ -210,20 +237,6 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 		}
 
 		return ids;
-	}
-
-	function getClientName() {
-		let name = "";
-
-		if (api.clients.copy.length) {
-			const client = api.clients.copy.find((f) => f.id == main.client.id);
-
-			if (typeof client === "object") {
-				name = client.name;
-			}
-		}
-
-		return name;
 	}
 
 	function getReferenceName() {
@@ -308,6 +321,8 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 
 	async function setSupportData() {
 		try {
+			setOther((s) => ({ ...s, isLoading: true }));
+
 			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
@@ -335,34 +350,32 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 					},
 				};
 
-				console.log(_inquiry);
-
 				setApi({
 					clients: {
-						data: response.data.clients,
 						copy: response.data.clients,
+						data: response.data.clients,
 					},
 					mainProjects: {
-						data: response.data.mainProjects,
 						copy: response.data.mainProjects,
+						data: response.data.mainProjects,
 					},
 					references: {
-						data: response.data.references,
 						copy: response.data.references,
+						data: response.data.references,
 					},
 					subProjects: {
-						data: response.data.subProjects,
 						copy: response.data.subProjects,
+						data: response.data.subProjects,
 					},
 				});
 
 				setMain(_inquiry);
 				setOldData(_inquiry);
-
-				setMounted((s) => ({ ...s, mainComponent: true }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Inquiry => Get Support Data");
+		} finally {
+			setOther((s) => ({ ...s, isLoading: false }));
 		}
 	}
 
@@ -403,6 +416,10 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 		);
 	}
 
+	function uiDate() {
+		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryDate", e)} tabIndex={7} value={main.entryDate} width="w-full" />;
+	}
+
 	function uiEmailAddress() {
 		return (
 			<EmailAddress
@@ -418,24 +435,22 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 
 	function uiFollowUps() {
 		return (
-			<ComboBoxWithChips
-				displayKey="full_name"
-				label="Follow Ups"
-				icon={faUserGroup}
-				isMenuInverted
-				onBlur={() => toggleFollowUpsMenu()}
-				onItemClick={(e) => setFollowUps(e)}
-				onSelectedItemClick={(e) => setFollowUps(e)}
-				selectedItems={main.followUps}
-				showList={showFollowUpsMenu}
-				source={MyGlobal.GetAllUsers()}
-				toggleMenu={() => toggleFollowUpsMenu()}
-			/>
+			<div className="w-full" ref={followUpsMenuRef}>
+				<ComboBoxWithChips
+					displayKey="full_name"
+					label="Follow Ups"
+					icon={faUserGroup}
+					isMenuInverted
+					onBlur={() => toggleFollowUpsMenu()}
+					onItemClick={(e) => setFollowUps(e)}
+					onSelectedItemClick={(e) => setFollowUps(e)}
+					selectedItems={main.followUps}
+					showList={showFollowUpsMenu}
+					source={MyGlobal.GetAllUsers()}
+					toggleMenu={() => toggleFollowUpsMenu()}
+				/>
+			</div>
 		);
-	}
-
-	function uiDate() {
-		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryDate", e)} tabIndex={7} value={main.entryDate} width="w-full" />;
 	}
 
 	function uiMainProjects() {
@@ -557,46 +572,62 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 		setSupportData();
 	}, []);
 
-	if (!mounted.mainComponent) {
-		return;
+	useEffect(() => {
+		if (mounted.followUpsMenu) {
+			document.addEventListener("mousedown", detectOutsideClick);
+			document.addEventListener("keydown", detectEscapeKey);
+		}
+
+		return () => {
+			document.removeEventListener("mousedown", detectOutsideClick);
+			document.removeEventListener("keydown", detectEscapeKey);
+		};
+	}, [mounted.followUpsMenu]);
+
+	if (other.isLoading) {
+		return (
+			<div className="flex w-full h-full justify-center items-center font-regular-12 gray-text contrast-background full-border">
+				<SpinnerBig />
+			</div>
+		);
+	} else {
+		return (
+			<>
+				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
+					<div className="flex w-full space-x-2.5 justify-start items-center">
+						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
+						<div className="flex w-full justify-start items-center">
+							<span className="view-heading">Edit Inquiry</span>
+						</div>
+					</div>
+				</div>
+				<div className="flex w-full h-full justify-center items-center contrast-background">
+					<div className="flex flex-col w-3/5 h-full space-y-3 justify-start items-center">
+						<div className="flex w-full px-3 space-x-6 justify-between items-center">
+							{uiClient()}
+							{uiPhoneNumber()}
+							{uiEmailAddress()}
+						</div>
+						<div className="flex w-full px-3 space-x-6 justify-between items-center">
+							{uiMainProjects()}
+							{uiSubProjects()}
+							{uiReferences()}
+						</div>
+						<div className="flex w-full px-3 space-x-6 justify-between items-center">
+							{uiDate()}
+							{uiQuote()}
+						</div>
+						<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiFollowUps()}</div>
+					</div>
+				</div>
+				<footer className="w-full dialog-footer">
+					<button className={editButtonStyle} onClick={() => togglePreviewBox("")}>
+						{uiPreview()}
+					</button>
+				</footer>
+
+				{mounted.preview && <EditInquiryPreview editInquiry={main} mount={mounted.preview} oldInquiry={oldData} unmount={togglePreviewBox} />}
+			</>
+		);
 	}
-
-	return (
-		<>
-			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
-				<div className="flex w-full space-x-2.5 justify-start items-center">
-					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
-					<div className="flex w-full justify-start items-center">
-						<span className="view-heading">Edit Inquiry</span>
-					</div>
-				</div>
-			</div>
-			<div className="flex w-full h-full justify-center items-center contrast-background">
-				<div className="flex flex-col w-3/5 h-full space-y-3 justify-start items-center">
-					<div className="flex w-full px-3 space-x-6 justify-between items-center">
-						{uiClient()}
-						{uiPhoneNumber()}
-						{uiEmailAddress()}
-					</div>
-					<div className="flex w-full px-3 space-x-6 justify-between items-center">
-						{uiMainProjects()}
-						{uiSubProjects()}
-						{uiReferences()}
-					</div>
-					<div className="flex w-full px-3 space-x-6 justify-between items-center">
-						{uiDate()}
-						{uiQuote()}
-					</div>
-					<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiFollowUps()}</div>
-				</div>
-			</div>
-			<footer className="w-full dialog-footer">
-				<button className={editButtonStyle} onClick={() => togglePreviewBox("")}>
-					{uiPreview()}
-				</button>
-			</footer>
-
-			{mounted.preview && <EditInquiryPreview editInquiry={main} mount={mounted.preview} oldInquiry={oldData} unmount={togglePreviewBox} />}
-		</>
-	);
 }

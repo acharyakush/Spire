@@ -139,24 +139,28 @@ export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 	);
 }
 
-export function EditQuote({ mount, reloadProjects, selectedProject, unmount }) {
+export function EditQuote({ mount, project, reload, unmount }) {
 	// Business Logic
-	const [state, setState] = useState({ isBoxDragged: false, isLoading: false, quote: "" });
+	const [main, setMain] = useState({
+		isBoxMoved: false,
+		isLoading: false,
+		quote: "",
+	});
 
-	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
-	const disableEditButton = state.isLoading || !state.quote ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	const disableEditButton = main.isLoading || !main.quote ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 
 	const editButtonStyle = `primary-button-condensed ${disableEditButton}`;
 
 	// Functions
-	const editQuote = async () => {
-		setState((old) => ({ ...old, isLoading: true }));
+	async function doQuoteEditing() {
+		setMain((s) => ({ ...s, isLoading: true }));
 
 		const body = {
-			projectId: selectedProject.id,
-			quote: state.quote,
+			projectId: project.id,
+			quote: main.quote,
 			type: "edit-quote",
 			userId: MyGlobal.GetUserId(),
 		};
@@ -165,10 +169,10 @@ export function EditQuote({ mount, reloadProjects, selectedProject, unmount }) {
 			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				reloadProjects(selectedProject.id);
+				reload(project.id);
 
 				MyGlobal.AddActivity(
-					`Edited quote of <b>${selectedProject.id}</b> from <b>${selectedProject.quote}</b> to <b>${state.quote}</b>.`,
+					`Edited quote of <b>${project.id}</b> from <b>${project.quote}</b> to <b>${main.quote}</b>.`,
 					MyConstants.Modules.Base.Projects,
 				);
 
@@ -179,22 +183,22 @@ export function EditQuote({ mount, reloadProjects, selectedProject, unmount }) {
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Project Quote");
 		} finally {
-			setState((old) => ({ ...old, isLoading: false, quote: "" }));
+			setMain((s) => ({ ...s, isLoading: false, quote: "" }));
 			unmount(false);
 		}
-	};
+	}
 
-	const setBoxDrag = () => {
-		setState((old) => ({ ...old, isBoxDragged: !state.isBoxDragged }));
-	};
+	function setBoxDrag() {
+		setMain((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
+	}
 
-	const setQuote = (quote) => {
-		setState((old) => ({ ...old, quote }));
-	};
+	function setQuote(quote) {
+		setMain((s) => ({ ...s, quote }));
+	}
 
 	// UI Components
-	const uiButton = () => {
-		if (state.isLoading) {
+	function uiButton() {
+		if (main.isLoading) {
 			return (
 				<span className="px-3.5">
 					<Spinner />
@@ -203,16 +207,16 @@ export function EditQuote({ mount, reloadProjects, selectedProject, unmount }) {
 		} else {
 			return "Edit";
 		}
-	};
+	}
 
-	const uiTitleBar = () => {
+	function uiTitleBar() {
 		return (
 			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Edit Quote</span>
 				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
-	};
+	}
 
 	// Main UI
 	return (
@@ -222,7 +226,7 @@ export function EditQuote({ mount, reloadProjects, selectedProject, unmount }) {
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-[400px] transform overflow-hidden rounded shadow contrast-background">
 						{uiTitleBar()}
-						<div className="flex flex-col w-full p-2.5 space-y-2 justify-center items-center">
+						<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
 							<TextInput
 								icon={faIndianRupeeSign}
 								isReadOnly
@@ -231,22 +235,22 @@ export function EditQuote({ mount, reloadProjects, selectedProject, unmount }) {
 								onChange={() => {}}
 								onKeyPress={() => {}}
 								tabIndex={1}
-								value={selectedProject.quote}
+								value={project.quote}
 								width="w-full"
 							/>
 							<TextInput
 								icon={faIndianRupeeSign}
 								key={2}
 								label="New Quote"
-								onChange={(event) => setQuote(event.target.value)}
-								onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
+								onChange={(e) => setQuote(e.target.value)}
+								onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 								tabIndex={2}
-								value={state.quote}
+								value={main.quote}
 								width="w-full"
 							/>
 						</div>
 						<footer className="dialog-footer">
-							<button className={editButtonStyle} onClick={() => editQuote()}>
+							<button className={editButtonStyle} onClick={() => doQuoteEditing()}>
 								{uiButton()}
 							</button>
 						</footer>
@@ -257,37 +261,37 @@ export function EditQuote({ mount, reloadProjects, selectedProject, unmount }) {
 	);
 }
 
-export function ManageGovernmentId({ mount, reloadProjects, selectedProject, unmount }) {
+export function ManageGovernmentId({ mount, project, reload, unmount }) {
 	// Business Logic
-	const isTypeAdd = !selectedProject.government_id ? true : false;
+	const isTypeAdd = !project.government_id ? true : false;
 
-	const [state, setState] = useState({
+	const [main, setMain] = useState({
 		id: "",
-		isBoxBeingDragged: false,
+		isBoxMoved: false,
 		isLoading: false,
 	});
 
 	const activityMessage = isTypeAdd
-		? `Added government id <b>${state.id}</b> in <b>${selectedProject.id}</b>.`
-		: `Edited government id of <b>${selectedProject.id}</b> to <b>${state.id}</b> from <b>${selectedProject.government_id}</b>.`;
+		? `Added government id <b>${main.id}</b> in <b>${project.id}</b>.`
+		: `Edited government id of <b>${project.id}</b> to <b>${main.id}</b> from <b>${project.government_id}</b>.`;
 
 	const successMessage = isTypeAdd ? MyConstants.Messages.GovernmentIdAdded : MyConstants.Messages.GovernmentIdEdited;
 
 	const titleBarText = isTypeAdd ? "Add Government ID" : "Edit Government ID";
 
-	const titleBarCursor = state.isBoxBeingDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
-	const buttonClickEvent = state.isLoading || !state.id ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	const buttonClickEvent = main.isLoading || !main.id ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 	const buttonStyle = `primary-button-condensed ${buttonClickEvent}`;
 
 	// Functions
-	const manageGovernmentId = async () => {
-		setState((old) => ({ ...old, isLoading: true }));
+	async function doIdManagement() {
+		setMain((s) => ({ ...s, isLoading: true }));
 
 		const body = {
-			governmentId: state.id,
-			projectId: selectedProject.id,
+			governmentId: main.id,
+			projectId: project.id,
 			type: "manage-government-id",
 		};
 
@@ -295,7 +299,7 @@ export function ManageGovernmentId({ mount, reloadProjects, selectedProject, unm
 			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				reloadProjects(selectedProject.id);
+				reload(project.id);
 
 				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Projects);
 				MyGlobal.ShowSuccessToast(successMessage);
@@ -307,21 +311,21 @@ export function ManageGovernmentId({ mount, reloadProjects, selectedProject, unm
 		} catch (error) {
 			MyGlobal.HandleErrors(error, titleBarText);
 		} finally {
-			setState((old) => ({ ...old, isLoading: false, id: "" }));
+			setMain((s) => ({ ...s, isLoading: false, id: "" }));
 		}
-	};
+	}
 
-	const setBoxDrag = () => {
-		setState((old) => ({ ...old, isBoxBeingDragged: !state.isBoxBeingDragged }));
-	};
+	function setBoxDrag() {
+		setMain((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
+	}
 
-	const setInput = (id) => {
-		setState((old) => ({ ...old, id: String(id).toUpperCase() }));
-	};
+	function setInput(id) {
+		setMain((s) => ({ ...s, id: String(id).toUpperCase() }));
+	}
 
 	// UI Components
-	const uiButton = () => {
-		if (state.isLoading) {
+	function uiButton() {
+		if (main.isLoading) {
 			return (
 				<span className="px-3.5">
 					<Spinner />
@@ -330,16 +334,16 @@ export function ManageGovernmentId({ mount, reloadProjects, selectedProject, unm
 		} else {
 			return isTypeAdd ? "Add" : "Edit";
 		}
-	};
+	}
 
-	const uiTitleBar = () => {
+	function uiTitleBar() {
 		return (
 			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">{titleBarText}</span>
 				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
-	};
+	}
 
 	// Main UI
 	return (
@@ -349,7 +353,7 @@ export function ManageGovernmentId({ mount, reloadProjects, selectedProject, unm
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
-						<div className="flex flex-col w-full p-2.5 space-y-2 justify-center items-center">
+						<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
 							{!isTypeAdd && (
 								<TextInput
 									icon={faIdCardClip}
@@ -358,22 +362,22 @@ export function ManageGovernmentId({ mount, reloadProjects, selectedProject, unm
 									onChange={() => {}}
 									onKeyPress={() => {}}
 									tabIndex={1}
-									value={selectedProject.government_id}
+									value={project.government_id}
 									width="w-full"
 								/>
 							)}
 							<TextInput
 								icon={faIdCardClip}
 								label="New Government ID"
-								onChange={(event) => setInput(event.target.value)}
+								onChange={(e) => setInput(e.target.value)}
 								onKeyPress={() => {}}
 								tabIndex={2}
-								value={state.id}
+								value={main.id}
 								width="w-full"
 							/>
 						</div>
 						<footer className="dialog-footer">
-							<button className={buttonStyle} onClick={() => manageGovernmentId()}>
+							<button className={buttonStyle} onClick={() => doIdManagement()}>
 								{uiButton()}
 							</button>
 						</footer>

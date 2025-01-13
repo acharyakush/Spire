@@ -48,8 +48,8 @@ export default async function handler(req, res) {
 				queryString = "INSERT INTO notes (inquiry_id, entry_by_id, content, source) VALUES (?, ?, ?, ?)";
 				queryParameters = [request.id, request.userId, request.content, request.source];
 			} else if (request.type == "edit-project-status") {
-				queryString = "UPDATE projects SET status=? WHERE id=? AND client_id=? AND company_id=? AND inquiry_id=?";
-				queryParameters = [request.new_status, request.projectId, request.client_id, request.company_id, request.inquiry_id];
+				queryString = "UPDATE projects SET reason=?, status=? WHERE id=? AND client_id=? AND company_id=? AND inquiry_id=?";
+				queryParameters = [request.reason, request.status, request.id, request.clientId, request.companyId, request.inquiryId];
 			} else if (request.type == "delete-project") {
 				queryString = "UPDATE projects SET is_deleted=1 WHERE id=?";
 				queryParameters = [request.id];
