@@ -89,7 +89,7 @@ export default function NewAffiliate({ reloadAffiliates, unmount }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-all-affiliates" }));
+			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-affiliates" }));
 
 			if (response.status === 200) {
 				setApi({ allAffiliates: response.data });

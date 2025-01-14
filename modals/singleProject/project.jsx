@@ -6,13 +6,13 @@ import axios from "axios";
 import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Spinner } from "@/components/Elements";
-import { TextArea, TextInput } from "@/components/Inputs";
+import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ComboBox2, TextArea, TextInput } from "@/components/Inputs";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { faIdCardClip, faIndianRupeeSign, faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCircleCheck, faIdCardClip, faIndianRupee, faIndianRupeeSign, faNoteSticky, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 	// Business Logic
@@ -381,6 +381,233 @@ export function ManageGovernmentId({ mount, project, reload, unmount }) {
 								{uiButton()}
 							</button>
 						</footer>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
+export function MapAffiliates({ mount, project, unmount }) {
+	// Business Logic
+	const [api, setApi] = useState({
+		affiliates: { copy: [], data: [] },
+	});
+
+	const [main, setMain] = useState({
+		affiliate: { fees: 0, id: "", name: "" },
+		isBoxMoved: false,
+		isLoading: false,
+		isMapping: false,
+		selected: [{ fees: 0, id: 0, name: "" }],
+	});
+
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+
+	// Functions
+	function addAffiliate() {
+		const copy = [...main.selected];
+		copy.push(main.affiliate);
+
+		setMain((s) => ({
+			...s,
+			affiliate: { fees: 0, id: "", name: "" },
+			selected: copy,
+		}));
+	}
+
+	function deleteAffiliate(object) {
+		const copy = [...main.selected];
+		const revised = copy.filter((f) => f.id != object.id);
+
+		setMain((s) => ({ ...s, selected: revised }));
+	}
+
+	async function getAffiliates() {
+		setMain((s) => ({ ...s, isLoading: true }));
+
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-affiliates" }));
+
+			if (response.status === 200) {
+				setApi((s) => ({
+					...s,
+					affiliates: {
+						copy: response.data,
+						data: response.data,
+					},
+				}));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Single Project => Map Affiliates => Get Affiliates");
+		} finally {
+			setMain((s) => ({ ...s, isLoading: false }));
+		}
+	}
+
+	function getFilteredList() {
+		let list = !api.affiliates.copy.length ? [] : api.affiliates.copy;
+
+		if (list.length) {
+			const value = String(main.affiliate.name);
+
+			if (value !== "undefined") {
+				list = api.affiliates.copy.filter((f) => {
+					return String(f.name).toLowerCase().includes(value.toLowerCase());
+				});
+			}
+		}
+
+		return list;
+	}
+
+	function setAffiliate(object) {
+		setMain((s) => ({ ...s, affiliate: { ...s.affiliate, id: object.id, name: object.name } }));
+	}
+
+	function setBoxDrag() {
+		setMain((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
+	}
+
+	function setFees(value) {
+		if (value) {
+			setMain((s) => ({ ...s, affiliate: { ...s.affiliate, fees: value } }));
+		}
+	}
+
+	function setInputs(key, value) {
+		if (value) {
+			setMain((s) => ({ ...s, [key]: value }));
+		}
+	}
+
+	// UI Components
+	function uiAffiliates() {
+		return (
+			<ComboBox2
+				allowCreatingNewItem={false}
+				comparingValue1="name"
+				comparingValue2={main.affiliate.name}
+				displayValue="name"
+				filteredData={getFilteredList}
+				hasDataObject
+				icon={faUserGroup}
+				isReadOnly={false}
+				label="Affiliates"
+				onChange={(e) => setAffiliate(e)}
+				onClick={() => {}}
+				onInputChange={(e) => setInputs("find", e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				searchedItem={main.affiliate.name}
+				tabIndex={1}
+				value={main.affiliate.name}
+				width="w-full"
+			/>
+		);
+	}
+
+	function uiFees() {
+		return (
+			<TextInput
+				icon={faIndianRupee}
+				label="Fees"
+				onChange={(e) => setFees(e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
+				tabIndex={2}
+				value={main.affiliate.fees}
+				width="w-full"
+			/>
+		);
+	}
+
+	function uiMain() {
+		if (main.isLoading) {
+			return (
+				<div className="flex w-full h-full justify-center items-center">
+					<SpinnerBig />
+				</div>
+			);
+		} else {
+			return (
+				<div className="flex flex-col w-full h-full p-5 space-y-2.5 justify-between items-center">
+					<div className="flex w-full space-x-5 justify-between items-center">
+						{uiAffiliates()}
+						{uiFees()}
+						<FontAwesomeIcon
+							className="cursor-pointer relative top-2.5 green-text"
+							icon={faCircleCheck}
+							onClick={() => addAffiliate()}
+							size="2xl"
+						/>
+					</div>
+					<div className="flex w-full px-2.5 py-5 space-x-5 justify-start items-center rounded primary-border primary-background-transparent-01">
+						{uiSelected()}
+					</div>
+				</div>
+			);
+		}
+	}
+
+	function uiMap() {
+		if (main.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Map";
+		}
+	}
+
+	function uiSelected() {
+		return main.selected.map((m, i) => {
+			if (m.id != 0) {
+				return (
+					<div
+						className="flex w-fit px-2 py-1 space-x-2.5 justify-between items-center rounded shadow contrast-background font-medium-10 primary-border primary-text"
+						key={i}>
+						<span>
+							{m.name} ({m.fees})
+						</span>
+						<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => deleteAffiliate(m)} />
+					</div>
+				);
+			}
+		});
+	}
+
+	function uiTitleBar() {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Map Affiliates</span>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+			</DialogTitle>
+		);
+	}
+
+	// Hooks
+	useEffect(() => {
+		getAffiliates();
+	}, []);
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-1/2 h-4/5 transform overflow-hidden rounded contrast-background shadow">
+						{uiTitleBar()}
+						<div className="flex flex-col w-full h-[calc(100%-45px)] justify-between items-center">
+							{uiMain()}
+							<footer className="dialog-footer w-full">
+								<button className="primary-button-condensed" onClick={() => doMapping()}>
+									{uiMap()}
+								</button>
+							</footer>
+						</div>
 					</DialogPanel>
 				</Draggable>
 			</div>

@@ -1,8 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap");
 
 :root {
-	--font-family: "Inter", Arial, sans-serif;
-	--header-font: "Inter", Arial, sans-serif;
+	--font-family: "Noto Sans", Arial, sans-serif;
+	--header-font: "Noto Sans", Arial, sans-serif;
 }
 
 @tailwind base;
@@ -26,36 +26,35 @@
 @tailwind utilities;
 
 [app-theme="dark"] {
-	--contrast: #333333; /* Darker gray for better contrast */
+	--contrast: #333333;
 
 	--blue: #0e72cf;
-	--blue2: #0078d4;
 
-	--gray: #444444; /* Darker gray for dark mode */
+	--gray: #444444;
 	--gray-transparent-01: rgba(68, 68, 68, 0.1);
 
-	--green-transparent-01: rgba(16, 124, 16, 0.1);
 	--green: #107c10;
+	--green-transparent-01: rgba(16, 124, 16, 0.1);
 
-	--light-gray: #555555; /* Lighter gray in dark mode */
+	--light-gray: #555555;
 	--light-slate-gray: #666666;
 
-	--logo-green-transparent-01: rgba(69, 85, 38, 0.1);
 	--logo-green: #455526;
+	--logo-green-transparent-01: rgba(69, 85, 38, 0.1);
 
-	--orange-transparent-01: rgba(255, 153, 0, 0.1);
 	--orange: #ff9900;
+	--orange-transparent-01: rgba(255, 153, 0, 0.1);
 
+	--primary: #0078d4;
 	--primary-background: #2e2e2e;
 	--primary-border: #222222;
 	--primary-transparent-01: rgba(51, 102, 153, 0.1);
 	--primary-transparent-05: rgba(51, 102, 153, 0.5);
-	--primary: #0078d4;
 
-	--red-transparent-01: rgba(227, 25, 55, 0.1);
 	--red: #e31937;
+	--red-transparent-01: rgba(227, 25, 55, 0.1);
 
-	--text: #ffffff; /* White text for dark mode */
+	--text: #ffffff;
 	--white: #ffffff;
 
 	--yellow: #ffda03;
@@ -65,32 +64,32 @@
 [app-theme="light"] {
 	--contrast: #fff;
 
-	--blue-transparent-01: #093e5219;
 	--blue: #093e52;
+	--blue-transparent-01: #093e5219;
 
 	--gray: #b0b0b0;
 	--gray-transparent-01: rgba(176, 176, 176, 0.1);
 
-	--green-transparent-01: rgba(16, 124, 16, 0.1);
 	--green: #107c10;
+	--green-transparent-01: rgba(16, 124, 16, 0.1);
 
 	--light-gray: #f5f5f5;
 	--light-slate-gray: #9e9e9e;
 
-	--logo-green-transparent-01: rgba(69, 85, 38, 0.1);
 	--logo-green: #455526;
+	--logo-green-transparent-01: rgba(69, 85, 38, 0.1);
 
-	--orange-transparent-01: rgba(255, 153, 0, 0.1);
 	--orange: #ff9900;
+	--orange-transparent-01: rgba(255, 153, 0, 0.1);
 
+	--primary: #336699;
 	--primary-background: #e0e0e0;
 	--primary-border: #e0e0e0;
 	--primary-transparent-01: rgba(51, 102, 153, 0.1);
 	--primary-transparent-05: rgba(51, 102, 153, 0.5);
-	--primary: #336699;
 
-	--red-transparent-01: rgba(229, 9, 20, 0.1);
 	--red: #d62121;
+	--red-transparent-01: rgba(229, 9, 20, 0.1);
 
 	--text: #232f33;
 	--white: #232f33;
@@ -105,8 +104,8 @@ html {
 	-moz-osx-font-smoothing: auto;
 	font-synthesis: none;
 	font-feature-settings: "cpsp" 1;
-	text-rendering: optimizeLegibility;
 	scrollbar-width: thin;
+	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 }
 
@@ -114,65 +113,221 @@ html {
 	@apply text-[var(--text)];
 }
 
-.contrast-background {
-	@apply bg-[var(--contrast)];
-}
-
 .blink {
 	animation: blink-fade-animation 1s ease-in-out infinite;
 	-webkit-animation: blink-fade-animation 1s ease-in-out infinite;
 }
 
-@keyframes blink-fade-animation {
-	0% {
-		opacity: 1; /* Fully visible */
-	}
-	50% {
-		opacity: 0; /* Fully invisible (fade-out) */
-	}
-	100% {
-		opacity: 1; /* Fully visible again (fade-in) */
-	}
+/*******************/
+/*******************/
+/****Backgrounds****/
+/*******************/
+/*******************/
+.contrast-background {
+	@apply bg-[var(--contrast)];
 }
 
-.blue-background-transparent-01 {
-	@apply bg-[var(--blue-transparent-01)];
+.gray-background {
+	@apply bg-[var(--gray)];
 }
+
+.gray-background-transparent-01 {
+	@apply bg-[var(--gray-transparent-01)];
+}
+
+.green-background {
+	@apply bg-[var(--green)];
+}
+
+.green-background-gradient {
+	background: linear-gradient(to bottom, var(--green), #000);
+}
+
+.green-background-transparent-01 {
+	@apply bg-[var(--green-transparent-01)];
+}
+
+.light-gray-background {
+	@apply bg-[var(--light-gray)];
+}
+
+.logo-green-background {
+	@apply bg-[var(--logo-green)];
+}
+
+.logo-green-background-transparent-01 {
+	@apply bg-[var(--logo-green-transparent-01)];
+}
+
+.orange-background {
+	@apply bg-[var(--orange)];
+}
+
+.orange-background-gradient {
+	background: linear-gradient(to bottom, var(--orange), #000);
+}
+
+.orange-background-transparent-01 {
+	@apply bg-[var(--orange-transparent-01)];
+}
+
+.primary-background {
+	@apply bg-[var(--primary)];
+}
+
+.primary-background-gradient {
+	background: linear-gradient(to bottom, var(--primary), #000);
+}
+
+.primary-background-transparent-01 {
+	@apply bg-[var(--primary-transparent-01)];
+}
+
+.primary-background-transparent-05 {
+	@apply bg-[var(--primary-transparent-05)];
+}
+
+.red-background {
+	@apply bg-[var(--red)];
+}
+
+.red-background-gradient {
+	background: linear-gradient(to bottom, var(--red), #000);
+}
+
+.red-background-transparent-01 {
+	@apply bg-[var(--red-transparent-01)];
+}
+
+/*******************/
+/*******************/
+/******Borders******/
+/*******************/
+/*******************/
 
 .blue-border {
 	@apply border border-[var(--blue)];
-}
-
-.blue-tag {
-	@apply bg-[var(--blue)] py-0.5 px-1.5 rounded text-white;
-}
-
-.blue-tag-transparent-01 {
-	@apply bg-[var(--blue-transparent-01)] border border-[var(--blue)] py-0.5 px-1.5 rounded text-[var(--blue)];
-}
-
-.blue-text {
-	@apply text-[var(--blue)];
 }
 
 .bottom-border {
 	@apply border-b border-b-[var(--primary-border)];
 }
 
-.dashboard-heading,
-.view-heading {
-	@apply font-semibold text-[var(--primary)] text-[16pt];
-	font-family: var(--header-font);
+.full-border {
+	@apply border border-[var(--primary-border)];
 }
 
-.dialog-footer {
-	@apply bg-[var(--primary-transparent-01)] border-t border-t-[var(--primary-border)] flex items-center justify-center px-5 py-2.5 relative space-x-2 z-10;
+.gray-border {
+	@apply border border-[var(--gray)];
 }
 
-.dialog-header {
-	@apply bg-[var(--primary)] bottom-border flex font-medium items-center justify-between px-5 py-1.5 text-[16pt] text-white;
-	font-family: var(--header-font);
+.green-border {
+	@apply border border-[var(--green)];
 }
+
+.left-border {
+	@apply border-l border-[var(--primary-border)];
+}
+
+.logo-green-border {
+	@apply border border-[var(--logo-green)];
+}
+
+.logo-green-border-colour {
+	@apply border-[var(--logo-green)];
+}
+
+.no-right-border {
+	@apply border-r-0;
+}
+
+.no-top-border {
+	border-top: none;
+}
+
+.orange-border {
+	@apply border border-[var(--orange)];
+}
+
+.primary-border {
+	@apply border border-[var(--primary)];
+}
+
+.primary-border-colour {
+	@apply border-[var(--primary)];
+}
+
+.primary-bottom-border-transparent-05 {
+	@apply border-b-2 border-[var(--primary-transparent-05)];
+}
+
+.red-border {
+	@apply border border-[var(--red)];
+}
+
+.red-bottom-border {
+	@apply border-b border-b-[var(--red)];
+}
+
+.right-border {
+	@apply border-r border-[var(--primary-border)];
+}
+
+.top-border {
+	@apply border-t border-t-[var(--primary-border)];
+}
+
+.yellow-border {
+	@apply border border-[var(--yellow)];
+}
+
+/*******************/
+/*******************/
+/******Colours******/
+/*******************/
+/*******************/
+
+.black-text {
+	@apply text-[var(--white)];
+}
+
+.blue-text {
+	@apply text-[var(--blue)];
+}
+
+.gray-text {
+	@apply text-[var(--gray)];
+}
+
+.green-text {
+	@apply text-[var(--green)];
+}
+
+.light-slate-gray-text {
+	@apply text-[var(--light-slate-gray)];
+}
+
+.logo-green-text {
+	@apply text-[var(--logo-green)];
+}
+
+.orange-text {
+	@apply text-[var(--orange)];
+}
+
+.primary-text {
+	@apply text-[var(--primary)];
+}
+
+.red-text {
+	@apply text-[var(--red)];
+}
+
+/*****************/
+/*****************/
+/******Fonts******/
+/*****************/
+/*****************/
 
 .font-bold-10 {
 	@apply text-[10pt] font-bold;
@@ -319,59 +474,22 @@ html {
 	font-family: var(--font-family);
 }
 
-.full-border {
-	@apply border border-[var(--primary-border)];
+/******************/
+/******************/
+/*******Tags*******/
+/******************/
+/******************/
+
+.blue-tag {
+	@apply bg-[var(--blue)] py-0.5 px-1.5 rounded text-white;
 }
 
-.gray-background {
-	@apply bg-[var(--gray)];
-}
-
-.gray-background-transparent-01 {
-	@apply bg-[var(--gray-transparent-01)];
-}
-
-.gray-border {
-	@apply border border-[var(--gray)];
-}
-
-.gray-text {
-	@apply text-[var(--gray)];
+.blue-tag-transparent-01 {
+	@apply bg-[var(--blue-transparent-01)] border border-[var(--blue)] py-0.5 px-1.5 rounded text-[var(--blue)];
 }
 
 .gray-tag-transparent-01 {
 	@apply bg-[var(--gray-transparent-01)] border border-[var(--gray)] font-normal px-1.5 py-0.5 rounded text-[var(--gray)];
-	font-family: var(--font-family);
-}
-
-.green-background {
-	@apply bg-[var(--green)];
-}
-
-.green-background-gradient {
-	background: linear-gradient(to bottom, var(--green), #000);
-}
-
-.green-background-transparent-01 {
-	@apply bg-[var(--green-transparent-01)];
-}
-
-.green-border {
-	@apply border border-[var(--green)];
-}
-
-.green-button-condensed {
-	@apply bg-[var(--green)] border border-[var(--green)] flex font-normal h-7 justify-center items-center outline-none px-2 relative rounded-full select-none space-x-2.5 text-[10pt] text-white;
-	font-family: var(--font-family);
-}
-
-.green-button-transparent-background {
-	@apply bg-[var(--green-transparent-01)] border border-[var(--green)] flex font-medium h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--green)];
-	font-family: var(--font-family);
-}
-
-.green-button-wide {
-	@apply bg-[var(--green)] block border border-[var(--green)] font-normal h-7 outline-none relative rounded-full select-none text-[10pt] text-white w-full;
 	font-family: var(--font-family);
 }
 
@@ -383,22 +501,91 @@ html {
 	@apply bg-[var(--green-transparent-01)] border border-[var(--green)] py-0.5 px-1.5 rounded text-[var(--green)];
 }
 
-.green-text {
-	@apply text-[var(--green)];
+.orange-tag {
+	@apply bg-[var(--orange)] py-0.5 px-1.5 rounded text-white;
+}
+
+.orange-tag-transparent-01 {
+	@apply bg-[var(--orange-transparent-01)] border border-[var(--orange)] py-0.5 px-1.5 rounded text-[var(--orange)];
+}
+
+.primary-tag-transparent-01 {
+	@apply bg-[var(--primary-transparent-01)] border border-[var(--primary)] font-normal p-1 rounded text-xs text-[var(--primary)];
+	font-family: var(--font-family);
+}
+
+.red-tag {
+	@apply bg-[#e31937] py-0.5 px-1.5 rounded text-white;
+}
+
+.red-tag-transparent-01 {
+	@apply bg-[var(--red-transparent-01)] border border-[var(--red)] p-1 rounded text-xs text-[var(--red)];
+	font-family: var(--font-family);
+}
+
+.red-tag-transparent-02 {
+	@apply bg-[var(--red-transparent-01)] border border-[var(--red)] py-0.5 px-1.5 rounded text-[var(--red)];
+}
+
+/*******************/
+/*******************/
+/******Buttons******/
+/*******************/
+/*******************/
+
+.primary-button-condensed {
+	@apply bg-[var(--primary)] border border-[var(--primary)] flex font-normal h-7 justify-center items-center outline-none px-4 relative rounded-full select-none space-x-2.5 text-base text-white;
+	font-family: var(--font-family);
+}
+
+.primary-button-transparent-background {
+	@apply bg-[var(--primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded-full select-none space-x-2.5 text-sm text-[var(--primary)];
+	font-family: var(--font-family);
+}
+
+.primary-button-wide {
+	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-9 outline-none relative rounded-full select-none text-base text-white w-full;
+	font-family: var(--font-family);
+}
+
+.primary-button-condensed:active,
+.primary-button-transparent-background:active,
+.primary-button-wide:active {
+	border: 1px solid rgba(0, 0, 0, 0.7);
+	box-shadow: inset -1px -1px 1px 1px rgba(255, 255, 255, 0.3);
+	text-decoration: none;
+}
+
+/*********************/
+/*********************/
+/****Miscellaneous****/
+/*********************/
+/*********************/
+
+.bottom-shadow {
+	box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
+	-moz-box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
+	-webkit-box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
+}
+
+.dashboard-heading,
+.view-heading {
+	@apply font-semibold text-[var(--primary)] text-[16pt];
+	font-family: var(--header-font);
+}
+
+.dialog-footer {
+	@apply bg-[var(--primary-transparent-01)] border-t border-t-[var(--primary-border)] flex items-center justify-center px-5 py-2.5 relative space-x-2 z-10;
+}
+
+.dialog-header {
+	@apply bg-[var(--primary)] bottom-border flex font-medium items-center justify-between px-5 py-1.5 text-[16pt] text-white;
+	font-family: var(--header-font);
 }
 
 .highlight-characters {
 	@apply bg-[yellow] border-[0.5px] border-[var(--gray)] font-bold rounded text-black;
 	padding-inline: 1px;
-}
-
-.highlight-tag-characters {
-	@apply bg-[yellow] border-[0.5px] border-[var(--gray)] font-bold rounded text-black;
-	padding-inline: 1px;
-}
-
-.hovered-rows-green:hover {
-	@apply bg-[var(--green-transparent-01)] rounded-sm text-[var(--green)];
 }
 
 .hovered-rows-white:hover {
@@ -418,229 +605,25 @@ html {
 	font-family: var(--font-family);
 }
 
-.lavendar-background {
-	background-color: lavender;
-}
-
-.left-border {
-	@apply border-l border-[var(--primary-border)];
-}
-
-.light-gray-background {
-	@apply bg-[var(--light-gray)];
-}
-
-.light-gray-button {
-	@apply bg-[var(--light-gray-background)] border border-[var(--light-gray-background)] flex font-normal h-9 justify-center items-center outline-none px-2.5 relative rounded-full select-none space-x-2.5 text-base black-text;
-	font-family: var(--font-family);
-}
-
-.light-slate-gray-background {
-	@apply bg-[var(--light-slate-gray)];
-}
-
-.light-slate-gray-text {
-	@apply text-[var(--light-slate-gray)];
-}
-
 .login-heading {
 	@apply font-semibold text-[var(--primary)] text-[28pt];
 	font-family: var(--header-font);
 }
 
-.logo-green-background {
-	@apply bg-[var(--logo-green)];
-}
-
-.logo-green-background-transparent-01 {
-	@apply bg-[var(--logo-green-transparent-01)];
-}
-
-.logo-green-border {
-	@apply border border-[var(--logo-green)];
-}
-
-.logo-green-border-colour {
-	@apply border-[var(--logo-green)];
-}
-
-.logo-green-text {
-	@apply text-[var(--logo-green)];
-}
-
-.no-right-border {
-	@apply border-r-0;
-}
-
-.no-top-border {
-	border-top: none;
-}
-
-.orange-background {
-	@apply bg-[var(--orange)];
-}
-
-.orange-background-gradient {
-	background: linear-gradient(to bottom, var(--orange), #000);
-}
-
-.orange-background-transparent-01 {
-	@apply bg-[var(--orange-transparent-01)];
-}
-
-.orange-border {
-	@apply border border-[var(--orange)];
-}
-
-.orange-tag {
-	@apply bg-[var(--orange)] py-0.5 px-1.5 rounded text-white;
-}
-
-.orange-tag-transparent-01 {
-	@apply bg-[var(--orange-transparent-01)] border border-[var(--orange)] py-0.5 px-1.5 rounded text-[var(--orange)];
-}
-
-.orange-text {
-	@apply text-[var(--orange)];
-}
-
-.primary-background {
-	@apply bg-[var(--primary)];
-}
-
-.primary-background-gradient {
-	background: linear-gradient(to bottom, var(--primary), #000);
-}
-
-.primary-background-transparent-01 {
-	@apply bg-[var(--primary-transparent-01)];
-}
-
-.primary-background-transparent-05 {
-	@apply bg-[var(--primary-transparent-05)];
-}
-
-.primary-border {
-	@apply border border-[var(--primary)];
-}
-
-.primary-bottom-border-transparent-05 {
-	@apply border-b-2 border-[var(--primary-transparent-05)];
-}
-
-.primary-border-colour {
-	@apply border-[var(--primary)];
-}
-
-.primary-button-condensed {
-	@apply bg-[var(--primary)] border border-[var(--primary)] flex font-normal h-7 justify-center items-center outline-none px-4 relative rounded-full select-none space-x-2.5 text-base text-white;
-	font-family: var(--font-family);
-}
-
-.green-button-condensed:active,
-.green-button-transparent-background:active,
-.primary-button-condensed:active,
-.primary-button-normal-2:active,
-.primary-button-normal:active,
-.primary-button-transparent-background:active,
-.primary-button-transparent-background-2:active,
-.primary-button-wide:active {
-	border: 1px solid rgba(0, 0, 0, 0.7);
-	box-shadow: inset -1px -1px 1px 1px rgba(255, 255, 255, 0.3);
-	text-decoration: none;
-}
-
-.primary-button-normal {
-	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-7 outline-none px-2 relative rounded-full select-none text-[10pt] text-white;
-	font-family: var(--font-family);
-}
-
-.primary-button-normal-2 {
-	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-7 outline-none px-2 relative rounded-full select-none text-[10pt] text-white;
-	font-family: var(--font-family);
-}
-
-.primary-button-transparent-background {
-	@apply bg-[var(--primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded-full select-none space-x-2.5 text-sm text-[var(--primary)];
-	font-family: var(--font-family);
-}
-
-.primary-button-transparent-background-2 {
-	@apply bg-[var(--primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-[10pt] text-[var(--primary)];
-	font-family: var(--font-family);
-}
-
-.primary-button-wide {
-	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-9 outline-none relative rounded-full select-none text-base text-white w-full;
-	font-family: var(--font-family);
-}
-
-.primary-tag-transparent-01 {
-	@apply bg-[var(--primary-transparent-01)] border border-[var(--primary)] font-normal p-1 rounded text-xs text-[var(--primary)];
-	font-family: var(--font-family);
-}
-
-.primary-text {
-	@apply text-[var(--primary)];
-}
-
-.react-datepicker {
-	@apply !text-[9pt] !font-normal;
-	font-family: var(--font-family) !important;
-}
-
-.react-datepicker-popper {
-	@apply !z-[60];
-}
-
-.react-datepicker-wrapper {
-	@apply !pl-[5px] !w-full;
-}
-
-.red-background {
-	@apply bg-[var(--red)];
-}
-
-.red-background-gradient {
-	background: linear-gradient(to bottom, var(--red), #000);
-}
-
-.red-background-transparent-01 {
-	@apply bg-[var(--red-transparent-01)];
-}
-
-.red-border {
-	@apply border border-[var(--red)];
-}
-
-.red-bottom-border {
-	@apply border-b border-b-[var(--red)];
-}
-
-.red-button-transparent-background {
-	@apply bg-[var(--red-transparent-01)] border border-[var(--red)] flex font-normal h-7 items-center justify-center outline-none px-2 rounded-[3px] select-none text-base text-[var(--red)];
-	font-family: var(--font-family);
-}
-
-.red-tag {
-	@apply bg-[#e31937] py-0.5 px-1.5 rounded text-white;
-}
-
-.red-tag-transparent-01 {
-	@apply bg-[var(--red-transparent-01)] border border-[var(--red)] p-1 rounded text-xs text-[var(--red)];
-	font-family: var(--font-family);
-}
-
-.red-tag-transparent-02 {
-	@apply bg-[var(--red-transparent-01)] border border-[var(--red)] py-0.5 px-1.5 rounded text-[var(--red)];
-}
-
-.red-text {
-	@apply text-[var(--red)];
-}
-
-.right-border {
-	@apply border-r border-[var(--primary-border)];
+.login-spinner:before {
+	content: "";
+	box-sizing: border-box;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 15px;
+	height: 15px;
+	margin-top: -7.5px;
+	margin-left: -7.5px;
+	border-radius: 50%;
+	border: 2px solid #fff;
+	border-top-color: var(--primary);
+	animation: spinner 0.5s linear infinite;
 }
 
 .scrollbar-gutter {
@@ -695,25 +678,28 @@ html {
 	animation: spinner 0.5s linear infinite;
 }
 
-.login-spinner:before {
-	content: "";
-	box-sizing: border-box;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	width: 15px;
-	height: 15px;
-	margin-top: -7.5px;
-	margin-left: -7.5px;
-	border-radius: 50%;
-	border: 2px solid #fff;
-	border-top-color: var(--primary);
-	animation: spinner 0.5s linear infinite;
-}
-
 .textarea-inputs {
 	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 resize-none text-[11pt] black-text w-full;
 	font-family: var(--font-family);
+}
+
+/*****************/
+/*****************/
+/****3rd Party****/
+/*****************/
+/*****************/
+
+.react-datepicker {
+	@apply !text-[9pt] !font-normal;
+	font-family: var(--font-family) !important;
+}
+
+.react-datepicker-popper {
+	@apply !z-[60];
+}
+
+.react-datepicker-wrapper {
+	@apply !pl-[5px] !w-full;
 }
 
 .Toastify__toast-body {
@@ -722,20 +708,22 @@ html {
 	white-space: pre-line;
 }
 
-.top-border {
-	@apply border-t border-t-[var(--primary-border)];
-}
+/*********************/
+/*********************/
+/***Native Elements***/
+/*********************/
+/*********************/
 
-.black-text {
-	@apply text-[var(--white)];
-}
-
-.yellow-background-transparent-01 {
-	@apply bg-[var(--yellow-transparent-01)];
-}
-
-.yellow-border {
-	@apply border border-[var(--yellow)];
+@keyframes blink-fade-animation {
+	0% {
+		opacity: 1; /* Fully visible */
+	}
+	50% {
+		opacity: 0; /* Fully invisible (fade-out) */
+	}
+	100% {
+		opacity: 1; /* Fully visible again (fade-in) */
+	}
 }
 
 @keyframes spinner {
@@ -756,69 +744,4 @@ html {
 ::-webkit-scrollbar-track {
 	background-color: #f0f0f0;
 	border-radius: 4px;
-}
-
-.bottom-shadow {
-	box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
-	-moz-box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
-	-webkit-box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
-}
-
-.layout {
-	display: flex;
-	height: 100vh;
-}
-
-.sidebar {
-	width: 200px;
-	background-color: #2c3e50;
-	color: white;
-	padding: 10px;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	border-top-left-radius: 20px;
-	border-bottom-left-radius: 20px;
-	position: relative;
-	z-index: 2;
-}
-
-.module {
-	padding: 10px 15px;
-	background-color: #34495e;
-	border-radius: 5px;
-	cursor: pointer;
-	transition: background-color 0.3s ease;
-}
-
-.module.active {
-	background-color: #1abc9c;
-	border-radius: 15px 0 0 15px;
-}
-
-.module:hover {
-	background-color: #16a085;
-}
-
-.content {
-	flex: 1;
-	background-color: #ecf0f1;
-	padding: 20px;
-	border-top-left-radius: 20px;
-	border-bottom-left-radius: 20px;
-	margin-left: -20px; /* Overlap the sidebar to create a smooth curve effect */
-	z-index: 1;
-	position: relative;
-}
-
-.content h1 {
-	color: #2c3e50;
-}
-
-.content p {
-	color: #34495e;
-}
-
-.gradient {
-	background: linear-gradient(to bottom, var(--green-transparent-01), #000);
 }

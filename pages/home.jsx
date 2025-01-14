@@ -19,7 +19,7 @@ import { applicationName, MyGlobal } from "@/utilities/global";
 import { ErrorFallbackComponent } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { faCheck, faCog, faDatabase, faSignOut, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 export default function Home() {
 	// Business Logic
@@ -34,11 +34,11 @@ export default function Home() {
 
 	const [main, setMain] = useState({
 		isDarkModeEnabled: false,
-		loggedInUser: {},
+		mode: null,
 		selectedModule: { name: baseModules.Dashboard, sequence: 0 },
 		singleProjectObject: {},
 		status: { inquiries: "", invoices: "", projects: "", tasks: "" },
-		theme: null,
+		user: { fullName: "", designation: "", role: "" },
 	});
 
 	const [mounted, setMounted] = useState({
@@ -49,11 +49,11 @@ export default function Home() {
 	});
 
 	// Functions
-	function changeTheme() {
-		const newTheme = main.theme == "light" ? "dark" : "light";
-		MyGlobal.Storages.Local.Set("AppMode", newTheme);
+	function changeMode() {
+		const mode = main.mode == "light" ? "dark" : "light";
+		MyGlobal.Storages.Local.Set("AppMode", mode);
 
-		setMain((s) => ({ ...s, isDarkModeEnabled: !main.isDarkModeEnabled, theme: newTheme }));
+		setMain((s) => ({ ...s, isDarkModeEnabled: !main.isDarkModeEnabled, mode }));
 	}
 
 	function doPreRenderingOperations() {
@@ -64,9 +64,9 @@ export default function Home() {
 
 		const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
-		colorScheme.addEventListener("change", (e) => setMain((s) => ({ ...s, isDarkModeEnabled: e.matches, theme: e.matches ? "dark" : "light" })));
+		colorScheme.addEventListener("change", (e) => setMain((s) => ({ ...s, isDarkModeEnabled: e.matches, mode: e.matches ? "dark" : "light" })));
 
-		setMain((s) => ({ ...s, isDarkModeEnabled, theme: initialTheme }));
+		setMain((s) => ({ ...s, isDarkModeEnabled, mode: initialTheme }));
 	}
 
 	async function getPermissions() {
@@ -114,7 +114,16 @@ export default function Home() {
 			MyGlobal.ShowErrorToast(MyConstants.Messages.UnauthorizedAccess);
 			router.replace("/");
 		} else {
-			setMain((s) => ({ ...s, loggedInUser: MyGlobal.GetUserData() }));
+			const userData = MyGlobal.GetUserData();
+
+			setMain((s) => ({
+				...s,
+				user: {
+					designation: userData.designation,
+					fullName: userData.full_name,
+					role: userData.role,
+				},
+			}));
 		}
 	}
 
@@ -152,6 +161,8 @@ export default function Home() {
 				return faDatabase;
 			case MyConstants.UserMenu.Logout:
 				return faSignOut;
+			default:
+				return faSun;
 		}
 	}
 
@@ -215,7 +226,7 @@ export default function Home() {
 		} else if (mounted.settings) {
 			return <Settings close={toggleSettingsView} settings={api.settings} staff={api.allUsers} />;
 		} else if (mounted.profile) {
-			return <ProfileManagement close={toggleProfileView} payload={main.loggedInUser} />;
+			return <ProfileManagement close={toggleProfileView} payload={main.user} />;
 		} else {
 			return uiSelectedModule();
 		}
@@ -355,10 +366,17 @@ export default function Home() {
 					<FontAwesomeIcon className="primary-text" icon={faUserCircle} size="lg" />
 				</MenuButton>
 				<MenuItems anchor="bottom" className="absolute w-max mt-2 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
-					<div className="flex flex-col p-2 font-medium-14">
-						<span>{main.loggedInUser.full_name || ""}</span>
-						<span className="font-regular-10 gray-text">{main.loggedInUser.designation || ""}</span>
+					<div className="flex flex-col p-2 font-medium-12">
+						<span>{main.user.fullName}</span>
+						<span className="font-regular-8 gray-text">{main.user.designation}</span>
 					</div>
+					<MenuItem
+						as="div"
+						className="px-3 py-2 space-x-3 cursor-pointer border-y font-regular-10 black-text hovered-rows"
+						onClick={() => changeMode()}>
+						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons()} />
+						<span>Mode</span>
+					</MenuItem>
 					{uiUserMenuList()}
 				</MenuItems>
 			</Menu>
@@ -367,22 +385,22 @@ export default function Home() {
 
 	function uiUserMenuList() {
 		return Object.values(MyConstants.UserMenu)
-			.filter((item) => {
-				if (main.loggedInUser.role == MyConstants.UserType.Employees) {
-					return ![MyConstants.UserMenu.Activity, MyConstants.UserMenu.Employees, MyConstants.UserMenu.Storage].includes(item);
+			.filter((f) => {
+				if (main.user.role == MyConstants.UserType.Employees) {
+					return ![MyConstants.UserMenu.Activity, MyConstants.UserMenu.Employees, MyConstants.UserMenu.Storage].includes(f);
 				} else {
-					return item;
+					return f;
 				}
 			})
-			.map((item, index) => {
+			.map((m, i) => {
 				return (
 					<MenuItem
 						as="div"
-						className="p-3 space-x-3 cursor-pointer border-y font-regular-12 black-text hovered-rows"
-						key={index}
-						onClick={() => getUserMenuClickAction(item)}>
-						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons(item)} />
-						<span>{item}</span>
+						className="px-3 py-2 space-x-3 cursor-pointer border-y font-regular-10 black-text hovered-rows"
+						key={i}
+						onClick={() => getUserMenuClickAction(m)}>
+						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons(m)} />
+						<span>{m}</span>
 					</MenuItem>
 				);
 			});
@@ -404,10 +422,10 @@ export default function Home() {
 	}, []);
 
 	useEffect(() => {
-		if (main.loggedInUser) {
-			document.title = `${main.loggedInUser.full_name || ""} ${String.fromCharCode(183)} ${applicationName}`;
+		if (main.user) {
+			document.title = `${main.user.fullName || ""} ${String.fromCharCode(183)} ${applicationName}`;
 		}
-	}, [main.loggedInUser]);
+	}, [main.user]);
 
 	useEffect(() => {
 		if (main.status.inquiries) {
@@ -420,8 +438,8 @@ export default function Home() {
 	}, [main.status]);
 
 	useEffect(() => {
-		document.body.setAttribute("app-theme", main.theme);
-	}, [main.theme]);
+		document.body.setAttribute("app-theme", main.mode);
+	}, [main.mode]);
 
 	// Main UI
 	return (

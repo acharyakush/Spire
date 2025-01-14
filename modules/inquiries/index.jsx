@@ -451,7 +451,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function highlightText(isTag, text) {
 		const regex = new RegExp(main.findText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
-		const classByTag = isTag ? "highlight-tag-characters" : "highlight-characters";
+		const classByTag = isTag ? "highlight-characters" : "highlight-characters";
 
 		let result = text;
 

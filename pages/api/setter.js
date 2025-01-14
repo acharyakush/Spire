@@ -68,10 +68,10 @@ export default async function handler(req, res) {
 			} else if (request.type == "edit-task-status") {
 				queryString = "UPDATE tasks SET is_completed=?, is_disabled=?, reason=? WHERE id=?";
 				queryParameters = [request.isCompleted, request.isDisabled, request.reason, request.taskId];
-			} else if (request.type == "add-tasks-particular-and-remark") {
+			} else if (request.type == "add-tasks-particular-remark") {
 				queryString = "INSERT INTO tasks_particulars_remarks (task_id, project_id, particular, remark, entry_by_id) VALUES (?, ?, ?, ?, ?)";
 				queryParameters = [request.taskId, request.projectId, request.particular, request.remark, request.createdBy];
-			} else if (request.type == "edit-tasks-particular-and-remark") {
+			} else if (request.type == "edit-tasks-particular-remark") {
 				queryString = "UPDATE tasks_particulars_remarks SET particular=?, remark=? WHERE id=? AND task_id=? AND project_id=?";
 				queryParameters = [request.particular, request.remark, request.rowId, request.taskId, request.projectId];
 			} else if (request.type == "delete-task") {

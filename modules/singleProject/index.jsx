@@ -14,7 +14,7 @@ import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { SpinnerBig, SpinnerSmall, TooltipList } from "@/components/Elements";
-import { EditQuote, ManageGovernmentId } from "@/modals/singleProject/project";
+import { EditQuote, ManageGovernmentId, MapAffiliates } from "@/modals/singleProject/project";
 import {
 	faBars,
 	faBriefcase,
@@ -75,30 +75,33 @@ export default function SingleProject({ client, project, reload, source, unmount
 			const response = await axios.get(MyConstants.ApiEndpoints.SingleProject.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				const initials = MyGlobal.GetAffiliatesInitials(project.affiliate_ids, response.data);
+				const affiliateIds = String(project.affiliate_ids);
+				const initials = MyGlobal.GetAffiliatesInitials(affiliateIds, response.data);
 
-				let tooltipData = "";
+				let tooltip = "";
 
-				if (project.affiliate_ids) {
-					tooltipData = project.affiliate_ids.split(",").map((m) => {
-						const affiliate = response.data.find((f) => f.id == m);
+				if (affiliateIds.length) {
+					tooltip = affiliateIds.split(",").map((m) => {
+						const affiliate = response.data.affiliates.find((f) => f.id == m);
 
 						if (typeof affiliate === "object") {
-							const object = JSON.parse(affiliate.details);
+							const project = response.data.affiliateProjects.find((f) => f.affiliate_id == affiliate.id && f.project_id == project.id);
 
-							const paidFees = Number(object.paid_fees);
-							const totalFees = Number(object.total_fees);
-							const pendingFees = totalFees - paidFees;
+							if (typeof project === "object") {
+								const paidFees = Number(project.paid_fees);
+								const totalFees = Number(project.total_fees);
+								const pendingFees = totalFees - paidFees;
 
-							return `${affiliate.name}\nPaid ${paidFees} | Pending ${pendingFees} | Total ${totalFees}`;
+								return `${affiliate.name}\nPaid ${paidFees} | Pending ${pendingFees} | Total ${totalFees}`;
+							}
 						} else {
 							return "";
 						}
 					});
 				}
 
-				setApi({ affiliates: response.data });
-				setMain((s) => ({ ...s, affiliates: { initials, tooltip: tooltipData } }));
+				setApi({ affiliates: response.data.affiliates });
+				setMain((s) => ({ ...s, affiliates: { initials, tooltip } }));
 				setMounted((s) => ({ ...s, mainComponent: true }));
 			}
 		} catch (error) {
@@ -110,6 +113,10 @@ export default function SingleProject({ client, project, reload, source, unmount
 
 	function toggleGovernmentIdBox() {
 		setMounted((s) => ({ ...s, governmentId: !s.governmentId }));
+	}
+
+	function toggleMapAffiliatesBox() {
+		setMounted((s) => ({ ...s, mapAffiliates: !s.mapAffiliates }));
 	}
 
 	function toggleUpdateQuoteBox() {
@@ -345,10 +352,12 @@ export default function SingleProject({ client, project, reload, source, unmount
 					</div>
 				</div>
 				<div className="flex flex-col w-full h-full justify-start items-center transition bottom-border">
-					<Tasks selectedClient={client} selectedProject={project} source={source} />
+					<Tasks client={client} project={project} source={source} />
 				</div>
 
 				{mounted.governmentId && <ManageGovernmentId mount={mounted.governmentId} project={project} reload={reload} unmount={toggleGovernmentIdBox} />}
+
+				{mounted.mapAffiliates && <MapAffiliates mount={mounted.mapAffiliates} project={project} unmount={toggleMapAffiliatesBox} />}
 
 				{mounted.updateQuote && <EditQuote mount={mounted.updateQuote} project={project} reload={reload} unmount={toggleUpdateQuoteBox} />}
 			</>

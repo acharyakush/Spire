@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 13, 2025 at 07:41 PM
+-- Generation Time: Jan 14, 2025 at 05:33 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -280,7 +280,14 @@ INSERT INTO `activities` (`id`, `entry_by_id`, `module`, `activity`, `ip_address
 (197, 'A3', 'Projects', '<b>PJ000002</b> kept on <b>Hold</b> from <b>Active</b>', 'Localhost', '2025-01-13 21:12:21', ''),
 (198, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-13 22:51:50', ''),
 (199, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-13 22:55:00', ''),
-(200, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-14 00:11:29', '');
+(200, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-14 00:11:29', ''),
+(201, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-14 10:49:01', ''),
+(202, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-14 10:53:41', ''),
+(203, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-14 11:03:16', ''),
+(204, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', '2025-01-14 13:44:25', ''),
+(205, 'A3', 'Tasks', 'Added <b>TK000003</b> in <b>PJ000001</b>', 'Localhost', '2025-01-14 13:44:55', ''),
+(206, 'A3', 'Tasks', 'Edited Particular from <b>Particular #2</b> to <b>Particular #21</b>, Remark from <b>Remark #2</b> to <b>Remark #23</b> of <b>TK000002</b> in <b>PJ000001</b>.', 'Localhost', '2025-01-14 14:19:07', ''),
+(207, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-14 22:03:44', '');
 
 -- --------------------------------------------------------
 
@@ -1318,7 +1325,8 @@ CREATE TABLE `tasks` (
 
 INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `entry_by_id`, `expense`, `is_completed`, `is_disabled`, `reason`, `completed_on`) VALUES
 ('TK000001', 'CN000001', 'PJ000001', 'Task #1', '2025-01-21', 'A3', 5100.00, 0, 0, NULL, NULL),
-('TK000002', 'CN000001', 'PJ000001', 'Task #3', '2025-01-15', 'A3', 450.00, 0, 0, NULL, NULL);
+('TK000002', 'CN000001', 'PJ000001', 'Task #3', '2025-01-15', 'A3', 450.00, 0, 0, NULL, NULL),
+('TK000003', 'CN000001', 'PJ000001', 'Task #2', '2025-01-30', 'A3', 1500.00, 0, 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1349,7 +1357,8 @@ INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particu
 (6, 'TK000001', 'PJ000001', 'Pay & Upload', 'No remarks here.', 'A3', '2024-12-27 19:52:15'),
 (7, 'TK000001', 'PJ000001', 'Hello', 'Bellow', 'A3', '2025-01-01 23:44:39'),
 (8, 'TK000001', 'PJ000001', 'Hi', 'Bye', 'A3', '2025-01-01 23:45:36'),
-(9, 'TK000002', 'PJ000001', 'Particular #1', 'Remark #1', 'A3', '2025-01-02 20:27:03');
+(9, 'TK000002', 'PJ000001', 'Particular #1', 'Remark #1', 'A3', '2025-01-02 20:27:03'),
+(10, 'TK000002', 'PJ000001', 'Particular #21', 'Remark #23', 'A3', '2025-01-14 13:44:25');
 
 -- --------------------------------------------------------
 
@@ -1738,7 +1747,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=201;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=208;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
@@ -1840,7 +1849,7 @@ ALTER TABLE `statuses`
 -- AUTO_INCREMENT for table `tasks_particulars_remarks`
 --
 ALTER TABLE `tasks_particulars_remarks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `tasks_settings`

@@ -13,8 +13,10 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const result = await query("SELECT * FROM affiliates", []);
-		return res.status(200).json(result);
+		const affiliates = await query("SELECT * FROM affiliates", []);
+		const affiliatesProjects = await query("SELECT * FROM affiliates_projects", []);
+
+		return res.status(200).json({ affiliates, affiliatesProjects });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");
