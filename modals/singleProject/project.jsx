@@ -119,7 +119,7 @@ export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 								icon={faNoteSticky}
 								key={1}
 								label="Reason"
-								onChange={(event) => setReason(event.target.value)}
+								onChange={(e) => setReason(e.target.value)}
 								onKeyDown={() => {}}
 								rows={3}
 								tabIndex={1}
@@ -460,6 +460,34 @@ export function MapAffiliates({ mount, project, unmount }) {
 		}
 
 		return list;
+	}
+
+	async function doMapping() {
+		setMain((s) => ({ ...s, isMapping: true }));
+
+		const affiliates = main.selected.filter((f) => f.id !== 0);
+		const ids = affiliates.map((m) => m.id).join(",");
+		const body = { affiliates, ids, project };
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.SingleProject.MapAffiliate, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reload(project.id);
+
+				MyGlobal.AddActivity(`Mapped <b>(${ids})</b> to <b>${project.id}</b>.`, MyConstants.Modules.Base.Projects);
+
+				MyGlobal.ShowSuccessToast(successMessage);
+
+				unmount();
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Single Project => Map Affiliates");
+		} finally {
+			setMain((s) => ({ ...s, isMapping: false }));
+		}
 	}
 
 	function setAffiliate(object) {

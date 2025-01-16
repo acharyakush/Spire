@@ -5,6 +5,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
+import SingleClient from "../singleClient";
 import writeXlsxFile from "write-excel-file";
 import MyConstants from "@/utilities/constants";
 
@@ -13,27 +14,31 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Badge, SpinnerBig, Tooltip } from "@/components/Elements";
+import { Badge, Spinner, SpinnerBig, Tooltip } from "@/components/Elements";
 import { faFileExcel, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
-import SingleClient from "../singleClient";
 
 export default function Clients() {
 	// Business Logic
-	const [apiData, setApiData] = useState({ allClients: { api: [], apiCopy: [] } });
+	const [api, setApi] = useState({
+		clients: { copy: [], data: [] },
+	});
 
-	const [hasMounted, setHasMounted] = useState({ mainComponent: false, singleClientView: false });
-
-	const [mainData, setMainData] = useState({
+	const [main, setMain] = useState({
+		find: "",
 		isLoading: false,
-		searchTerm: "",
 		selectedClient: {},
 		sort: { column: "ID", isAscending: false },
 	});
 
-	const thisView = MyConstants.Modules.Base.Clients;
-	const tableHeaders = MyConstants.TableHeaders.Clients;
+	const [mounted, setMounted] = useState({
+		mainComponent: false,
+		singleClient: false,
+	});
 
-	const showSearchBoxClearButton = mainData.searchTerm ? "cursor-pointer primary-text" : "hidden";
+	const thisView = MyConstants.Modules.Base.Clients;
+	const headers = MyConstants.TableHeaders.Clients;
+
+	const showFindBoxClearButton = main.find ? "cursor-pointer primary-text" : "hidden";
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
 	// Functions
@@ -41,60 +46,55 @@ export default function Clients() {
 		switch (true) {
 			case event.ctrlKey && event.key == "f":
 				event.preventDefault();
-				document.getElementById("searchBox").focus();
+				document.getElementById("findBox").focus();
 				break;
 		}
 	}
 
 	function doFiltering() {
-		const filteredData = apiData.allClients.apiCopy.filter((client) => {
-			const searchedText = mainData.searchTerm.toLowerCase();
+		const filteredData = api.clients.copy.filter((f) => {
+			const findText = main.find.toLowerCase();
 
-			const clientId = String(client.id).toLowerCase();
-			const clientName = String(client.name).toLowerCase();
-			const phoneNumber = String(client.phone_number);
-			const emailAddress = String(client.email_address).toLowerCase();
+			const id = String(f.id).toLowerCase();
+			const name = String(f.name).toLowerCase();
+			const phoneNumber = String(f.phone_number);
+			const emailAddress = String(f.email_address).toLowerCase();
 
-			return (
-				clientId.includes(searchedText) ||
-				clientName.includes(searchedText) ||
-				phoneNumber.includes(searchedText) ||
-				emailAddress.includes(searchedText)
-			);
+			return id.includes(findText) || name.includes(findText) || phoneNumber.includes(findText) || emailAddress.includes(findText);
 		});
 
-		setApiData((s) => ({ ...s, allClients: { ...s.allClients, api: filteredData } }));
+		setApi((s) => ({ ...s, clients: { ...s.clients, data: filteredData } }));
 	}
 
 	function doSorting() {
-		return apiData.allClients.api.sort((a, b) => {
+		return api.clients.data.sort((a, b) => {
 			const aJoinedOn = new Date(a.joined_on);
 			const bJoinedOn = new Date(b.joined_on);
 
-			const { column, isAscending } = mainData.sort;
+			const { column, isAscending } = main.sort;
 
 			switch (true) {
-				case column == tableHeaders.Id && isAscending:
+				case column == headers.Id && isAscending:
 					return a.id.localeCompare(b.id);
-				case column == tableHeaders.Id && !isAscending:
+				case column == headers.Id && !isAscending:
 					return b.id.localeCompare(a.id);
-				case column == tableHeaders.Name && isAscending:
+				case column == headers.Name && isAscending:
 					return a.name.localeCompare(b.name);
-				case column == tableHeaders.Name && !isAscending:
+				case column == headers.Name && !isAscending:
 					return b.name.localeCompare(a.name);
-				case column == tableHeaders.EmailAddress && isAscending:
+				case column == headers.EmailAddress && isAscending:
 					return a.email_address.localeCompare(b.email_address);
-				case column == tableHeaders.EmailAddress && !isAscending:
+				case column == headers.EmailAddress && !isAscending:
 					return b.email_address.localeCompare(a.email_address);
-				case column == tableHeaders.JoinedOn && isAscending:
+				case column == headers.JoinedOn && isAscending:
 					return aJoinedOn - bJoinedOn;
-				case column == tableHeaders.JoinedOn && !isAscending:
+				case column == headers.JoinedOn && !isAscending:
 					return bJoinedOn - aJoinedOn;
 			}
 		});
 	}
 
-	function exportAsExcel() {
+	function doExcelExport() {
 		const records = [];
 		const _records = [];
 
@@ -105,46 +105,46 @@ export default function Clients() {
 		const headerHeight = 44;
 		const maximumColumnWidth = 20;
 
-		const headers = Object.values(tableHeaders);
-		const blankRows = [{ span: headers.length, height: rowHeight, colSpan: 2 }];
+		const _headers = Object.values(headers);
+		const blankRows = [{ span: _headers.length, height: rowHeight, colSpan: 2 }];
 
-		doSorting().forEach((client) => {
+		doSorting().forEach((fe) => {
 			records.push(
-				client.id,
-				client.name,
-				client.phone_number,
-				client.email_address,
-				`${dayjs(client.joined_on).format("hh:mm:ss A")}\n${dayjs(client.joined_on).format("DD MMM YYYY")}`,
+				fe.id,
+				fe.name,
+				fe.phone_number,
+				fe.email_address,
+				`${dayjs(fe.joined_on).format("hh:mm:ss A")}\n${dayjs(fe.joined_on).format("DD MMM YYYY")}`,
 			);
 		});
 
-		records.forEach((record) => {
+		records.forEach((fe) => {
 			_records.push({
 				align: "center",
 				alignVertical: "center",
 				color: "#000000",
 				height: rowHeight,
 				type: String,
-				value: String(record),
+				value: String(fe),
 				wrap: true,
 			});
 		});
 
-		headers.forEach((header) => {
+		_headers.forEach((fe) => {
 			dataHeaders.push({
 				align: "center",
 				alignVertical: "center",
 				fontWeight: "bold",
 				height: rowHeight,
-				value: header,
+				value: fe,
 				width: maximumColumnWidth,
 			});
 
 			columnsWidth.push({ width: maximumColumnWidth });
 		});
 
-		const separatedRowValues = MyGlobal.SeparateObjectsIntoArrays(_records, headers.length);
-		const headerText = `${thisView} (${apiData.allClients.api.length})`;
+		const separatedRowValues = MyGlobal.SeparateObjectsIntoArrays(_records, _headers.length);
+		const headerText = `${thisView} (${api.clients.data.length})`;
 
 		const header = [
 			{
@@ -153,13 +153,13 @@ export default function Clients() {
 				fontSize: 16,
 				fontWeight: "bold",
 				height: headerHeight,
-				span: headers.length,
+				span: _headers.length,
 				value: headerText,
 			},
 		];
 
 		const finalData = [header, blankRows, dataHeaders];
-		separatedRowValues.forEach((row) => finalData.push(row));
+		separatedRowValues.forEach((fe) => finalData.push(fe));
 
 		writeXlsxFile(finalData, {
 			fontFamily: "Segoe UI",
@@ -169,9 +169,26 @@ export default function Clients() {
 		});
 	}
 
-	function getDataCount() {
-		const apiCount = apiData.allClients.api.length;
-		const apiCopyCount = apiData.allClients.apiCopy.length;
+	async function getAllClients() {
+		setMain((s) => ({ ...s, isLoading: true }));
+
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetClients, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				setApi({ clients: { copy: response.data, data: response.data } });
+				setMounted((s) => ({ ...s, mainComponent: true }));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, `${thisView} => Get All Clients`);
+		} finally {
+			setMain((s) => ({ ...s, isLoading: false }));
+		}
+	}
+
+	function getRowsCount() {
+		const apiCount = api.clients.data.length;
+		const apiCopyCount = api.clients.copy.length;
 
 		if (apiCount != apiCopyCount) {
 			return `${apiCount} / ${apiCopyCount}`;
@@ -180,20 +197,15 @@ export default function Clients() {
 		}
 	}
 
-	async function getAllClients() {
-		setMainData((s) => ({ ...s, isLoading: true }));
-
-		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetClients, MyGlobal.GetHeaders());
-
-			if (response.status === 200) {
-				setApiData({ allClients: { api: response.data, apiCopy: response.data } });
-				setHasMounted((s) => ({ ...s, mainComponent: true }));
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, `${thisView} => Get All Clients`);
-		} finally {
-			setMainData((s) => ({ ...s, isLoading: false }));
+	function getIconOrBadge() {
+		if (main.isLoading) {
+			return (
+				<span className="pl-5 relative">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return api.clients.data.length > 0 && <Badge value={getRowsCount()} />;
 		}
 	}
 
@@ -201,21 +213,21 @@ export default function Clients() {
 		globalThis.window.open(`mailto:${emailAddress}`, "_blank");
 	}
 
-	function openWhatsApp(phone) {
-		globalThis.window.open(`https://wa.me/1${phone}`, "_blank");
+	function openWhatsApp(phoneNumber) {
+		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
 	}
 
 	function setInputs(key, value) {
-		setMainData((s) => ({ ...s, [key]: value }));
+		setMain((s) => ({ ...s, [key]: value }));
 	}
 
 	function setSort(column) {
-		setMainData((s) => ({ ...s, sort: { column, isAscending: !mainData.sort.isAscending } }));
+		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
 	}
 
-	function toggleSingleClientView(clientId) {
-		setMainData((s) => ({ ...s, selectedClient: clientId ?? {} }));
-		setHasMounted((s) => ({ ...s, singleClientView: clientId ? true : false }));
+	function toggleSingleClient(clientId) {
+		setMain((s) => ({ ...s, selectedClient: clientId ?? {} }));
+		setMounted((s) => ({ ...s, singleClient: clientId ? true : false }));
 	}
 
 	// UI Components
@@ -226,17 +238,17 @@ export default function Clients() {
 				<Virtuoso
 					className="w-full h-full overflow-y-auto bottom-border contrast-background"
 					data={doSorting()}
-					itemContent={(index, client) => uiRows(client, index)}
-					totalCount={apiData.allClients.api.length}
+					itemContent={(i, row) => uiRows(row, i)}
+					totalCount={api.clients.data.length}
 				/>
 			</div>
 		);
 	};
 
 	const uiExport = () => {
-		if (apiData.allClients.api.length && apiData.allClients.apiCopy.length) {
+		if (api.clients.data.length && api.clients.copy.length) {
 			return (
-				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => exportAsExcel()}>
+				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => doExcelExport()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 					<span>Export</span>
 				</button>
@@ -244,70 +256,88 @@ export default function Clients() {
 		}
 	};
 
+	const uiFind = () => {
+		if (api.clients.copy.length) {
+			return (
+				<TextInputNative
+					id="findBox"
+					icon={faSearch}
+					onChange={(e) => setInputs("find", e.target.value)}
+					onClearButtonClick={() => setInputs("find", "")}
+					placeholder=""
+					showClearButton={showFindBoxClearButton}
+					tabIndex={1}
+					value={main.find}
+					width="w-60"
+				/>
+			);
+		}
+	};
+
 	const uiHeaders = () => {
-		return Object.values(tableHeaders).map((header, index) => {
-			const showIndicator = header == mainData.sort.column ? "visible" : "invisible";
+		return Object.values(headers).map((m, i) => {
+			const showArrow = m == main.sort.column ? "visible" : "invisible";
 
 			return (
-				<span className="w-1/5 space-x-1 cursor-pointer text-center text-white font-medium-10" onClick={() => setSort(header)} key={index}>
-					<span>{header}</span>
-					<span className={showIndicator}>{uiSortArrows(header)}</span>
+				<span className="w-1/5 space-x-1 cursor-pointer text-center text-white font-medium-10" onClick={() => setSort(m)} key={i}>
+					<span>{m}</span>
+					<span className={showArrow}>{uiSortArrows(m)}</span>
 				</span>
 			);
 		});
 	};
 
 	const uiMain = () => {
-		if (mainData.isLoading) {
+		if (main.isLoading) {
 			return (
 				<div className={blankDataWrapper}>
 					<SpinnerBig />
 				</div>
 			);
-		} else if (!apiData.allClients.api.length && apiData.allClients.apiCopy.length) {
+		} else if (!api.clients.data.length && api.clients.copy.length) {
 			return (
 				<div className={blankDataWrapper}>
 					<span className="font-regular-12 gray-text">No clients found.</span>
 				</div>
 			);
-		} else if (!apiData.allClients.api.length && !apiData.allClients.apiCopy.length) {
+		} else if (!api.clients.data.length && !api.clients.copy.length) {
 			return (
 				<div className={blankDataWrapper}>
 					<span className="font-regular-12 gray-text">No clients registered.</span>
 				</div>
 			);
-		} else if (hasMounted.singleClientView) {
-			return <SingleClient selectedClient={mainData.selectedClient} unmount={toggleSingleClientView} />;
+		} else if (mounted.singleClient) {
+			return <SingleClient client={main.selectedClient} unmount={toggleSingleClient} />;
 		} else {
 			return uiBody();
 		}
 	};
 
-	const uiRows = (client) => {
+	const uiRows = (row) => {
 		const style = "flex flex-wrap w-1/5 min-h-9 justify-center items-center text-center";
 		const tooltipStyle = `${style} cursor-pointer primary-text`;
 
-		const clientId = MyGlobal.HighlightText(client.id, mainData.searchTerm);
-		const clientName = MyGlobal.HighlightText(client.name, mainData.searchTerm);
-		const phoneNumber = MyGlobal.HighlightText(client.phone_number, mainData.searchTerm);
-		const emailAddress = MyGlobal.HighlightText(client.email_address, mainData.searchTerm);
+		const clientId = MyGlobal.HighlightText(row.id, main.find);
+		const clientName = MyGlobal.HighlightText(row.name, main.find);
+		const phoneNumber = MyGlobal.HighlightText(row.phone_number, main.find);
+		const emailAddress = MyGlobal.HighlightText(row.email_address, main.find);
 
-		const joinedOn = dayjs(client.joined_on).format("DD MMM, YYYY");
+		const joinedOn = dayjs(row.joined_on).format("DD MMM, YYYY");
 
 		return (
-			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text" key={client.id}>
+			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text" key={row.id}>
 				<span className={style} dangerouslySetInnerHTML={{ __html: clientId }} />
 
-				<Tippy allowHTML content={<Tooltip text={"Open this client's detailed view."} />}>
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleClientView(client)} />
+				<Tippy allowHTML content={<Tooltip text="Open this client's detailed view." />}>
+					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleClient(row)} />
 				</Tippy>
 
-				<Tippy allowHTML content={<Tooltip text={"Open this contact on WhatsApp Web."} />}>
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsApp(client.phone_number)} />
+				<Tippy allowHTML content={<Tooltip text="Open this contact on WhatsApp Web." />}>
+					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsApp(row.phone_number)} />
 				</Tippy>
 
-				<Tippy allowHTML content={<Tooltip text={client.email_address} />}>
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: emailAddress }} onClick={() => openEmailClient(client.email_address)} />
+				<Tippy allowHTML content={<Tooltip text={row.email_address} />}>
+					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: emailAddress }} onClick={() => openEmailClient(row.email_address)} />
 				</Tippy>
 
 				<span className={style}>{joinedOn}</span>
@@ -315,27 +345,9 @@ export default function Clients() {
 		);
 	};
 
-	const uiSearch = () => {
-		if (apiData.allClients.apiCopy.length) {
-			return (
-				<TextInputNative
-					id="searchBox"
-					icon={faSearch}
-					onChange={(event) => setInputs("searchTerm", event.target.value)}
-					onClearButtonClick={() => setInputs("searchTerm", "")}
-					placeholder=""
-					showClearButton={showSearchBoxClearButton}
-					tabIndex={1}
-					value={mainData.searchTerm}
-					width="w-60"
-				/>
-			);
-		}
-	};
-
 	const uiSortArrows = (column) => {
-		if (mainData.sort.column == column) {
-			if (mainData.sort.isAscending) {
+		if (main.sort.column == column) {
+			if (main.sort.isAscending) {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} />;
 			} else {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} />;
@@ -352,26 +364,26 @@ export default function Clients() {
 	}, []);
 
 	useEffect(() => {
-		if (hasMounted.mainComponent) {
+		if (mounted.mainComponent) {
 			doFiltering();
 		}
-	}, [mainData.searchTerm]);
+	}, [main.find]);
 
 	// Main UI
-	if (!hasMounted.mainComponent) {
+	if (!mounted.mainComponent) {
 		return;
 	}
 
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<>
-				{!hasMounted.singleClientView && (
+				{!mounted.singleClient && (
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
 						<div className="flex w-1/3 space-x-2 justify-start items-center">
 							<span className="view-heading">{thisView}</span>
-							{apiData.allClients.api.length > 0 && <Badge value={getDataCount()} />}
+							{getIconOrBadge()}
 						</div>
-						<div className="flex w-1/3 justify-center items-center">{uiSearch()}</div>
+						<div className="flex w-1/3 justify-center items-center">{uiFind()}</div>
 						<div className="flex w-1/3 justify-end items-center">{uiExport()}</div>
 					</div>
 				)}

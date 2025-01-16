@@ -317,7 +317,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 				onChange={(e) => setInputs("company", e)}
 				onClick={() => addNewCompany(other.find.company.name)}
 				onInputChange={(e) => setFind("company", e.target.value)}
-				onKeyPress={(event) => !MyGlobal.HasAlphabets(event.key) && event.preventDefault()}
+				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
 				searchedItem={other.find.company.name}
 				tabIndex={2}
 				value={main.company.name}

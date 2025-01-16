@@ -16,7 +16,7 @@ import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
-import { Badge, SpinnerBig } from "@/components/Elements";
+import { Badge, Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
 	faCalendar,
@@ -87,9 +87,9 @@ export default function Invoices({ status }) {
 		doSorting().forEach((fe) => {
 			records.push(
 				fe.id,
-				fe.company,
-				fe.main_project,
-				fe.sub_project,
+				fe.company_name,
+				fe.main_project_name,
+				fe.sub_project_name,
 				`${fe.created_at_time}\n${fe.created_at}`,
 				fe.amount,
 				fe.amount_received,
@@ -98,25 +98,25 @@ export default function Invoices({ status }) {
 			);
 		});
 
-		records.forEach((record) => {
+		records.forEach((fe) => {
 			_records.push({
 				align: "center",
 				alignVertical: "center",
 				color: "#000000",
 				height: rowHeight,
 				type: String,
-				value: String(record),
+				value: String(fe),
 				wrap: true,
 			});
 		});
 
-		rowHeaders.forEach((header) => {
+		rowHeaders.forEach((fe) => {
 			dataHeaders.push({
 				align: "center",
 				alignVertical: "center",
 				fontWeight: "bold",
 				height: rowHeight,
-				value: header,
+				value: fe,
 				width: maximumColumnWidth,
 			});
 
@@ -161,9 +161,9 @@ export default function Invoices({ status }) {
 
 				return (
 					f.id.includes(findText) ||
-					f.company.includes(findText) ||
-					f.main_project.includes(findText) ||
-					f.sub_project.includes(findText) ||
+					f.company_name.includes(findText) ||
+					f.main_project_name.includes(findText) ||
+					f.sub_project_name.includes(findText) ||
 					String(f.amount).includes(findText) ||
 					String(f.amount_received).includes(findText) ||
 					f.status.includes(findText)
@@ -183,17 +183,17 @@ export default function Invoices({ status }) {
 			} else if (column == headers.Id && !isAscending) {
 				return b.id.localeCompare(a.id);
 			} else if (column == headers.Company && isAscending) {
-				return a.company.localeCompare(b.company);
+				return a.company_name.localeCompare(b.company_name);
 			} else if (column == headers.Company && !isAscending) {
-				return b.company.localeCompare(a.company);
+				return b.company_name.localeCompare(a.company_name);
 			} else if (column == headers.MainProject && isAscending) {
-				return a.main_project.localeCompare(b.main_project);
+				return a.main_project_name.localeCompare(b.main_project_name);
 			} else if (column == headers.MainProject && !isAscending) {
-				return b.main_project.localeCompare(a.main_project);
+				return b.main_project_name.localeCompare(a.main_project_name);
 			} else if (column == headers.SubProject && isAscending) {
-				return a.sub_project.localeCompare(b.sub_project);
+				return a.sub_project_name.localeCompare(b.sub_project_name);
 			} else if (column == headers.SubProject && !isAscending) {
-				return b.sub_project.localeCompare(a.sub_project);
+				return b.sub_project_name.localeCompare(a.sub_project_name);
 			} else if (column == headers.CreatedAt && isAscending) {
 				return a.created_at - b.created_at;
 			} else if (column == headers.CreatedAt && !isAscending) {
@@ -216,71 +216,23 @@ export default function Invoices({ status }) {
 		});
 	}
 
-	function getDataCount() {
+	function getIconOrBadge() {
+		if (main.isLoading) {
+			return (
+				<span className="pl-5 relative">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return api.projectsCopy.length > 0 && <Badge value={getRowsCount()} />;
+		}
+	}
+
+	function getRowsCount() {
 		if (api.projects.length != api.projectsCopy.length) {
 			return `${api.projects.length} / ${api.projectsCopy.length}`;
 		} else {
 			return api.projects.length;
-		}
-	}
-
-	async function getSupportData() {
-		try {
-			setMain((s) => ({ ...s, isLoading: true }));
-
-			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetSupportData, MyGlobal.GetHeaders());
-
-			if (response.status === 200) {
-				const revised = response.data.projects.map((m) => {
-					const cashFlow = response.data.cashFlows.find((f) => f.client_id == m.client_id);
-
-					let amountReceived = "";
-
-					if (typeof cashFlow === "object") {
-						amountReceived = cashFlow.amount_received;
-					}
-
-					const company = response.data.companies.find((f) => f.id == m.company_id).name;
-
-					const invoice = response.data.invoices.find((f) => f.project_id == m.id);
-
-					let invoiceId = "";
-					let invoiceCreatedAt = "";
-					let invoiceCreatedAtTime = "";
-
-					if (typeof invoice === "object") {
-						invoiceId = invoice.custom_id;
-						invoiceCreatedAt = dayjs(invoice.created_at).format("DD MMM, YYY");
-						invoiceCreatedAtTime = dayjs(invoice.created_at).format("hh:mm:ss a");
-					}
-
-					const mainProject = response.data.mainProjects.find((f) => f.id == m.main_project_id).name;
-
-					const subProject = response.data.subProjects.find((f) => f.id == m.sub_project_id).name;
-
-					return {
-						...m,
-						amount: Number(m.quote),
-						amount_received: Number(amountReceived),
-						company,
-						created_at: invoiceCreatedAt,
-						created_at_time: invoiceCreatedAtTime,
-						invoice_id: invoiceId,
-						main_project: mainProject,
-						sub_project: subProject,
-					};
-				});
-
-				setApi((s) => ({
-					...s,
-					projects: revised,
-					projectsCopy: revised,
-				}));
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, `${thisView} => Get Support Data`);
-		} finally {
-			setMain((s) => ({ ...s, isLoading: false }));
 		}
 	}
 
@@ -316,18 +268,89 @@ export default function Invoices({ status }) {
 		setMain((s) => ({ ...s, sort: { column, isAscending: !main.sort.isAscending } }));
 	}
 
+	async function setSupportData() {
+		try {
+			setMain((s) => ({ ...s, isLoading: true }));
+
+			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetSupportData, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				const revised = response.data.projects.map((m) => {
+					let amountReceived = "";
+					let companyName = "";
+					let mainProjectName = "";
+					let subProjectName = "";
+
+					const cashFlow = response.data.cashFlows.find((f) => f.client_id == m.client_id);
+
+					if (typeof cashFlow === "object") {
+						amountReceived = Number(cashFlow.amount_received);
+					}
+
+					const company = response.data.companies.find((f) => f.id == m.company_id);
+
+					if (typeof company === "object") {
+						companyName = company.name;
+					}
+
+					const invoice = response.data.invoices.find((f) => f.project_id == m.id);
+
+					let invoiceId = "";
+					let invoiceCreatedAt = "";
+					let invoiceCreatedAtTime = "";
+
+					if (typeof invoice === "object") {
+						invoiceId = invoice.custom_id;
+						invoiceCreatedAt = dayjs(invoice.created_at).format("DD MMM, YYY");
+						invoiceCreatedAtTime = dayjs(invoice.created_at).format("hh:mm:ss a");
+					}
+
+					const mainProject = response.data.mainProjects.find((f) => f.id == m.main_project_id);
+
+					if (typeof mainProject === "object") {
+						mainProjectName = mainProject.name;
+					}
+
+					const subProject = response.data.subProjects.find((f) => f.id == m.sub_project_id);
+
+					if (typeof subProject === "object") {
+						subProjectName = subProject.name;
+					}
+
+					return {
+						...m,
+						amount: Number(m.quote),
+						amount_received: amountReceived,
+						company_name: companyName,
+						created_at: invoiceCreatedAt,
+						created_at_time: invoiceCreatedAtTime,
+						invoice_id: invoiceId,
+						main_project_name: mainProjectName,
+						sub_project_name: subProjectName,
+					};
+				});
+
+				setApi((s) => ({
+					...s,
+					projects: revised,
+					projectsCopy: revised,
+				}));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, `${thisView} => Get Support Data`);
+		} finally {
+			setMain((s) => ({ ...s, isLoading: false }));
+		}
+	}
+
 	function toggleNewInvoice() {
-		setMounted((s) => ({ ...s, newInvoice: !mounted.newInvoice }));
+		setMounted((s) => ({ ...s, newInvoice: !s.newInvoice }));
 	}
 
 	// UI Components
 	function uiBody() {
 		if (main.isLoading) {
-			return (
-				<div className={blankDataWrapper}>
-					<SpinnerBig />
-				</div>
-			);
+			return <div className={blankDataWrapper}>Loading...</div>;
 		} else if (!api.projectsCopy.length) {
 			return <div className={blankDataWrapper}>No invoices generated.</div>;
 		} else if (!api.projects.length) {
@@ -339,7 +362,7 @@ export default function Invoices({ status }) {
 					<Virtuoso
 						className="w-full h-full overflow-y-auto bottom-border contrast-background"
 						data={doSorting()}
-						itemContent={(i, object) => uiRows(object, i)}
+						itemContent={(i, row) => uiRows(row, i)}
 						totalCount={api.projects.length}
 					/>
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
@@ -355,6 +378,24 @@ export default function Invoices({ status }) {
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 					<span>Export</span>
 				</button>
+			);
+		}
+	}
+
+	function uiFind() {
+		if (api.projectsCopy.length) {
+			return (
+				<TextInputNative
+					id="findBox"
+					icon={faSearch}
+					onChange={(e) => setInputs("find", e.target.value)}
+					onClearButtonClick={() => setInputs("find", "")}
+					placeholder=""
+					showClearButton={showFindClearIcon}
+					tabIndex={3}
+					value={main.filter.find}
+					width="w-36"
+				/>
 			);
 		}
 	}
@@ -422,14 +463,14 @@ export default function Invoices({ status }) {
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
 						<div className="flex w-1/5 space-x-2 justify-start items-center">
 							<span className="view-heading">{thisView}</span>
-							{api.projectsCopy.length > 0 && <Badge value={getDataCount()} />}
+							{getIconOrBadge()}
 						</div>
 						<div className="flex w-4/5 space-x-2 justify-end items-center">
 							<div className="flex w-1/2 space-x-2 justify-end items-center">
 								{uiFromDate()}
 								{uiToDate()}
 							</div>
-							{uiSearch()}
+							{uiFind()}
 							{uiNew()}
 							{uiExport()}
 						</div>
@@ -438,7 +479,7 @@ export default function Invoices({ status }) {
 				</div>
 			);
 		} else {
-			return <NewInvoice project={api.projects.at(0)} reload={getSupportData} unmount={toggleNewInvoice} />;
+			return <NewInvoice project={api.projects.at(0)} reload={setSupportData} unmount={toggleNewInvoice} />;
 		}
 	}
 
@@ -454,62 +495,41 @@ export default function Invoices({ status }) {
 	function uiRows(row, i) {
 		const style = `flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center`;
 
+		const invoiceIdStyle = !row.invoice_id ? `${style} cursor-pointer primary-text` : `${style} cursor-help primary-text`;
+
 		const id = MyGlobal.HighlightText(row.id, main.filter.find);
+
 		const invoiceId = MyGlobal.HighlightText(row.invoice_id, main.filter.find);
 		const _invoiceId = !invoiceId ? "Generate" : invoiceId;
-		const company = MyGlobal.HighlightText(row.company, main.filter.find);
-		const mainProject = MyGlobal.HighlightText(row.main_project, main.filter.find);
-		const subProject = MyGlobal.HighlightText(row.sub_project, main.filter.find);
+
+		const companyName = MyGlobal.HighlightText(row.company_name, main.filter.find);
+		const mainProjectName = MyGlobal.HighlightText(row.main_project_name, main.filter.find);
+		const subProjectName = MyGlobal.HighlightText(row.sub_project_name, main.filter.find);
+
 		const amount = MyGlobal.HighlightText(row.amount, main.filter.find);
-
 		const amountReceived = MyGlobal.HighlightText(row.amount_received, main.filter.find);
-
-		const invoiceIdStyle = !row.invoice_id ? `${style} cursor-pointer primary-text` : `${style} cursor-help primary-text`;
 
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
 				<span className={style} dangerouslySetInnerHTML={{ __html: id }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: company }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: mainProject }} />
-
-				<span className={style} dangerouslySetInnerHTML={{ __html: subProject }} />
-
+				<span className={style} dangerouslySetInnerHTML={{ __html: companyName }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
 				<span className={`${style} cursor-help primary-text`}>
 					<Tippy content={row.created_at_time}>
 						<span className={style}>{row.created_at}</span>
 					</Tippy>
 				</span>
-
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
-
 				<span className={style} />
 				<span className={invoiceIdStyle} dangerouslySetInnerHTML={{ __html: _invoiceId }} onClick={() => toggleNewInvoice()} />
-
 				<span className={`${style} space-x-5`}>
 					<FontAwesomeIcon className="primary-text" icon={faFileDownload} size="lg" />
 					<FontAwesomeIcon className="primary-text" icon={faCoins} size="lg" />
 				</span>
 			</div>
 		);
-	}
-
-	function uiSearch() {
-		if (api.projectsCopy.length) {
-			return (
-				<TextInputNative
-					id="findBox"
-					icon={faSearch}
-					onChange={(e) => setInputs("find", e.target.value)}
-					onClearButtonClick={() => setInputs("find", "")}
-					placeholder=""
-					showClearButton={showFindClearIcon}
-					tabIndex={3}
-					value={main.filter.find}
-					width="w-36"
-				/>
-			);
-		}
 	}
 
 	function uiSortArrows(column) {
@@ -550,7 +570,7 @@ export default function Invoices({ status }) {
 
 	// Hooks
 	useEffect(() => {
-		getSupportData();
+		setSupportData();
 
 		globalThis.addEventListener("keydown", detectKeystrokes);
 		return () => globalThis.removeEventListener("keydown", detectKeystrokes);
@@ -566,7 +586,7 @@ export default function Invoices({ status }) {
 
 	useEffect(() => {
 		doFiltering();
-	}, [main.filter.search]);
+	}, [main.filter.find]);
 
 	// Main UI
 	return uiMain();

@@ -718,7 +718,7 @@ INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `task_id`, `original_entr
 (17, 'IQ000001', NULL, NULL, '', 'A3', 'Hello.', 'Inquiries', '2025-01-11 23:46:31'),
 (18, 'IQ000004', NULL, NULL, '', 'A3', 'The client lives in Portugal.', 'Inquiries', '2025-01-11 23:46:51'),
 (19, 'IQ000007', NULL, NULL, '', 'A3', 'The client is the flat friend of Kevin Vyas.', 'Inquiries', '2025-01-12 11:18:02'),
-(20, 'IQ000007', 'PJ000002', NULL, 'A3', 'A3', 'This is a project\'s test.', 'Projects', '2025-01-12 11:41:51'),
+(20, 'IQ000007', 'PJ000002', NULL, 'A3', 'A3', 'This is a projects test.', 'Projects', '2025-01-12 11:41:51'),
 (21, 'IQ000008', NULL, NULL, '', 'A3', 'Hello There.', 'Inquiries', '2025-01-12 14:36:15');
 
 -- --------------------------------------------------------

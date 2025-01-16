@@ -258,6 +258,10 @@ export const MyGlobal = Object.freeze({
 						break;
 				}
 
+				if (source == "Single Project => Map Affiliates") {
+					message = error.response.statusText;
+				}
+
 				if (message.length) {
 					MyGlobal.ShowToasts(MyConstants.ToastTypes.Error, message);
 				}

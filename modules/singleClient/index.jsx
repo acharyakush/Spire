@@ -5,6 +5,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
+import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
@@ -30,19 +31,15 @@ import {
 	faSortAmountDesc,
 	faUserTag,
 } from "@fortawesome/free-solid-svg-icons";
-import writeXlsxFile from "write-excel-file";
+import SingleProject from "../singleProject";
 
-export default function SingleClient({ selectedClient, unmount }) {
+export default function SingleClient({ client, unmount }) {
 	// Business Logic
-	const tableHeaders = MyConstants.TableHeaders.SingleClient;
+	const headers = MyConstants.TableHeaders.SingleClient;
 
-	const [apiData, setApiData] = useState({
-		allProjects: { api: [], apiCopy: [] },
-		cashFlows: [],
+	const [api, setApi] = useState({
 		companies: [],
-		mainProjects: [],
-		subProjects: [],
-		ownerFirms: [],
+		projects: { copy: [], data: [] },
 		reference: {},
 		tasks: [],
 		uploadedFiles: [],
@@ -54,7 +51,10 @@ export default function SingleClient({ selectedClient, unmount }) {
 	});
 
 	const [main, setMain] = useState({
-		filter: { date: { from: "", to: "" }, search: "" },
+		filter: {
+			date: { from: "", to: "" },
+			find: "",
+		},
 		projects: [],
 		selectedCompany: {
 			id: 0,
@@ -62,18 +62,20 @@ export default function SingleClient({ selectedClient, unmount }) {
 			name: "All",
 			details: {},
 		},
-		sort: { column: tableHeaders.Id, isAscending: false },
+		selectedProject: {},
+		sort: { column: headers.Id, isAscending: false },
 	});
 
 	const [mounted, setMounted] = useState({
 		editCompany: false,
 		mainComponent: false,
+		singleProject: false,
 		uploadedFiles: false,
 	});
 
 	const allowEditingCompany = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditCompany);
 
-	const showClearSearchButton = main.filter.search ? "cursor-pointer primary-text" : "hidden";
+	const showClearSearchButton = main.filter.find ? "cursor-pointer primary-text" : "hidden";
 	const showFromDateClearButton = main.filter.date.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearButton = main.filter.date.to ? "cursor-pointer primary-text" : "hidden";
 
@@ -89,8 +91,8 @@ export default function SingleClient({ selectedClient, unmount }) {
 		const headerHeight = 44;
 		const maximumColumnWidth = 20;
 
-		const headers = Object.values(tableHeaders);
-		const blankRows = [{ span: headers.length, height: rowHeight, colSpan: 2 }];
+		const _headers = Object.values(headers);
+		const blankRows = [{ span: _headers.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
 			records.push(
@@ -108,33 +110,34 @@ export default function SingleClient({ selectedClient, unmount }) {
 			);
 		});
 
-		records.forEach((record) => {
+		records.forEach((fe) => {
 			_records.push({
 				align: "center",
 				alignVertical: "center",
 				color: "#000000",
 				height: rowHeight,
 				type: String,
-				value: String(record),
+				value: String(fe),
 				wrap: true,
 			});
 		});
 
-		headers.forEach((header) => {
+		_headers.forEach((fe) => {
 			dataHeaders.push({
 				align: "center",
 				alignVertical: "center",
 				fontWeight: "bold",
 				height: rowHeight,
-				value: header,
+				value: fe,
 				width: maximumColumnWidth,
 			});
 
 			columnsWidth.push({ width: maximumColumnWidth });
 		});
 
-		const separatedRowValues = MyGlobal.SeparateObjectsIntoArrays(_records, headers.length);
-		const headerText = `${selectedClient.id} - ${selectedClient.name} (${apiData.allProjects.api.length})`;
+		const separatedRowValues = MyGlobal.SeparateObjectsIntoArrays(_records, _headers.length);
+
+		const headerText = `${client.id} - ${client.name} (${api.projects.data.length})`;
 
 		const header = [
 			{
@@ -143,7 +146,7 @@ export default function SingleClient({ selectedClient, unmount }) {
 				fontSize: 16,
 				fontWeight: "bold",
 				height: headerHeight,
-				span: headers.length,
+				span: _headers.length,
 				value: headerText,
 			},
 		];
@@ -155,12 +158,12 @@ export default function SingleClient({ selectedClient, unmount }) {
 			fontFamily: "Segoe UI",
 			fontSize: 10,
 			columns: columnsWidth,
-			fileName: `${selectedClient.id}_${selectedClient.name}_(${apiData.allProjects.api.length}).xlsx`,
+			fileName: `${client.id}_${client.name}_(${api.projects.data.length}).xlsx`,
 		});
 	}
 
 	function doFiltering(source) {
-		const filtered = getRevisedSelectedCompanyProject().filter((f) => {
+		const filtered = main.projects.filter((f) => {
 			if (source == "date") {
 				const checkDate = new Date(f.started_on);
 				const startDate = main.filter.date.from;
@@ -170,7 +173,7 @@ export default function SingleClient({ selectedClient, unmount }) {
 					return f;
 				}
 			} else {
-				const searchText = main.filter.search.toLowerCase();
+				const findText = main.filter.find.toLowerCase();
 
 				const id = String(f.id).toLowerCase();
 				const company = String(f.company).toLowerCase();
@@ -179,16 +182,16 @@ export default function SingleClient({ selectedClient, unmount }) {
 				const status = String(f.status).toLowerCase();
 
 				return (
-					id.includes(searchText) ||
-					company.includes(searchText) ||
-					subProject.includes(searchText) ||
-					invoiceFirm.includes(searchText) ||
-					String(f.invoice_fees).includes(searchText) ||
-					String(f.reimbursement_voucher).includes(searchText) ||
-					String(f.amount_received).includes(searchText) ||
-					String(f.amount_pending).includes(searchText) ||
-					String(f.total_fees).includes(searchText) ||
-					status.includes(searchText)
+					id.includes(findText) ||
+					company.includes(findText) ||
+					subProject.includes(findText) ||
+					invoiceFirm.includes(findText) ||
+					String(f.invoice_fees).includes(findText) ||
+					String(f.reimbursement_voucher).includes(findText) ||
+					String(f.amount_received).includes(findText) ||
+					String(f.amount_pending).includes(findText) ||
+					String(f.total_fees).includes(findText) ||
+					status.includes(findText)
 				);
 			}
 		});
@@ -197,51 +200,51 @@ export default function SingleClient({ selectedClient, unmount }) {
 	}
 
 	function doSorting() {
-		return getRevisedSelectedCompanyProject().sort((a, b) => {
+		return main.projects.sort((a, b) => {
 			const aStartedOn = new Date(a.started_on);
 			const bStartedOn = new Date(b.started_on);
 
 			const { column, isAscending } = main.sort;
 
-			if (column == tableHeaders.Id && isAscending) {
+			if (column == headers.Id && isAscending) {
 				return a.id.localeCompare(b.id);
-			} else if (column == tableHeaders.Id && !isAscending) {
+			} else if (column == headers.Id && !isAscending) {
 				return b.id.localeCompare(a.id);
-			} else if (column == tableHeaders.StartedOn && isAscending) {
+			} else if (column == headers.StartedOn && isAscending) {
 				return aStartedOn - bStartedOn;
-			} else if (column == tableHeaders.StartedOn && !isAscending) {
+			} else if (column == headers.StartedOn && !isAscending) {
 				return bStartedOn - aStartedOn;
-			} else if (column == tableHeaders.SubProject && isAscending) {
+			} else if (column == headers.SubProject && isAscending) {
 				return a.sub_project.localeCompare(b.sub_project);
-			} else if (column == tableHeaders.SubProject && !isAscending) {
+			} else if (column == headers.SubProject && !isAscending) {
 				return b.sub_project.localeCompare(a.sub_project);
-			} else if (column == tableHeaders.Company && isAscending) {
+			} else if (column == headers.Company && isAscending) {
 				return a.company.localeCompare(b.company);
-			} else if (column == tableHeaders.Company && !isAscending) {
+			} else if (column == headers.Company && !isAscending) {
 				return b.company.localeCompare(a.company);
-			} else if (column == tableHeaders.Teams && isAscending) {
+			} else if (column == headers.Teams && isAscending) {
 				return a.teams.localeCompare(b.teams);
-			} else if (column == tableHeaders.Teams && !isAscending) {
+			} else if (column == headers.Teams && !isAscending) {
 				return b.teams.localeCompare(a.teams);
-			} else if (column == tableHeaders.InvoiceFirm && isAscending) {
+			} else if (column == headers.InvoiceFirm && isAscending) {
 				return a.invoice_firm.localeCompare(b.invoice_firm);
-			} else if (column == tableHeaders.InvoiceFirm && !isAscending) {
+			} else if (column == headers.InvoiceFirm && !isAscending) {
 				return b.invoice_firm.localeCompare(a.invoice_firm);
-			} else if (column == tableHeaders.InvoiceFees && isAscending) {
+			} else if (column == headers.InvoiceFees && isAscending) {
 				return a.invoice_fees - b.invoice_fees;
-			} else if (column == tableHeaders.InvoiceFees && !isAscending) {
+			} else if (column == headers.InvoiceFees && !isAscending) {
 				return b.invoice_fees - a.invoice_fees;
-			} else if (column == tableHeaders.ReimbursementVoucher && isAscending) {
+			} else if (column == headers.ReimbursementVoucher && isAscending) {
 				return a.reimbursement_voucher - b.reimbursement_voucher;
-			} else if (column == tableHeaders.ReimbursementVoucher && !isAscending) {
+			} else if (column == headers.ReimbursementVoucher && !isAscending) {
 				return b.reimbursement_voucher - a.reimbursement_voucher;
-			} else if (column == tableHeaders.Total && isAscending) {
+			} else if (column == headers.Total && isAscending) {
 				return a.total_fees - b.total_fees;
-			} else if (column == tableHeaders.Total && !isAscending) {
+			} else if (column == headers.Total && !isAscending) {
 				return b.total_fees - a.total_fees;
-			} else if (column == tableHeaders.Status && isAscending) {
+			} else if (column == headers.Status && isAscending) {
 				return a.status.localeCompare(b.status);
-			} else if (column == tableHeaders.Status && !isAscending) {
+			} else if (column == headers.Status && !isAscending) {
 				return b.status.localeCompare(a.status);
 			} else {
 				return b.id.localeCompare(a.id);
@@ -249,150 +252,30 @@ export default function SingleClient({ selectedClient, unmount }) {
 		});
 	}
 
-	function getCompanyName(project) {
-		let name = "";
-
-		if (apiData.companies.length) {
-			name = apiData.companies.filter((f) => f.id == project.company_id).at(0).name;
-		}
-
-		return name;
-	}
-
-	function getMainProjectName(project) {
-		let name = "";
-
-		if (apiData.mainProjects.length) {
-			name = apiData.mainProjects.filter((f) => f.id == project.main_project_id).at(0).name;
-		}
-
-		return name;
-	}
-
-	function getOwnerFirmName(project) {
-		let name = "";
-
-		if (apiData.ownerFirms.length) {
-			name = apiData.ownerFirms.filter((f) => f.id == project.invoice_firm_id).at(0).name;
-		} else {
-			name = "";
-		}
-
-		return name;
-	}
-
-	function getRevisedSelectedCompanyProject() {
-		return main.projects.map((m) => {
-			const invoiceFees = Number(m.invoice_fees);
-			const invoiceFirm = getOwnerFirmName(m);
-			const teams = MyGlobal.GetFullDetailsFromIds(m.teams);
-
-			const reimbursementVoucher = apiData.tasks.filter((f) => f.project_id == m.id).reduce((acc, v) => acc + Number(v.expense), 0);
-
-			const amountReceived = apiData.cashFlows.filter((f) => f.project_id == m.id).reduce((acc, v) => acc + Number(v.amount_received), 0);
-
-			const totalFees = invoiceFees + reimbursementVoucher;
-			const amountPending = totalFees - amountReceived;
-
-			return {
-				...m,
-				amount_pending: amountPending,
-				amount_received: amountReceived,
-				company: getCompanyName(m),
-				completed_on: dayjs(m.completed_on).format("hh:mm:ss A - DD/MM/YYYY"),
-				invoice_fees: invoiceFees,
-				invoice_firm: invoiceFirm,
-				invoice_firm_initials: MyGlobal.GetInitials(invoiceFirm),
-				main_project: getMainProjectName(m),
-				reimbursement_voucher: reimbursementVoucher,
-				sub_project: getSubProjectName(m),
-				teams,
-				teams_list: teams.map((m) => m.full_name),
-				total_fees: totalFees,
-			};
-		});
-	}
-
-	function getSubProjectName(project) {
-		let name = "";
-
-		if (apiData.subProjects.length) {
-			name = apiData.subProjects.filter((f) => f.id == project.sub_project_id).at(0).name;
-		}
-
-		return name;
-	}
-
-	async function getSupportData() {
-		setMain((s) => ({ ...s, supportData: true }));
-
-		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetSupportData, MyGlobal.GetHeaders({ clientId: selectedClient.id }));
-
-			if (response.status === 200) {
-				setApiData((s) => ({
-					...s,
-					allProjects: { api: response.data.projects, apiCopy: response.data.projects },
-					cashFlows: response.data.cashFlows,
-					companies: response.data.companies,
-					mainProjects: response.data.mainProjects,
-					ownerFirms: response.data.ownerFirms,
-					reference: response.data.reference.at(0),
-					subProjects: response.data.subProjects,
-					tasks: response.data.tasks,
-				}));
-
-				setMain((s) => ({ ...s, projects: response.data.projects.filter((f) => f.client_id == selectedClient.id) }));
-
-				setMounted((s) => ({ ...s, mainComponent: true }));
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "Single Client => Get Support Data");
-		} finally {
-			setMain((s) => ({ ...s, supportData: false }));
-		}
-	}
-
 	function getTotalValues() {
 		const total = {
 			amountPending: 0,
 			amountReceived: 0,
 			invoiceFees: 0,
-			reimbursementVoucherCharges: 0,
+			reimburseVoucher: 0,
 			totalFees: 0,
 		};
 
-		for (const project of apiData.allProjects.api) {
-			total.amountPending += Number(project.amount_pending);
-			total.amountReceived += Number(project.amount_received);
-			total.invoiceFees += Number(project.invoice_fees);
-			total.reimbursementVoucherCharges += Number(project.reimbursement_voucher);
-			total.totalFees += Number(project.total_fees);
+		for (const i of api.projects.data) {
+			total.amountPending += Number(i.amount_pending);
+			total.amountReceived += Number(i.amount_received);
+			total.invoiceFees += Number(i.invoice_fees);
+			total.reimburseVoucher += Number(i.reimburse_voucher);
+			total.totalFees += Number(i.total_fees);
 		}
 
 		total.amountPending = MyGlobal.ThousandSeparator(total.amountPending);
 		total.amountReceived = MyGlobal.ThousandSeparator(total.amountReceived);
 		total.invoiceFees = MyGlobal.ThousandSeparator(total.invoiceFees);
-		total.reimbursementVoucherCharges = MyGlobal.ThousandSeparator(total.reimbursementVoucherCharges);
+		total.reimburseVoucher = MyGlobal.ThousandSeparator(total.reimburseVoucher);
 		total.totalFees = MyGlobal.ThousandSeparator(total.totalFees);
 
 		return total;
-	}
-
-	async function getUploadedFiles() {
-		setLoading((s) => ({ ...s, uploadedFiles: true }));
-
-		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetUploadedFiles, MyGlobal.GetHeaders({ clientId: selectedClient.id }));
-
-			if (response.status === 200) {
-				setApiData((s) => ({ ...s, uploadedFiles: response.data }));
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "Single Client => Get Uploaded Files");
-		} finally {
-			setLoading((s) => ({ ...s, uploadedFiles: false }));
-		}
 	}
 
 	function openEmailAddress(emailAddress) {
@@ -407,34 +290,155 @@ export default function SingleClient({ selectedClient, unmount }) {
 		if (key == "from" || key == "to") {
 			setMain((s) => ({ ...s, filter: { ...s.filter, date: { ...s.filter.date, [key]: value } } }));
 		} else {
-			setMain((s) => ({ ...s, filter: { ...s.filter, search: value } }));
+			setMain((s) => ({ ...s, filter: { ...s.filter, find: value } }));
 		}
 	}
 
-	function setSelectedCompany(company, index) {
-		setMain((s) => ({ ...s, selectedCompany: { details: company, id: company.id, index, name: company.name } }));
+	function setSelectedCompany(object, i) {
+		setMain((s) => ({
+			...s,
+			selectedCompany: {
+				details: object,
+				id: object.id,
+				index: i,
+				name: object.name,
+			},
+		}));
 	}
 
 	function setSelectedCompanysProjects() {
 		if (main.selectedCompany.id == 0) {
-			setMain((s) => ({ ...s, projects: apiData.allProjects.apiCopy }));
+			setMain((s) => ({ ...s, projects: api.projects.copy }));
 		} else {
-			const selectedCompanysProjects = apiData.allProjects.apiCopy.filter((f) => f.company_id == main.selectedCompany.id);
+			const selectedCompanysProjects = api.projects.copy.filter((f) => f.company_id == main.selectedCompany.id);
 
 			setMain((s) => ({ ...s, projects: selectedCompanysProjects }));
 		}
 	}
 
 	function setSort(column) {
-		setMain((s) => ({ ...s, sort: { column, isAscending: !main.sort.isAscending } }));
+		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
+	}
+
+	async function setSupportData() {
+		setMain((s) => ({ ...s, supportData: true }));
+
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetSupportData, MyGlobal.GetHeaders({ clientId: client.id }));
+
+			if (response.status === 200) {
+				const companies = response.data.companies;
+				const projects = response.data.projects;
+				const tasks = response.data.tasks;
+
+				const revisedProjects = [];
+
+				projects
+					.filter((f) => f.client_id == client.id)
+					.forEach((fe) => {
+						let companyName = "";
+						const company = companies.find((f) => f.id == fe.company_id);
+
+						if (typeof company === "object") {
+							companyName = company.name;
+						}
+
+						const invoiceFees = Number(fe.invoice_fees);
+						let invoiceFirmName = "";
+
+						const invoiceFirm = response.data.ownerFirms.find((f) => f.id == fe.invoice_firm_id);
+
+						if (typeof invoiceFirm === "object") {
+							invoiceFirmName = invoiceFirm.name;
+						}
+
+						let mainProjectName = "";
+						const mainProject = response.data.mainProjects.find((f) => f.id == fe.main_project_id);
+
+						if (typeof mainProject === "object") {
+							mainProjectName = mainProject.name;
+						}
+
+						let subProjectName = "";
+						const subProject = response.data.subProjects.find((f) => f.id == fe.sub_project_id);
+
+						if (typeof subProject === "object") {
+							subProjectName = subProject.name;
+						}
+
+						const amountReceived = response.data.cashFlows
+							.filter((f) => f.project_id == fe.id)
+							.reduce((pv, cv) => pv + Number(cv.amount_received), 0);
+
+						const reimburseVoucher = tasks.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.expense), 0);
+
+						const totalFees = invoiceFees + reimburseVoucher;
+
+						revisedProjects.push({
+							...fe,
+							amount_pending: totalFees - amountReceived,
+							amount_received: amountReceived,
+							company_name: companyName,
+							completed_on: dayjs(fe.completed_on).format("hh:mm:ss A - DD/MM/YYYY"),
+							invoice_fees: invoiceFees,
+							invoice_firm_name: invoiceFirmName,
+							invoice_firm_initials: MyGlobal.GetInitials(invoiceFirmName),
+							main_project_name: mainProjectName,
+							reimburse_voucher: reimburseVoucher,
+							sub_project_name: subProjectName,
+							teams: MyGlobal.GetFullDetailsFromIds(fe.teams),
+							total_fees: totalFees,
+						});
+					});
+
+				setApi((s) => ({
+					...s,
+					companies,
+					projects: {
+						copy: revisedProjects,
+						data: revisedProjects,
+					},
+					reference: response.data.reference.at(0),
+					tasks,
+				}));
+
+				setMain((s) => ({ ...s, projects: revisedProjects }));
+				setMounted((s) => ({ ...s, mainComponent: true }));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Single Client => Set Support Data");
+		} finally {
+			setMain((s) => ({ ...s, supportData: false }));
+		}
+	}
+
+	async function setUploadedFiles() {
+		setLoading((s) => ({ ...s, uploadedFiles: true }));
+
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetUploadedFiles, MyGlobal.GetHeaders({ clientId: client.id }));
+
+			if (response.status === 200) {
+				setApi((s) => ({ ...s, uploadedFiles: response.data }));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Single Client => Set Uploaded Files");
+		} finally {
+			setLoading((s) => ({ ...s, uploadedFiles: false }));
+		}
 	}
 
 	function toggleEditCompanyBox() {
-		setMounted((s) => ({ ...s, editCompany: !mounted.editCompany }));
+		setMounted((s) => ({ ...s, editCompany: !s.editCompany }));
 	}
 
 	function toggleFilesView() {
-		setMounted((s) => ({ ...s, files: !mounted.files }));
+		setMounted((s) => ({ ...s, files: !s.files }));
+	}
+
+	function toggleSingleProjectView(object) {
+		setMain((s) => ({ ...s, selectedProject: object }));
+		setMounted((s) => ({ ...s, singleProject: object ? true : false }));
 	}
 
 	// UI Components
@@ -446,22 +450,22 @@ export default function SingleClient({ selectedClient, unmount }) {
 		return (
 			<div className="flex w-full justify-between items-center">
 				<div className="flex w-4/5 space-x-2.5 justify-start items-center">
-					<span className="view-heading !text-lg">{selectedClient.name}</span>
+					<span className="view-heading !text-lg">{client.name}</span>
 					<span className={wrapper}>
 						<FontAwesomeIcon className="primary-text" icon={faIdBadge} />
-						<span>{selectedClient.id}</span>
+						<span>{client.id}</span>
 					</span>
-					<span className={wrapper} onClick={() => openWhatsApp(selectedClient.phone_number)}>
+					<span className={wrapper} onClick={() => openWhatsApp(client.phone_number)}>
 						<FontAwesomeIcon className="primary-text" icon={faWhatsapp} />
-						<span>{selectedClient.phone_number}</span>
+						<span>{client.phone_number}</span>
 					</span>
-					<span className={wrapper} onClick={() => openEmailAddress(selectedClient.email_address)}>
+					<span className={wrapper} onClick={() => openEmailAddress(client.email_address)}>
 						<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
-						<span>{selectedClient.email_address}</span>
+						<span>{client.email_address}</span>
 					</span>
 					<span className={wrapper}>
 						<FontAwesomeIcon className="primary-text" icon={faUserTag} />
-						<span>{apiData.reference.name}</span>
+						<span>{api.reference.name}</span>
 					</span>
 					<span className={wrapper} onClick={() => toggleFilesView()}>
 						{uploadedFilesIcon}
@@ -479,7 +483,7 @@ export default function SingleClient({ selectedClient, unmount }) {
 	}
 
 	function uiCompanies() {
-		const companies = apiData.companies.length ? [...apiData.companies] : [];
+		const companies = api.companies.length ? [...api.companies] : [];
 		companies.unshift({ id: 0, name: "All" });
 
 		return companies.map((m, i) => {
@@ -496,20 +500,36 @@ export default function SingleClient({ selectedClient, unmount }) {
 		});
 	}
 
+	function uiFind() {
+		return (
+			<TextInputNative
+				id="findBox"
+				icon={faSearch}
+				onChange={(e) => setInputs("find", e.target.value)}
+				onClearButtonClick={() => setInputs("find", "")}
+				placeholder="Find"
+				showClearButton={showClearSearchButton}
+				tabIndex={1}
+				value={main.filter.find}
+				width="w-44"
+			/>
+		);
+	}
+
 	function uiFooter() {
 		const totalValues = getTotalValues();
 
-		return Object.values(tableHeaders).map((label, index) => {
-			const showTotalValues = index > 5 && index < 11 ? "visible" : "invisible";
+		return Object.values(headers).map((m, i) => {
+			const showTotalValues = i > 5 && i < 11 ? "visible" : "invisible";
 			const wrapper = `w-[8.33%] space-x-1 text-center text-white font-medium-10 ${showTotalValues}`;
 
 			return (
-				<span className={wrapper} key={index}>
-					<span>{index == 6 && totalValues.invoiceFees}</span>
-					<span>{index == 7 && totalValues.reimbursementVoucherCharges}</span>
-					<span>{index == 8 && totalValues.amountReceived}</span>
-					<span>{index == 9 && totalValues.amountPending}</span>
-					<span>{index == 10 && totalValues.totalFees}</span>
+				<span className={wrapper} key={i}>
+					<span>{i == 6 && totalValues.invoiceFees}</span>
+					<span>{i == 7 && totalValues.reimburseVoucher}</span>
+					<span>{i == 8 && totalValues.amountReceived}</span>
+					<span>{i == 9 && totalValues.amountPending}</span>
+					<span>{i == 10 && totalValues.totalFees}</span>
 				</span>
 			);
 		});
@@ -540,10 +560,10 @@ export default function SingleClient({ selectedClient, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(tableHeaders)
+		return Object.values(headers)
 			.filter((f) => {
 				if (main.selectedCompany.id != 0) {
-					return f != tableHeaders.Company;
+					return f != headers.Company;
 				}
 				return f;
 			})
@@ -562,7 +582,7 @@ export default function SingleClient({ selectedClient, unmount }) {
 	}
 
 	function uiMain() {
-		if (!mounted.uploadedFiles) {
+		if (!mounted.singleProject && !mounted.uploadedFiles) {
 			const selectedCompanyNameStyle = main.selectedCompany.name != "All" ? "flex w-1/2 space-x-2.5 justify-start items-center visible" : "invisible";
 
 			const showEditCompanyIcon = allowEditingCompany && main.selectedCompany.name != "All" ? "cursor-pointer visible green-text" : "invisible";
@@ -584,7 +604,7 @@ export default function SingleClient({ selectedClient, unmount }) {
 								<div className="flex w-1/2 space-x-5 justify-end items-center">
 									{uiFromDate()}
 									{uiToDate()}
-									{uiSearch()}
+									{uiFind()}
 								</div>
 							</div>
 						</div>
@@ -595,8 +615,8 @@ export default function SingleClient({ selectedClient, unmount }) {
 								<Virtuoso
 									className="w-full h-full overflow-y-auto bottom-border contrast-background"
 									data={doSorting()}
-									itemContent={(index, project) => uiRows(project, index)}
-									totalCount={apiData.allProjects.api.length}
+									itemContent={(i, row) => uiRows(row, i)}
+									totalCount={api.projects.data.length}
 								/>
 							</div>
 						</div>
@@ -618,61 +638,46 @@ export default function SingleClient({ selectedClient, unmount }) {
 
 		return (
 			<div className="flex w-full justify-center items-center black-white-background bottom-border font-regular-11 black-text" key={i}>
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.id, main.filter.search) }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.id, main.filter.find) }} />
 
 				<Tippy allowHTML content={dayjs(object.started_on).format("hh:mm:ss A")}>
 					<span className={tooltipStyle}>{dayjs(object.started_on).format("DD/MM/YYYY")}</span>
 				</Tippy>
 
-				<Tippy allowHTML content={object.main_project}>
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.sub_project, main.filter.search) }} />
+				<Tippy allowHTML content={object.main_project_name}>
+					<span
+						className={`${tooltipStyle} cursor-pointer`}
+						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.sub_project_name, main.filter.find) }}
+						onClick={() => toggleSingleProjectView(object)}
+					/>
 				</Tippy>
 
 				{main.selectedCompany.id == 0 && (
-					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.company, main.filter.search) }} />
+					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.company_name, main.filter.find) }} />
 				)}
 
-				<Tippy allowHTML content={<TooltipList payload={object.teams_list} />}>
+				<Tippy allowHTML content={<TooltipList payload={object.teams_names} />}>
 					<span className={`${style} space-x-1 cursor-help primary-text`}>{object.teams.length}</span>
 				</Tippy>
 
-				<Tippy allowHTML content={<Tooltip text={object.invoice_firm} />}>
-					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.invoice_firm_initials, main.filter.search) }} />
+				<Tippy allowHTML content={<Tooltip text={object.invoice_firm_name} />}>
+					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.invoice_firm_initials, main.filter.find) }} />
 				</Tippy>
 
-				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.invoice_fees, main.filter.search) }} />
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.invoice_fees, main.filter.find) }} />
 
-				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.reimbursement_voucher, main.filter.search) }} />
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.reimburse_voucher, main.filter.find) }} />
 
-				<span
-					className={amountReceivedStyle}
-					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.amount_received, main.filter.search) }}
-				/>
+				<span className={amountReceivedStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.amount_received, main.filter.find) }} />
 
-				<span className={amountPendingStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.amount_pending, main.filter.search) }} />
+				<span className={amountPendingStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.amount_pending, main.filter.find) }} />
 
-				<span className={totalFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.total_fees, main.filter.search) }} />
+				<span className={totalFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.total_fees, main.filter.find) }} />
 
 				<Tippy allowHTML content={object.completed_on} disabled={object.status != "Completed"}>
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.status, main.filter.search) }} />
+					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.status, main.filter.find) }} />
 				</Tippy>
 			</div>
-		);
-	}
-
-	function uiSearch() {
-		return (
-			<TextInputNative
-				id="searchBox"
-				icon={faSearch}
-				onChange={(e) => setInputs("search", e.target.value)}
-				onClearButtonClick={() => setInputs("search", "")}
-				placeholder="Search"
-				showClearButton={showClearSearchButton}
-				tabIndex={1}
-				value={main.filter.search}
-				width="w-44"
-			/>
 		);
 	}
 
@@ -712,12 +717,12 @@ export default function SingleClient({ selectedClient, unmount }) {
 
 	function uiUploadedFiles() {
 		if (!loading.uploadedFiles) {
-			if (apiData.uploadedFiles.length) {
-				const label = apiData.uploadedFiles.length == 1 ? "File" : "Files";
+			if (api.uploadedFiles.length) {
+				const label = api.uploadedFiles.length == 1 ? "File" : "Files";
 
 				return (
 					<div>
-						{apiData.uploadedFiles.length} {label}
+						{api.uploadedFiles.length} {label}
 					</div>
 				);
 			} else {
@@ -728,7 +733,7 @@ export default function SingleClient({ selectedClient, unmount }) {
 
 	// Hooks
 	useEffect(() => {
-		getSupportData();
+		setSupportData();
 		//getUploadedFiles();
 	}, []);
 
@@ -744,7 +749,7 @@ export default function SingleClient({ selectedClient, unmount }) {
 
 	useEffect(() => {
 		doFiltering();
-	}, [main.filter.search]);
+	}, [main.filter.find]);
 
 	// Main UI
 	return (
@@ -752,11 +757,16 @@ export default function SingleClient({ selectedClient, unmount }) {
 			{uiMain()}
 
 			{mounted.editCompany && (
-				<EditCompany
-					mount={mounted.editCompany}
-					reloadProjects={getSupportData}
-					selectedCompany={main.selectedCompany}
-					unmount={toggleEditCompanyBox}
+				<EditCompany company={main.selectedCompany} mount={mounted.editCompany} reload={setSupportData} unmount={toggleEditCompanyBox} />
+			)}
+
+			{mounted.singleProject && (
+				<SingleProject
+					client={client}
+					project={main.selectedProject}
+					reload={setSupportData}
+					source="Single Client => Single Project"
+					unmount={toggleSingleProjectView}
 				/>
 			)}
 		</>

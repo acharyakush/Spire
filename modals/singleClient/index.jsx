@@ -14,20 +14,20 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { faAt, faFont, faHome, faIdBadge, faPhone, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export function EditCompany({ mount, reloadProjects, selectedCompany, unmount }) {
+export function EditCompany({ company, mount, reload, unmount }) {
 	// Business Logic
 	const [main, setMain] = useState({
 		address: "",
-		phone_number: "",
 		email_address: "",
 		gstin: "",
-		isBoxDragged: false,
+		isBoxMoved: false,
 		isLoading: false,
 		name: "",
 		pan: "",
+		phone_number: "",
 	});
 
-	const titleBarCursor = main.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
 	const disableEditButton = main.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
@@ -43,7 +43,7 @@ export function EditCompany({ mount, reloadProjects, selectedCompany, unmount })
 			phoneNumber: main.phone_number,
 			emailAddress: main.email_address,
 			gstin: main.gstin,
-			id: selectedCompany.id,
+			id: company.id,
 			name: main.name,
 			pan: main.pan,
 			type: "edit-company",
@@ -53,9 +53,10 @@ export function EditCompany({ mount, reloadProjects, selectedCompany, unmount })
 			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				reloadProjects();
+				reload();
 
 				MyGlobal.AddActivity(getActivityMessage(), MyConstants.Modules.Other.SingleClient);
+
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.CompanyEdited);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
@@ -72,9 +73,9 @@ export function EditCompany({ mount, reloadProjects, selectedCompany, unmount })
 		const changes = [];
 
 		["address", "phone_number", "email_address", "gstin", "name", "pan"].forEach((fe) => {
-			if (selectedCompany.details[fe] !== main[fe]) {
+			if (company.details[fe] !== main[fe]) {
 				changes.push({
-					old: selectedCompany.details[fe] ?? "blank",
+					old: company.details[fe] ?? "blank",
 					new: main[fe],
 					label: MyGlobal.Capitalize(fe.replace("_", " ")),
 				});
@@ -84,23 +85,23 @@ export function EditCompany({ mount, reloadProjects, selectedCompany, unmount })
 		const messages = changes.map((m) => `${m.label} from <b>${m.old}</b> to <b>${m.new}</b>`);
 		const finalMessage = messages.join(", ");
 
-		return `Edited ${finalMessage} of <b>${selectedCompany.id}</b> of <b>${selectedCompany.details.client_id}</b>.`;
+		return `Edited ${finalMessage} of <b>${company.id}</b> of <b>${company.details.client_id}</b>.`;
 	}
 
 	function prefillOldData() {
 		setMain((s) => ({
 			...s,
-			address: selectedCompany.details.address,
-			phone_number: selectedCompany.details.phone_number,
-			email_address: selectedCompany.details.email_address,
-			gstin: selectedCompany.details.gstin,
-			name: selectedCompany.details.name,
-			pan: selectedCompany.details.pan,
+			address: company.details.address,
+			phone_number: company.details.phone_number,
+			email_address: company.details.email_address,
+			gstin: company.details.gstin,
+			name: company.details.name,
+			pan: company.details.pan,
 		}));
 	}
 
 	function setBoxDrag() {
-		setMain((s) => ({ ...s, isBoxDragged: !main.isBoxDragged }));
+		setMain((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
 	}
 
 	function setInputs(key, value) {
@@ -127,7 +128,7 @@ export function EditCompany({ mount, reloadProjects, selectedCompany, unmount })
 					icon={faFont}
 					key={1}
 					label="Name"
-					onChange={(event) => setInputs("name", event.target.value)}
+					onChange={(e) => setInputs("name", e.target.value)}
 					onKeyPress={() => {}}
 					tabIndex={1}
 					value={main.name}
@@ -137,8 +138,8 @@ export function EditCompany({ mount, reloadProjects, selectedCompany, unmount })
 					icon={faPhone}
 					key={2}
 					label="Phone Number"
-					onChange={(event) => setInputs("phone_number", event.target.value)}
-					onKeyPress={(event) => !MyGlobal.HasNumbers(event.key) && event.preventDefault()}
+					onChange={(e) => setInputs("phone_number", e.target.value)}
+					onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 					tabIndex={2}
 					value={main.phone_number}
 					width="w-full"
@@ -147,7 +148,7 @@ export function EditCompany({ mount, reloadProjects, selectedCompany, unmount })
 					icon={faAt}
 					key={3}
 					label="Email Address"
-					onChange={(event) => setInputs("email_address", event.target.value)}
+					onChange={(e) => setInputs("email_address", e.target.value)}
 					onKeyPress={() => {}}
 					tabIndex={3}
 					value={main.email_address}
@@ -165,7 +166,7 @@ export function EditCompany({ mount, reloadProjects, selectedCompany, unmount })
 					key={5}
 					label="PAN"
 					maxLength="10"
-					onChange={(event) => setInputs("pan", event.target.value)}
+					onChange={(e) => setInputs("pan", e.target.value)}
 					onKeyPress={() => {}}
 					tabIndex={5}
 					value={main.pan}
@@ -176,7 +177,7 @@ export function EditCompany({ mount, reloadProjects, selectedCompany, unmount })
 					key={6}
 					label="GSTIN"
 					maxLength="15"
-					onChange={(event) => setInputs("gstin", event.target.value)}
+					onChange={(e) => setInputs("gstin", e.target.value)}
 					onKeyPress={() => {}}
 					tabIndex={6}
 					value={main.gstin}
@@ -186,7 +187,7 @@ export function EditCompany({ mount, reloadProjects, selectedCompany, unmount })
 					icon={faHome}
 					key={4}
 					label="Address"
-					onChange={(event) => setInputs("address", event.target.value)}
+					onChange={(e) => setInputs("address", e.target.value)}
 					onKeyDown={() => {}}
 					rows={2}
 					tabIndex={4}

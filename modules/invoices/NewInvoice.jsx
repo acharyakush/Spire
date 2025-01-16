@@ -40,6 +40,12 @@ export default function NewInvoice({ project, reload, unmount }) {
 		companies: [],
 	});
 
+	const [loading, setLoading] = useState({
+		addInvoice: false,
+		downloadPdf: false,
+		supportData: false,
+	});
+
 	const [main, setMain] = useState({
 		bank: {
 			accountNumber: "",
@@ -55,12 +61,17 @@ export default function NewInvoice({ project, reload, unmount }) {
 		invoiceDueDate,
 		invoiceId: 0,
 		invoiceNumber: 0,
-		ownerFirm: { address: "", id: "", name: "", termsConditions: "" },
+		ownersFirm: {
+			address: "",
+			id: "",
+			name: "",
+			termsConditions: "",
+		},
 		particulars: [
 			{
 				amount: project.quote,
-				particulars: project.sub_project,
-				professionalService: project.main_project,
+				particulars: project.sub_project_name,
+				professionalService: project.main_project_name,
 				rowId: 0,
 			},
 		],
@@ -70,12 +81,6 @@ export default function NewInvoice({ project, reload, unmount }) {
 	const [mounted, setMounted] = useState({
 		mainComponent: false,
 		preview: false,
-	});
-
-	const [loading, setLoading] = useState({
-		addInvoice: false,
-		downloadPdf: false,
-		supportData: false,
 	});
 
 	const quote = project ? Number(project.quote) : 0;
@@ -92,17 +97,22 @@ export default function NewInvoice({ project, reload, unmount }) {
 		let greatestId = copy.sort((a, b) => b.rowId - a.rowId).at(0).rowId;
 		greatestId++;
 
-		copy.push({ amount: 0, particulars: "", professionalService: project.main_project, rowId: greatestId });
+		copy.push({
+			amount: 0,
+			particulars: "",
+			professionalService: project.main_project_name,
+			rowId: greatestId,
+		});
 
 		setMain((s) => ({ ...s, particulars: copy }));
 	}
 
-	function deleteRow(record) {
+	function deleteRow(object) {
 		const copy = [...main.particulars];
-		const doesExist = copy.filter((f) => f.rowId == record.rowId);
+		const doesExist = copy.filter((f) => f.rowId == object.rowId);
 
 		if (doesExist.length) {
-			const revised = copy.filter((f) => f.rowId != record.rowId);
+			const revised = copy.filter((f) => f.rowId != object.rowId);
 			setMain((s) => ({ ...s, particulars: revised }));
 		}
 	}
@@ -123,53 +133,6 @@ export default function NewInvoice({ project, reload, unmount }) {
 		}
 
 		return object;
-	}
-
-	async function getSupportData() {
-		try {
-			setLoading((s) => ({ ...s, supportData: true }));
-
-			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetNewInvoiceSupportData, MyGlobal.GetHeaders());
-
-			if (response.status === 200) {
-				const invoiceId = MyGlobal.MakeNewInvoiceId(response.data.invoices);
-
-				const ownerFirm = response.data.ownerFirms.find((f) => f.id == project.invoice_firm_id);
-
-				const ownerFirmsBank = response.data.ownerFirmsBanks.find((f) => f.owner_firm_id == ownerFirm.id);
-
-				const getAmountReceived = response.data.cashFlows.filter((f) => {
-					return f.client_id == project.client_id && f.company_id == project.company_id && f.project_id == project.id;
-				});
-
-				const totalAmountReceived = getAmountReceived.reduce((pv, cv) => {
-					return pv + Number(cv.amount_received);
-				}, 0);
-
-				setApi({ clients: response.data.clients, companies: response.data.companies });
-
-				setMain((s) => ({
-					...s,
-					bank: {
-						...s.bank,
-						id: ownerFirmsBank.id,
-						name: ownerFirmsBank.name,
-					},
-					invoiceId: invoiceId,
-					ownerFirm: {
-						address: ownerFirm.address,
-						id: ownerFirm.id,
-						name: ownerFirm.name,
-						termsConditions: ownerFirm.terms_conditions,
-					},
-					totalAmountReceived,
-				}));
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewInvoice);
-		} finally {
-			setLoading((s) => ({ ...s, supportData: false }));
-		}
 	}
 
 	function setBank(object) {
@@ -197,14 +160,81 @@ export default function NewInvoice({ project, reload, unmount }) {
 
 	function setParticulars(key, rowId, value) {
 		const copy = [...main.particulars];
-		const object = copy.filter((f) => f.rowId == rowId).at(0);
+		const object = copy.filter((f) => f.rowId == rowId);
 
-		object[key] = key == "amount" ? Number(value) : value;
+		if (object.length) {
+			const _object = copy.at(0);
+			_object[key] = key == "amount" ? Number(value) : value;
 
-		const revised = copy.filter((f) => f.rowId != rowId);
-		revised.push({ ...object });
+			const revised = copy.filter((f) => f.rowId != rowId);
+			revised.push({ ..._object });
 
-		setMain((s) => ({ ...s, particulars: revised }));
+			setMain((s) => ({ ...s, particulars: revised }));
+		}
+	}
+
+	async function setSupportData() {
+		try {
+			setLoading((s) => ({ ...s, supportData: true }));
+
+			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetNewInvoiceSupportData, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				const ownersFirm = {
+					address: "",
+					id: "",
+					name: "",
+					termsConditions: "",
+				};
+
+				const ownersFirmsBank = { id: "", name: "" };
+
+				const getOwnersFirm = response.data.ownerFirms.find((f) => f.id == project.invoice_firm_id);
+
+				if (typeof getOwnersFirm === "object") {
+					ownersFirm.address = getOwnersFirm.address;
+					ownersFirm.id = getOwnersFirm.id;
+					ownersFirm.name = getOwnersFirm.name;
+					ownersFirm.termsConditions = getOwnersFirm.termsConditions;
+				}
+
+				const getOwnersFirmsBank = response.data.ownerFirmsBanks.find((f) => f.owner_firm_id == ownersFirm.id);
+
+				if (typeof getOwnersFirmsBank === "object") {
+					ownersFirmsBank.id = getOwnersFirmsBank.id;
+					ownersFirmsBank.name = getOwnersFirmsBank.name;
+				}
+
+				const getAmountReceived = response.data.cashFlows.filter((f) => {
+					return f.client_id == project.client_id && f.company_id == project.company_id && f.project_id == project.id;
+				});
+
+				const totalAmountReceived = getAmountReceived.reduce((pv, cv) => {
+					return pv + Number(cv.amount_received);
+				}, 0);
+
+				setApi({
+					clients: response.data.clients,
+					companies: response.data.companies,
+				});
+
+				setMain((s) => ({
+					...s,
+					bank: {
+						...s.bank,
+						id: ownersFirmsBank.id,
+						name: ownersFirmsBank.name,
+					},
+					invoiceId: MyGlobal.MakeNewInvoiceId(response.data.invoices),
+					ownersFirm,
+					totalAmountReceived,
+				}));
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewInvoice);
+		} finally {
+			setLoading((s) => ({ ...s, supportData: false }));
+		}
 	}
 
 	function togglePreview(value) {
@@ -212,7 +242,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 			addInvoice();
 		}
 
-		setMounted((s) => ({ ...s, preview: !mounted.preview }));
+		setMounted((s) => ({ ...s, preview: !s.preview }));
 	}
 
 	// UI Components
@@ -226,7 +256,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				comparingValue2={main.bank.name}
 				displayValue="name"
 				filteredData={main.bank.list}
-				hasDataObject={true}
+				hasDataObject
 				icon={faBank}
 				isReadOnly={false}
 				label="Bank"
@@ -311,7 +341,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 		);
 	}
 
-	function uiInputParticulars(record, rowId) {
+	function uiInputParticulars(object, rowId) {
 		return (
 			<TextInput
 				icon={faTasks}
@@ -320,13 +350,13 @@ export default function NewInvoice({ project, reload, unmount }) {
 				onChange={(e) => setParticulars("particulars", rowId, e.target.value)}
 				onKeyPress={() => {}}
 				tabIndex={`${rowId}1`}
-				value={record.particulars}
+				value={object.particulars}
 				width="w-full"
 			/>
 		);
 	}
 
-	function uiInputAmount(record, rowId) {
+	function uiInputAmount(object, rowId) {
 		return (
 			<TextInput
 				icon={faIndianRupee}
@@ -335,7 +365,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				onChange={(e) => setParticulars("amount", rowId, e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex={`${rowId}2`}
-				value={record.amount}
+				value={object.amount}
 				width="w-full"
 			/>
 		);
@@ -375,7 +405,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 	}
 
 	function uiInputTermsConditions() {
-		const termsConditions = main.ownerFirm.termsConditions.replace(/\\n/g, "\n");
+		const termsConditions = main.ownersFirm.termsConditions.replace(/\\n/g, "\n");
 		const termsConditionsLength = termsConditions.split("\n").length;
 
 		return (
@@ -402,7 +432,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				<span className="w-full text-left font-medium-12 logo-green-text">Bank Details</span>
 				<div className="flex w-full justify-between items-center text-black">
 					<span className={label}>Account Name</span>
-					<span className={value}>{main.ownerFirm.name}</span>
+					<span className={value}>{main.ownersFirm.name}</span>
 				</div>
 				<div className="flex w-full justify-between items-center">
 					<span className={label}>Account Number</span>
@@ -425,8 +455,13 @@ export default function NewInvoice({ project, reload, unmount }) {
 	}
 
 	function uiBilledBy() {
-		const { address, name } = main.ownerFirm;
-		const _address = address.length > 95 ? `${address.substring(0, 95)}...` : address;
+		const { address, name } = main.ownersFirm;
+
+		let _address = "";
+
+		if (address) {
+			_address = address.length > 95 ? `${address.substring(0, 95)}...` : address;
+		}
 
 		return (
 			<div className="flex flex-col w-full h-[135px] p-3 justify-start items-center rounded logo-green-border logo-green-background-transparent-01 text-black">
@@ -473,7 +508,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				<div className="flex w-full justify-start items-center">
 					<span className="w-2/5 font-regular-10 gray-text">Invoice</span>
 					<div className="flex w-3/5 space-x-1 font-medium-10 black-text">
-						<span>{MyGlobal.GetInitials(main.ownerFirm.name)}</span>
+						<span>{MyGlobal.GetInitials(main.ownersFirm.name)}</span>
 						<span>/</span>
 						<span>{main.financialYear}</span>
 						<span>/</span>
@@ -562,9 +597,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 	}
 
 	function uiTermsAndConditions() {
-		const termsConditions = main.ownerFirm.termsConditions
-			? main.ownerFirm.termsConditions.split("nnn.").map((entry, index) => <li key={index}>{entry}</li>)
-			: "";
+		const termsConditions = main.ownersFirm.termsConditions ? main.ownersFirm.termsConditions.split("nnn.").map((m, i) => <li key={i}>{m}</li>) : "";
 
 		return (
 			<div className="flex flex-col w-full space-y-px justify-start items-center">
@@ -600,7 +633,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 
 	// Hooks
 	useEffect(() => {
-		getSupportData();
+		setSupportData();
 	}, []);
 
 	// Main UI

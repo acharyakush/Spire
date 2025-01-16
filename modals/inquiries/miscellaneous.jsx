@@ -252,7 +252,7 @@ export function UpdateStatus({ inquiry, mount, reload, unmount }) {
 								icon={faNoteSticky}
 								key={1}
 								label="Reason"
-								onChange={(event) => setReason(event.target.value)}
+								onChange={(e) => setReason(e.target.value)}
 								onKeyDown={() => {}}
 								rows={3}
 								tabIndex={1}

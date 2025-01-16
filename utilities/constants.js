@@ -43,6 +43,7 @@ const MyConstants = Object.freeze({
 		Setter: "api/setter",
 		SingleProject: Object.freeze({
 			GetSupportData: "api/singleProject/getSupportData",
+			MapAffiliate: "api/singleProject/mapAffiliates",
 		}),
 		Tasks: Object.freeze({
 			AddTask: "api/tasks/addTask",

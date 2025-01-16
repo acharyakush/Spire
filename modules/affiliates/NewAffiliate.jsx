@@ -7,13 +7,13 @@ import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Spinner } from "@/components/Elements";
+import { Spinner, SpinnerBig } from "@/components/Elements";
 import { EmailAddress, TextInput } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGooglePay } from "@fortawesome/free-brands-svg-icons";
 import { faChevronLeft, faCircleMinus, faPhone, faPlusCircle, faTriangleExclamation, faUser } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewAffiliate({ reloadAffiliates, unmount }) {
+export default function NewAffiliate({ reload, unmount }) {
 	// Business Logic
 
 	const [api, setApi] = useState({ allAffiliates: [] });
@@ -49,9 +49,10 @@ export default function NewAffiliate({ reloadAffiliates, unmount }) {
 			);
 
 			if (response.status === 200) {
-				reloadAffiliates();
+				reload();
 
 				MyGlobal.AddActivity("Added affiliate(s).", MyConstants.Modules.Base.Affiliates);
+
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.AffiliateAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
@@ -59,7 +60,7 @@ export default function NewAffiliate({ reloadAffiliates, unmount }) {
 
 			unmount();
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "Add Affiliates");
+			MyGlobal.HandleErrors(error, "New Affiliate => Add Affiliates");
 		} finally {
 			setMain((s) => ({ ...s, isLoading: false, error: "" }));
 		}
@@ -85,7 +86,7 @@ export default function NewAffiliate({ reloadAffiliates, unmount }) {
 		}
 	}
 
-	async function getAllAffiliates() {
+	async function setAllAffiliates() {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
@@ -106,20 +107,24 @@ export default function NewAffiliate({ reloadAffiliates, unmount }) {
 		let error = "";
 
 		if (key == "name") {
-			const doesExist = api.allAffiliates.find((s) => String(s.name).toLowerCase() == String(value).toLowerCase());
+			const affiliate = api.allAffiliates.find((f) => String(f.name).toLowerCase() == String(value).toLowerCase());
 
-			error = typeof doesExist === "object" ? `This affiliate already exists.\n<b>${doesExist.id} - ${doesExist.name}</b>` : "";
+			if (typeof affiliate === "object") {
+				error = `This affiliate already exists.\n<b>${affiliate.id} - ${affiliate.name}</b>`;
+			}
 		}
 
 		const copy = [...main.group];
 		const object = copy.find((f) => f.rowId == rowId);
 
-		object[key] = key == "name" ? MyGlobal.Capitalize(value) : value;
+		if (typeof object === "object") {
+			object[key] = key == "name" ? MyGlobal.Capitalize(value) : value;
 
-		const revised = copy.filter((f) => f.rowId != rowId);
-		revised.push({ ...object });
+			const revised = copy.filter((f) => f.rowId != rowId);
+			revised.push({ ...object });
 
-		setMain((s) => ({ ...s, error, group: revised }));
+			setMain((s) => ({ ...s, error, group: revised }));
+		}
 	}
 
 	// UI Components
@@ -224,43 +229,47 @@ export default function NewAffiliate({ reloadAffiliates, unmount }) {
 
 	// Hooks
 	useEffect(() => {
-		getAllAffiliates();
+		setAllAffiliates();
 	}, []);
 
-	if (!main.hasMounted) {
-		return;
-	}
-
-	return (
-		<div className="flex flex-col w-full h-full justify-center items-center">
-			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
-				<div className="flex w-full space-x-2.5 justify-start items-center">
-					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
-					<div className="flex w-full justify-start items-center">
-						<span className="view-heading">New Affiliate</span>
-					</div>
-				</div>
+	if (main.isLoading) {
+		return (
+			<div className="flex w-full h-full justify-center items-center font-regular-12 gray-text contrast-background full-border">
+				<SpinnerBig />
 			</div>
-			<div className="flex w-full h-full justify-center items-center contrast-background">
-				<div className="flex flex-col w-4/5 h-full space-y-3 justify-start items-center">
-					<div className="flex flex-col w-full h-full p-4 space-y-2.5 overflow-y-auto">
-						{uiRows()}
-						<div className={errorTextStyle}>
-							<FontAwesomeIcon icon={faTriangleExclamation} size="2x" />
-							<span dangerouslySetInnerHTML={{ __html: main.error }} />
+		);
+	} else {
+		return (
+			<div className="flex flex-col w-full h-full justify-center items-center">
+				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
+					<div className="flex w-full space-x-2.5 justify-start items-center">
+						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
+						<div className="flex w-full justify-start items-center">
+							<span className="view-heading">New Affiliate</span>
 						</div>
 					</div>
-
-					<span className="py-2 italic font-regular-11 gray-text">
-						*** Fill up all the rows and fields. Partially filled rows will not be saved. ***
-					</span>
 				</div>
+				<div className="flex w-full h-full justify-center items-center contrast-background">
+					<div className="flex flex-col w-4/5 h-full space-y-3 justify-start items-center">
+						<div className="flex flex-col w-full h-full p-4 space-y-2.5 overflow-y-auto">
+							{uiRows()}
+							<div className={errorTextStyle}>
+								<FontAwesomeIcon icon={faTriangleExclamation} size="2x" />
+								<span dangerouslySetInnerHTML={{ __html: main.error }} />
+							</div>
+						</div>
+
+						<span className="py-2 italic font-regular-11 gray-text">
+							*** Fill up all the rows and fields. Partially filled rows will not be saved. ***
+						</span>
+					</div>
+				</div>
+				<footer className="w-full dialog-footer">
+					<button className={addButtonStyle} onClick={() => addToDatabase()}>
+						{uiAdd()}
+					</button>
+				</footer>
 			</div>
-			<footer className="w-full dialog-footer">
-				<button className={addButtonStyle} onClick={() => addToDatabase()}>
-					{uiAdd()}
-				</button>
-			</footer>
-		</div>
-	);
+		);
+	}
 }

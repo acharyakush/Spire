@@ -1,8 +1,44 @@
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap");
+@font-face {
+	font-family: "Light";
+	src: url("/fonts/noto_sans_semi_condensed/light.ttf") format("truetype");
+	font-weight: 300;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Regular";
+	src: url("/fonts/noto_sans_semi_condensed/regular.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Medium";
+	src: url("/fonts/noto_sans_semi_condensed/medium.ttf") format("truetype");
+	font-weight: 500;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "SemiBold";
+	src: url("/fonts/noto_sans_semi_condensed/semi_bold.ttf") format("truetype");
+	font-weight: 600;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Bold";
+	src: url("/fonts/noto-sans-semi-condensed/Bold.ttf") format("truetype");
+	font-weight: 700;
+	font-style: normal;
+}
 
 :root {
-	--font-family: "Noto Sans", Arial, sans-serif;
-	--header-font: "Noto Sans", Arial, sans-serif;
+	--bold: "Bold", Arial, sans-serif;
+	--light: "Light", Arial, sans-serif;
+	--medium: "Medium", Arial, sans-serif;
+	--regular: "Regular", Arial, sans-serif;
+	--semibold: "SemiBold", Arial, sans-serif;
 }
 
 @tailwind base;
@@ -123,6 +159,7 @@ html {
 /****Backgrounds****/
 /*******************/
 /*******************/
+
 .contrast-background {
 	@apply bg-[var(--contrast)];
 }
@@ -331,147 +368,147 @@ html {
 
 .font-bold-10 {
 	@apply text-[10pt] font-bold;
-	font-family: var(--font-family);
+	font-family: var(--bold);
 }
 
 .font-bold-12 {
 	@apply text-base font-bold;
-	font-family: var(--font-family);
+	font-family: var(--bold);
 }
 
 .font-bold-14 {
 	@apply text-[14pt] font-bold;
-	font-family: var(--font-family);
+	font-family: var(--bold);
 }
 
 .font-bold-16 {
 	@apply text-[16pt] font-bold;
-	font-family: var(--font-family);
+	font-family: var(--bold);
 }
 
 .font-bold-20 {
 	@apply text-[20pt] font-bold;
-	font-family: var(--font-family);
+	font-family: var(--bold);
 }
 
 .font-bold-26 {
 	@apply text-[26pt] font-bold;
-	font-family: var(--font-family);
+	font-family: var(--bold);
 }
 
 .font-medium-10 {
 	@apply text-[10pt] font-medium;
-	font-family: var(--font-family);
+	font-family: var(--medium);
 }
 
 .font-medium-11 {
 	@apply text-[11pt] font-medium;
-	font-family: var(--font-family);
+	font-family: var(--medium);
 }
 
 .font-medium-12 {
 	@apply text-base font-medium;
-	font-family: var(--font-family);
+	font-family: var(--medium);
 }
 
 .font-medium-13 {
 	@apply text-[13pt] font-medium;
-	font-family: var(--font-family);
+	font-family: var(--medium);
 }
 
 .font-medium-14 {
 	@apply text-[14pt] font-medium;
-	font-family: var(--font-family);
+	font-family: var(--medium);
 }
 
 .font-medium-16 {
 	@apply text-[16pt] font-medium;
-	font-family: var(--font-family);
+	font-family: var(--medium);
 }
 
 .font-medium-18 {
 	@apply text-[18pt] font-medium;
-	font-family: var(--font-family);
+	font-family: var(--medium);
 }
 
 .font-medium-26 {
 	@apply text-[26pt] font-medium;
-	font-family: var(--font-family);
+	font-family: var(--medium);
 }
 
 .font-medium-8 {
 	@apply text-[8pt] font-medium;
-	font-family: var(--font-family);
+	font-family: var(--medium);
 }
 
 .font-medium-9 {
 	@apply text-[9pt] font-medium;
-	font-family: var(--font-family);
+	font-family: var(--medium);
 }
 
 .font-regular-7 {
 	@apply text-[7pt] font-normal;
-	font-family: var(--font-family);
+	font-family: var(--medium);
 }
 
 .font-regular-8 {
 	@apply text-[8pt] font-normal;
-	font-family: var(--font-family);
+	font-family: var(--regular);
 }
 
 .font-regular-10 {
 	@apply text-[10pt] font-normal;
-	font-family: var(--font-family);
+	font-family: var(--regular);
 }
 
 .font-regular-11 {
 	@apply text-[11pt] font-normal;
-	font-family: var(--font-family);
+	font-family: var(--regular);
 }
 
 .font-regular-12 {
 	@apply text-base font-normal;
-	font-family: var(--font-family);
+	font-family: var(--regular);
 }
 
 .font-regular-14 {
 	@apply text-[14pt] font-normal;
-	font-family: var(--font-family);
+	font-family: var(--regular);
 }
 
 .font-regular-16 {
 	@apply text-[16pt] font-normal;
-	font-family: var(--font-family);
+	font-family: var(--regular);
 }
 
 .font-regular-8 {
 	@apply text-[8pt] font-normal;
-	font-family: var(--font-family);
+	font-family: var(--regular);
 }
 
 .font-regular-9 {
 	@apply text-[9pt] font-normal;
-	font-family: var(--font-family);
+	font-family: var(--regular);
 }
 
 .font-semibold-10 {
 	@apply text-[10pt] font-semibold;
-	font-family: var(--font-family);
+	font-family: var(--semibold);
 }
 
 .font-semibold-12 {
 	@apply text-base font-semibold;
-	font-family: var(--font-family);
+	font-family: var(--semibold);
 }
 
 .font-semibold-14 {
 	@apply text-[14pt] font-semibold;
-	font-family: var(--font-family);
+	font-family: var(--semibold);
 }
 
 .font-semibold-16 {
 	@apply text-[16pt] font-semibold;
-	font-family: var(--font-family);
+	font-family: var(--semibold);
 }
 
 /******************/
@@ -489,8 +526,8 @@ html {
 }
 
 .gray-tag-transparent-01 {
-	@apply bg-[var(--gray-transparent-01)] border border-[var(--gray)] font-normal px-1.5 py-0.5 rounded text-[var(--gray)];
-	font-family: var(--font-family);
+	@apply bg-[var(--gray-transparent-01)] border border-[var(--gray)] px-1.5 py-0.5 rounded text-[var(--gray)];
+	font-family: var(--regular);
 }
 
 .green-tag {
@@ -510,8 +547,8 @@ html {
 }
 
 .primary-tag-transparent-01 {
-	@apply bg-[var(--primary-transparent-01)] border border-[var(--primary)] font-normal p-1 rounded text-xs text-[var(--primary)];
-	font-family: var(--font-family);
+	@apply bg-[var(--primary-transparent-01)] border border-[var(--primary)] p-1 rounded text-xs text-[var(--primary)];
+	font-family: var(--regular);
 }
 
 .red-tag {
@@ -520,7 +557,7 @@ html {
 
 .red-tag-transparent-01 {
 	@apply bg-[var(--red-transparent-01)] border border-[var(--red)] p-1 rounded text-xs text-[var(--red)];
-	font-family: var(--font-family);
+	font-family: var(--regular);
 }
 
 .red-tag-transparent-02 {
@@ -534,18 +571,18 @@ html {
 /*******************/
 
 .primary-button-condensed {
-	@apply bg-[var(--primary)] border border-[var(--primary)] flex font-normal h-7 justify-center items-center outline-none px-4 relative rounded-full select-none space-x-2.5 text-base text-white;
-	font-family: var(--font-family);
+	@apply bg-[var(--primary)] border border-[var(--primary)] flex h-7 justify-center items-center outline-none px-4 relative rounded-full select-none space-x-2.5 text-base text-white;
+	font-family: var(--regular);
 }
 
 .primary-button-transparent-background {
-	@apply bg-[var(--primary-transparent-01)] border flex font-medium primary-border h-7 items-center justify-center outline-none px-2 rounded-full select-none space-x-2.5 text-sm text-[var(--primary)];
-	font-family: var(--font-family);
+	@apply bg-[var(--primary-transparent-01)] border flex primary-border h-7 items-center justify-center outline-none px-2 rounded-full select-none space-x-2.5 text-sm text-[var(--primary)];
+	font-family: var(--medium);
 }
 
 .primary-button-wide {
-	@apply bg-[var(--primary)] block border border-[var(--primary)] font-normal h-9 outline-none relative rounded-full select-none text-base text-white w-full;
-	font-family: var(--font-family);
+	@apply bg-[var(--primary)] block border border-[var(--primary)] h-9 outline-none relative rounded-full select-none text-base text-white w-full;
+	font-family: var(--regular);
 }
 
 .primary-button-condensed:active,
@@ -570,8 +607,8 @@ html {
 
 .dashboard-heading,
 .view-heading {
-	@apply font-semibold text-[var(--primary)] text-[16pt];
-	font-family: var(--header-font);
+	@apply text-[var(--primary)] text-[16pt];
+	font-family: var(--semibold);
 }
 
 .dialog-footer {
@@ -579,8 +616,8 @@ html {
 }
 
 .dialog-header {
-	@apply bg-[var(--primary)] bottom-border flex font-medium items-center justify-between px-5 py-1.5 text-[16pt] text-white;
-	font-family: var(--header-font);
+	@apply bg-[var(--primary)] bottom-border flex items-center justify-between px-5 py-1.5 text-[16pt] text-white;
+	font-family: var(--medium);
 }
 
 .highlight-characters {
@@ -601,13 +638,13 @@ html {
 }
 
 .inputs {
-	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 text-[11pt] h-9 black-text w-full;
-	font-family: var(--font-family);
+	@apply bg-transparent flex items-center justify-center outline-none px-2.5 text-[11pt] h-9 black-text w-full;
+	font-family: var(--regular);
 }
 
 .login-heading {
-	@apply font-semibold text-[var(--primary)] text-[28pt];
-	font-family: var(--header-font);
+	@apply text-[var(--primary)] text-[28pt];
+	font-family: var(--semibold);
 }
 
 .login-spinner:before {
@@ -679,8 +716,8 @@ html {
 }
 
 .textarea-inputs {
-	@apply bg-transparent flex font-normal items-center justify-center outline-none px-2.5 resize-none text-[11pt] black-text w-full;
-	font-family: var(--font-family);
+	@apply bg-transparent flex items-center justify-center outline-none px-2.5 resize-none text-[11pt] black-text w-full;
+	font-family: var(--regular);
 }
 
 /*****************/
@@ -690,8 +727,8 @@ html {
 /*****************/
 
 .react-datepicker {
-	@apply !text-[9pt] !font-normal;
-	font-family: var(--font-family) !important;
+	@apply !text-[9pt];
+	font-family: var(--regular) !important;
 }
 
 .react-datepicker-popper {
@@ -703,7 +740,7 @@ html {
 }
 
 .Toastify__toast-body {
-	font-family: var(--font-family);
+	font-family: var(--medium);
 	font-size: medium;
 	white-space: pre-line;
 }

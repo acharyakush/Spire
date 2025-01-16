@@ -100,7 +100,7 @@ export default async function handler(req, res) {
 		const noteInsertResult = await query("INSERT INTO notes (inquiry_id, entry_by_id, content, source) VALUES (?, ?, ?, ?)", [
 			inquiryResponse.new_id,
 			userId,
-			note,
+			MyGlobal.EscapeString(note),
 			MyConstants.Modules.Base.Inquiries,
 		]);
 

@@ -84,7 +84,7 @@ export default async function handler(req, res) {
 		const inquiryParameters = [MyConstants.Statuses.Inquiries.Confirmed, inquiryId];
 
 		const noteQuery = `INSERT INTO notes (inquiry_id, project_id, original_entry_by_id, entry_by_id, content, source) VALUES (?, ?, ?, ?, ?, ?)`;
-		const noteParameters = [inquiryId, projectResponse.new_id, userId, userId, note, MyConstants.Modules.Base.Projects];
+		const noteParameters = [inquiryId, projectResponse.new_id, userId, userId, MyGlobal.EscapeString(note), MyConstants.Modules.Base.Projects];
 
 		const [clientRows, inquiryRows, noteRows] = await Promise.all([
 			query(clientQuery, clientParameters),
