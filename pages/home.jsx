@@ -237,9 +237,11 @@ export default function Home() {
 			.filter((f) => f.sequence <= 8)
 			.map((m, i) => {
 				const aesthetics =
-					i == main.selectedModule.sequence ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
+					i == main.selectedModule.sequence
+						? "rounded-tl-md rounded-tr-md primary-border-colour primary-background-transparent-01 primary-text"
+						: "border-transparent gray-text";
 
-				const wrapper = `p-2 border-b-4 whitespace-nowrap font-regular-12 ${aesthetics}`;
+				const wrapper = `p-2 border-b-4 whitespace-nowrap font-regular-11 ${aesthetics}`;
 
 				return (
 					<button className={wrapper} key={i} onClick={() => setModule(m, m.sequence)}>
@@ -252,7 +254,7 @@ export default function Home() {
 	function uiOtherModules() {
 		const aesthetics =
 			main.selectedModule.sequence == -1 ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
-		const wrapper = `p-2 border-b-4 whitespace-nowrap font-regular-12 ${aesthetics}`;
+		const wrapper = `p-2 border-b-4 whitespace-nowrap font-regular-11 ${aesthetics}`;
 
 		return (
 			<Menu as="div" className="relative z-50 inline-block text-left">
@@ -274,7 +276,11 @@ export default function Home() {
 				const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "gray-text";
 
 				return (
-					<MenuItem as="div" className={`p-2 space-x-2.5 cursor-pointer border-y ${aesthetics} hovered-rows`} key={i} onClick={() => setModule(m, 0)}>
+					<MenuItem
+						as="div"
+						className={`p-2 space-x-2.5 cursor-pointer border-y ${aesthetics} font-regular-11 hovered-rows`}
+						key={i}
+						onClick={() => setModule(m, 0)}>
 						{isSelected && <FontAwesomeIcon icon={faCheck} />}
 						<span>{m.name}</span>
 					</MenuItem>
@@ -370,13 +376,13 @@ export default function Home() {
 						<span>{main.user.fullName}</span>
 						<span className="font-regular-8 gray-text">{main.user.designation}</span>
 					</div>
-					<MenuItem
+					{/* <MenuItem
 						as="div"
 						className="px-3 py-2 space-x-3 cursor-pointer border-y font-regular-10 black-text hovered-rows"
 						onClick={() => changeMode()}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons()} />
 						<span>Mode</span>
-					</MenuItem>
+					</MenuItem> */}
 					{uiUserMenuList()}
 				</MenuItems>
 			</Menu>

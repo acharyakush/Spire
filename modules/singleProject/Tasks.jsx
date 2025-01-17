@@ -261,7 +261,7 @@ export default function Tasks({ project }) {
 
 	function uiNoDataFound() {
 		return (
-			<div className="flex flex-col w-[85%] h-full space-y-2 justify-center items-center rounded shadow gray-text contrast-background">
+			<div className="flex flex-col w-[85%] h-full space-y-2 justify-center items-center rounded gray-text contrast-background">
 				<FontAwesomeIcon className="text-6xl" icon={faCircleExclamation} />
 				<span>No tasks alloted</span>
 				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddTaskBox()}>

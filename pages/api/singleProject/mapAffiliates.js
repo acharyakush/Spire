@@ -26,11 +26,11 @@ export default async function handler(req, res) {
 		for (const a of affiliates) {
 			totalFees += a.fees;
 
-			const response = await query("UPDATE affiliates SET total_fees=? WHERE affiliate_id=? AND client_id=? AND project_id=?", [
-				a.fees,
+			const response = await query("INSERT INTO affiliates_projects (affiliate_id, client_id, project_id, total_fees) VALUES (?, ?, ?, ?)", [
 				a.id,
 				project.client_id,
 				project.id,
+				a.fees,
 			]);
 
 			if (response.affectedRows > 0) {

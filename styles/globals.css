@@ -1,34 +1,34 @@
 @font-face {
 	font-family: "Light";
-	src: url("/fonts/noto_sans_semi_condensed/light.ttf") format("truetype");
+	src: url("/fonts/inter/light.ttf") format("truetype");
 	font-weight: 300;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "Regular";
-	src: url("/fonts/noto_sans_semi_condensed/regular.ttf") format("truetype");
+	src: url("/fonts/inter/regular.ttf") format("truetype");
 	font-weight: 400;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "Medium";
-	src: url("/fonts/noto_sans_semi_condensed/medium.ttf") format("truetype");
+	src: url("/fonts/inter/medium.ttf") format("truetype");
 	font-weight: 500;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "SemiBold";
-	src: url("/fonts/noto_sans_semi_condensed/semi_bold.ttf") format("truetype");
+	src: url("/fonts/inter/semi_bold.ttf") format("truetype");
 	font-weight: 600;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "Bold";
-	src: url("/fonts/noto-sans-semi-condensed/Bold.ttf") format("truetype");
+	src: url("/fonts/inter/bold.ttf") format("truetype");
 	font-weight: 700;
 	font-style: normal;
 }
@@ -431,6 +431,16 @@ html {
 	font-family: var(--medium);
 }
 
+.font-medium-20 {
+	@apply text-[20pt] font-medium;
+	font-family: var(--medium);
+}
+
+.font-medium-22 {
+	@apply text-[22pt] font-medium;
+	font-family: var(--medium);
+}
+
 .font-medium-26 {
 	@apply text-[26pt] font-medium;
 	font-family: var(--medium);
@@ -718,6 +728,10 @@ html {
 .textarea-inputs {
 	@apply bg-transparent flex items-center justify-center outline-none px-2.5 resize-none text-[11pt] black-text w-full;
 	font-family: var(--regular);
+}
+
+#invoicePreviewWrapper > #invoiceWrapper {
+	width: 100%;
 }
 
 /*****************/

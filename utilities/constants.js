@@ -3,12 +3,13 @@
 const MyConstants = Object.freeze({
 	ApiEndpoints: Object.freeze({
 		Affiliates: Object.freeze({
-			AddAffiliate: "api/affiliates/addAffiliate",
+			AddAffiliate: "api/affiliates/addAffiliates",
 			GetAffiliates: "api/affiliates/getAffiliates",
 		}),
 		Authenticate: "/api/authenticate",
 		CashFlows: Object.freeze({
 			AddCashFlow: "api/cashFlows/addCashFlow",
+			AddInvoice: "api/cashFlows/addInvoice",
 			GetSupportData: "api/cashFlows/getSupportData",
 		}),
 		Clients: Object.freeze({
@@ -26,6 +27,7 @@ const MyConstants = Object.freeze({
 			GetSupportData: "api/inquiries/getSupportData",
 		}),
 		Invoices: Object.freeze({
+			AddInvoice: "api/invoices/addInvoice",
 			GetSupportData: "api/invoices/getSupportData",
 			GetNewInvoiceSupportData: "api/invoices/getNewInvoiceSupportData",
 		}),

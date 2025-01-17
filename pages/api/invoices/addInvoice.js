@@ -13,36 +13,24 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { group, userId } = req.body;
-		let successCount = 0;
+		const { amount, amountReceived, customId, clientId, id, receiptDate } = req.body;
 
-		for (let object of group) {
-			const { emailAddress, name, phoneNumber, upiId } = object;
+		const response = await query("INSERT INTO invoices (custom_id, client_id, project_id, amount, amount_received, receipt_date) VALUES (?, ?, ?, ?, ?)", [
+			customId,
+			clientId,
+			id,
+			amount,
+			amountReceived,
+			receiptDate,
+		]);
 
-			await query("CALL generate_dynamic_id('AF', 'affiliates', @new_affiliate_id)", []);
-			const [response] = await query("SELECT @new_affiliate_id AS new_id;");
-
-			const result = await query(`INSERT INTO affiliates (id, name, email_address, phone_number, upi_id, entry_by_id) VALUES (?, ?, ?, ?, ?, ?)`, [
-				response.new_id,
-				name,
-				emailAddress,
-				phoneNumber,
-				upiId,
-				userId,
-			]);
-
-			if (result && result.affectedRows > 0) {
-				successCount++;
-			}
-		}
-
-		if (successCount === group.length) {
+		if (response.affectedRows > 0) {
 			res.status(200).end();
 		} else {
-			res.status(400).send(`Only ${successCount} out of ${group.length} affiliate(s) were inserted.`);
+			res.status(400).end();
 		}
 	} catch (error) {
-		console.log(error);
-		res.status(500).send(error);
+		console.error(error);
+		return res.status(500).end(error.message);
 	}
 }

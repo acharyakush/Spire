@@ -75,7 +75,11 @@ export default function CashFlows() {
 		return object;
 	}
 
-	async function getSupportData() {
+	function setModule(module) {
+		setMain((s) => ({ ...s, selectedModule: module }));
+	}
+
+	async function setSupportData() {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
@@ -88,8 +92,8 @@ export default function CashFlows() {
 				response.data.invoices.forEach((fe) => {
 					const isNotGenerated = response.data.projects.filter((f) => f.id == fe.project_id);
 
-					if (dayjs(fe.receipt_date).isAfter(today) && fe.payment_received == 0) {
-						invoicesData.due.amount++;
+					if (dayjs(fe.receipt_date).isAfter(today) && fe.amount_received == 0) {
+						invoicesData.due.amount += Number(fe.amount);
 						invoicesData.due.count++;
 					} else if (isNotGenerated.length) {
 						invoicesData.notGenerated.amount++;
@@ -105,7 +109,7 @@ export default function CashFlows() {
 				response.data.reimburseVouchers.forEach((fe) => {
 					const isNotGenerated = response.data.projects.filter((f) => f.id == fe.project_id);
 
-					if (dayjs(fe.receipt_date).isAfter(today) && fe.payment_received == 0) {
+					if (dayjs(fe.receipt_date).isAfter(today) && fe.amount_received == 0) {
 						reimburseVouchersData.due.amount++;
 						reimburseVouchersData.due.count++;
 					} else if (isNotGenerated.length) {
@@ -117,18 +121,22 @@ export default function CashFlows() {
 					}
 				});
 
-				setApi((s) => ({ ...s, invoices: response.data.invoices.length, reimburseVouchers: response.data.reimburseVouchers.length }));
+				setApi((s) => ({
+					...s,
+					invoices: response.data.invoices,
+					reimburseVouchers: response.data.reimburseVouchers,
+				}));
 
-				setMain((s) => ({ ...s, invoices: invoicesData, reimburseVouchers: reimburseVouchersData }));
+				setMain((s) => ({
+					...s,
+					invoices: invoicesData,
+					reimburseVouchers: reimburseVouchersData,
+				}));
 			}
 		} catch (error) {
 		} finally {
 			setMain((s) => ({ ...s, isLoading: false }));
 		}
-	}
-
-	function setModule(module) {
-		setMain((s) => ({ ...s, selectedModule: module }));
 	}
 
 	function toggleNewCashFlowView() {
@@ -152,10 +160,10 @@ export default function CashFlows() {
 			return (
 				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
 					<div className={`flex flex-col w-full p-5 space-y-2.5 justify-center items-center ${aesthetics.textColour}`}>
-						<div className="flex">
-							<span className="font-medium-16">{m.count}</span>/<span className="font-medium-12">{api.invoices.length}</span>
+						<div className="flex space-x-1 justify-center items-center">
+							<span className="font-medium-18">{m.count}</span>
 						</div>
-						<span className="font-medium-20">{m.amount}</span>
+						<span className="font-medium-22">{MyGlobal.FormatCurrency(m.amount)}</span>
 					</div>
 					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
 				</div>
@@ -168,12 +176,12 @@ export default function CashFlows() {
 			<div className="flex flex-col w-full h-full space-y-6 justify-start items-center">
 				<div className="flex flex-col w-full space-y-2 justify-center items-start">
 					<span className="view-heading">{MyConstants.Modules.Base.Invoices}</span>
-					<div className="flex w-full space-x-6 space-y-2 justify-center items-center">{uiInvoicesBlock()}</div>
+					<div className="flex w-full space-x-6 space-x-2 justify-center items-center">{uiInvoicesBlock()}</div>
 				</div>
-				<div className="flex flex-col w-full space-y-2 justify-center items-start">
+				{/* <div className="flex flex-col w-full space-y-2 justify-center items-start">
 					<span className="view-heading">RVs</span>
 					<div className="flex w-full space-x-6 space-y-2 justify-center items-center">{uiReimburseVouchersBlock()}</div>
-				</div>
+				</div> */}
 			</div>
 		);
 	}
@@ -186,7 +194,7 @@ export default function CashFlows() {
 				</div>
 			);
 		} else if (mounted.newCashFlow) {
-			return <NewCashFlow reload={{}} unmount={toggleNewCashFlowView} />;
+			return <NewCashFlow reload={setSupportData} unmount={toggleNewCashFlowView} />;
 		} else {
 			return (
 				<div className="flex flex-col w-full h-full justify-start items-center">
@@ -259,7 +267,7 @@ export default function CashFlows() {
 
 	// Hooks
 	useEffect(() => {
-		getSupportData();
+		setSupportData();
 	}, []);
 
 	// Main UI

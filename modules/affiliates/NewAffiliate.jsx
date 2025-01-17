@@ -43,10 +43,9 @@ export default function NewAffiliate({ reload, unmount }) {
 		try {
 			setMain((s) => ({ ...s, isLoading: true }));
 
-			const response = await axios.post(
-				MyConstants.ApiEndpoints.Affiliates.AddAffiliate,
-				MyGlobal.GetHeaders({ group: revisedGroup, userId: MyGlobal.GetUserId() }),
-			);
+			const body = { group: revisedGroup, userId: MyGlobal.GetUserId() };
+
+			const response = await axios.post(MyConstants.ApiEndpoints.Affiliates.AddAffiliate, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();

@@ -26,6 +26,7 @@ import {
 	faMinusCircle,
 	faNoteSticky,
 	faPlusCircle,
+	faReceipt,
 	faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -35,6 +36,7 @@ export default function NewCashFlow({ reload, unmount }) {
 		affiliates: [],
 		clients: [],
 		companies: [],
+		invoices: [],
 		mainProjects: [],
 		ownerFirms: [],
 		ownerFirmsBanks: [],
@@ -49,13 +51,15 @@ export default function NewCashFlow({ reload, unmount }) {
 		client: { id: "", isActive: true, list: [], name: "" },
 		company: { id: "", list: [], name: "" },
 		entryAt: new Date(),
-		find: { affiliate: "", client: "", company: "", ownerFirm: "", ownerFirmsBank: "", project: "" },
+		find: { affiliate: "", client: "", company: "", invoiceId: "", ownerFirm: "", ownerFirmsBank: "", project: "" },
 		hasMounted: false,
+		invoiceId: "",
 		isOfficeExpense: false,
 		ownerFirm: { banks: [], id: "", name: "", selectedBank: { id: "", name: "" } },
 		particulars: "",
 		paymentDetails: [{ amountPaid: 0, amountReceived: 0, paymentType: "", rowId: 0 }],
 		paymentFor: "",
+		paymentType: "",
 		project: { id: "", list: [], name: "" },
 	});
 
@@ -77,6 +81,43 @@ export default function NewCashFlow({ reload, unmount }) {
 		copy.push({ amountPaid: 0, amountReceived: 0, paymentType: "", rowId: greatestId });
 
 		setMain((s) => ({ ...s, paymentDetails: copy }));
+	}
+
+	async function addInvoiceCashFlow() {
+		setLoading((s) => ({ ...s, addToDatabase: true }));
+
+		const invoiceObject = api.invoices.find((f) => f.custom_id == main.invoiceId);
+
+		const body = {
+			amountReceived: main.amountReceived,
+			clientId: invoiceObject.client_id,
+			entryAt: main.entryAt,
+			invoiceId: main.invoiceId,
+			ownerFirmsId: main.ownerFirm.id,
+			ownerFirmsBankId: main.ownerFirm.selectedBank.id,
+			particulars: main.particulars,
+			paymentFor: main.paymentFor,
+			paymentType: main.paymentType,
+			projectId: invoiceObject.project_id,
+			userId: MyGlobal.GetUserId(),
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.AddInvoice, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				MyGlobal.AddActivity(`Added invoice cash flow entry.`, MyConstants.Modules.Base.CashFlow);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.CashFlowAdded);
+
+				reload();
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Add Cash Flow");
+		} finally {
+			setLoading((s) => ({ ...s, addToDatabase: false }));
+		}
 	}
 
 	async function addToDatabase() {
@@ -187,6 +228,19 @@ export default function NewCashFlow({ reload, unmount }) {
 		return companies;
 	}
 
+	function getFilteredInvoices() {
+		const value = String(main.find.invoiceId);
+		let list = api.invoices;
+
+		if (value !== "undefined") {
+			list = api.invoices.filter((f) => {
+				return String(f.custom_id).toLowerCase().includes(value.toLowerCase());
+			});
+		}
+
+		return list;
+	}
+
 	function getFilteredOwnerFirms() {
 		const value = String(main.find.ownerFirm);
 		let firms = api.ownerFirms;
@@ -220,6 +274,10 @@ export default function NewCashFlow({ reload, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
+				const revisedInvoices = response.data.invoices.map((m) => {
+					return { ...m, name: m.custom_id };
+				});
+
 				const revisedProjects = response.data.projects.map((m) => {
 					const name = response.data.mainProjects.find((f) => f.id == m.main_project_id).name;
 
@@ -231,6 +289,7 @@ export default function NewCashFlow({ reload, unmount }) {
 					clients: response.data.clients,
 					companies: response.data.companies,
 					mainProjects: response.data.mainProjects,
+					invoices: revisedInvoices,
 					ownerFirms: response.data.ownerFirms,
 					ownerFirmsBanks: response.data.ownerFirmsBanks,
 					projects: revisedProjects,
@@ -280,6 +339,8 @@ export default function NewCashFlow({ reload, unmount }) {
 				}
 
 				setMain((s) => ({ ...s, company: { ...s.company, id: value.id, name: value.name } }));
+			} else if (key == "invoiceId") {
+				setMain((s) => ({ ...s, invoiceId: value.name }));
 			} else if (key == "ownerFirm") {
 				const banks = api.ownerFirmsBanks.filter((f) => f.owner_firm_id == value.id);
 
@@ -458,20 +519,16 @@ export default function NewCashFlow({ reload, unmount }) {
 		);
 	}
 
-	function uiAmountReceived(record, rowId) {
-		const disable = record.amountPaid > 0 || main.affiliate.isActive;
-
+	function uiAmountReceived() {
 		return (
 			<TextInput
-				disable={disable}
 				icon={faIndianRupee}
-				id={`amountReceived${rowId + 1}`}
-				isReadOnly={disable}
-				label={`Amount Received #${rowId + 1}`}
-				onChange={(e) => setPayments("amountReceived", rowId, e.target.value)}
+				id="amountReceived"
+				label="Amount Received"
+				onChange={(e) => setInputs("amountReceived", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={`${rowId}2`}
-				value={record.amountReceived}
+				tabIndex="5"
+				value={main.amountReceived}
 				width="w-full"
 			/>
 		);
@@ -544,12 +601,35 @@ export default function NewCashFlow({ reload, unmount }) {
 		if (!loading.supportData) {
 			return (
 				<footer className="w-full dialog-footer">
-					<button className={addButtonStyle} onClick={() => addToDatabase()} tabIndex={11}>
+					<button className={addButtonStyle} onClick={() => addInvoiceCashFlow()} tabIndex={11}>
 						{uiAdd()}
 					</button>
 				</footer>
 			);
 		}
+	}
+
+	function uiInvoices() {
+		return (
+			<ComboBox2
+				allowCreatingNewItem={false}
+				comparingValue1="name"
+				comparingValue2={main.invoiceId}
+				displayValue="name"
+				filteredData={getFilteredInvoices}
+				hasDataObject={true}
+				icon={faReceipt}
+				label="Invoices"
+				onChange={(e) => setInputs("invoiceId", e)}
+				onClick={() => {}}
+				onInputChange={(e) => setFind("invoiceId", e.target.value)}
+				onKeyPress={() => {}}
+				searchedItem={main.find.invoiceId}
+				tabIndex={6}
+				value={main.invoiceId}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiIsOfficeExpense() {
@@ -572,23 +652,27 @@ export default function NewCashFlow({ reload, unmount }) {
 		} else {
 			return (
 				<div className="flex flex-col w-3/5 h-full space-y-2 justify-start items-center">
+					<div className="flex w-full space-x-8 justify-between items-center">
+						{/* {uiIsOfficeExpense()} */}
+						{uiEntryAt()}
+						{uiInvoices()}
+					</div>
 					<div className="flex w-full space-x-7 justify-between items-center">
 						{uiOwnerFirms()}
 						{uiOwnerFirmsBanks()}
 					</div>
-					<div className="flex w-full space-x-8 justify-between items-center">
-						{uiIsOfficeExpense()}
-						{uiEntryAt()}
-					</div>
-					<div className="flex w-full space-x-9 justify-between items-center">
+					{/* <div className="flex w-full space-x-9 justify-between items-center">
 						{uiAffiliates()}
 						{uiClients()}
-					</div>
-					<div className="flex w-full space-x-7 justify-between items-center">
+					</div> */}
+					{/* <div className="flex w-full space-x-7 justify-between items-center">
 						{uiCompanies()}
 						{uiProjects()}
+					</div> */}
+					<div className="flex w-full space-x-7 justify-between items-center">
+						{uiAmountReceived()}
+						{uiPaymentType()}
 					</div>
-					<div className="flex flex-col w-full justify-between items-center">{uiRows()}</div>
 					<div className="flex w-full space-x-7 justify-center items-start">
 						{uiParticulars()}
 						{uiPaymentFor()}
@@ -676,20 +760,20 @@ export default function NewCashFlow({ reload, unmount }) {
 		);
 	}
 
-	function uiPaymentType(record, rowId) {
+	function uiPaymentType() {
 		return (
 			<ComboBox
 				allowCreatingNewItem={false}
-				comparisonValue={record.paymentType}
+				comparisonValue=""
 				filteredData={api.paymentTypes}
 				icon={faFile}
-				label={`Payment Type #${rowId + 1}`}
-				onChange={(e) => setPayments("paymentType", rowId, e)}
+				label="Payment Type"
+				onChange={(e) => setInputs("paymentType", e)}
 				onClick={() => {}}
 				onKeyPress={() => {}}
 				searchedItem={""}
-				tabIndex={`${rowId}3`}
-				value={MyGlobal.GetInitials(record.paymentType)}
+				tabIndex="6"
+				value={MyGlobal.GetInitials(main.paymentType)}
 				width="w-full"
 			/>
 		);

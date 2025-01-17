@@ -412,22 +412,22 @@ export const MyGlobal = Object.freeze({
 
 	Storages: {
 		Local: {
-			DoesExist: (key) => (!isDevelopment ? secureLocalStorage.get(key) : globalThis.localStorage.getItem(key)),
-			Get: (key) => (!isDevelopment ? secureLocalStorage.get(key) : globalThis.localStorage.getItem(key)),
-			Remove: (key) => (!isDevelopment ? secureLocalStorage.remove(key) : globalThis.localStorage.removeItem(key)),
+			DoesExist: (key) => (!isDevelopment ? secureLocalStorage.getItem(key) : globalThis.localStorage.getItem(key)),
+			Get: (key) => (!isDevelopment ? secureLocalStorage.getItem(key) : globalThis.localStorage.getItem(key)),
+			Remove: (key) => (!isDevelopment ? secureLocalStorage.removeItem(key) : globalThis.localStorage.removeItem(key)),
 			RemoveAll: () => {
 				for (let i = 0; i < globalThis.localStorage.length; i++) {
 					const key = globalThis.localStorage.key(i) || "";
 
 					if (key && key.startsWith(applicationName)) {
-						!isDevelopment ? secureLocalStorage.remove(key) : globalThis.localStorage.removeItem(key);
+						!isDevelopment ? secureLocalStorage.removeItem(key) : globalThis.localStorage.removeItem(key);
 						i--;
 					}
 				}
 
 				globalThis.console.clear();
 			},
-			Set: (key, value) => (!isDevelopment ? secureLocalStorage.set(key, value) : globalThis.localStorage.setItem(key, value)),
+			Set: (key, value) => (!isDevelopment ? secureLocalStorage.setItem(key, value) : globalThis.localStorage.setItem(key, value)),
 		},
 		Session: {
 			DoesExist: (key) => globalThis.sessionStorage.getItem(key) !== null,
@@ -438,7 +438,7 @@ export const MyGlobal = Object.freeze({
 					const key = globalThis.sessionStorage.key(i) || "";
 
 					if (key && key.startsWith(applicationName)) {
-						!isDevelopment ? secureLocalStorage.remove(key) : globalThis.sessionStorage.removeItem(key);
+						!isDevelopment ? secureLocalStorage.removeItem(key) : globalThis.sessionStorage.removeItem(key);
 						i--;
 					}
 				}

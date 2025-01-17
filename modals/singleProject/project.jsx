@@ -388,7 +388,7 @@ export function ManageGovernmentId({ mount, project, reload, unmount }) {
 	);
 }
 
-export function MapAffiliates({ mount, project, unmount }) {
+export function MapAffiliates({ mount, project, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
 		affiliates: { copy: [], data: [] },
@@ -578,7 +578,7 @@ export function MapAffiliates({ mount, project, unmount }) {
 	}
 
 	function uiMap() {
-		if (main.isLoading) {
+		if (main.isMapping) {
 			return (
 				<span className="px-3.5">
 					<Spinner />

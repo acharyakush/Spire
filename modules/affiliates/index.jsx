@@ -213,27 +213,14 @@ export default function Affiliates() {
 					<span className="font-regular-12 gray-text">No affiliates registered.</span>
 				</div>
 			);
-		} else if (mounted.newAffiliate) {
-			return <NewAffiliate reload={setSupportData} unmount={toggleNewAffiliate} />;
 		} else {
-			return (
-				<div className="flex flex-col w-full h-full justify-start items-center">
-					<div className="flex w-full px-5 py-2.5 justify-between items-center">
-						<div className="flex w-1/2 space-x-2 justify-start items-center">
-							<span className="view-heading">{thisView}</span>
-							{getIconOrBadge()}
-						</div>
-						<div className="flex w-1/2 space-x-2 justify-end items-center">{uiNew()}</div>
-					</div>
-					{uiBody()}
-				</div>
-			);
+			return uiBody();
 		}
 	}
 
 	function uiModules() {
 		const modules = api.affiliates.length ? [...api.affiliates] : [];
-		modules.unshift({ id: 0, name: "All" });
+		// modules.unshift({ id: 0, name: "All" });
 
 		return modules.map((m, i) => {
 			const selectedStyle =
@@ -259,37 +246,41 @@ export default function Affiliates() {
 	}
 
 	function uiSelectedAffiliate() {
-		return (
-			<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">
-				<div className="flex w-full justify-between items-center">
-					<div className="flex flex-col w-1/2 justify-center items-start">
-						<span className="view-heading">{main.selectedAffiliate.details.name}</span>
-						<span className="font-regular-11 gray-text">
-							Associated since {dayjs(main.selectedAffiliate.details.joined_on).format("DD MMM, YYYY")}
-						</span>
-					</div>
-					<div className="flex flex-col w-1/2 space-y-2 justify-center items-end">
-						<div className="flex space-x-2.5 justify-center items-center">
-							<FontAwesomeIcon className="primary-text" icon={faPhone} />
-							<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openWhatsAppWeb()}>
-								{main.selectedAffiliate.details.phone_number}
+		if (main.selectedAffiliate.id == 0) {
+			return <div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">Please select an affiliate</div>;
+		} else {
+			return (
+				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">
+					<div className="flex w-full justify-between items-center">
+						<div className="flex flex-col w-1/2 justify-center items-start">
+							<span className="view-heading">{main.selectedAffiliate.details.name}</span>
+							<span className="font-regular-11 gray-text">
+								Associated since {dayjs(main.selectedAffiliate.details.joined_on).format("DD MMM, YYYY")}
 							</span>
 						</div>
-						<div className="flex space-x-2.5 justify-center items-center">
-							<FontAwesomeIcon className="primary-text" icon={faAt} />
-							<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openEmailClient()}>
-								{main.selectedAffiliate.details.email_address}
-							</span>
-						</div>
-						<div className="flex space-x-2.5 justify-center items-center">
-							<FontAwesomeIcon className="gray-text" icon={faBank} />
-							<span className="font-regular-11 gray-text">{main.selectedAffiliate.details.upi_id}</span>
+						<div className="flex flex-col w-1/2 space-y-2 justify-center items-end">
+							<div className="flex space-x-2.5 justify-center items-center">
+								<FontAwesomeIcon className="primary-text" icon={faPhone} />
+								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openWhatsAppWeb()}>
+									{main.selectedAffiliate.details.phone_number}
+								</span>
+							</div>
+							<div className="flex space-x-2.5 justify-center items-center">
+								<FontAwesomeIcon className="primary-text" icon={faAt} />
+								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openEmailClient()}>
+									{main.selectedAffiliate.details.email_address}
+								</span>
+							</div>
+							<div className="flex space-x-2.5 justify-center items-center">
+								<FontAwesomeIcon className="gray-text" icon={faBank} />
+								<span className="font-regular-11 gray-text">{main.selectedAffiliate.details.upi_id}</span>
+							</div>
 						</div>
 					</div>
+					<div className="flex w-full space-x-5 justify-start items-center">{uiCards()}</div>
 				</div>
-				<div className="flex w-full space-x-5 justify-start items-center">{uiCards()}</div>
-			</div>
-		);
+			);
+		}
 	}
 
 	// Hooks
@@ -305,5 +296,20 @@ export default function Affiliates() {
 		return;
 	}
 
-	return uiMain();
+	if (!mounted.newAffiliate) {
+		return (
+			<div className="flex flex-col w-full h-full justify-start items-center">
+				<div className="flex w-full px-5 py-2.5 justify-between items-center">
+					<div className="flex w-1/2 space-x-2 justify-start items-center">
+						<span className="view-heading">{thisView}</span>
+						{getIconOrBadge()}
+					</div>
+					<div className="flex w-1/2 space-x-2 justify-end items-center">{uiNew()}</div>
+				</div>
+				{uiMain()}
+			</div>
+		);
+	} else {
+		return <NewAffiliate reload={setSupportData} unmount={toggleNewAffiliate} />;
+	}
 }

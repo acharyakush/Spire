@@ -4,7 +4,9 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
+import jsPDF from "jspdf";
 import Tippy from "@tippyjs/react";
+import html2canvas from "html2canvas";
 import MyConstants from "@/utilities/constants";
 import NewInvoicePreview from "@/modals/invoices/NewInvoicePreview";
 
@@ -34,6 +36,8 @@ export default function NewInvoice({ project, reload, unmount }) {
 	const today = new Date();
 	const invoiceDueDate = new Date(today);
 	invoiceDueDate.setDate(invoiceDueDate.getDate() + 7);
+
+	const quote = Number(project.quote);
 
 	const [api, setApi] = useState({
 		clients: [],
@@ -69,7 +73,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 		},
 		particulars: [
 			{
-				amount: project.quote,
+				amount: quote,
 				particulars: project.sub_project_name,
 				professionalService: project.main_project_name,
 				rowId: 0,
@@ -83,13 +87,45 @@ export default function NewInvoice({ project, reload, unmount }) {
 		preview: false,
 	});
 
-	const quote = project ? Number(project.quote) : 0;
-	const totalPendingAmount = Math.abs(quote - main.totalAmountReceived);
+	const totalParticularsAmount = main.particulars.reduce((pv, cv) => {
+		return pv + Number(cv.amount);
+	}, 0);
+
+	const totalAmount = Number(main.particulars.at(0).amount) == quote ? totalParticularsAmount : quote;
+
+	const totalPendingAmount = Math.abs(totalAmount - main.totalAmountReceived);
 
 	const finalPendingAmount = String.fromCharCode(8377) + ` ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
 
 	// Functions
-	function addInvoice() {}
+	async function addInvoice() {
+		try {
+			const customId = `${MyGlobal.GetInitials(main.ownersFirm.name)}/${main.financialYear}/${main.invoiceId}`;
+
+			const body = {
+				amount: totalAmount,
+				amountReceived: main.totalAmountReceived,
+				customId,
+				clientId: project.client_id,
+				id: project.id,
+				receiptDate: main.invoiceDate,
+			};
+
+			const response = await axios.post(MyConstants.ApiEndpoints.Invoices.AddInvoice, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reload();
+
+				MyGlobal.AddActivity(`Generated invoice <b>${customId}</b> for <b>${project.id}</b>`, MyConstants.Modules.Derived.NewInvoice);
+
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.InvoiceAdded);
+			} else {
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewInvoice);
+		}
+	}
 
 	function addRow() {
 		const copy = [...main.particulars];
@@ -115,6 +151,56 @@ export default function NewInvoice({ project, reload, unmount }) {
 			const revised = copy.filter((f) => f.rowId != object.rowId);
 			setMain((s) => ({ ...s, particulars: revised }));
 		}
+	}
+
+	function downloadPdf() {
+		setLoading((s) => ({ ...s, downloadPdf: true }));
+
+		const fileName = `${MyGlobal.GetInitials(main.ownersFirm.name)}_${main.financialYear}_${main.invoiceId}_${getCompanyDetails().name}`;
+
+		const pdf = new jsPDF("p", "mm", "a4");
+		const invoiceBody = document.getElementById("invoiceBody");
+
+		const originalStyle = {
+			height: invoiceBody.style.height,
+			overflow: invoiceBody.style.overflow,
+		};
+
+		invoiceBody.style.height = "auto";
+		invoiceBody.style.overflow = "visible";
+
+		html2canvas(invoiceBody, { scale: 2, scrollX: 0, scrollY: 0 })
+			.then((canvas) => {
+				const imgData = canvas.toDataURL("image/png");
+				const pdfWidth = pdf.internal.pageSize.getWidth();
+				const imgWidth = pdfWidth - 15;
+				const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+				let heightLeft = imgHeight;
+				let position = 0;
+
+				pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+				heightLeft -= pdf.internal.pageSize.getHeight();
+
+				while (heightLeft > 0) {
+					position -= pdf.internal.pageSize.getHeight();
+
+					pdf.addPage();
+					pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+
+					heightLeft -= pdf.internal.pageSize.getHeight();
+				}
+
+				pdf.save(`${fileName}.pdf`);
+
+				addInvoice();
+			})
+			.finally(() => {
+				invoiceBody.style.height = originalStyle.height;
+				invoiceBody.style.overflow = originalStyle.overflow;
+
+				setLoading((s) => ({ ...s, downloadPdf: false }));
+			});
 	}
 
 	function getCompanyDetails() {
@@ -153,6 +239,10 @@ export default function NewInvoice({ project, reload, unmount }) {
 			newDueDate.setDate(newDueDate.getDate() + 7);
 
 			setMain((s) => ({ ...s, invoiceDueDate: newDueDate, invoiceDate: value }));
+		} else if (key == "invoiceDueDate") {
+			setMain((s) => ({ ...s, invoiceDueDate: value }));
+		} else if (key == "termsConditions") {
+			setMain((s) => ({ ...s, ownersFirm: { ...s.ownersFirm, termsConditions: value } }));
 		} else {
 			setMain((s) => ({ ...s, [key]: value }));
 		}
@@ -163,11 +253,11 @@ export default function NewInvoice({ project, reload, unmount }) {
 		const object = copy.filter((f) => f.rowId == rowId);
 
 		if (object.length) {
-			const _object = copy.at(0);
+			const _object = copy.at(rowId);
 			_object[key] = key == "amount" ? Number(value) : value;
 
 			const revised = copy.filter((f) => f.rowId != rowId);
-			revised.push({ ..._object });
+			revised.push(_object);
 
 			setMain((s) => ({ ...s, particulars: revised }));
 		}
@@ -239,7 +329,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 
 	function togglePreview(value) {
 		if (value) {
-			addInvoice();
+			downloadPdf();
 		}
 
 		setMounted((s) => ({ ...s, preview: !s.preview }));
@@ -322,7 +412,14 @@ export default function NewInvoice({ project, reload, unmount }) {
 
 	function uiInputInvoiceDueDate() {
 		return (
-			<DatePicker icon={faCalendar} label="Due Date" onChange={(e) => setInputs("dueDate", e)} tabIndex={2} value={main.invoiceDueDate} width="w-full" />
+			<DatePicker
+				icon={faCalendar}
+				label="Due Date"
+				onChange={(e) => setInputs("invoiceDueDate", e)}
+				tabIndex={2}
+				value={main.invoiceDueDate}
+				width="w-full"
+			/>
 		);
 	}
 
@@ -388,7 +485,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				const buttonsWrapper = `flex ${reverseButtons} w-fit space-x-3 justify-center items-end`;
 
 				return (
-					<div className="flex w-full space-x-3 justify-between items-end animate__animated animate__slideInDown" key={m.rowId}>
+					<div className="flex w-full space-x-3 justify-between items-end" key={m.rowId}>
 						{uiInputParticulars(m, i)}
 						{uiInputAmount(m, i)}
 						<div className={buttonsWrapper}>
@@ -405,8 +502,13 @@ export default function NewInvoice({ project, reload, unmount }) {
 	}
 
 	function uiInputTermsConditions() {
-		const termsConditions = main.ownersFirm.termsConditions.replace(/\\n/g, "\n");
-		const termsConditionsLength = termsConditions.split("\n").length;
+		let termsConditions = "";
+		let termsConditionsLength = "";
+
+		if (typeof main.ownersFirm.termsConditions === "string") {
+			termsConditions = main.ownersFirm.termsConditions.replace(/\\n/g, "\n");
+			termsConditionsLength = termsConditions.split("\n").length;
+		}
 
 		return (
 			<TextArea
@@ -533,7 +635,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 
 	function uiInvoiceSheet() {
 		return (
-			<div className="flex w-1/2 h-full justify-center items-center">
+			<div className="flex w-1/2 h-full justify-center items-center" id="invoiceWrapper">
 				<div className="flex flex-col w-full h-full px-4 py-2 space-y-4 justify-start items-center overflow-y-auto bg-white" id="invoiceBody">
 					<div className="flex w-full justify-between items-center bg-white">
 						{uiInvoice()}
@@ -597,7 +699,11 @@ export default function NewInvoice({ project, reload, unmount }) {
 	}
 
 	function uiTermsAndConditions() {
-		const termsConditions = main.ownersFirm.termsConditions ? main.ownersFirm.termsConditions.split("nnn.").map((m, i) => <li key={i}>{m}</li>) : "";
+		let termsConditions = "";
+
+		if (typeof main.ownersFirm.termsConditions === "string") {
+			termsConditions = main.ownersFirm.termsConditions.split("nnn.").map((m, i) => <li key={i}>{m}</li>);
+		}
 
 		return (
 			<div className="flex flex-col w-full space-y-px justify-start items-center">
@@ -657,7 +763,9 @@ export default function NewInvoice({ project, reload, unmount }) {
 				</button>
 			</footer>
 
-			{mounted.preview && <NewInvoicePreview mount={mounted.preview} invoice={main} unmount={togglePreview} />}
+			{mounted.preview && (
+				<NewInvoicePreview mount={mounted.preview} invoice={uiInvoiceSheet} isGeneratingPdf={loading.downloadPdf} unmount={togglePreview} />
+			)}
 		</div>
 	);
 }

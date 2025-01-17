@@ -76,7 +76,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 
 			if (response.status === 200) {
 				const affiliateIds = String(project.affiliate_ids);
-				const initials = MyGlobal.GetAffiliatesInitials(affiliateIds, response.data);
+				const initials = MyGlobal.GetAffiliatesInitials(affiliateIds, response.data.affiliates);
 
 				let tooltip = "";
 
@@ -85,11 +85,11 @@ export default function SingleProject({ client, project, reload, source, unmount
 						const affiliate = response.data.affiliates.find((f) => f.id == m);
 
 						if (typeof affiliate === "object") {
-							const project = response.data.affiliateProjects.find((f) => f.affiliate_id == affiliate.id && f.project_id == project.id);
+							const affiliateProject = response.data.affiliatesProjects.find((f) => f.affiliate_id == affiliate.id && f.project_id == project.id);
 
-							if (typeof project === "object") {
-								const paidFees = Number(project.paid_fees);
-								const totalFees = Number(project.total_fees);
+							if (typeof affiliateProject === "object") {
+								const paidFees = Number(affiliateProject.paid_fees);
+								const totalFees = Number(affiliateProject.total_fees);
 								const pendingFees = totalFees - paidFees;
 
 								return `${affiliate.name}\nPaid ${paidFees} | Pending ${pendingFees} | Total ${totalFees}`;
@@ -313,7 +313,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 							placement="top">
 							<span className={wrapperSansAesthetics}>
 								<FontAwesomeIcon className="w-4 primary-text" icon={faBriefcase} />
-								<span>{main.affiliates.initials ?? "No affiliates mapped"}</span>
+								<span>{main.affiliates.initials || "No affiliates mapped"}</span>
 							</span>
 						</Tippy>
 						<Tippy allowHTML content={<TooltipList payload={project.team_names} />} placement="bottom">
@@ -357,7 +357,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 
 				{mounted.governmentId && <ManageGovernmentId mount={mounted.governmentId} project={project} reload={reload} unmount={toggleGovernmentIdBox} />}
 
-				{mounted.mapAffiliates && <MapAffiliates mount={mounted.mapAffiliates} project={project} unmount={toggleMapAffiliatesBox} />}
+				{mounted.mapAffiliates && <MapAffiliates mount={mounted.mapAffiliates} project={project} reload={reload} unmount={toggleMapAffiliatesBox} />}
 
 				{mounted.updateQuote && <EditQuote mount={mounted.updateQuote} project={project} reload={reload} unmount={toggleUpdateQuoteBox} />}
 			</>

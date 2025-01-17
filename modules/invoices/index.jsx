@@ -42,8 +42,12 @@ export default function Invoices({ status }) {
 	});
 
 	const [main, setMain] = useState({
-		filter: { date: { from: "", to: "" }, find: "" },
+		filter: {
+			date: { from: "", to: "" },
+			find: "",
+		},
 		isLoading: false,
+		selectedProject: {},
 		sort: { column: headers.Id, isAscending: false },
 	});
 
@@ -160,13 +164,14 @@ export default function Invoices({ status }) {
 				const findText = main.filter.find.toLowerCase();
 
 				return (
-					f.id.includes(findText) ||
-					f.company_name.includes(findText) ||
-					f.main_project_name.includes(findText) ||
-					f.sub_project_name.includes(findText) ||
+					String(f.id).toLowerCase().includes(findText) ||
+					String(f.company_name).toLowerCase().includes(findText) ||
+					String(f.main_project_name).toLowerCase().includes(findText) ||
+					String(f.sub_project_name).toLowerCase().includes(findText) ||
 					String(f.amount).includes(findText) ||
 					String(f.amount_received).includes(findText) ||
-					f.status.includes(findText)
+					String(f.amount_pending).includes(findText) ||
+					String(f.custom_id).includes(findText)
 				);
 			}
 		});
@@ -236,24 +241,16 @@ export default function Invoices({ status }) {
 		}
 	}
 
-	function getTotalAmount() {
-		let total = 0;
+	function getTotals() {
+		let total = { amount: 0, pending: 0, received: 0 };
 
 		for (const i of api.projects) {
-			total += Number(i.amount);
+			total.amount += i.amount;
+			total.pending += i.amount_pending;
+			total.received += i.amount_received;
 		}
 
-		return MyGlobal.ThousandSeparator(total);
-	}
-
-	function getTotalAmountReceived() {
-		let total = 0;
-
-		for (const i of api.projects) {
-			total += Number(i.amount_received);
-		}
-
-		return MyGlobal.ThousandSeparator(total);
+		return total;
 	}
 
 	function setInputs(key, value) {
@@ -276,7 +273,8 @@ export default function Invoices({ status }) {
 
 			if (response.status === 200) {
 				const revised = response.data.projects.map((m) => {
-					let amountReceived = "";
+					let amountPending = 0;
+					let amountReceived = 0;
 					let companyName = "";
 					let mainProjectName = "";
 					let subProjectName = "";
@@ -284,6 +282,7 @@ export default function Invoices({ status }) {
 					const cashFlow = response.data.cashFlows.find((f) => f.client_id == m.client_id);
 
 					if (typeof cashFlow === "object") {
+						amountPending = Number(m.quote) - Number(cashFlow.amount_received);
 						amountReceived = Number(cashFlow.amount_received);
 					}
 
@@ -301,7 +300,7 @@ export default function Invoices({ status }) {
 
 					if (typeof invoice === "object") {
 						invoiceId = invoice.custom_id;
-						invoiceCreatedAt = dayjs(invoice.created_at).format("DD MMM, YYY");
+						invoiceCreatedAt = dayjs(invoice.created_at).format("DD/MM/YYYY");
 						invoiceCreatedAtTime = dayjs(invoice.created_at).format("hh:mm:ss a");
 					}
 
@@ -320,6 +319,7 @@ export default function Invoices({ status }) {
 					return {
 						...m,
 						amount: Number(m.quote),
+						amount_pending: amountPending,
 						amount_received: amountReceived,
 						company_name: companyName,
 						created_at: invoiceCreatedAt,
@@ -343,8 +343,9 @@ export default function Invoices({ status }) {
 		}
 	}
 
-	function toggleNewInvoice() {
-		setMounted((s) => ({ ...s, newInvoice: !s.newInvoice }));
+	function toggleNewInvoice(object) {
+		setMain((s) => ({ ...s, selectedProject: object }));
+		setMounted((s) => ({ ...s, newInvoice: object ? true : false }));
 	}
 
 	// UI Components
@@ -401,14 +402,14 @@ export default function Invoices({ status }) {
 	}
 
 	function uiFooter() {
-		return Object.values(headers).map((m, i) => {
-			const showTotalQuote = i == 5 || i == 6 ? "visible" : "invisible";
-			const wrapper = `w-[11.11%] space-x-1 text-center text-white font-medium-10 ${showTotalQuote}`;
+		const totals = getTotals();
 
+		return Object.values(headers).map((m, i) => {
 			return (
-				<span className={wrapper} key={i}>
-					<span>{getTotalAmount()}</span>
-					<span>{getTotalAmountReceived()}</span>
+				<span className="w-[11.11%] space-x-1 text-center text-white font-medium-10" key={i}>
+					<span>{i == 5 && totals.amount}</span>
+					<span>{i == 6 && totals.received}</span>
+					<span>{i == 7 && totals.pending}</span>
 				</span>
 			);
 		});
@@ -479,7 +480,7 @@ export default function Invoices({ status }) {
 				</div>
 			);
 		} else {
-			return <NewInvoice project={api.projects.at(0)} reload={setSupportData} unmount={toggleNewInvoice} />;
+			return <NewInvoice project={main.selectedProject} reload={setSupportData} unmount={toggleNewInvoice} />;
 		}
 	}
 
@@ -503,10 +504,14 @@ export default function Invoices({ status }) {
 		const _invoiceId = !invoiceId ? "Generate" : invoiceId;
 
 		const companyName = MyGlobal.HighlightText(row.company_name, main.filter.find);
+
 		const mainProjectName = MyGlobal.HighlightText(row.main_project_name, main.filter.find);
+
 		const subProjectName = MyGlobal.HighlightText(row.sub_project_name, main.filter.find);
 
 		const amount = MyGlobal.HighlightText(row.amount, main.filter.find);
+		const amountPending = MyGlobal.HighlightText(row.amount_pending, main.filter.find);
+
 		const amountReceived = MyGlobal.HighlightText(row.amount_received, main.filter.find);
 
 		return (
@@ -522,8 +527,8 @@ export default function Invoices({ status }) {
 				</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
-				<span className={style} />
-				<span className={invoiceIdStyle} dangerouslySetInnerHTML={{ __html: _invoiceId }} onClick={() => toggleNewInvoice()} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: amountPending }} />
+				<span className={invoiceIdStyle} dangerouslySetInnerHTML={{ __html: _invoiceId }} onClick={() => toggleNewInvoice(row)} />
 				<span className={`${style} space-x-5`}>
 					<FontAwesomeIcon className="primary-text" icon={faFileDownload} size="lg" />
 					<FontAwesomeIcon className="primary-text" icon={faCoins} size="lg" />
