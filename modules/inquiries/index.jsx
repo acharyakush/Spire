@@ -259,20 +259,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		});
 	}
 
-	function getClientName(id, source = []) {
-		let name = "";
-
-		if (source.length) {
-			const object = source.find((f) => f.id == id);
-
-			if (typeof object === "object") {
-				name = object.name;
-			}
-		}
-
-		return name;
-	}
-
 	function getIconOrBadge() {
 		if (main.isLoading) {
 			return (
@@ -296,8 +282,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				const revisedCopy = [];
 
 				response.data.forEach((fe) => {
-					const clientName = getClientName(fe.client_id, supportData.clients);
-					const referenceName = getReferenceName(fe.reference_id, supportData.references);
+					const clientName = MyGlobal.GetNameFromId(fe.client_id, supportData.clients);
+					const referenceName = MyGlobal.GetNameFromId(fe.reference_id, supportData.references);
 
 					const followUps = MyGlobal.GetAnyDataFromId(fe.follow_ups, "full_name");
 
@@ -313,11 +299,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						follow_ups: followUps,
 						follow_ups_data: MyGlobal.GetFullDetailsFromIds(fe.follow_ups),
 						follow_ups_initials: MyGlobal.GetInitials(followUps),
-						main_project: getMainProjectName(fe.main_project_id, supportData.mainProjects),
+						main_project: MyGlobal.GetNameFromId(fe.main_project_id, supportData.mainProjects),
 						notes: "",
 						reference_id_and_name: `${fe.reference_id} - ${referenceName}`,
 						reference_name: referenceName,
-						sub_project: getSubProjectName(fe.sub_project_id, supportData.subProjects),
+						sub_project: MyGlobal.GetNameFromId(fe.sub_project_id, supportData.subProjects),
 					};
 
 					revised.push(data);
@@ -341,34 +327,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			setMain((s) => ({ ...s, isLoading: false }));
 			setMounted((s) => ({ ...s, mainComponent: true }));
 		}
-	}
-
-	function getMainProjectName(id, source = []) {
-		let name = "";
-
-		if (source.length) {
-			const object = source.find((f) => f.id == id);
-
-			if (typeof object === "object") {
-				name = object.name;
-			}
-		}
-
-		return name;
-	}
-
-	function getReferenceName(id, source = []) {
-		let name = "";
-
-		if (source.length) {
-			const object = source.find((f) => f.id == id);
-
-			if (typeof object === "object") {
-				name = object.name;
-			}
-		}
-
-		return name;
 	}
 
 	function getRowsCount() {
@@ -419,20 +377,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					text: "green-text",
 				};
 		}
-	}
-
-	function getSubProjectName(id, source = []) {
-		let name = "";
-
-		if (source.length) {
-			const object = source.find((f) => f.id == id);
-
-			if (typeof object === "object") {
-				name = object.name;
-			}
-		}
-
-		return name;
 	}
 
 	function getTotalNotesByInquiry(id) {
@@ -978,7 +922,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}, [main.selectedInquiryForStatusChange]);
 
 	return (
-		<div className="flex flex-col w-full h-full justify-start items-center light-gray-background">
+		<div className="flex flex-col w-full h-full justify-start items-center primary-light-background">
 			{uiMain()}
 
 			{mounted.updateStatus && (

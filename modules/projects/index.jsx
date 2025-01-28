@@ -269,34 +269,6 @@ export default function Projects() {
 			});
 	}
 
-	function getClientName(id, source = []) {
-		let name = "";
-
-		if (source.length) {
-			const object = source.find((f) => f.id == id);
-
-			if (typeof object === "object") {
-				name = object.name;
-			}
-		}
-
-		return name;
-	}
-
-	function getCompanyName(id, source = []) {
-		let name = "";
-
-		if (source.length) {
-			const object = source.find((f) => f.id == id);
-
-			if (typeof object === "object") {
-				name = object.name;
-			}
-		}
-
-		return name;
-	}
-
 	function getIconOrBadge() {
 		if (main.isLoading.supportData) {
 			return (
@@ -307,20 +279,6 @@ export default function Projects() {
 		} else {
 			return api.projects.data.length > 0 && <Badge value={getRowsCount()} />;
 		}
-	}
-
-	function getMainProjectName(id, source = []) {
-		let name = "";
-
-		if (source.length) {
-			const object = source.find((f) => f.id == id);
-
-			if (typeof object === "object") {
-				name = object.name;
-			}
-		}
-
-		return name;
 	}
 
 	function getRowsCount() {
@@ -350,20 +308,6 @@ export default function Projects() {
 		}
 
 		return source;
-	}
-
-	function getSubProjectName(id, source = []) {
-		let name = "";
-
-		if (source.length) {
-			const object = source.find((f) => f.id == id);
-
-			if (typeof object === "object") {
-				name = object.name;
-			}
-		}
-
-		return name;
 	}
 
 	function setInputs(key, value) {
@@ -402,13 +346,13 @@ export default function Projects() {
 				const revisedProjects = [];
 
 				response.data.projects.forEach((fe) => {
-					const clientName = getClientName(fe.client_id, response.data.clients);
+					const clientName = MyGlobal.GetNameFromId(fe.client_id, response.data.clients);
 
-					const companyName = getCompanyName(fe.company_id, response.data.companies);
+					const companyName = MyGlobal.GetNameFromId(fe.company_id, response.data.companies);
 
-					const mainProjectName = getMainProjectName(fe.main_project_id, response.data.mainProjects);
+					const mainProjectName = MyGlobal.GetNameFromId(fe.main_project_id, response.data.mainProjects);
 
-					const subProjectName = getSubProjectName(fe.sub_project_id, response.data.subProjects);
+					const subProjectName = MyGlobal.GetNameFromId(fe.sub_project_id, response.data.subProjects);
 
 					const teamNames = MyGlobal.GetAnyDataFromId(fe.teams, "full_name");
 

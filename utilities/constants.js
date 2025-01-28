@@ -28,6 +28,8 @@ const MyConstants = Object.freeze({
 		}),
 		Invoices: Object.freeze({
 			AddInvoice: "api/invoices/addInvoice",
+			AddTransaction: "api/invoices/addTransaction",
+			GetHistorySupportData: "api/invoices/getHistorySupportData",
 			GetSupportData: "api/invoices/getSupportData",
 			GetNewInvoiceSupportData: "api/invoices/getNewInvoiceSupportData",
 		}),
@@ -97,7 +99,9 @@ const MyConstants = Object.freeze({
 		TaskEdited: "Task edited.",
 		TaskEnabled: "Task enabled.",
 		TaskParticularRemarkAdded: "Task Particular/Remark added.",
+		TaskParticularRemarkDeleted: "Task Particular/Remark deleted.",
 		TaskParticularRemarkEdited: "Task Particular/Remark edited.",
+		TransactionAdded: "Transaction added.",
 		UnauthorizedAccess: "Unauthorized access.",
 	}),
 	Modules: Object.freeze({
@@ -216,6 +220,12 @@ const MyConstants = Object.freeze({
 			date: "Date",
 			note: "Note",
 			entryBy: "Entry By",
+		}),
+		PaymentReceived: Object.freeze({
+			Date: "Date",
+			Particulars: "Particulars",
+			AmountReceived: "Amt Received",
+			PaymentSource: "Payment Source",
 		}),
 		Projects: Object.freeze({
 			Started: "Started On",

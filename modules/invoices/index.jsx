@@ -16,7 +16,8 @@ import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
-import { Badge, Spinner, SpinnerBig } from "@/components/Elements";
+import { Badge, Spinner } from "@/components/Elements";
+import { Transactions } from "@/modals/invoices/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
 	faCalendar,
@@ -53,6 +54,7 @@ export default function Invoices({ status }) {
 
 	const [mounted, setMounted] = useState({
 		newInvoice: false,
+		transactions: false,
 	});
 
 	const newInvoiceButtonStyle = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInvoice)
@@ -279,11 +281,18 @@ export default function Invoices({ status }) {
 					let mainProjectName = "";
 					let subProjectName = "";
 
+					const transactionsHistory = response.data.transactionsHistory.filter((f) => f.project_id == m.id);
+
+					if (Array.isArray(transactionsHistory) && transactionsHistory.length) {
+						amountReceived = transactionsHistory.reduce((pv, cv) => {
+							return pv + Number(cv.amount);
+						}, 0);
+					}
+
 					const cashFlow = response.data.cashFlows.find((f) => f.client_id == m.client_id);
 
 					if (typeof cashFlow === "object") {
-						amountPending = Number(m.quote) - Number(cashFlow.amount_received);
-						amountReceived = Number(cashFlow.amount_received);
+						amountPending = Number(m.quote) - amountReceived;
 					}
 
 					const company = response.data.companies.find((f) => f.id == m.company_id);
@@ -346,6 +355,11 @@ export default function Invoices({ status }) {
 	function toggleNewInvoice(object) {
 		setMain((s) => ({ ...s, selectedProject: object }));
 		setMounted((s) => ({ ...s, newInvoice: object ? true : false }));
+	}
+
+	function toggleTransactions(object) {
+		setMain((s) => ({ ...s, selectedProject: object }));
+		setMounted((s) => ({ ...s, transactions: object ? true : false }));
 	}
 
 	// UI Components
@@ -477,6 +491,10 @@ export default function Invoices({ status }) {
 						</div>
 					</div>
 					<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
+
+					{mounted.transactions && (
+						<Transactions mount={mounted.transactions} project={main.selectedProject} reload={setSupportData} unmount={toggleTransactions} />
+					)}
 				</div>
 			);
 		} else {
@@ -528,10 +546,14 @@ export default function Invoices({ status }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountPending }} />
-				<span className={invoiceIdStyle} dangerouslySetInnerHTML={{ __html: _invoiceId }} onClick={() => toggleNewInvoice(row)} />
+				<span
+					className={`${style} cursor-pointer primary-text`}
+					dangerouslySetInnerHTML={{ __html: _invoiceId }}
+					onClick={() => toggleNewInvoice(row)}
+				/>
 				<span className={`${style} space-x-5`}>
-					<FontAwesomeIcon className="primary-text" icon={faFileDownload} size="lg" />
-					<FontAwesomeIcon className="primary-text" icon={faCoins} size="lg" />
+					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faFileDownload} size="lg" />
+					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faCoins} onClick={() => toggleTransactions(row)} size="lg" />
 				</span>
 			</div>
 		);

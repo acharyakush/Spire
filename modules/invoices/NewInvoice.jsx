@@ -124,6 +124,8 @@ export default function NewInvoice({ project, reload, unmount }) {
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewInvoice);
+		} finally {
+			unmount();
 		}
 	}
 
@@ -295,12 +297,10 @@ export default function NewInvoice({ project, reload, unmount }) {
 					ownersFirmsBank.name = getOwnersFirmsBank.name;
 				}
 
-				const getAmountReceived = response.data.cashFlows.filter((f) => {
-					return f.client_id == project.client_id && f.company_id == project.company_id && f.project_id == project.id;
-				});
+				const getAmountReceived = response.data.invoicesPaymentHistory.filter((f) => f.project_id == project.id);
 
 				const totalAmountReceived = getAmountReceived.reduce((pv, cv) => {
-					return pv + Number(cv.amount_received);
+					return pv + Number(cv.amount);
 				}, 0);
 
 				setApi({
@@ -745,7 +745,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 	// Main UI
 	return (
 		<div className="flex flex-col w-full h-full justify-center items-center">
-			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
+			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
 				<div className="flex w-full space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 					<div className="flex w-full justify-start items-center">

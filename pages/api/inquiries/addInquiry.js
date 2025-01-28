@@ -88,7 +88,7 @@ export default async function handler(req, res) {
 				emailAddress,
 				followUps,
 				quote,
-				status,
+				"Open",
 				userId,
 			],
 		);

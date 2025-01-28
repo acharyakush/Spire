@@ -55,7 +55,7 @@ export const ComboBox = ({
 									<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
 								</ComboboxButton>
 							</div>
-							<ComboboxOptions className="absolute w-full max-h-[273px] mt-1 overflow-auto divide-y rounded bottom-shadow outline-none z-50 full-border light-gray-background">
+							<ComboboxOptions className="absolute w-full max-h-[273px] mt-1 overflow-auto divide-y rounded bottom-shadow outline-none z-50 full-border primary-light-background">
 								{uiList()}
 							</ComboboxOptions>
 						</div>
@@ -151,7 +151,7 @@ export const ComboBox2 = ({
 									<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
 								</ComboboxButton>
 							</div>
-							<ComboboxOptions className="absolute w-full max-h-[273px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border light-gray-background">
+							<ComboboxOptions className="absolute w-full max-h-[273px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border primary-light-background">
 								{uiList()}
 							</ComboboxOptions>
 						</div>
@@ -322,7 +322,7 @@ export const EmailAddress = ({ isReadOnly = false, label = "Email Address", onCh
 				<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
 				<input autoComplete="off" className="inputs" onChange={onChange} readOnly={isReadOnly} ref={reference} tabIndex={tabIndex} value={value} />
 				{suffix && (
-					<span className="flex h-9 px-1 justify-center items-center full-border no-right-border font-regular-8 light-gray-background black-text">
+					<span className="flex h-9 px-1 justify-center items-center full-border no-right-border font-regular-8 primary-light-background black-text">
 						{emailAddressSuffix}
 					</span>
 				)}

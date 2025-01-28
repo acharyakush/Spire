@@ -13,17 +13,12 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const [cashFlows, clients, companies, invoices, invoicesPaymentHistory, ownerFirms, ownerFirmsBanks] = await Promise.all([
-			query("SELECT * FROM cash_flows WHERE is_deleted=0", []), // Queries
-			query("SELECT * FROM clients WHERE is_confirmed=1", []),
-			query("SELECT * FROM companies", []),
-			query("SELECT * FROM invoices", []),
-			query("SELECT * FROM invoices_payment_history", []),
-			query("SELECT * FROM owner_firms", []),
-			query("SELECT * FROM owner_firms_banks", []),
+		const [history, ownerFirmsBanks] = await Promise.all([
+			query("SELECT * FROM invoices_payment_history WHERE invoice_custom_id=? ORDER BY id DESC", [req.query.invoiceId]), // Queries
+			query("SELECT * FROM owner_firms_banks WHERE owner_firm_id=?", [req.query.ownerFirmId]),
 		]);
 
-		return res.status(200).json({ cashFlows, clients, companies, invoices, invoicesPaymentHistory, ownerFirms, ownerFirmsBanks });
+		return res.status(200).json({ history, ownerFirmsBanks });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");

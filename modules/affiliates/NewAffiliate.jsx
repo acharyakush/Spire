@@ -240,7 +240,7 @@ export default function NewAffiliate({ reload, unmount }) {
 	} else {
 		return (
 			<div className="flex flex-col w-full h-full justify-center items-center">
-				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
+				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
 					<div className="flex w-full space-x-2.5 justify-start items-center">
 						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 						<div className="flex w-full justify-start items-center">

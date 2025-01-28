@@ -7,7 +7,7 @@ import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
-import { MyGlobal } from "@/utilities/global";
+import { allowedKeysForOnKeyPressEvent, MyGlobal } from "@/utilities/global";
 import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, TextArea, TextInput } from "@/components/Inputs";
@@ -395,11 +395,11 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 	});
 
 	const [main, setMain] = useState({
-		affiliate: { fees: 0, id: "", name: "" },
+		affiliate: { fees: "", id: "", name: "" },
 		isBoxMoved: false,
 		isLoading: false,
 		isMapping: false,
-		selected: [{ fees: 0, id: 0, name: "" }],
+		selected: [{ fees: "", id: 0, name: "" }],
 	});
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
@@ -499,9 +499,7 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 	}
 
 	function setFees(value) {
-		if (value) {
-			setMain((s) => ({ ...s, affiliate: { ...s.affiliate, fees: value } }));
-		}
+		setMain((s) => ({ ...s, affiliate: { ...s.affiliate, fees: value } }));
 	}
 
 	function setInputs(key, value) {

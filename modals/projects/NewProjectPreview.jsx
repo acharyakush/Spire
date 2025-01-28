@@ -51,7 +51,7 @@ export default function NewProjectPreview({ mount, project, unmount }) {
 				<Draggable handle=".draggable-handle" onStart={() => setIsBoxMoved(!isBoxMoved)} onStop={() => setIsBoxMoved(!isBoxMoved)}>
 					<DialogPanel className="w-3/5 transform overflow-hidden rounded shadow contrast-background">
 						{uiTitleBar()}
-						<div className="flex flex-col w-full h-[410px] py-3 space-y-3 justify-between items-center overflow-y-auto light-gray-background">
+						<div className="flex flex-col w-full h-[410px] py-3 space-y-3 justify-between items-center overflow-y-auto primary-light-background">
 							{uiRow("Client", project.inquiry.client_name)}
 							{uiRow("Company", project.company.name)}
 							{uiRow("Phone Number", project.phoneNumber)}

@@ -62,7 +62,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const showFollowUpsMenu = mounted.followUpsMenu
-		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow light-gray-background full-border"
+		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border"
 		: "hidden";
 
 	const disableEditButton = other.isLoading ? "pointer-events-none" : "pointer-events-auto";
@@ -593,7 +593,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 	} else {
 		return (
 			<>
-				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
+				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
 					<div className="flex w-full space-x-2.5 justify-start items-center">
 						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 						<div className="flex w-full justify-start items-center">

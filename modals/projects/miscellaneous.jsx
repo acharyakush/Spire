@@ -276,14 +276,12 @@ export function ProjectStatus({ mount, project, unmount }) {
 		isBoxMoved: false,
 		isLoading: false,
 		status: {
-			dues: { allPaidOff: false, totalAmountPending: 0, totalAmount: 0 },
-			invoices: { anyGenerated: false, anyRvGenerated: false, total: 0 },
+			invoices: { anyGenerated: false, total: 0 },
 			tasks: { allCompleted: false, total: 0, completed: 0 },
 		},
 	});
 
-	const isCompletionEligible =
-		main.status.dues.allPaidOff && main.status.invoices.anyGenerated && main.status.invoices.anyRvGenerated && main.status.tasks.allCompleted;
+	const isCompletionEligible = main.status.invoices.anyGenerated && main.status.tasks.allCompleted;
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
@@ -310,26 +308,12 @@ export function ProjectStatus({ mount, project, unmount }) {
 				const completedTasks = tasks.filter((f) => f.is_completed == 1).length;
 				const areAllTasksCompleted = tasks.length && tasks.every((f) => f.is_completed == 1);
 
-				// const areAnyDuesPending = invoices.length && invoices.every((ledger) => ledger.amount_received == ledger.total_amount);
-
-				// const totalAmount = invoices.reduce((total, ledger) => total + Number(ledger.total_amount), 0);
-
-				// const totalAmountPending = invoices.reduce((total, ledger) => total + (Number(ledger.total_amount) - Number(ledger.amount_received)), 0);
-
-				const anyRvGenerated = response.data.invoices.length > 0 && Boolean(response.data.invoices[0].rv_id);
-
 				setMain((s) => ({
 					...s,
 					status: {
-						dues: {
-							allPaidOff: 0,
-							totalAmount: 0,
-							totalAmountPending: 0,
-						},
 						invoices: {
-							anyGenerated: response.data.invoices.length > 0,
-							anyRvGenerated,
-							total: response.data.invoices.length,
+							anyGenerated: invoices.length > 0,
+							total: invoices.length,
 						},
 						tasks: {
 							allCompleted: areAllTasksCompleted,
@@ -350,7 +334,7 @@ export function ProjectStatus({ mount, project, unmount }) {
 	function uiBody() {
 		if (main.isLoading) {
 			return (
-				<div className="flex flex-col w-full h-[328px] justify-center items-center">
+				<div className="flex flex-col w-full h-[199px] justify-center items-center">
 					<SpinnerBig />
 				</div>
 			);
@@ -366,16 +350,6 @@ export function ProjectStatus({ mount, project, unmount }) {
 
 			const label2 = (
 				<div className="flex flex-col w-full -space-y-px">
-					<span>All dues have been paid off?</span>
-					<span className="font-regular-9">
-						Total Pending {MyGlobal.ThousandSeparator(main.status.dues.totalAmountPending)} /{" "}
-						{MyGlobal.ThousandSeparator(main.status.dues.totalAmount)}
-					</span>
-				</div>
-			);
-
-			const label3 = (
-				<div className="flex flex-col w-full -space-y-px">
 					<span>Is any invoice generated?</span>
 					<span className="font-regular-9">Generated {main.status.invoices.total}</span>
 				</div>
@@ -385,9 +359,7 @@ export function ProjectStatus({ mount, project, unmount }) {
 				<div className="flex flex-col w-full px-5 py-4 space-y-3 justify-between items-center">
 					<div className="w-full text-left font-medium-11 black-text">These statistics determine the project's eligibility for completion.</div>
 					{uiRow(label1, main.status.tasks.allCompleted)}
-					{uiRow(label2, main.status.dues.allPaidOff)}
-					{uiRow(label3, main.status.invoices.anyGenerated)}
-					{uiRow("Is any reimbursement voucher generated?", main.status.invoices.anyRvGenerated)}
+					{uiRow(label2, main.status.invoices.anyGenerated)}
 				</div>
 			);
 		}
@@ -410,7 +382,7 @@ export function ProjectStatus({ mount, project, unmount }) {
 	}
 
 	function uiRow(label, value) {
-		const _value = <FontAwesomeIcon className="red-text" icon={value ? faCircleCheck : faCircleXmark} size="lg" />;
+		const _value = <FontAwesomeIcon className={value ? "green-text" : "red-text"} icon={value ? faCircleCheck : faCircleXmark} size="lg" />;
 
 		return (
 			<div className={wrapper}>
@@ -442,7 +414,7 @@ export function ProjectStatus({ mount, project, unmount }) {
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[500px] transform overflow-hidden rounded light-gray-background shadow">
+					<DialogPanel className="w-[500px] transform overflow-hidden rounded primary-light-background shadow">
 						{uiTitleBar()}
 						{uiBody()}
 						<footer className="dialog-footer">{uiButton()}</footer>

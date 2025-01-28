@@ -6,6 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import writeXlsxFile from "write-excel-file";
+import SingleProject from "../singleProject";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
@@ -16,7 +17,7 @@ import { EditCompany } from "@/modals/singleClient";
 import { TextInputNative } from "@/components/Inputs";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { SpinnerSmall, Tooltip, TooltipList } from "@/components/Elements";
+import { SpinnerSmall, Tooltip, UsersTooltipList } from "@/components/Elements";
 import {
 	faCalendar,
 	faChevronLeft,
@@ -31,7 +32,6 @@ import {
 	faSortAmountDesc,
 	faUserTag,
 } from "@fortawesome/free-solid-svg-icons";
-import SingleProject from "../singleProject";
 
 export default function SingleClient({ client, unmount }) {
 	// Business Logic
@@ -366,9 +366,9 @@ export default function SingleClient({ client, unmount }) {
 							subProjectName = subProject.name;
 						}
 
-						const amountReceived = response.data.cashFlows
+						const amountReceived = response.data.invoicesPaymentHistory
 							.filter((f) => f.project_id == fe.id)
-							.reduce((pv, cv) => pv + Number(cv.amount_received), 0);
+							.reduce((pv, cv) => pv + Number(cv.amount), 0);
 
 						const reimburseVoucher = tasks.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.expense), 0);
 
@@ -387,6 +387,7 @@ export default function SingleClient({ client, unmount }) {
 							reimburse_voucher: reimburseVoucher,
 							sub_project_name: subProjectName,
 							teams: MyGlobal.GetFullDetailsFromIds(fe.teams),
+							teams_names: MyGlobal.GetAnyDataFromId(fe.teams, "full_name"),
 							total_fees: totalFees,
 						});
 					});
@@ -627,7 +628,7 @@ export default function SingleClient({ client, unmount }) {
 		}
 	}
 
-	function uiRows(object, i) {
+	function uiRows(row, i) {
 		const width = main.selectedCompany.id != 0 ? "w-[14.28%]" : "w-[8.33%]";
 		const style = `flex flex-wrap ${width} min-h-9 justify-center items-center text-center`;
 		const tooltipStyle = `${style} cursor-help primary-text`;
@@ -638,44 +639,44 @@ export default function SingleClient({ client, unmount }) {
 
 		return (
 			<div className="flex w-full justify-center items-center black-white-background bottom-border font-regular-11 black-text" key={i}>
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.id, main.filter.find) }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.id, main.filter.find) }} />
 
-				<Tippy allowHTML content={dayjs(object.started_on).format("hh:mm:ss A")}>
-					<span className={tooltipStyle}>{dayjs(object.started_on).format("DD/MM/YYYY")}</span>
+				<Tippy className="font-regular-11" content={dayjs(row.started_on).format("hh:mm:ss A")}>
+					<span className={tooltipStyle}>{dayjs(row.started_on).format("DD/MM/YYYY")}</span>
 				</Tippy>
 
-				<Tippy allowHTML content={object.main_project_name}>
+				<Tippy className="font-regular-11" content={row.main_project_name}>
 					<span
 						className={`${tooltipStyle} cursor-pointer`}
-						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.sub_project_name, main.filter.find) }}
-						onClick={() => toggleSingleProjectView(object)}
+						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.sub_project_name, main.filter.find) }}
+						onClick={() => toggleSingleProjectView(row)}
 					/>
 				</Tippy>
 
 				{main.selectedCompany.id == 0 && (
-					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.company_name, main.filter.find) }} />
+					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.company_name, main.filter.find) }} />
 				)}
 
-				<Tippy allowHTML content={<TooltipList payload={object.teams_names} />}>
-					<span className={`${style} space-x-1 cursor-help primary-text`}>{object.teams.length}</span>
+				<Tippy allowHTML content={<UsersTooltipList list={row.teams} />}>
+					<span className={`${style} space-x-1 cursor-help primary-text`}>{row.teams.length}</span>
 				</Tippy>
 
-				<Tippy allowHTML content={<Tooltip text={object.invoice_firm_name} />}>
-					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.invoice_firm_initials, main.filter.find) }} />
+				<Tippy allowHTML content={<Tooltip text={row.invoice_firm_name} />}>
+					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_firm_initials, main.filter.find) }} />
 				</Tippy>
 
-				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.invoice_fees, main.filter.find) }} />
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_fees, main.filter.find) }} />
 
-				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.reimburse_voucher, main.filter.find) }} />
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.reimburse_voucher, main.filter.find) }} />
 
-				<span className={amountReceivedStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.amount_received, main.filter.find) }} />
+				<span className={amountReceivedStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_received, main.filter.find) }} />
 
-				<span className={amountPendingStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.amount_pending, main.filter.find) }} />
+				<span className={amountPendingStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_pending, main.filter.find) }} />
 
-				<span className={totalFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.total_fees, main.filter.find) }} />
+				<span className={totalFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.total_fees, main.filter.find) }} />
 
-				<Tippy allowHTML content={object.completed_on} disabled={object.status != "Completed"}>
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(object.status, main.filter.find) }} />
+				<Tippy allowHTML content={row.completed_on} disabled={row.status != "Completed"}>
+					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.filter.find) }} />
 				</Tippy>
 			</div>
 		);

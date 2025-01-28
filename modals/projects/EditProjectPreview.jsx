@@ -70,7 +70,7 @@ export default function EditProjectPreview({ mount, newProject, oldProject, unmo
 				<Draggable handle=".draggable-handle" onStart={() => setIsBoxMoved(!isBoxMoved)} onStop={() => setIsBoxMoved(!isBoxMoved)}>
 					<DialogPanel className="w-3/4 transform overflow-hidden rounded shadow contrast-background">
 						{uiTitleBar()}
-						<div className="flex w-full p-6 space-x-3 justify-between items-center light-gray-background">
+						<div className="flex w-full p-6 space-x-3 justify-between items-center primary-light-background">
 							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
 								{uiRow("old", "Client", oldProject.client.name)}
 								{uiRow("old", "Company", oldProject.company.name)}

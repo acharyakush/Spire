@@ -10,23 +10,12 @@ import { MyGlobal } from "@/utilities/global";
 import { useEffect, useRef, useState } from "react";
 import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ComboBox, ComboBox2, ComboBoxWithChips, DatePicker, EmailAddress, TextArea, TextInput } from "@/components/Inputs";
-import {
-	faCalendar,
-	faChevronLeft,
-	faCircleExclamation,
-	faFile,
-	faIndianRupee,
-	faNoteSticky,
-	faPhone,
-	faUser,
-	faUserGroup,
-} from "@fortawesome/free-solid-svg-icons";
+import { ComboBox2, ComboBoxWithChips, DatePicker, EmailAddress, TextArea, TextInput } from "@/components/Inputs";
+import { faCalendar, faChevronLeft, faFile, faIndianRupee, faNoteSticky, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 export default function NewInquiry({ reload, unmount }) {
 	// Business Logic
 	const followUpsMenuRef = useRef(null);
-	const statuses = MyConstants.Statuses.Inquiries;
 
 	const [api, setApi] = useState({
 		clients: { copy: [], data: [] },
@@ -43,9 +32,8 @@ export default function NewInquiry({ reload, unmount }) {
 		mainProject: { id: "", name: "" },
 		note: "",
 		phoneNumber: "",
-		quote: 2500,
+		quote: "",
 		reference: { id: "", name: "" },
-		status: statuses.Open,
 		subProject: { id: "", name: "" },
 	});
 
@@ -55,12 +43,12 @@ export default function NewInquiry({ reload, unmount }) {
 	});
 
 	const [other, setOther] = useState({
-		find: { client: {}, mainProject: {}, reference: {}, status: "", subProject: {} },
+		find: { client: {}, mainProject: {}, reference: {}, subProject: {} },
 		isLoading: false,
 	});
 
 	const showFollowUpsMenu = mounted.followUpsMenu
-		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow light-gray-background full-border"
+		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border"
 		: "hidden";
 
 	const disableAddButton = other.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
@@ -68,9 +56,9 @@ export default function NewInquiry({ reload, unmount }) {
 
 	// Functions
 	async function addInquiry() {
-		setOther((s) => ({ ...s, isLoading: true }));
-
 		try {
+			setOther((s) => ({ ...s, isLoading: true }));
+
 			const body = {
 				...main,
 				followUps: getFollowUpsIds(),
@@ -210,19 +198,6 @@ export default function NewInquiry({ reload, unmount }) {
 		return list;
 	}
 
-	function getFilteredStatuses() {
-		const value = String(other.find.status);
-		let list = statuses;
-
-		if (value !== "undefined") {
-			list = Object.values(statuses).filter((f) => {
-				return String(f).toLowerCase().includes(value.toLowerCase());
-			});
-		}
-
-		return list;
-	}
-
 	function getFilteredSubProjects() {
 		let list = !api.subProjects.copy.length ? [] : api.subProjects.copy;
 
@@ -282,37 +257,39 @@ export default function NewInquiry({ reload, unmount }) {
 	}
 
 	function setInputs(key, value) {
-		if (value) {
-			if (key == "client") {
-				const client = api.clients.copy.filter((client) => client.id == value.id).at(0);
-				const isExistingClient = client.id !== 0;
+		if (key != "quote") {
+			if (typeof value === "object") {
+				if (key == "client") {
+					const client = api.clients.copy.filter((client) => client.id == value.id).at(0);
+					const isExistingClient = client.id !== 0;
 
-				const emailAddress = isExistingClient ? client.email_address : "";
-				const phoneNumber = isExistingClient ? client.phone_number : "";
+					const emailAddress = isExistingClient ? client.email_address : "";
+					const phoneNumber = isExistingClient ? client.phone_number : "";
 
-				const referenceId = isExistingClient ? client.reference_id : "";
-				const referenceName = isExistingClient ? api.references.copy.filter((reference) => reference.id == referenceId).at(0)?.name : "";
+					const referenceId = isExistingClient ? client.reference_id : "";
+					const referenceName = isExistingClient ? api.references.copy.filter((reference) => reference.id == referenceId).at(0)?.name : "";
 
-				if (isExistingClient) {
-					setFind("client", "");
+					if (isExistingClient) {
+						setFind("client", "");
+					}
+
+					setMain((s) => ({
+						...s,
+						client: { id: value.id, name: value.name },
+						phoneNumber,
+						emailAddress,
+						reference: { id: referenceId, name: referenceName },
+					}));
+				} else if (key == "reference") {
+					setFind("reference", "");
+					setMain((s) => ({ ...s, reference: { id: value.id, name: value.name } }));
+				} else if (key == "mainProject" || key == "subProject") {
+					setFind(key, "");
+					setMain((s) => ({ ...s, [key]: { ...s[key], id: value.id, name: value.name } }));
 				}
-
-				setMain((s) => ({
-					...s,
-					client: { id: value.id, name: value.name },
-					phoneNumber,
-					emailAddress,
-					reference: { id: referenceId, name: referenceName },
-				}));
-			} else if (key == "reference") {
-				setFind("reference", "");
-				setMain((s) => ({ ...s, reference: { id: value.id, name: value.name } }));
-			} else if (key == "mainProject" || key == "subProject") {
-				setFind(key, "");
-				setMain((s) => ({ ...s, [key]: { ...s[key], id: value.id, name: value.name } }));
-			} else {
-				setMain((s) => ({ ...s, [key]: value }));
 			}
+		} else {
+			setMain((s) => ({ ...s, [key]: value }));
 		}
 	}
 
@@ -475,9 +452,9 @@ export default function NewInquiry({ reload, unmount }) {
 				icon={faIndianRupee}
 				label="Quote"
 				onChange={(e) => setInputs("quote", e.target.value)}
-				onKeyPress={() => {}}
+				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex={8}
-				value={MyGlobal.ThousandSeparator(main.quote)}
+				value={main.quote}
 				width="w-full"
 			/>
 		);
@@ -502,25 +479,6 @@ export default function NewInquiry({ reload, unmount }) {
 				searchedItem={other.find.reference.name}
 				tabIndex={6}
 				value={getReferenceName()}
-				width="w-full"
-			/>
-		);
-	}
-
-	function uiStatus() {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue={main.status}
-				filteredData={getFilteredStatuses}
-				icon={faCircleExclamation}
-				label="Status"
-				onChange={(e) => setInputs("status", e)}
-				onClick={() => {}}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
-				searchedItem={other.find.status}
-				tabIndex={9}
-				value={main.status}
 				width="w-full"
 			/>
 		);
@@ -577,7 +535,7 @@ export default function NewInquiry({ reload, unmount }) {
 	} else {
 		return (
 			<>
-				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border light-gray-background">
+				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
 					<div className="flex w-full space-x-2.5 justify-start items-center">
 						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 						<div className="flex w-full justify-start items-center">
@@ -600,7 +558,6 @@ export default function NewInquiry({ reload, unmount }) {
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
 							{uiDate()}
 							{uiQuote()}
-							{uiStatus()}
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiFollowUps()}</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiNotes()}</div>

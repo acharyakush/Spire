@@ -13,11 +13,11 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { amount, amountReceived, customId, clientId, id, receiptDate } = req.body;
+		const { amount, customInvoiceId, projectId, entryAt, particulars, source } = req.body;
 
 		const response = await query(
-			"INSERT INTO invoices (custom_id, client_id, project_id, amount, amount_received, receipt_date) VALUES (?, ?, ?, ?, ?, ?)",
-			[customId, clientId, id, amount, amountReceived, receiptDate],
+			"INSERT INTO invoices_payment_history (invoice_custom_id, project_id, entry_at, particulars, amount, source) VALUES (?, ?, ?, ?, ?, ?)",
+			[customInvoiceId, projectId, entryAt, particulars, amount, source],
 		);
 
 		if (response.affectedRows > 0) {

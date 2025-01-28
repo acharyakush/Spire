@@ -53,7 +53,7 @@ export default function NewInquiryPreview({ inquiry, mount, unmount }) {
 				<Draggable handle=".draggable-handle" onStart={() => setIsBoxDragged(true)} onStop={() => setIsBoxDragged(false)}>
 					<DialogPanel className="w-[600px] transform overflow-hidden rounded shadow contrast-background">
 						{uiTitleBar()}
-						<div className="flex flex-col w-full py-3 space-y-3 justify-between items-center light-gray-background">
+						<div className="flex flex-col w-full py-3 space-y-3 justify-between items-center primary-light-background">
 							{uiRow("Client", inquiry.client.name)}
 							{uiRow("Email Address", inquiry.emailAddress)}
 							{uiRow("Phone Number", inquiry.phoneNumber)}

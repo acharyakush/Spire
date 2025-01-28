@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Find the PID of the Node.js process running uat-server.js
-PID=$(ps aux | grep '[n]ode /home/fco1t1x9fsye/public_html/uat.signiixadvisors.com/uat-server.js' | awk '{print $2}')
+PID=$(ps aux | grep '[n]ode /home/fco1t1x9fsye/public_html/test.signiixadvisors.com/uat-server.js' | awk '{print $2}')
 
 if [ -n "$PID" ]; then
     echo "Found Node.js process with PID: $PID"

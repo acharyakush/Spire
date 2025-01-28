@@ -10,7 +10,7 @@ import MyConstants from "@/utilities/constants";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Badge, BadgeSmall, Spinner, SpinnerBig } from "@/components/Elements";
+import { Badge, BadgeSmall, Spinner } from "@/components/Elements";
 import { faAt, faBank, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 
 export default function Affiliates() {

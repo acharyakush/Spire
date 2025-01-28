@@ -47,7 +47,7 @@ export default function NewInvoicePreview({ mount, invoice, isGeneratingPdf, unm
 					<DialogPanel className="w-fit h-4/5 transform overflow-hidden rounded shadow contrast-background">
 						{uiTitleBar()}
 						<div
-							className="flex w-full h-[calc(100%-92px)] justify-center items-center overflow-y-auto light-gray-background"
+							className="flex w-full h-[calc(100%-92px)] justify-center items-center overflow-y-auto primary-light-background"
 							id="invoicePreviewWrapper">
 							{invoice()}
 						</div>

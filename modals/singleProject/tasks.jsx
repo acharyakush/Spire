@@ -7,13 +7,13 @@ import dayjs from "dayjs";
 import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Spinner, SpinnerBig } from "@/components/Elements";
+import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
-import { faCalendar, faCoins, faListCheck, faNoteSticky, faStickyNote, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { DatePicker, TextArea, TextInput } from "@/components/Inputs";
+import { faCalendar, faCoins, faListCheck, faNoteSticky, faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function AddParticularRemark({ mount, reload, task, unmount }) {
 	// Business Logic
@@ -51,7 +51,7 @@ export function AddParticularRemark({ mount, reload, task, unmount }) {
 
 				MyGlobal.AddActivity(`Added a particular and remark in <b>${task.task_id}</b> in <b>${task.project_id}</b>.`, MyConstants.Modules.Base.Tasks);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskParticularRemarkEdited);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskParticularRemarkAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
@@ -268,6 +268,98 @@ export function AddTask({ mount, reload, project, unmount }) {
 	);
 }
 
+export function DeleteParticularRemark({ mount, reload, task, unmount }) {
+	// Business Logic
+	const [main, setMain] = useState({
+		isBoxMoved: false,
+		isLoading: false,
+	});
+
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+
+	// Functions
+	async function doDeletion() {
+		setMain((s) => ({ ...s, isLoading: true }));
+
+		const body = {
+			projectId: task.project_id,
+			rowId: task.id,
+			taskId: task.task_id,
+			type: "delete-tasks-particular-remark",
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reload();
+
+				MyGlobal.AddActivity(
+					`Deleted particular <b>${task.particular}</b> with remark <b>${task.remark}</b> of <b>${task.task_id}</b> in <b>${task.project_id}</b>`,
+					MyConstants.Modules.Base.Tasks,
+				);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskParticularRemarkDeleted);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Delete Tasks Particular / Remark");
+		} finally {
+			setMain((s) => ({ ...s, isLoading: false }));
+			unmount();
+		}
+	}
+
+	function setBoxDrag() {
+		setMain((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
+	}
+
+	// UI Components
+	function uiButton() {
+		if (main.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Delete";
+		}
+	}
+
+	function uiTitleBar() {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Delete Particular/Remark</span>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+			</DialogTitle>
+		);
+	}
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
+						{uiTitleBar()}
+						<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center font-regular-12">
+							Do you want to delete the below particular & remark?
+						</div>
+						<footer className="dialog-footer">
+							<button className="primary-button-condensed" onClick={() => doDeletion()}>
+								{uiButton()}
+							</button>
+						</footer>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
 export function DeleteTask({ mount, reload, task, unmount }) {
 	// Business Logic
 	const [main, setMain] = useState({
@@ -379,13 +471,13 @@ export function DeleteTask({ mount, reload, task, unmount }) {
 export function EditParticularRemark({ mount, reload, task, unmount }) {
 	// Business Logic
 	const [main, setMain] = useState({
-		isBoxMovie: false,
+		isBoxMoved: false,
 		isLoading: false,
 		particular: task.particular,
 		remark: task.remark,
 	});
 
-	const titleBarCursor = main.isBoxMovie ? "cursor-grabbing" : "cursor-grab";
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
 	// Functions
@@ -441,7 +533,7 @@ export function EditParticularRemark({ mount, reload, task, unmount }) {
 	}
 
 	function setBoxDrag() {
-		setMain((s) => ({ ...s, isBoxMovie: !s.isBoxMovie }));
+		setMain((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
 	}
 
 	function setInputs(key, value) {

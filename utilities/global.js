@@ -13,6 +13,7 @@ const encryptionKey = CryptoJS.enc.Hex.parse(process.env.NEXT_PUBLIC_SECRET_KEY)
 
 export const applicationName = process.env.NEXT_PUBLIC_APPLICATION_NAME;
 export const isDevelopment = process.env.NODE_ENV !== "production";
+export const allowedKeysForOnKeyPressEvent = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
 
 let allUsers = [];
 let fullName = "";
@@ -108,6 +109,32 @@ export const MyGlobal = Object.freeze({
 		return initials;
 	},
 
+	GetAnyDataFromId: (id, type) => {
+		if (id) {
+			const _id = String(id);
+
+			if (_id.includes(",")) {
+				const names = [];
+				const idsArray = _id.split(",");
+
+				idsArray.forEach((fe) => {
+					const object = allUsers.find((f) => f.id == fe);
+
+					if (typeof object === "object") {
+						names.push(object[type]);
+					}
+				});
+
+				return names.join(", ");
+			} else {
+				const user = allUsers.find((f) => f.id == id);
+				return user[type] ?? "Ex User";
+			}
+		} else {
+			return "";
+		}
+	},
+
 	GetChangedValues(obj1, obj2, path = "") {
 		const changes = [];
 
@@ -138,28 +165,6 @@ export const MyGlobal = Object.freeze({
 		}
 
 		return array;
-	},
-
-	GetAnyDataFromId: (id, type) => {
-		const _id = String(id);
-
-		if (_id.includes(",")) {
-			const names = [];
-			const idsArray = _id.split(",");
-
-			idsArray.forEach((fe) => {
-				const object = allUsers.find((f) => f.id == fe);
-
-				if (typeof object === "object") {
-					names.push(object[type]);
-				}
-			});
-
-			return names.join(", ");
-		} else {
-			const user = allUsers.find((f) => f.id == id);
-			return user[type] ?? "Ex User";
-		}
 	},
 
 	GetHeaders: (parameters) => {
@@ -194,6 +199,20 @@ export const MyGlobal = Object.freeze({
 
 		const namesArray = String(payload).split(",");
 		return namesArray.map((name) => MyGlobal.GetInitials(name.trim())).join(", ");
+	},
+
+	GetNameFromId: (id, source = []) => {
+		let name = "";
+
+		if (source.length) {
+			const object = source.find((f) => f.id == id);
+
+			if (typeof object === "object") {
+				name = object.name;
+			}
+		}
+
+		return name;
 	},
 
 	GetNumbers: (payload) => {
@@ -323,7 +342,7 @@ export const MyGlobal = Object.freeze({
 
 	MakeNewInvoiceId: (payload) => {
 		if (payload.length) {
-			const getLatestId = [...payload].sort((a, b) => b.id.localeCompare(a.id)).at(0).id;
+			const getLatestId = [...payload].sort((a, b) => b.id - a.id).at(0).id;
 
 			if (!getLatestId) {
 				return "00001";

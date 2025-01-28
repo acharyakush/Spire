@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AddParticularRemark, AddTask, DeleteTask, EditParticularRemark, EditTask, EditTaskStatus } from "@/modals/singleProject/tasks";
+import { AddParticularRemark, AddTask, DeleteParticularRemark, DeleteTask, EditParticularRemark, EditTask, EditTaskStatus } from "@/modals/singleProject/tasks";
 import {
 	faBan,
 	faBolt,
@@ -43,6 +43,7 @@ export default function Tasks({ project }) {
 	const [mounted, setMounted] = useState({
 		addParticularRemark: false,
 		addTask: false,
+		deleteParticularRemark: false,
 		deleteTask: false,
 		editParticularRemark: false,
 		editTask: false,
@@ -202,6 +203,11 @@ export default function Tasks({ project }) {
 		setMounted((s) => ({ ...s, addTask: !s.addTask }));
 	}
 
+	function toggleDeleteParticularRemarkBox(remark) {
+		setMain((s) => ({ ...s, selectedRemark: remark ?? {} }));
+		setMounted((s) => ({ ...s, deleteParticularRemark: remark ? true : false }));
+	}
+
 	function toggleDeleteTaskBox(task) {
 		setMain((s) => ({ ...s, selectedTask: task ?? {} }));
 		setMounted((s) => ({ ...s, deleteTask: !s.deleteTask }));
@@ -250,7 +256,15 @@ export default function Tasks({ project }) {
 								{uiRemarksButton()}
 							</div>
 							<div className="flex flex-col w-[85%] h-full mr-5 space-y-2 justify-start items-center rounded shadow contrast-background">
-								{!api.remarks.data.length ? uiNoDataFound() : Object.keys(main.selectedTask).length ? uiTask() : uiRemarks()}
+								{main.selectedModuleId === 1
+									? uiRemarks()
+									: !api.tasks.data.length
+									? uiNoDataFound()
+									: Object.keys(main.selectedTask).length
+									? uiTask()
+									: !main.selectedTask.at?.particulars_remarks?.length
+									? uiNoParticularsRemarksFound()
+									: uiRemarks()}
 							</div>
 						</div>
 					</div>
@@ -538,10 +552,10 @@ export default function Tasks({ project }) {
 				<span className={style}>
 					<div className="flex space-x-5 justify-center items-center">
 						<div className={`${style} ${editRecordStyle}`} onClick={() => toggleEditParticularRemarkBox(row)}>
-							<FontAwesomeIcon className="w-5 green-text" icon={faPencil} size="lg" />
+							<FontAwesomeIcon className="w-5 cursor-pointer green-text" icon={faPencil} size="lg" />
 						</div>
-						<div className={`${style} ${deleteRecordStyle}`} onClick={() => toggleDeleteTaskBox(row)}>
-							<FontAwesomeIcon className="w-5 red-text" icon={faTrash} size="lg" />
+						<div className={`${style} ${deleteRecordStyle}`} onClick={() => toggleDeleteParticularRemarkBox(row)}>
+							<FontAwesomeIcon className="w-5 cursor-pointer red-text" icon={faTrash} size="lg" />
 						</div>
 					</div>
 				</span>
@@ -564,6 +578,15 @@ export default function Tasks({ project }) {
 			)}
 
 			{mounted.addTask && <AddTask mount={mounted.addTask} reload={getTasks} project={project} unmount={toggleAddTaskBox} />}
+
+			{mounted.deleteParticularRemark && (
+				<DeleteParticularRemark
+					mount={mounted.deleteParticularRemark}
+					reload={getTasks}
+					task={main.selectedRemark}
+					unmount={toggleDeleteParticularRemarkBox}
+				/>
+			)}
 
 			{mounted.deleteTask && <DeleteTask mount={mounted.deleteTask} reload={getTasks} task={main.selectedTask} unmount={toggleDeleteTaskBox} />}
 

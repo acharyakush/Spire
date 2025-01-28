@@ -3,7 +3,7 @@
 export const Badge = ({ value }) => {
 	return (
 		<div className="relative inline-block">
-			<span className="flex min-w-[1.5rem] h-6 px-2 justify-center items-center rounded-full text-white text-xs font-bold primary-background">
+			<span className="flex min-w-[1.5rem] h-6 px-2 justify-center items-center rounded-full text-white font-semibold-12 primary-background">
 				{value}
 			</span>
 		</div>
@@ -63,16 +63,32 @@ export const TooltipList = ({ payload }) => {
 			{!_payload.includes(",") ? (
 				<span className="font-regular-11">{payload}</span>
 			) : (
-				formattedPayload.map((item, index) => {
-					const name = String(item).trim();
+				formattedPayload.map((m, i) => {
+					const name = String(m).trim();
 
 					return (
-						<div className="flex w-full space-x-2 py-1 justify-between items-center whitespace-pre" key={index}>
-							<span>{index + 1}</span>.<span>{name}</span>
+						<div className="flex w-full space-x-2 py-1 justify-between items-center whitespace-pre" key={i}>
+							<span>{i + 1}</span>.<span>{name}</span>
 						</div>
 					);
 				})
 			)}
+		</div>
+	);
+};
+
+export const UsersTooltipList = ({ list }) => {
+	const _list = Array.isArray(list) ? list : Object.values(list);
+
+	return (
+		<div className="flex flex-col w-full p-1 justify-between items-center font-regular-11">
+			{_list.map((m, i) => {
+				return (
+					<div className="flex w-full space-x-2 py-px justify-between items-center whitespace-pre" key={i}>
+						<span>{i + 1}</span>.<span>{m.full_name}</span>
+					</div>
+				);
+			})}
 		</div>
 	);
 };

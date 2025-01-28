@@ -65,7 +65,7 @@ export default function EditInquiryPreview({ editInquiry, mount, oldInquiry, unm
 				<Draggable handle=".draggable-handle" onStart={() => setIsBoxDragged(true)} onStop={() => setIsBoxDragged(false)}>
 					<DialogPanel className="w-3/4 transform overflow-hidden rounded shadow contrast-background">
 						{uiTitleBar()}
-						<div className="flex w-full p-6 space-x-3 justify-between items-center light-gray-background">
+						<div className="flex w-full p-6 space-x-3 justify-between items-center primary-light-background">
 							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
 								{uiRow("Client", oldInquiry.client.name)}
 								{uiRow("Email Address", oldInquiry.emailAddress)}

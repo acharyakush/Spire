@@ -25,8 +25,8 @@ export function AddNote({ inquiry, mount, reload, unmount }) {
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
 
-	const disableSaveButton = main.isLoading || !main.note ? "pointer-events-none" : "pointer-events-auto";
-	const saveButtonStyle = `primary-button-condensed ${disableSaveButton}`;
+	const disableAddButton = main.isLoading || !main.note ? "pointer-events-none" : "pointer-events-auto";
+	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
 
 	// Functions
 	async function doNoteAdding() {
@@ -113,7 +113,7 @@ export function AddNote({ inquiry, mount, reload, unmount }) {
 							</div>
 						</div>
 						<footer className="dialog-footer">
-							<button className={saveButtonStyle} onClick={() => doNoteAdding()}>
+							<button className={addButtonStyle} onClick={() => doNoteAdding()}>
 								{uiButton()}
 							</button>
 						</footer>
