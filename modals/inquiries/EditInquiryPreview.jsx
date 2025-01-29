@@ -30,7 +30,7 @@ export default function EditInquiryPreview({ editInquiry, mount, oldInquiry, unm
 	}
 
 	const titleBarCursor = isBoxDragged ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// UI Components
 	const uiRow = (label, value) => {

@@ -1,34 +1,34 @@
 @font-face {
 	font-family: "Light";
-	src: url("/fonts/source_sans/light.ttf") format("truetype");
+	src: url("/fonts/reddit_sans/light.ttf") format("truetype");
 	font-weight: 300;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "Regular";
-	src: url("/fonts/source_sans/regular.ttf") format("truetype");
+	src: url("/fonts/reddit_sans/regular.ttf") format("truetype");
 	font-weight: 400;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "Medium";
-	src: url("/fonts/source_sans/medium.ttf") format("truetype");
+	src: url("/fonts/reddit_sans/medium.ttf") format("truetype");
 	font-weight: 500;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "SemiBold";
-	src: url("/fonts/source_sans/semi_bold.ttf") format("truetype");
+	src: url("/fonts/reddit_sans/semi_bold.ttf") format("truetype");
 	font-weight: 600;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "Bold";
-	src: url("/fonts/source_sans/bold.ttf") format("truetype");
+	src: url("/fonts/reddit_sans/bold.ttf") format("truetype");
 	font-weight: 700;
 	font-style: normal;
 }
@@ -118,7 +118,7 @@
 	--orange-transparent-01: rgba(255, 153, 0, 0.1);
 
 	--primary: #2e5860;
-	--primary-background: #e0e0e0;
+	--primary-background: #f2fafa;
 	--primary-border: #e0e0e0;
 	--primary-light: #f5f9fa;
 	--primary-transparent-01: rgba(46, 88, 96, 0.1);
@@ -136,7 +136,7 @@
 
 body,
 html {
-	@apply bg-[var(--gray-transparent-01)] m-0 p-0;
+	@apply bg-[var(--primary-transparent-01)] m-0 p-0;
 	-moz-osx-font-smoothing: auto;
 	font-synthesis: none;
 	font-feature-settings: "cpsp" 1;
@@ -510,6 +510,11 @@ html {
 	font-family: var(--semibold);
 }
 
+.font-semibold-11 {
+	@apply text-[11pt] font-semibold;
+	font-family: var(--semibold);
+}
+
 .font-semibold-12 {
 	@apply text-base font-semibold;
 	font-family: var(--semibold);
@@ -522,6 +527,11 @@ html {
 
 .font-semibold-16 {
 	@apply text-[16pt] font-semibold;
+	font-family: var(--semibold);
+}
+
+.font-semibold-30 {
+	@apply text-[30px] font-semibold;
 	font-family: var(--semibold);
 }
 
@@ -630,7 +640,7 @@ html {
 }
 
 .dialog-header {
-	@apply bg-white bottom-border flex items-center justify-between px-5 py-1.5 text-[16pt] text-[var(--primary)];
+	@apply bg-white flex items-center justify-between px-5 py-1.5 relative text-[16pt] text-[var(--primary)];
 	font-family: var(--semibold);
 }
 

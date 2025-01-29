@@ -65,6 +65,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 		invoiceDueDate,
 		invoiceId: 0,
 		invoiceNumber: 0,
+		invoicesPaymentHistory: [],
 		ownersFirm: {
 			address: "",
 			id: "",
@@ -269,7 +270,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 		try {
 			setLoading((s) => ({ ...s, supportData: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetNewInvoiceSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetNewInvoiceSupportData, MyGlobal.GetHeaders({ projectId: project.id }));
 
 			if (response.status === 200) {
 				const ownersFirm = {
@@ -303,6 +304,23 @@ export default function NewInvoice({ project, reload, unmount }) {
 					return pv + Number(cv.amount);
 				}, 0);
 
+				const invoicesPaymentHistory = response.data.invoicesPaymentHistory.map((m) => {
+					let source = "";
+
+					const getSource = MyGlobal.GetPaymentSourceList(response.data.ownerFirmsBanks).find((f) => f.id === m.source);
+
+					if (typeof getSource === "object") {
+						source = getSource.name;
+					}
+
+					return {
+						...m,
+						amount: MyGlobal.FormatCurrency(m.amount),
+						entry_at: dayjs(m.entry_at).format("DD MMMM, YYYY"),
+						source,
+					};
+				});
+
 				setApi({
 					clients: response.data.clients,
 					companies: response.data.companies,
@@ -316,6 +334,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 						name: ownersFirmsBank.name,
 					},
 					invoiceId: MyGlobal.MakeNewInvoiceId(response.data.invoices),
+					invoicesPaymentHistory,
 					ownersFirm,
 					totalAmountReceived,
 				}));
@@ -657,6 +676,10 @@ export default function NewInvoice({ project, reload, unmount }) {
 					</div>
 					{uiTotalAmount()}
 					<div className="flex w-full h-full justify-between items-end">{uiTermsAndConditions()}</div>
+					<div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
+						<div className="flex w-full h-full justify-between items-center bottom-border">{uiTransactionHistoryHeaders()}</div>
+						<div className="flex flex-col w-full h-full justify-between items-center">{uiTransactionHistory()}</div>
+					</div>
 				</div>
 			</div>
 		);
@@ -713,6 +736,31 @@ export default function NewInvoice({ project, reload, unmount }) {
 				</span>
 			</div>
 		);
+	}
+
+	function uiTransactionHistory() {
+		return main.invoicesPaymentHistory.map((m, i) => {
+			const bottomBorder = i == main.invoicesPaymentHistory.length - 1 ? "" : "bottom-border";
+			const wrapper = `flex w-full justify-center items-center ${bottomBorder} font-regular-11`;
+
+			return (
+				<div className={wrapper} key={i}>
+					<div className="flex w-1/3 py-2 justify-center items-center">{m.entry_at}</div>
+					<div className="flex w-1/3 justify-center items-center">{m.amount}</div>
+					<div className="flex w-1/3 justify-center items-center">{m.source}</div>
+				</div>
+			);
+		});
+	}
+
+	function uiTransactionHistoryHeaders() {
+		return ["Payment Received On", "Payment Amount", "Payment Via"].map((m, i) => {
+			return (
+				<span className="flex w-full py-2 justify-center items-center font-semibold-11 primary-text" key={i}>
+					{m}
+				</span>
+			);
+		});
 	}
 
 	function uiTotalAmount() {

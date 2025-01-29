@@ -28,7 +28,7 @@ export function AddParticularRemark({ mount, reload, task, unmount }) {
 	const addButtonStyle = `primary-button-condensed ${addButtonAesthetics}`;
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
 	async function doInsertion() {
@@ -154,7 +154,7 @@ export function AddTask({ mount, reload, project, unmount }) {
 	const addButtonStyle = `primary-button-condensed ${addButtonAesthetics}`;
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
 	async function doInsertion() {
@@ -276,7 +276,7 @@ export function DeleteParticularRemark({ mount, reload, task, unmount }) {
 	});
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
 	async function doDeletion() {
@@ -372,7 +372,7 @@ export function DeleteTask({ mount, reload, task, unmount }) {
 	const disableButtonStyle = `primary-button-condensed ${disableDeleteButton}`;
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
 	async function doDeletion() {
@@ -478,7 +478,7 @@ export function EditParticularRemark({ mount, reload, task, unmount }) {
 	});
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
 	async function doEditing() {
@@ -618,7 +618,7 @@ export function EditTask({ mount, reload, task, unmount }) {
 	});
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
 	async function doEditing() {
@@ -760,7 +760,7 @@ export function EditTaskStatus({ mount, reload, task, unmount }) {
 	});
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	const editButtonClickEvent = main.isLoading || !main.reason ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 
@@ -773,17 +773,17 @@ export function EditTaskStatus({ mount, reload, task, unmount }) {
 
 	switch (task.status) {
 		case MyConstants.Statuses.Tasks.Enable:
-			activityMessage = `Enabled <b>${task.id}</b> due to <b>${main.reason}</b>`;
+			activityMessage = `Enabled <b>${task.id}</b> in <b>${task.project_id}</b> due to <b>${main.reason}</b>`;
 			messageBody = "Are you sure you want to enable this task?";
 			break;
 		case MyConstants.Statuses.Tasks.Disable:
 			isDisabled = 1;
-			activityMessage = `Disabled <b>${task.id}</b> due to <b>${main.reason}</b>`;
+			activityMessage = `Disabled <b>${task.id}</b> in <b>${task.project_id}</b> due to <b>${main.reason}</b>`;
 			messageBody = "Are you sure you want to disable this task?";
 			break;
 		case MyConstants.Statuses.Tasks.Completed:
 			isCompleted = 1;
-			activityMessage = `Marked Task as Completed <b>${task.id}</b> due to <b>${main.reason}</b>`;
+			activityMessage = `Marked Task as Completed <b>${task.id}</b> in <b>${task.project_id}</b> due to <b>${main.reason}</b>`;
 			messageBody = "Are you sure you want to mark this task completed?";
 			break;
 	}
@@ -804,6 +804,7 @@ export function EditTaskStatus({ mount, reload, task, unmount }) {
 			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
+				markAllSubTasksCompleted();
 				reload();
 
 				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Tasks);
@@ -816,6 +817,24 @@ export function EditTaskStatus({ mount, reload, task, unmount }) {
 		} finally {
 			setMain((s) => ({ ...s, isLoading: false, reason: "" }));
 			unmount(false);
+		}
+	}
+
+	async function markAllSubTasksCompleted() {
+		if (isCompleted === 1) {
+			const body = {
+				projectId: task.project_id,
+				taskId: task.id,
+				type: "mark-all-sub-tasks-completed",
+			};
+
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				MyGlobal.AddActivity(`Marked all sub tasks as completed of <b>${task.id}</b> in <b>${task.project_id}</b>`, MyConstants.Modules.Base.Tasks);
+
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.AllSubTasksMarkedCompleted);
+			}
 		}
 	}
 
@@ -873,6 +892,121 @@ export function EditTaskStatus({ mount, reload, task, unmount }) {
 						</div>
 						<footer className="dialog-footer">
 							<button className={editButtonStyle} onClick={() => doEditing()}>
+								{uiButton()}
+							</button>
+						</footer>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
+export function MarkSubTaskCompleted({ mount, reload, remark, unmount }) {
+	// Business Logic
+	const [main, setMain] = useState({
+		isBoxMoved: false,
+		isLoading: false,
+		reason: "",
+	});
+
+	const disableDeleteButton = main.isLoading || !main.reason ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	const disableButtonStyle = `primary-button-condensed ${disableDeleteButton}`;
+
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
+
+	// Functions
+	async function doMarking() {
+		setMain((s) => ({ ...s, isLoading: true }));
+
+		const body = {
+			projectId: remark.project_id,
+			reason: main.reason,
+			taskId: remark.task_id,
+			taskRowId: remark.id,
+			type: "mark-sub-task-completed",
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reload();
+
+				MyGlobal.AddActivity(
+					`Marked sub task having <b>${remark.particular}</b> & <b>${remark.remark}</b> as completed of <b>${remark.task_id}</b> in <b>${remark.project_id}</b>`,
+					MyConstants.Modules.Base.Tasks,
+				);
+
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.SubTaskMarkedCompleted);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Mark Sub Task Completed");
+		} finally {
+			setMain((s) => ({ ...s, isLoading: false }));
+			unmount();
+		}
+	}
+
+	function setBoxDrag() {
+		setMain((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
+	}
+
+	function setReason(reason) {
+		setMain((s) => ({ ...s, reason }));
+	}
+
+	// UI Components
+	function uiButton() {
+		if (main.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Mark Completed";
+		}
+	}
+
+	function uiTitleBar() {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Mark Sub Task Completed</span>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+			</DialogTitle>
+		);
+	}
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
+						{uiTitleBar()}
+						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text">
+							Are you sure you want to mark this sub task as completed? You are required to write a completion reason below.
+						</span>
+						<div className="flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center">
+							<TextArea
+								icon={faNoteSticky}
+								key={1}
+								label="Reason"
+								onChange={(e) => setReason(e.target.value)}
+								onKeyDown={() => {}}
+								rows={3}
+								tabIndex={1}
+								value={main.reason}
+								width="w-full"
+							/>
+						</div>
+						<footer className="dialog-footer">
+							<button className={disableButtonStyle} onClick={() => doMarking()}>
 								{uiButton()}
 							</button>
 						</footer>

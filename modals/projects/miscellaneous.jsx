@@ -25,7 +25,7 @@ export function DeleteProject({ mount, projectId, reload, unmount }) {
 	const buttonStyle = `primary-button-condensed ${buttonClickEvent}`;
 
 	const titleBarCursor = main.isBoxMoving ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
 	async function doProjectDeletion() {
@@ -130,7 +130,7 @@ export function EditStatus({ mount, project, reload, unmount }) {
 
 	const reasonBoxStyle = isNewStatusNotActive ? "flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center" : "hidden";
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	let disableUpdateButton = main.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 
@@ -270,11 +270,12 @@ export function EditStatus({ mount, project, reload, unmount }) {
 	);
 }
 
-export function ProjectStatus({ mount, project, unmount }) {
+export function ProjectStatus({ mount, project, reload, unmount }) {
 	// Business Logic
 	const [main, setMain] = useState({
 		isBoxMoved: false,
 		isLoading: false,
+		isMarking: false,
 		status: {
 			invoices: { anyGenerated: false, total: 0 },
 			tasks: { allCompleted: false, total: 0, completed: 0 },
@@ -284,13 +285,41 @@ export function ProjectStatus({ mount, project, unmount }) {
 	const isCompletionEligible = main.status.invoices.anyGenerated && main.status.tasks.allCompleted;
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	const wrapper = "flex w-full p-2.5 h-[60.59px] justify-center items-center rounded bottom-shadow contrast-background full-border";
 	const labelStyle = "flex w-4/5 space-x-2 justify-start items-center font-medium-11 black-text";
 	const valueStyle = "flex w-1/5 justify-center items-center";
 
 	// Functions
+	async function doMarking() {
+		setMain((s) => ({ ...s, isMarking: true }));
+
+		const body = {
+			projectId: project.id,
+			type: "mark-project-completed",
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reload();
+
+				MyGlobal.AddActivity(`Marked project <b>${project.id}</b> completed.`, MyConstants.Modules.Base.Tasks);
+
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectCompleted);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Mark Project Completed");
+		} finally {
+			setMain((s) => ({ ...s, isMarking: false }));
+			unmount(false);
+		}
+	}
+
 	function setBoxDrag() {
 		setMain((s) => ({ ...s, isBoxMoved: !main.isBoxMoved }));
 	}
@@ -367,9 +396,19 @@ export function ProjectStatus({ mount, project, unmount }) {
 
 	function uiButton() {
 		if (isCompletionEligible) {
+			let buttonLabel = "Mark Completed";
+
+			if (main.isMarking) {
+				buttonLabel = (
+					<span className="px-3.5">
+						<Spinner />
+					</span>
+				);
+			}
+
 			return (
-				<button className="primary-button-condensed" onClick={() => unmount(true)}>
-					<span>Mark as Completed</span>
+				<button className="primary-button-condensed" onClick={() => doMarking()}>
+					{buttonLabel}
 				</button>
 			);
 		} else {

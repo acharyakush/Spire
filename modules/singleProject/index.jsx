@@ -11,16 +11,15 @@ import MyConstants from "@/utilities/constants";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import { SpinnerBig, TooltipList } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { SpinnerBig, SpinnerSmall, TooltipList } from "@/components/Elements";
 import { EditQuote, ManageGovernmentId, MapAffiliates } from "@/modals/singleProject/project";
 import {
 	faBars,
 	faBriefcase,
 	faCalendarXmark,
 	faChevronLeft,
-	faCoins,
 	faCopy,
 	faEnvelope,
 	faFile,
@@ -75,33 +74,39 @@ export default function SingleProject({ client, project, reload, source, unmount
 			const response = await axios.get(MyConstants.ApiEndpoints.SingleProject.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				const affiliateIds = String(project.affiliate_ids);
-				const initials = MyGlobal.GetAffiliatesInitials(affiliateIds, response.data.affiliates);
+				if ("affiliates" in response.data) {
+					if (project.affiliate_ids) {
+						const affiliateIds = String(project.affiliate_ids);
+						const initials = MyGlobal.GetAffiliatesInitials(affiliateIds, response.data.affiliates);
 
-				let tooltip = "";
+						let tooltip = "";
 
-				if (affiliateIds.length) {
-					tooltip = affiliateIds.split(",").map((m) => {
-						const affiliate = response.data.affiliates.find((f) => f.id == m);
+						if (affiliateIds.length) {
+							tooltip = affiliateIds.split(",").map((m) => {
+								const affiliate = response.data.affiliates.find((f) => f.id == m);
 
-						if (typeof affiliate === "object") {
-							const affiliateProject = response.data.affiliatesProjects.find((f) => f.affiliate_id == affiliate.id && f.project_id == project.id);
+								if (typeof affiliate === "object") {
+									const affiliateProject = response.data.affiliatesProjects.find(
+										(f) => f.affiliate_id == affiliate.id && f.project_id == project.id,
+									);
 
-							if (typeof affiliateProject === "object") {
-								const paidFees = Number(affiliateProject.paid_fees);
-								const totalFees = Number(affiliateProject.total_fees);
-								const pendingFees = totalFees - paidFees;
+									if (typeof affiliateProject === "object") {
+										const paidFees = Number(affiliateProject.paid_fees);
+										const totalFees = Number(affiliateProject.total_fees);
+										const pendingFees = totalFees - paidFees;
 
-								return `${affiliate.name}\nPaid ${paidFees} | Pending ${pendingFees} | Total ${totalFees}`;
-							}
-						} else {
-							return "";
+										return `${affiliate.name}\nPaid ${paidFees} | Pending ${pendingFees} | Total ${totalFees}`;
+									}
+								} else {
+									return "";
+								}
+							});
 						}
-					});
-				}
 
-				setApi({ affiliates: response.data.affiliates });
-				setMain((s) => ({ ...s, affiliates: { initials, tooltip } }));
+						setApi({ affiliates: response.data.affiliates });
+						setMain((s) => ({ ...s, affiliates: { initials, tooltip } }));
+					}
+				}
 				setMounted((s) => ({ ...s, mainComponent: true }));
 			}
 		} catch (error) {
@@ -126,7 +131,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 	// UI Components
 	function uiClientInformationTooltip() {
 		return (
-			<div className="flex flex-col w-full p-0 justify-center items-center cursor-pointer font-regular-12 text-white">
+			<div className="flex flex-col w-full p-0 justify-center items-center cursor-pointer font-regular-10 text-white">
 				<div className="w-full p-2 space-x-2.5 hovered-rows-white">
 					<FontAwesomeIcon icon={faIdBadge} />
 					<span>
@@ -147,25 +152,28 @@ export default function SingleProject({ client, project, reload, source, unmount
 
 	function uiFeesBifurcationTooltip() {
 		let totalBifurcatedAffiliateFees = 0;
+		let bifurcatedAffiliateFeesUi = "---";
 
-		const bifurcatedAffiliateFeesUi = String(project.affiliate_ids)
-			.split(",")
-			.map((m) => {
-				const obj = api.affiliates.length ? api.affiliates.filter((f) => f.id == m && f.client_id == client.id) : [];
+		if (project.affiliate_ids) {
+			bifurcatedAffiliateFeesUi = String(project.affiliate_ids)
+				.split(",")
+				.map((m) => {
+					const obj = api.affiliates.length ? api.affiliates.filter((f) => f.id == m && f.client_id == client.id) : [];
 
-				if (obj.length > 0) {
-					return obj.map((m) => {
-						totalBifurcatedAffiliateFees += Number(m.total_fees);
+					if (obj.length > 0) {
+						return obj.map((m) => {
+							totalBifurcatedAffiliateFees += Number(m.total_fees);
 
-						return (
-							<div className="flex w-full justify-between items-center" key={m}>
-								<span className="flex w-1/2 justify-start items-center">{m.name}</span>
-								<span className="flex w-1/2 justify-end items-center">{m.total_fees}</span>
-							</div>
-						);
-					});
-				}
-			});
+							return (
+								<div className="flex w-full justify-between items-center" key={m}>
+									<span className="flex w-1/2 justify-start items-center">{m.name}</span>
+									<span className="flex w-1/2 justify-end items-center">{m.total_fees}</span>
+								</div>
+							);
+						});
+					}
+				});
+		}
 
 		return (
 			<div className="flex flex-col w-full justify-center items-center font-regular-12">
@@ -212,14 +220,6 @@ export default function SingleProject({ client, project, reload, source, unmount
 						<span>Map Affiliates</span>
 					</MenuItem>
 
-					<MenuItem
-						as="div"
-						className={style}
-						hidden={!MyGlobal.HasPermission(MyConstants.Modules.Derived.PaymentReceived)}
-						onClick={() => getCashFlow()}>
-						{uiPaymentReceived()}
-					</MenuItem>
-
 					<MenuItem as="div" className={style} onClick={() => toggleUpdateQuoteBox()}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={faIndianRupeeSign} />
 						<span>Update Quote</span>
@@ -240,19 +240,6 @@ export default function SingleProject({ client, project, reload, source, unmount
 		);
 	}
 
-	function uiPaymentReceived() {
-		if (main.isLoading.paymentReceived) {
-			return <SpinnerSmall />;
-		} else {
-			return (
-				<>
-					<FontAwesomeIcon className="w-5 primary-text" icon={faCoins} />
-					<span>Payment Received</span>
-				</>
-			);
-		}
-	}
-
 	function uiProjectInformationBlock() {
 		const wrapperSansAesthetics = "flex w-full space-x-1.5 justify-start items-center";
 
@@ -268,7 +255,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 			<div className="flex w-full justify-between items-center">
 				<div className="flex w-4/5 space-x-2.5 justify-start items-center">
 					<div className="flex flex-col w-fit -space-y-2 justify-center items-start">
-						<span className="font-medium-10 primary-text">{project.company_name}</span>
+						<span className="font-medium-10 primary-text">{project.company_name}'s</span>
 						<Tippy allowHTML content={uiClientInformationTooltip()} disabled={!isSourceSingleClient} interactive>
 							<span className="view-heading">{project.sub_project_name}</span>
 						</Tippy>
@@ -308,8 +295,8 @@ export default function SingleProject({ client, project, reload, source, unmount
 					<div className={columnWrapper}>
 						<Tippy
 							allowHTML
-							content={<TooltipList payload={main.affiliates.tooltip ?? []} />}
-							disabled={!main.affiliates.tooltip ?? false}
+							content={Object.keys(main.affiliates.tooltip).length && <TooltipList payload={main.affiliates.tooltip} />}
+							disabled={!Object.keys(main.affiliates.tooltip).length}
 							placement="top">
 							<span className={wrapperSansAesthetics}>
 								<FontAwesomeIcon className="w-4 primary-text" icon={faBriefcase} />

@@ -13,7 +13,16 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AddParticularRemark, AddTask, DeleteParticularRemark, DeleteTask, EditParticularRemark, EditTask, EditTaskStatus } from "@/modals/singleProject/tasks";
+import {
+	AddParticularRemark,
+	AddTask,
+	DeleteParticularRemark,
+	DeleteTask,
+	EditParticularRemark,
+	EditTask,
+	EditTaskStatus,
+	MarkSubTaskCompleted,
+} from "@/modals/singleProject/tasks";
 import {
 	faBan,
 	faBolt,
@@ -32,6 +41,7 @@ import {
 
 export default function Tasks({ project }) {
 	// Business Logic
+	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 	const remarksHeaders = MyConstants.TableHeaders.TasksRemarks;
 	const taskHeaders = MyConstants.TableHeaders.Tasks;
 
@@ -48,6 +58,7 @@ export default function Tasks({ project }) {
 		editParticularRemark: false,
 		editTask: false,
 		editTaskStatus: false,
+		markSubTaskCompleted: false,
 		markTaskCompleted: false,
 	});
 
@@ -76,6 +87,8 @@ export default function Tasks({ project }) {
 	const allowDeletingParticularRemark = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteParticularRemark);
 
 	const allowEditingParticularRemark = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditParticularRemark);
+
+	const allowMarkingSubTaskCompleted = MyGlobal.HasPermission(MyConstants.Modules.Derived.MarkSubTaskCompleted);
 
 	// Functions
 	function getSelectedTask() {
@@ -238,6 +251,11 @@ export default function Tasks({ project }) {
 		setMounted((s) => ({ ...s, editTaskStatus: task ? true : false }));
 	}
 
+	function toggleMarkSubTaskCompletedBox(object) {
+		setMain((s) => ({ ...s, selectedRemark: object ?? {} }));
+		setMounted((s) => ({ ...s, markSubTaskCompleted: object ? true : false }));
+	}
+
 	// UI Components
 	function uiMain() {
 		if (main.isLoading) {
@@ -256,15 +274,7 @@ export default function Tasks({ project }) {
 								{uiRemarksButton()}
 							</div>
 							<div className="flex flex-col w-[85%] h-full mr-5 space-y-2 justify-start items-center rounded shadow contrast-background">
-								{main.selectedModuleId === 1
-									? uiRemarks()
-									: !api.tasks.data.length
-									? uiNoDataFound()
-									: Object.keys(main.selectedTask).length
-									? uiTask()
-									: !main.selectedTask.at?.particulars_remarks?.length
-									? uiNoParticularsRemarksFound()
-									: uiRemarks()}
+								{uiTaskOrAllRemarks()}
 							</div>
 						</div>
 					</div>
@@ -288,15 +298,46 @@ export default function Tasks({ project }) {
 
 	function uiNoParticularsRemarksFound() {
 		return (
-			<div className="flex flex-col w-full h-full space-y-2 justify-center items-center rounded shadow gray-text contrast-background">
-				<FontAwesomeIcon className="text-6xl" icon={faCircleExclamation} />
-				<span>No particulars or remarks found</span>
+			<div className="flex flex-col w-full h-full space-y-2 justify-center items-center rounded shadow font-medium-12 gray-text contrast-background">
+				<span>No sub tasks found.</span>
 				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddParticularRemarkBox()}>
 					<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
 					<span>Add</span>
 				</button>
 			</div>
 		);
+	}
+
+	function uiTaskOrAllRemarks() {
+		if (!api.remarks.copy.length && !api.tasks.copy.length) {
+			return uiNoDataFound();
+		}
+
+		if (!api.remarks.copy.length && main.selectedModuleId === 1) {
+			return (
+				<span className="flex flex-col w-full h-full space-y-2 justify-center items-center rounded shadow font-medium-12 gray-text contrast-background">
+					No sub tasks found
+				</span>
+			);
+		}
+
+		if (main.selectedModuleId === 1) {
+			return uiRemarks();
+		}
+
+		if (!api.tasks.data.length) {
+			return uiNoDataFound();
+		}
+
+		if (Object.keys(main.selectedTask).length) {
+			return uiTask();
+		}
+
+		if (!main.selectedTask.at?.particulars_remarks?.length) {
+			return uiNoParticularsRemarksFound();
+		}
+
+		return uiRemarks();
 	}
 
 	// Remarks
@@ -310,6 +351,8 @@ export default function Tasks({ project }) {
 	}
 
 	function uiRemarksButton() {
+		const showTotalRemarks = api.remarks.data.length > 0 ? "font-regular-10 gray-text" : "hidden";
+
 		const selectedAesthetics =
 			main.selectedModuleId == 1 ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
@@ -318,7 +361,7 @@ export default function Tasks({ project }) {
 		return (
 			<button className={wrapper} onClick={() => setModule(1)}>
 				<span>All Remarks</span>
-				<span className="font-regular-10 gray-text">{api.remarks.data.length}</span>
+				<span className={showTotalRemarks}>{api.remarks.data.length}</span>
 			</button>
 		);
 	}
@@ -353,12 +396,14 @@ export default function Tasks({ project }) {
 		const style = `flex w-1/4 justify-center items-center whitespace-pre-wrap`;
 
 		return (
-			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background bottom-border font-regular-11 hovered-rows-2" key={i}>
+			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background bottom-border font-regular-11" key={i}>
 				<span className={style}>{row.task_name}</span>
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.remark, main.findText) }} />
 
-				<span className={style}>{dayjs(row.entry_at).format("hh:mm:ss a, DD MMM, YYYY")}</span>
+				<Tippy className="font-regular-11" content={dayjs(row.entry_at).format("hh:mm:ss a")} placement="bottom">
+					<span className={style}>{dayjs(row.entry_at).format("DD MMM, YYYY")}</span>
+				</Tippy>
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.entry_by, main.findText) }} />
 			</div>
@@ -367,6 +412,8 @@ export default function Tasks({ project }) {
 
 	// Tasks
 	function uiTask() {
+		const addSubTaskButton = main.selectedTask.is_completed == 0 ? "absolute right-5 bottom-5 cursor-pointer" : "hidden";
+
 		return (
 			<div className="flex flex-col w-full h-[calc(100vh-110px)] justify-start items-center overflow-y-auto">
 				<div className="flex w-full contrast-background">{uiTaskPrimaryInformation()}</div>
@@ -376,7 +423,7 @@ export default function Tasks({ project }) {
 					<div className="flex flex-col w-full h-full relative contrast-background">
 						<div className="flex w-full px-4 justify-center items-center primary-background">{uiTaskHeaders()}</div>
 						<div className="flex flex-col w-full h-full overflow-y-auto">{sortTasks().map((m, i) => uiTaskRows(m, i))}</div>
-						<div className="absolute right-5 bottom-5 cursor-pointer" onClick={() => toggleAddParticularRemarkBox()}>
+						<div className={addSubTaskButton} onClick={() => toggleAddParticularRemarkBox()}>
 							<FontAwesomeIcon className="primary-text" icon={faPlusCircle} size="3x" />
 						</div>
 					</div>
@@ -399,7 +446,7 @@ export default function Tasks({ project }) {
 		const disableTaskStyle = allowDisablingTask && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
 
 		const markTaskCompletedStyle =
-			allowMarkingTaskCompleted && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
+			isUserAdministrator && allowMarkingTaskCompleted && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
 
 		return (
 			<Tippy
@@ -539,23 +586,30 @@ export default function Tasks({ project }) {
 	function uiTaskRows(row, i) {
 		const style = "flex w-1/3 justify-center items-center whitespace-pre-wrap";
 
-		const deleteRecordStyle = allowDeletingParticularRemark ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+		const deleteSubTaskStyle =
+			allowDeletingParticularRemark && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
-		const editRecordStyle = allowEditingParticularRemark ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+		const editSubTaskStyle = allowEditingParticularRemark && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+
+		const markSubTaskCompletedStyle =
+			allowMarkingSubTaskCompleted && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
 		return (
-			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background border-y font-regular-11 hovered-rows-2" key={i}>
+			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background border-y font-regular-11" key={i}>
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.particular, main.findText) }} />
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.remark, main.findText) }} />
 
 				<span className={style}>
 					<div className="flex space-x-5 justify-center items-center">
-						<div className={`${style} ${editRecordStyle}`} onClick={() => toggleEditParticularRemarkBox(row)}>
-							<FontAwesomeIcon className="w-5 cursor-pointer green-text" icon={faPencil} size="lg" />
+						<div className={`${style} ${editSubTaskStyle}`} onClick={() => toggleEditParticularRemarkBox(row)}>
+							<FontAwesomeIcon className="w-5 cursor-pointer primary-text" icon={faPencil} size="lg" />
 						</div>
-						<div className={`${style} ${deleteRecordStyle}`} onClick={() => toggleDeleteParticularRemarkBox(row)}>
+						<div className={`${style} ${deleteSubTaskStyle}`} onClick={() => toggleDeleteParticularRemarkBox(row)}>
 							<FontAwesomeIcon className="w-5 cursor-pointer red-text" icon={faTrash} size="lg" />
+						</div>
+						<div className={`${style} ${markSubTaskCompletedStyle}`} onClick={() => toggleMarkSubTaskCompletedBox(row)}>
+							<FontAwesomeIcon className="w-5 cursor-pointer green-text" icon={faCircleCheck} size="lg" />
 						</div>
 					</div>
 				</span>
@@ -603,6 +657,15 @@ export default function Tasks({ project }) {
 
 			{mounted.editTaskStatus && (
 				<EditTaskStatus mount={mounted.editTaskStatus} reload={getTasks} task={main.selectedTask} unmount={toggleEditTaskStatusBox} />
+			)}
+
+			{mounted.markSubTaskCompleted && (
+				<MarkSubTaskCompleted
+					mount={mounted.markSubTaskCompleted}
+					reload={getTasks}
+					remark={main.selectedRemark}
+					unmount={toggleMarkSubTaskCompletedBox}
+				/>
 			)}
 		</>
 	);

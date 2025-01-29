@@ -3,7 +3,7 @@
 export const Badge = ({ value }) => {
 	return (
 		<div className="relative inline-block">
-			<span className="flex min-w-[1.5rem] h-6 px-2 justify-center items-center rounded-full text-white font-semibold-12 primary-background">
+			<span className="flex min-w-[1.5rem] h-6 px-2 justify-center items-center rounded-full text-white font-semibold-10 primary-background">
 				{value}
 			</span>
 		</div>

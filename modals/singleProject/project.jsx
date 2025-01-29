@@ -23,7 +23,7 @@ export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 	const reasonBoxStyle = isStatusNotCompleted ? "flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center" : "hidden";
 
 	const titleBarCursor = state.isBoxDragged ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	let disableEditButton = state.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 
@@ -148,7 +148,7 @@ export function EditQuote({ mount, project, reload, unmount }) {
 	});
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	const disableEditButton = main.isLoading || !main.quote ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 
@@ -280,7 +280,7 @@ export function ManageGovernmentId({ mount, project, reload, unmount }) {
 	const titleBarText = isTypeAdd ? "Add Government ID" : "Edit Government ID";
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	const buttonClickEvent = main.isLoading || !main.id ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 	const buttonStyle = `primary-button-condensed ${buttonClickEvent}`;
@@ -403,7 +403,7 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 	});
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
 	function addAffiliate() {

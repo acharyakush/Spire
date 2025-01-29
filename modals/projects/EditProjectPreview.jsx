@@ -16,7 +16,7 @@ export default function EditProjectPreview({ mount, newProject, oldProject, unmo
 	const [isBoxMoved, setIsBoxMoved] = useState(false);
 
 	const titleBarCursor = isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	const changedValues = MyGlobal.GetChangedValues(oldProject, newProject);
 

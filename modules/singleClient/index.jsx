@@ -40,7 +40,7 @@ export default function SingleClient({ client, unmount }) {
 	const [api, setApi] = useState({
 		companies: [],
 		projects: { copy: [], data: [] },
-		reference: {},
+		referenceName: "",
 		tasks: [],
 		uploadedFiles: [],
 	});
@@ -372,6 +372,8 @@ export default function SingleClient({ client, unmount }) {
 
 						const reimburseVoucher = tasks.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.expense), 0);
 
+						const teamNames = MyGlobal.GetAnyDataFromId(fe.teams, "full_name");
+
 						const totalFees = invoiceFees + reimburseVoucher;
 
 						revisedProjects.push({
@@ -387,10 +389,19 @@ export default function SingleClient({ client, unmount }) {
 							reimburse_voucher: reimburseVoucher,
 							sub_project_name: subProjectName,
 							teams: MyGlobal.GetFullDetailsFromIds(fe.teams),
-							teams_names: MyGlobal.GetAnyDataFromId(fe.teams, "full_name"),
+							team_names: teamNames,
+							team_names_initials: MyGlobal.GetInitials(teamNames),
 							total_fees: totalFees,
 						});
 					});
+
+				let referenceName = "";
+
+				if ("reference" in response.data) {
+					if (response.data.reference.length) {
+						referenceName = response.data.reference.at(0).name;
+					}
+				}
 
 				setApi((s) => ({
 					...s,
@@ -399,7 +410,7 @@ export default function SingleClient({ client, unmount }) {
 						copy: revisedProjects,
 						data: revisedProjects,
 					},
-					reference: response.data.reference.at(0),
+					referenceName,
 					tasks,
 				}));
 
@@ -466,7 +477,7 @@ export default function SingleClient({ client, unmount }) {
 					</span>
 					<span className={wrapper}>
 						<FontAwesomeIcon className="primary-text" icon={faUserTag} />
-						<span>{api.reference.name}</span>
+						<span>{api.referenceName}</span>
 					</span>
 					<span className={wrapper} onClick={() => toggleFilesView()}>
 						{uploadedFilesIcon}

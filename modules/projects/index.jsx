@@ -752,7 +752,9 @@ export default function Projects() {
 				<EditStatus mount={mounted.editStatus} project={main.selectedProject} reload={setSupportData} unmount={toggleEditStatusBox} />
 			)}
 
-			{mounted.projectStatus && <ProjectStatus mount={mounted.projectStatus} project={main.selectedProject} unmount={toggleProjectStatusBox} />}
+			{mounted.projectStatus && (
+				<ProjectStatus mount={mounted.projectStatus} project={main.selectedProject} reload={setSupportData} unmount={toggleProjectStatusBox} />
+			)}
 		</div>
 	);
 }

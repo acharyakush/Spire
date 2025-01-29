@@ -168,7 +168,7 @@ export default function Dashboard({ setModuleProps }) {
 		return (
 			<div className="flex w-full p-5 space-x-10 justify-between items-center">
 				<div className="flex flex-col w-1/2 space-y-2.5 justify-between items-center">
-					<div className="flex w-full space-x-2.5 justify-start items-center text-3xl font-semibold primary-text">
+					<div className="flex w-full space-x-2.5 justify-start items-center font-semibold-30 primary-text">
 						<span>{baseModules.Projects}</span>
 						<Badge value={main.projects.total} />
 					</div>
@@ -180,7 +180,7 @@ export default function Dashboard({ setModuleProps }) {
 					</div>
 				</div>
 				<div className="flex flex-col w-1/2 space-y-2.5 justify-between items-center">
-					<div className="flex w-full space-x-2.5 justify-start items-center text-3xl font-semibold primary-text">
+					<div className="flex w-full space-x-2.5 justify-start items-center font-semibold-30 primary-text">
 						<span>{baseModules.Tasks}</span>
 						<Badge value={main.projects.total} />
 					</div>
@@ -245,7 +245,7 @@ export default function Dashboard({ setModuleProps }) {
 	return (
 		<div className="w-full h-full p-5 space-y-5 overflow-y-auto">
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center text-3xl font-semibold primary-text">
+				<div className="flex w-full space-x-2.5 justify-start items-center font-semibold-30 primary-text">
 					<span>{baseModules.Inquiries}</span>
 					<Badge value={main.inquiries.total} />
 				</div>
@@ -258,7 +258,7 @@ export default function Dashboard({ setModuleProps }) {
 			</div>
 			{uiProjectsAndTasks()}
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center text-3xl font-semibold primary-text">
+				<div className="flex w-full space-x-2.5 justify-start items-center font-semibold-30 primary-text">
 					<span>{baseModules.Invoices}</span>
 					<Badge value={main.invoices.total} />
 				</div>

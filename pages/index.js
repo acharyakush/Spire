@@ -118,7 +118,7 @@ export default function Home() {
 	// Main UI
 	return (
 		<div className="flex flex-col min-w-full min-h-screen space-y-4 justify-center items-center">
-			<main className="flex flex-col min-w-max w-1/5 px-10 py-5 space-y-2.5 justify-center items-center rounded bottom-shadow bg-white full-border">
+			<main className="flex flex-col min-w-max w-1/5 px-10 py-5 space-y-2.5 justify-center items-center rounded shadow bg-white full-border">
 				<span className="login-heading">
 					<button onClick={autofill}>{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}</button>
 				</span>

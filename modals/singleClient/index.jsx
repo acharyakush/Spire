@@ -28,7 +28,7 @@ export function EditCompany({ company, mount, reload, unmount }) {
 	});
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	const disableEditButton = main.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 

@@ -75,7 +75,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	const addButtonStyle = `primary-button-condensed w-full mt-5 ${disableAddButton}`;
 
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
 	async function doAddition() {
@@ -191,25 +191,15 @@ export function Transactions({ mount, project, reload, unmount }) {
 		try {
 			const response = await axios.get(
 				MyConstants.ApiEndpoints.Invoices.GetHistorySupportData,
-				MyGlobal.GetHeaders({ invoiceId: project.invoice_id, ownerFirmId: project.invoice_firm_id }),
+				MyGlobal.GetHeaders({ ownerFirmId: project.invoice_firm_id, projectId: project.id }),
 			);
 
 			if (response.status === 200) {
-				const _ownerFirmsBanks = [...response.data.ownerFirmsBanks];
+				const ownerFirmsBanks = MyGlobal.GetPaymentSourceList(response.data.ownerFirmsBanks);
 
-				_ownerFirmsBanks.push(
-					{ id: "CASH", name: "Cash" },
-					{ id: "CHEQUE", name: "Cheque" },
-					{ id: "CC", name: "Credit Card" },
-					{ id: "DC", name: "Debit Card" },
-					{ id: "INSTAMOJO", name: "InstaMojo" },
-					{ id: "NETBANKING", name: "NetBanking" },
-					{ id: "UPI", name: "UPI" },
-				);
-
-				const _history = response.data.history.map((m) => {
+				const history = response.data.history.map((m) => {
 					let source = "";
-					const getSource = _ownerFirmsBanks.find((f) => f.id === m.source);
+					const getSource = ownerFirmsBanks.find((f) => f.id === m.source);
 
 					if (typeof getSource === "object") {
 						source = getSource.name;
@@ -225,12 +215,12 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 				setApi({
 					ownerFirmsBanks: {
-						copy: _ownerFirmsBanks,
-						data: _ownerFirmsBanks,
+						copy: ownerFirmsBanks,
+						data: ownerFirmsBanks,
 					},
 					history: {
-						copy: _history,
-						data: _history,
+						copy: history,
+						data: history,
 					},
 				});
 			}
@@ -401,7 +391,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 		} else {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start">
-					<div className="flex w-full pb-2 space-x-2 justify-between items-center">
+					<div className="flex w-full pb-2 space-x-2 justify-end items-center">
 						{uiFromDate()}
 						{uiToDate()}
 						{uiFind()}

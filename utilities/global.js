@@ -77,12 +77,17 @@ export const MyGlobal = Object.freeze({
 	},
 
 	FormatCurrency: (value) => {
-		if (typeof value === "string") {
-			const result = MyGlobal.GetNumbers(value);
-			return result.toLocaleString("en-IN", { style: "currency", currency: "INR" });
-		}
+		const formatOptions = {
+			style: "currency",
+			currency: "INR",
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 2,
+		};
 
-		return Number(value).toLocaleString("en-IN", { style: "currency", currency: "INR" });
+		const numberValue = typeof value === "string" ? MyGlobal.GetNumbers(value) : Number(value);
+		const formattedValue = numberValue.toLocaleString("en-IN", formatOptions);
+
+		return formattedValue.includes(".00") ? formattedValue.replace(".00", "") : formattedValue;
 	},
 
 	GenerateYearForInvoiceId: () => {
@@ -217,6 +222,21 @@ export const MyGlobal = Object.freeze({
 
 	GetNumbers: (payload) => {
 		return Number(String(payload).replace(/[^0-9]/g, ""));
+	},
+
+	GetPaymentSourceList: (payload) => {
+		const list = [...payload];
+
+		list.push(
+			{ id: "CASH", name: "Cash" },
+			{ id: "CHEQUE", name: "Cheque" },
+			{ id: "CC", name: "Credit Card" },
+			{ id: "DC", name: "Debit Card" },
+			{ id: "INSTAMOJO", name: "InstaMojo" },
+			{ id: "NETBANKING", name: "NetBanking" },
+			{ id: "UPI", name: "UPI" },
+		);
+		return list;
 	},
 
 	GetStrings: (payload) => {

@@ -69,8 +69,9 @@ export default async function handler(req, res) {
 				queryString = "UPDATE tasks SET is_completed=?, is_disabled=?, reason=? WHERE id=?";
 				queryParameters = [request.isCompleted, request.isDisabled, request.reason, request.taskId];
 			} else if (request.type == "add-tasks-particular-remark") {
-				queryString = "INSERT INTO tasks_particulars_remarks (task_id, project_id, particular, remark, entry_by_id) VALUES (?, ?, ?, ?, ?)";
-				queryParameters = [request.taskId, request.projectId, request.particular, request.remark, request.createdBy];
+				queryString =
+					"INSERT INTO tasks_particulars_remarks (task_id, project_id, particular, remark, is_completed, entry_by_id) VALUES (?, ?, ?, ?, ?, ?)";
+				queryParameters = [request.taskId, request.projectId, request.particular, request.remark, 0, request.createdBy];
 			} else if (request.type == "edit-tasks-particular-remark") {
 				queryString = "UPDATE tasks_particulars_remarks SET particular=?, remark=? WHERE id=? AND task_id=? AND project_id=?";
 				queryParameters = [request.particular, request.remark, request.rowId, request.taskId, request.projectId];
@@ -83,6 +84,15 @@ export default async function handler(req, res) {
 			} else if (request.type == "edit-company") {
 				queryString = "UPDATE companies SET name=?, phone_number=?, email_address=?, address=?, pan=?, gstin=? WHERE id=?";
 				queryParameters = [request.name, request.phoneNumber, request.emailAddress, request.address, request.pan, request.gstin, request.id];
+			} else if (request.type == "mark-sub-task-completed") {
+				queryString = "UPDATE tasks_particulars_remarks SET is_completed=?, reason=? WHERE id=? AND task_id=? AND project_id=?";
+				queryParameters = [1, request.reason, request.taskRowId, request.taskId, request.projectId];
+			} else if (request.type == "mark-all-sub-tasks-completed") {
+				queryString = "UPDATE tasks_particulars_remarks SET is_completed=?, reason=? WHERE task_id=? AND project_id=?";
+				queryParameters = [1, "By Administrator", request.taskId, request.projectId];
+			} else if (request.type == "mark-project-completed") {
+				queryString = "UPDATE projects SET status=?, completed_on=NOW() WHERE id=?";
+				queryParameters = ["Completed", request.projectId];
 			}
 
 			const response = await query(queryString, queryParameters);

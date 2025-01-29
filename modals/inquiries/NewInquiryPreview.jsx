@@ -18,7 +18,7 @@ export default function NewInquiryPreview({ inquiry, mount, unmount }) {
 	const followUps = Array.isArray(inquiry.followUps) ? inquiry.followUps.map((m) => m.full_name).join(", ") : "";
 
 	const titleBarCursor = isBoxDragged ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// UI Components
 	const uiRow = (label, value) => {

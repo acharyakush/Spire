@@ -23,7 +23,7 @@ export function AddNote({ inquiry, mount, reload, unmount }) {
 	});
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	const disableAddButton = main.isLoading || !main.note ? "pointer-events-none" : "pointer-events-auto";
 	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
@@ -141,7 +141,7 @@ export function UpdateStatus({ inquiry, mount, reload, unmount }) {
 
 	const reasonBoxStyle = isStatusCloseInquiry ? "flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center" : "hidden";
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header draggable-handle ${titleBarCursor}`;
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	let disableButton = main.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 
