@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 29, 2025 at 08:24 PM
+-- Generation Time: Jan 30, 2025 at 07:51 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -354,7 +354,19 @@ INSERT INTO `activities` (`id`, `entry_by_id`, `module`, `activity`, `ip_address
 (271, 'A3', 'Tasks', 'Marked Task as Completed <b>TK000008</b> in <b>PJ000002</b> due to <b>Done.</b>', 'Localhost', '2025-01-30 00:29:26', ''),
 (272, 'A3', 'Tasks', 'Marked all sub tasks as completed of <b>TK000008</b> in <b>PJ000002</b>', 'Localhost', '2025-01-30 00:29:26', ''),
 (273, 'A3', 'Tasks', 'Marked project <b>PJ000002</b> completed.', 'Localhost', '2025-01-30 00:51:35', ''),
-(274, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-30 00:52:05', '');
+(274, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-30 00:52:05', ''),
+(275, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-30 19:09:14', ''),
+(276, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-30 19:09:18', ''),
+(277, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-30 19:09:58', ''),
+(278, 'A3', 'Inquiries', 'Added <b>IQ000009</b>.', 'Localhost', '2025-01-30 19:24:28', ''),
+(279, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-30 19:25:23', ''),
+(280, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-30 19:34:01', ''),
+(281, 'A3', 'Cash Flow', 'Added cash flow entry.', 'Localhost', '2025-01-30 23:41:51', ''),
+(282, 'A3', 'Cash Flow', 'Added <b>Affiliates</b> entry.', 'Localhost', '2025-01-30 23:59:55', ''),
+(283, 'A3', 'Cash Flow', 'Added <b>Outward Office Expense</b> entry.', 'Localhost', '2025-01-31 00:01:16', ''),
+(284, 'A3', 'Cash Flow', 'Added <b>Outward Office Expense</b> entry.', 'Localhost', '2025-01-31 00:02:00', ''),
+(285, 'A3', 'Cash Flow', 'Added <b>Outward Petty Cash</b> entry.', 'Localhost', '2025-01-31 00:02:54', ''),
+(286, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-31 00:15:43', '');
 
 -- --------------------------------------------------------
 
@@ -437,10 +449,10 @@ CREATE TABLE `affiliates_projects` (
 --
 
 INSERT INTO `affiliates_projects` (`id`, `affiliate_id`, `adjusted_fees`, `adjusted_project_id`, `client_id`, `project_id`, `paid_fees`, `payment_mode`, `total_fees`) VALUES
-(1, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 0.00, 'Cash', 5000.00),
-(2, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 1250.00, 'Credit Card', 5000.00),
-(3, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 1000.00, 'Net Banking', 5000.00),
-(4, 'AF000001', 0.00, NULL, 'CN000005', 'PJ000002', 0.00, NULL, 1250.00);
+(1, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 7500.00, 'Cash', 5000.00),
+(2, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 7500.00, 'Credit Card', 5000.00),
+(3, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 7500.00, 'Net Banking', 5000.00),
+(4, 'AF000001', 0.00, NULL, 'CN000005', 'PJ000002', 7500.00, NULL, 1250.00);
 
 -- --------------------------------------------------------
 
@@ -451,30 +463,37 @@ INSERT INTO `affiliates_projects` (`id`, `affiliate_id`, `adjusted_fees`, `adjus
 CREATE TABLE `cash_flows` (
   `id` int(11) UNSIGNED NOT NULL,
   `affiliate_id` char(8) DEFAULT NULL,
-  `client_id` char(8) DEFAULT NULL,
-  `company_id` char(8) DEFAULT NULL,
-  `project_id` char(8) DEFAULT NULL,
-  `invoice_id` varchar(200) DEFAULT NULL,
   `owner_firm_id` char(8) DEFAULT NULL,
   `owner_firm_bank_id` char(8) DEFAULT NULL,
   `particulars` varchar(1000) DEFAULT NULL,
   `payment_for` varchar(500) DEFAULT NULL,
+  `payment_type` varchar(50) DEFAULT NULL,
   `amount_paid` decimal(10,2) DEFAULT NULL,
   `amount_received` decimal(10,2) DEFAULT NULL,
-  `is_deleted` tinyint(1) NOT NULL DEFAULT 0,
-  `is_office_expense` tinyint(1) NOT NULL DEFAULT 0,
+  `remarks` varchar(500) DEFAULT NULL,
+  `module` varchar(50) NOT NULL,
   `entry_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `entry_by_id` char(8) NOT NULL
+  `entry_by_id` char(8) NOT NULL,
+  `is_deleted` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `cash_flows`
 --
 
-INSERT INTO `cash_flows` (`id`, `affiliate_id`, `client_id`, `company_id`, `project_id`, `invoice_id`, `owner_firm_id`, `owner_firm_bank_id`, `particulars`, `payment_for`, `amount_paid`, `amount_received`, `is_deleted`, `is_office_expense`, `entry_at`, `entry_by_id`) VALUES
-(1, NULL, 'CN000001', NULL, 'PJ000001', 'SA/2025-26/00001', 'AC01', 'BK01', 'NA', 'Aaj Tak News Subscription.', NULL, 500.00, 0, 0, '2025-01-18 12:46:50', 'A3'),
-(2, NULL, 'CN000005', NULL, 'PJ000002', 'BF/2025-26/00002', 'AC02', 'BK02', 'NA', 'Aaj Tak News Subscription.', NULL, 557.00, 0, 0, '2025-01-18 12:46:50', 'A3'),
-(3, NULL, 'CN000005', NULL, 'PJ000002', 'BF/2025-26/00002', 'AC02', 'BK02', 'NA', 'Aaj Tak News Subscription.', NULL, 557.00, 0, 0, '2025-01-18 12:46:50', 'A3');
+INSERT INTO `cash_flows` (`id`, `affiliate_id`, `owner_firm_id`, `owner_firm_bank_id`, `particulars`, `payment_for`, `payment_type`, `amount_paid`, `amount_received`, `remarks`, `module`, `entry_at`, `entry_by_id`, `is_deleted`) VALUES
+(1, NULL, 'AC01', 'BK01', 'NA', 'Aaj Tak News Subscription.', NULL, NULL, 500.00, '', '', '2025-01-18 12:46:50', 'A3', 0),
+(2, NULL, 'AC02', 'BK02', 'NA', 'Aaj Tak News Subscription.', NULL, NULL, 557.00, '', '', '2025-01-18 12:46:50', 'A3', 0),
+(3, NULL, 'AC02', 'BK02', 'NA', 'Aaj Tak News Subscription.', NULL, NULL, 557.00, '', '', '2025-01-18 12:46:50', 'A3', 0),
+(4, '', 'AC01', 'BK01', 'Inward Other Expense Particular #1', 'Inward Other Expense Payment For #1', 'Professional Fees', 0.00, 2500.00, 'Inward Other Expense Remarks #1', 'Inward Other Expense', '2025-01-30 12:38:21', 'A3', 0),
+(5, '', 'AC01', 'BK01', 'Inward Other Expense Particular #1', 'Inward Other Expense Payment For #1', 'Professional Fees', 0.00, 2500.00, 'Inward Other Expense Remarks #1', 'Inward Other Expense', '2025-01-30 12:38:21', 'A3', 0),
+(6, 'AF000002', 'AC03', 'BK03', 'Outward Affiliates Particulars #1', 'Outward Affiliates Payment For #1', 'Professional Fees', 7500.00, 0.00, 'Outward Affiliates Remarks #1', 'Affiliates', '2025-01-30 12:43:24', 'A3', 0),
+(7, 'AF000002', 'AC02', 'BK02', 'Outward Affiliates Particulars #1', 'Outward Affiliates Payment For #1', 'Professional Fees', 7500.00, 0.00, 'Outward Affiliates Remarks #1', 'Affiliates', '2025-01-31 12:44:28', 'A3', 0),
+(8, 'AF000001', 'AC04', 'BK04', 'Outward Affiliates Particulars #1', 'Outward Affiliates Payment For #1', 'Professional Fees', 7500.00, 0.00, 'Outward Affiliates Remarks #1', 'Affiliates', '2025-01-31 12:54:26', 'A3', 0),
+(9, 'AF000001', 'AC04', 'BK04', 'Outward Affiliates Particulars #1', 'Outward Affiliates Payment For #1', 'Professional Fees', 7500.00, 0.00, 'Outward Affiliates Remarks #1', 'Affiliates', '2025-01-31 12:59:19', 'A3', 0),
+(10, '', 'AC01', 'BK01', 'Outward Other Expense Particulars #1', 'Outward Other Expense Payment For #1', 'Professional Fees', 3500.00, 0.00, 'Outward Other Expense Remarks #1', 'Outward Other Expense', '2025-01-30 13:00:36', 'A3', 0),
+(11, '', 'AC03', 'BK03', 'Outward Office Expense Particulars #1', 'Outward Office Expense Payment For #1', 'Professional Fees', 5525.00, 0.00, 'Outward Office Expense Remarks #1', 'Outward Office Expense', '2025-01-30 13:01:32', 'A3', 0),
+(12, '', 'AC02', 'BK02', 'Outward Petty Cash Particulars #1', 'Outward Petty Cash Payment For #1', 'Professional Fees', 11500.00, 0.00, 'Outward Petty Cash Remarks #1', 'Outward Petty Cash', '2025-01-31 13:02:24', 'A3', 0);
 
 -- --------------------------------------------------------
 
@@ -531,7 +550,8 @@ INSERT INTO `clients` (`id`, `affiliate_ids`, `company_id`, `reference_id`, `nam
 ('CN000002', NULL, NULL, 'RF000002', 'Kevin Vyas', NULL, 8780577812, 'vyas.kevin@outlook.com', NULL, 0, 0, '2024-12-18 00:05:18', NULL, 0, NULL, '2024-12-18 00:05:18', NULL),
 ('CN000003', NULL, NULL, 'RF000003', 'Mudra Rawal', NULL, 9601432558, 'mudra.rawal@gmail.com', NULL, 0, 0, '2025-01-11 19:15:23', NULL, 0, NULL, '2025-01-11 19:15:23', NULL),
 ('CN000004', NULL, 'CP000003', 'RF000003', 'Parth Acharya', NULL, 8866359953, 'parth.acharya@gmail.com', NULL, 1, 0, '2025-01-11 19:45:34', NULL, 0, NULL, '2025-01-11 19:45:34', NULL),
-('CN000005', 'AF000001', 'CP000002', 'RF000005', 'Dipen Soni', NULL, 9909436171, 'soni.dipen@gmail.com', NULL, 1, 0, '2025-01-12 11:18:02', NULL, 0, NULL, '2025-01-12 11:18:02', NULL);
+('CN000005', 'AF000001', 'CP000002', 'RF000005', 'Dipen Soni', NULL, 9909436171, 'soni.dipen@gmail.com', NULL, 1, 0, '2025-01-12 11:18:02', NULL, 0, NULL, '2025-01-12 11:18:02', NULL),
+('CN000006', NULL, NULL, 'RF000003', 'Suresh', NULL, 9978075347, 'suresh@gmail.com', NULL, 0, 0, '2025-01-30 19:24:27', NULL, 0, NULL, '2025-01-30 19:24:27', NULL);
 
 -- --------------------------------------------------------
 
@@ -667,7 +687,8 @@ INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `
 ('IQ000005', 'CN000004', 'RF000003', 'MP000012', 'SP000023', '2025-01-05 14:13:11', 8866359953, 'parth.acharya@gmail.com', 'A1', 0, NULL, 2000.00, 'Confirmed', NULL, '2025-01-11 19:45:34', 'A3'),
 ('IQ000006', 'CN000003', 'RF000003', 'MP000003', 'SP000007', '2025-01-02 14:24:03', 9601432558, 'mudra.rawal@gmail.com', 'A2', 1, 'I am done with this work.', 10000.00, 'Closed', NULL, '2025-01-11 19:54:38', 'A3'),
 ('IQ000007', 'CN000005', 'RF000005', 'MP000001', 'SP000010', '2025-01-12 05:46:59', 9909436171, 'soni.dipen@gmail.com', 'A2', 0, NULL, 5000.00, 'Confirmed', NULL, '2025-01-12 11:18:02', 'A3'),
-('IQ000008', 'CN000001', 'RF000001', 'MP000005', 'SP000014', '2025-01-12 09:05:32', 8780577704, 'acharyakush2604@gmail.com', 'A1', 0, NULL, 4550.00, 'Open', NULL, '2025-01-12 14:36:15', 'A3');
+('IQ000008', 'CN000001', 'RF000001', 'MP000005', 'SP000014', '2025-01-12 09:05:32', 8780577704, 'acharyakush2604@gmail.com', 'A1', 0, NULL, 4550.00, 'Open', NULL, '2025-01-12 14:36:15', 'A3'),
+('IQ000009', 'CN000006', 'RF000003', 'MP000002', 'SP000002', '2025-02-06 13:47:30', 9978075347, 'suresh@gmail.com', 'A3', 0, NULL, 2500.00, 'Open', NULL, '2025-01-30 19:24:27', 'A3');
 
 -- --------------------------------------------------------
 
@@ -682,6 +703,7 @@ CREATE TABLE `invoices` (
   `project_id` char(8) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL CHECK (`amount` >= 0),
   `amount_received` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `due_date` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `receipt_date` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -690,9 +712,9 @@ CREATE TABLE `invoices` (
 -- Dumping data for table `invoices`
 --
 
-INSERT INTO `invoices` (`id`, `custom_id`, `client_id`, `project_id`, `amount`, `amount_received`, `created_at`, `receipt_date`) VALUES
-(1, 'SA/2025-26/00001', 'CN000001', 'PJ000001', 7000.00, 127.00, '2025-01-17 22:25:48', '2025-01-17 22:25:48'),
-(2, 'BF/2025-26/00002', 'CN000005', 'PJ000002', 2500.00, 557.00, '2025-01-17 22:26:51', '2025-01-17 22:26:51');
+INSERT INTO `invoices` (`id`, `custom_id`, `client_id`, `project_id`, `amount`, `amount_received`, `due_date`, `created_at`, `receipt_date`) VALUES
+(1, 'SA/2025-26/00001', 'CN000001', 'PJ000001', 5750.00, 127.00, '2025-01-24 20:03:34', '2025-01-17 22:25:48', '2025-01-17 22:25:48'),
+(2, 'BF/2025-26/00002', 'CN000005', 'PJ000002', 2500.00, 557.00, '2025-01-24 20:03:34', '2025-01-17 22:26:51', '2025-01-17 22:26:51');
 
 -- --------------------------------------------------------
 
@@ -833,7 +855,8 @@ INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `task_id`, `original_entr
 (19, 'IQ000007', NULL, NULL, '', 'A3', 'The client is the flat friend of Kevin Vyas.', 'Inquiries', '2025-01-12 11:18:02'),
 (20, 'IQ000007', 'PJ000002', NULL, 'A3', 'A3', 'This is a project\'s test.', 'Projects', '2025-01-12 11:41:51'),
 (21, 'IQ000008', NULL, NULL, '', 'A3', 'Hello There.', 'Inquiries', '2025-01-12 14:36:15'),
-(22, 'IQ000005', 'PJ000003', NULL, 'A3', 'A3', 'None.', 'Projects', '2025-01-28 23:46:17');
+(22, 'IQ000005', 'PJ000003', NULL, 'A3', 'A3', 'None.', 'Projects', '2025-01-28 23:46:17'),
+(23, 'IQ000009', NULL, NULL, '', 'A3', 'sdfsdfsdfs', 'Inquiries', '2025-01-30 19:24:27');
 
 -- --------------------------------------------------------
 
@@ -1881,7 +1904,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=275;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=287;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
@@ -1893,7 +1916,7 @@ ALTER TABLE `affiliates_projects`
 -- AUTO_INCREMENT for table `cash_flows`
 --
 ALTER TABLE `cash_flows`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `cash_flows_settings`
@@ -1929,7 +1952,7 @@ ALTER TABLE `licenses`
 -- AUTO_INCREMENT for table `notes`
 --
 ALTER TABLE `notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `pma__bookmark`

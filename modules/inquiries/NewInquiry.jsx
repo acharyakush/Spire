@@ -256,39 +256,43 @@ export default function NewInquiry({ reload, unmount }) {
 		setMain((s) => ({ ...s, followUps: revisedData }));
 	}
 
-	function setInputs(key, value) {
-		if (key != "quote") {
-			if (typeof value === "object") {
-				if (key == "client") {
-					const client = api.clients.copy.filter((client) => client.id == value.id).at(0);
-					const isExistingClient = client.id !== 0;
+	function setHeavyInputs(key, value) {
+		if (value) {
+			if (key == "client") {
+				const client = api.clients.copy.filter((client) => client.id == value.id).at(0);
+				const isExistingClient = client.id !== 0;
 
-					const emailAddress = isExistingClient ? client.email_address : "";
-					const phoneNumber = isExistingClient ? client.phone_number : "";
+				const emailAddress = isExistingClient ? client.email_address : "";
+				const phoneNumber = isExistingClient ? client.phone_number : "";
 
-					const referenceId = isExistingClient ? client.reference_id : "";
-					const referenceName = isExistingClient ? api.references.copy.filter((reference) => reference.id == referenceId).at(0)?.name : "";
+				const referenceId = isExistingClient ? client.reference_id : "";
+				const referenceName = isExistingClient ? api.references.copy.filter((reference) => reference.id == referenceId).at(0)?.name : "";
 
-					if (isExistingClient) {
-						setFind("client", "");
-					}
-
-					setMain((s) => ({
-						...s,
-						client: { id: value.id, name: value.name },
-						phoneNumber,
-						emailAddress,
-						reference: { id: referenceId, name: referenceName },
-					}));
-				} else if (key == "reference") {
-					setFind("reference", "");
-					setMain((s) => ({ ...s, reference: { id: value.id, name: value.name } }));
-				} else if (key == "mainProject" || key == "subProject") {
-					setFind(key, "");
-					setMain((s) => ({ ...s, [key]: { ...s[key], id: value.id, name: value.name } }));
+				if (isExistingClient) {
+					setFind("client", "");
 				}
+
+				setMain((s) => ({
+					...s,
+					client: { id: value.id, name: value.name },
+					phoneNumber,
+					emailAddress,
+					reference: { id: referenceId, name: referenceName },
+				}));
+			} else if (key == "reference") {
+				setFind("reference", "");
+				setMain((s) => ({ ...s, reference: { id: value.id, name: value.name } }));
+			} else if (key == "mainProject" || key == "subProject") {
+				setFind(key, "");
+				setMain((s) => ({ ...s, [key]: { ...s[key], id: value.id, name: value.name } }));
 			}
-		} else {
+		}
+	}
+
+	function setLightInputs(key, value) {
+		if (key == "entryDate") {
+			setMain((s) => ({ ...s, [key]: value }));
+		} else if (typeof value === "string") {
 			setMain((s) => ({ ...s, [key]: value }));
 		}
 	}
@@ -339,7 +343,7 @@ export default function NewInquiry({ reload, unmount }) {
 				icon={faUser}
 				isReadOnly={false}
 				label="Client"
-				onChange={(e) => setInputs("client", e)}
+				onChange={(e) => setHeavyInputs("client", e)}
 				onClick={() => addNewClient(other.find.client.name)}
 				onInputChange={(e) => setFind("client", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
@@ -352,11 +356,15 @@ export default function NewInquiry({ reload, unmount }) {
 	}
 
 	function uiDate() {
-		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryDate", e)} tabIndex={7} value={main.entryDate} width="w-full" />;
+		return (
+			<DatePicker icon={faCalendar} label="Date" onChange={(e) => setLightInputs("entryDate", e)} tabIndex={7} value={main.entryDate} width="w-full" />
+		);
 	}
 
 	function uiEmailAddress() {
-		return <EmailAddress onChange={(e) => setInputs("emailAddress", e.target.value)} suffix="" tabIndex={3} value={main.emailAddress} width="w-full" />;
+		return (
+			<EmailAddress onChange={(e) => setLightInputs("emailAddress", e.target.value)} suffix="" tabIndex={3} value={main.emailAddress} width="w-full" />
+		);
 	}
 
 	function uiFollowUps() {
@@ -391,7 +399,7 @@ export default function NewInquiry({ reload, unmount }) {
 				icon={faFile}
 				isReadOnly={false}
 				label="Main Project"
-				onChange={(e) => setInputs("mainProject", e)}
+				onChange={(e) => setHeavyInputs("mainProject", e)}
 				onClick={() => {}}
 				onInputChange={(e) => setFind("mainProject", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
@@ -409,7 +417,7 @@ export default function NewInquiry({ reload, unmount }) {
 				icon={faNoteSticky}
 				key={1}
 				label="Notes"
-				onChange={(e) => setInputs("note", e.target.value)}
+				onChange={(e) => setLightInputs("note", e.target.value)}
 				onKeyDown={() => {}}
 				rows={2}
 				tabIndex={10}
@@ -425,7 +433,7 @@ export default function NewInquiry({ reload, unmount }) {
 				icon={faPhone}
 				label="Phone Number"
 				maxLength={10}
-				onChange={(e) => setInputs("phoneNumber", e.target.value)}
+				onChange={(e) => setLightInputs("phoneNumber", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex={2}
 				value={main.phoneNumber}
@@ -451,7 +459,7 @@ export default function NewInquiry({ reload, unmount }) {
 			<TextInput
 				icon={faIndianRupee}
 				label="Quote"
-				onChange={(e) => setInputs("quote", e.target.value)}
+				onChange={(e) => setLightInputs("quote", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex={8}
 				value={main.quote}
@@ -472,7 +480,7 @@ export default function NewInquiry({ reload, unmount }) {
 				icon={faUser}
 				isReadOnly={false}
 				label="Reference"
-				onChange={(e) => setInputs("reference", e)}
+				onChange={(e) => setHeavyInputs("reference", e)}
 				onClick={() => addNewReference(other.find.reference.name)}
 				onInputChange={(e) => setFind("reference", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
@@ -496,7 +504,7 @@ export default function NewInquiry({ reload, unmount }) {
 				icon={faFile}
 				isReadOnly={false}
 				label="Sub Project"
-				onChange={(e) => setInputs("subProject", e)}
+				onChange={(e) => setHeavyInputs("subProject", e)}
 				onClick={() => addNewSubProject(other.find.subProject.name)}
 				onInputChange={(e) => setFind("subProject", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
@@ -512,6 +520,10 @@ export default function NewInquiry({ reload, unmount }) {
 	useEffect(() => {
 		setSupportData();
 	}, []);
+
+	useEffect(() => {
+		console.log(other.find);
+	}, [other.find]);
 
 	useEffect(() => {
 		if (mounted.followUpsMenu) {

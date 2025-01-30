@@ -27,9 +27,9 @@ export default function Dashboard({ setModuleProps }) {
 	const [main, setMain] = useState({
 		inquiries: { closed: 0, confirmed: 0, hold: 0, open: 0, total: 0 },
 		invoices: {
-			due: { amount: 0, total: 0 },
-			generated: { amount: 0, total: 0 },
-			notGenerated: { amount: 0, total: 0 },
+			due: { amount: 0, count: 0, label: "DUE" },
+			generated: { amount: 0, count: 0, label: "GENERATED" },
+			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
 			total: 0,
 		},
 		isLoading: false,
@@ -51,15 +51,15 @@ export default function Dashboard({ setModuleProps }) {
 				object.background = "primary-background-gradient";
 				object.icon = faLock;
 				break;
-			case status == inquiriesStatus.Open || status == projectsStatus.Active:
+			case status == inquiriesStatus.Open || status == main.invoices.notGenerated.label || status == projectsStatus.Active:
 				object.background = "orange-background-gradient";
 				object.icon = faUnlock;
 				break;
-			case status == inquiriesStatus.Confirmed || status == projectsStatus.Completed:
+			case status == inquiriesStatus.Confirmed || status == main.invoices.generated.label || status == projectsStatus.Completed:
 				object.background = "green-background-gradient";
 				object.icon = faCheckDouble;
 				break;
-			case status == inquiriesStatus.Hold || status == projectsStatus.Hold:
+			case status == inquiriesStatus.Hold || status == main.invoices.due.label || status == projectsStatus.Hold:
 				object.background = "red-background-gradient";
 				object.icon = faCirclePause;
 				break;
@@ -105,7 +105,7 @@ export default function Dashboard({ setModuleProps }) {
 					}
 				}
 
-				const projectsCount = { active: 0, closed: 0, completed: 0, hold: 0, total: response.data.inquiries.length };
+				const projectsCount = { active: 0, closed: 0, completed: 0, hold: 0, total: response.data.projects.length };
 
 				for (const project of response.data.projects) {
 					if (project.status == projectsStatus.Active) {
@@ -119,7 +119,7 @@ export default function Dashboard({ setModuleProps }) {
 					}
 				}
 
-				const tasksCount = { overdue: 0, today: 0, tomorrow: 0, total: response.data.tasks, upcoming: 0 };
+				const tasksCount = { overdue: 0, today: 0, tomorrow: 0, total: response.data.tasks.length, upcoming: 0 };
 
 				for (const task of response.data.tasks) {
 					if (dayjs(task.due_on).isBefore(today)) {
@@ -133,7 +133,38 @@ export default function Dashboard({ setModuleProps }) {
 					}
 				}
 
-				setMain((s) => ({ ...s, inquiries: inquiriesCount, projects: projectsCount, tasks: tasksCount }));
+				const invoicesData = Object.assign({}, main.invoices);
+
+				response.data.invoices.forEach((fe) => {
+					if (dayjs(fe.due_date).isBefore(today)) {
+						invoicesData.due.amount += Number(fe.amount);
+						invoicesData.due.count += 1;
+					}
+
+					if (fe.custom_id) {
+						invoicesData.generated.amount += Number(fe.amount);
+						invoicesData.generated.count += 1;
+					}
+				});
+
+				const invoiceProjectIds = new Set(response.data.invoices.map((m) => m.project_id));
+
+				const isNotGenerated = response.data.projects.filter((f) => !invoiceProjectIds.has(f.id));
+
+				isNotGenerated.forEach((fe, i) => {
+					invoicesData.notGenerated.amount += Number(fe.quote);
+					invoicesData.notGenerated.count = i + 1;
+				});
+
+				invoicesData.total = response.data.invoices.length;
+
+				setMain((s) => ({
+					...s,
+					invoices: invoicesData,
+					inquiries: inquiriesCount,
+					projects: projectsCount,
+					tasks: tasksCount,
+				}));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Dashboard => Get Support Data");
@@ -159,6 +190,28 @@ export default function Dashboard({ setModuleProps }) {
 				<div className="flex flex-col pt-2 justify-center items-center">
 					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
 					<span className="font-bold-20">{value}</span>
+				</div>
+			</div>
+		);
+	}
+
+	function uiInvoices(key) {
+		const aesthetics = getBackgroundAndIcon(key);
+
+		const _key = MyGlobal.TrimInnerSpace(key).toLowerCase();
+
+		const amount = key == main.invoices.notGenerated.label ? main.invoices.notGenerated.amount : main.invoices[_key]?.amount;
+
+		const count = key == main.invoices.notGenerated.label ? main.invoices.notGenerated.count : main.invoices[_key]?.count;
+
+		const wrapper = `flex flex-col w-full px-6 pb-4 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+
+		return (
+			<div className={wrapper} onClick={() => setModuleProps(baseModules.Invoices, key)}>
+				<div className="py-2.5 px-8 rounded-b-full shadow-2xl font-semibold-24 text-white gray-background-transparent-01">{count}</div>
+				<div className="flex flex-col pt-2 justify-center items-center">
+					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
+					<span className="font-bold-20">{MyGlobal.FormatCurrency(amount)}</span>
 				</div>
 			</div>
 		);
@@ -263,10 +316,9 @@ export default function Dashboard({ setModuleProps }) {
 					<Badge value={main.invoices.total} />
 				</div>
 				<div className="flex w-full space-x-10 justify-between items-center">
-					{uiInquiries(inquiriesStatus.Open)}
-					{uiInquiries(inquiriesStatus.Closed)}
-					{uiInquiries(inquiriesStatus.Confirmed)}
-					{uiInquiries(inquiriesStatus.Hold)}
+					{uiInvoices(main.invoices.due.label)}
+					{uiInvoices(main.invoices.generated.label)}
+					{uiInvoices(main.invoices.notGenerated.label)}
 				</div>
 			</div>
 		</div>

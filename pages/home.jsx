@@ -37,7 +37,7 @@ export default function Home() {
 		mode: null,
 		selectedModule: { name: baseModules.Dashboard, sequence: 0 },
 		singleProjectObject: {},
-		status: { inquiries: "", invoices: "", projects: "", tasks: "" },
+		status: { cashFlow: "", inquiries: "", invoices: "", projects: "", tasks: "" },
 		user: { fullName: "", designation: "", role: "" },
 	});
 
@@ -186,7 +186,7 @@ export default function Home() {
 
 	function logout() {
 		MyGlobal.AddActivity("Logged out.");
-		MyGlobal.SetUserStatus(0);
+		// MyGlobal.SetUserStatus(0);
 		MyGlobal.ClearAllUserData();
 
 		router.replace("/");
@@ -305,7 +305,7 @@ export default function Home() {
 						key={`ErrorBoundary_${baseModules.CashFlow}`}
 						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.CashFlow)}
 						FallbackComponent={ErrorFallbackComponent}>
-						<CashFlows />
+						<CashFlows setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Clients:
@@ -436,6 +436,8 @@ export default function Home() {
 	useEffect(() => {
 		if (main.status.inquiries) {
 			setModule({ name: baseModules.Inquiries }, MyGlobal.GetModuleSequence(baseModules.Inquiries));
+		} else if (main.status.invoices) {
+			setModule({ name: baseModules.Invoices }, MyGlobal.GetModuleSequence(baseModules.Invoices));
 		} else if (main.status.projects) {
 			setModule({ name: baseModules.Projects }, MyGlobal.GetModuleSequence(baseModules.Projects));
 		} else if (main.status.tasks) {

@@ -164,6 +164,14 @@ html {
 	@apply bg-[var(--contrast)];
 }
 
+.blue-background {
+	@apply bg-[var(--blue)];
+}
+
+.blue-background-transparent-01 {
+	@apply bg-[var(--blue-transparent-01)];
+}
+
 .gray-background {
 	@apply bg-[var(--gray)];
 }
@@ -530,6 +538,11 @@ html {
 	font-family: var(--semibold);
 }
 
+.font-semibold-24 {
+	@apply text-[24px] font-semibold;
+	font-family: var(--semibold);
+}
+
 .font-semibold-30 {
 	@apply text-[30px] font-semibold;
 	font-family: var(--semibold);
@@ -668,7 +681,7 @@ html {
 
 .login-heading {
 	@apply text-[var(--primary)] text-[28pt];
-	font-family: var(--semibold);
+	font-family: var(--bold);
 }
 
 .login-spinner:before {

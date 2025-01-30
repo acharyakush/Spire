@@ -13,40 +13,36 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { affiliate, amountPaid, amountReceived, client, companyId, entryAt, isOfficeExpense, ownerFirm, particulars, paymentFor, projectId, userId } =
-			req.body;
+		const {
+			affiliate,
+			amountPaid,
+			amountReceived,
+			entryAt,
+			module,
+			ownerFirmsId,
+			ownerFirmsBankId,
+			particulars,
+			paymentFor,
+			paymentType,
+			remarks,
+			userId,
+		} = req.body;
 
-		const isAffiliate = affiliate.isActive && !client.isActive && !isOfficeExpense;
-		const isClient = !affiliate.isActive && client.isActive && !isOfficeExpense;
+		let affiliateId = "";
 
-		if (isAffiliate) {
-			const response = await query("UPDATE affiliates_projects SET paid_fees=? WHERE id=?", [amountPaid, affiliate.id]);
+		if (affiliate.id != "" && affiliate.name != "") {
+			affiliateId = affiliate.id;
+
+			const response = await query("UPDATE affiliates_projects SET paid_fees=? WHERE affiliate_id=?", [amountPaid, affiliate.id]);
 
 			if (response.affectedRows == 0) {
 				res.status(400).send(`Could not update paid fees of ${affiliate.name}.`);
 			}
 		}
 
-		const affiliateId = isAffiliate ? affiliate.id : "";
-		const clientId = isClient ? client.id : "";
-
 		const response = await query(
-			"INSERT INTO cash_flows (affiliate_id, client_id, company_id, project_id, owner_firm_id, owner_firm_bank_id, particulars, payment_for, amount_paid, amount_received, is_office_expense, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-			[
-				affiliateId,
-				clientId,
-				companyId,
-				projectId,
-				ownerFirm.id,
-				ownerFirm.bankId,
-				particulars,
-				paymentFor,
-				amountPaid,
-				amountReceived,
-				!isOfficeExpense ? 0 : 1,
-				entryAt,
-				userId,
-			],
+			"INSERT INTO cash_flows (affiliate_id, owner_firm_id, owner_firm_bank_id, particulars, payment_for, payment_type, amount_paid, amount_received, remarks, module, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			[affiliateId, ownerFirmsId, ownerFirmsBankId, particulars, paymentFor, paymentType, amountPaid, amountReceived, remarks, module, entryAt, userId],
 		);
 
 		if (response.affectedRows == 0) {

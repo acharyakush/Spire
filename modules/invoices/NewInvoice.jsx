@@ -31,7 +31,7 @@ import {
 
 export default function NewInvoice({ project, reload, unmount }) {
 	// Business Logic
-	const financialYear = `${dayjs(new Date()).format("YYYY")}-${dayjs(new Date()).add(1, "y").format("YY")}`;
+	const financialYear = `${dayjs(new Date()).subtract(1, "y").format("YYYY")}-${dayjs(new Date()).format("YY")}`;
 
 	const today = new Date();
 	const invoiceDueDate = new Date(today);
@@ -288,7 +288,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 					ownersFirm.address = getOwnersFirm.address;
 					ownersFirm.id = getOwnersFirm.id;
 					ownersFirm.name = getOwnersFirm.name;
-					ownersFirm.termsConditions = getOwnersFirm.termsConditions;
+					ownersFirm.termsConditions = getOwnersFirm.terms_conditions;
 				}
 
 				const getOwnersFirmsBank = response.data.ownerFirmsBanks.find((f) => f.owner_firm_id == ownersFirm.id);
@@ -315,7 +315,6 @@ export default function NewInvoice({ project, reload, unmount }) {
 
 					return {
 						...m,
-						amount: MyGlobal.FormatCurrency(m.amount),
 						entry_at: dayjs(m.entry_at).format("DD MMMM, YYYY"),
 						source,
 					};
@@ -725,15 +724,17 @@ export default function NewInvoice({ project, reload, unmount }) {
 		let termsConditions = "";
 
 		if (typeof main.ownersFirm.termsConditions === "string") {
-			termsConditions = main.ownersFirm.termsConditions.split("nnn.").map((m, i) => <li key={i}>{m}</li>);
+			termsConditions = main.ownersFirm.termsConditions.split("\\n").map((m, i) => (
+				<span className="whitespace-pre-line" key={i}>
+					{m}
+				</span>
+			));
 		}
 
 		return (
 			<div className="flex flex-col w-full space-y-px justify-start items-center">
 				<span className="w-full text-left font-medium-14 logo-green-text">Terms and Conditions</span>
-				<span className="flex w-full space-x-2 justify-start items-center font-regular-10">
-					<ol className="whitespace-pre-line">{termsConditions}</ol>
-				</span>
+				<span className="flex flex-col w-full justify-center items-start font-regular-10">{termsConditions}</span>
 			</div>
 		);
 	}

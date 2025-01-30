@@ -247,7 +247,11 @@ export default function Affiliates() {
 
 	function uiSelectedAffiliate() {
 		if (main.selectedAffiliate.id == 0) {
-			return <div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">Please select an affiliate</div>;
+			return (
+				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-center items-center font-medium-12 gray-text">
+					Select an affiliate
+				</div>
+			);
 		} else {
 			return (
 				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">

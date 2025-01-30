@@ -11,11 +11,15 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faPlusCircle, faTurnDown, faTurnUp } from "@fortawesome/free-solid-svg-icons";
 
-export default function CashFlows() {
+export default function CashFlows({ setModuleProps }) {
 	// Business Logic
 	const modules = MyConstants.Modules.Other.CashFlow;
+
+	const thisView = MyConstants.Modules.Base.CashFlow;
+	const affiliatesView = MyConstants.Modules.Base.Affiliates;
+	const invoicesView = MyConstants.Modules.Base.Invoices;
 
 	const [api, setApi] = useState({
 		affiliates: [],
@@ -26,25 +30,47 @@ export default function CashFlows() {
 	});
 
 	const [main, setMain] = useState({
+		affiliates: {
+			workPending: { amount: 0, count: 0, label: "WORK PENDING" },
+			workCompleted: { amount: 0, count: 0, label: "WORK COMPLETED" },
+			amountPending: { amount: 0, count: 0, label: "AMOUNT PENDING" },
+			total: { amount: 0, count: 0, label: "TOTAL" },
+		},
 		invoices: {
 			due: { amount: 0, count: 0, label: "DUE" },
 			generated: { amount: 0, count: 0, label: "GENERATED" },
 			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
 		},
 		isLoading: false,
+		module: affiliatesView,
+		officeExpense: {
+			pending: { amount: 0, label: "PENDING" },
+			paid: { amount: 0, label: "PAID" },
+			total: { amount: 0, label: "TOTAL" },
+		},
+		otherExpense: {
+			pending: { amount: 0, label: "PENDING" },
+			paid: { amount: 0, label: "PAID" },
+			total: { amount: 0, label: "TOTAL" },
+		},
+		pettyCash: {
+			paid: { amount: 0, label: "PAID" },
+			received: { amount: 0, label: "RECEIVED" },
+			balance: { amount: 0, label: "BALANCE" },
+		},
 		reimburseVouchers: {
 			due: { amount: 0, count: 0, label: "DUE" },
 			generated: { amount: 0, count: 0, label: "GENERATED" },
 			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
 		},
 		selectedModule: modules.Inward,
+		totalInvoicesAmount: 0,
 	});
 
 	const [mounted, setMounted] = useState({
 		newCashFlow: false,
 	});
 
-	const thisView = MyConstants.Modules.Base.CashFlow;
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
 	// Functions
@@ -59,16 +85,22 @@ export default function CashFlows() {
 				object.transparentBackground = "red-background-transparent-01";
 				break;
 			case 1:
+				object.background = "green-background";
+				object.border = "green-border";
+				object.textColour = "green-text";
+				object.transparentBackground = "green-background-transparent-01";
+				break;
+			case 2:
 				object.background = "orange-background";
 				object.border = "orange-border";
 				object.textColour = "orange-text";
 				object.transparentBackground = "orange-background-transparent-01";
 				break;
-			case 2:
-				object.background = "green-background";
-				object.border = "green-border";
-				object.textColour = "green-text";
-				object.transparentBackground = "green-background-transparent-01";
+			case 3:
+				object.background = "blue-background";
+				object.border = "blue-border";
+				object.textColour = "blue-text";
+				object.transparentBackground = "blue-background-transparent-01";
 				break;
 		}
 
@@ -90,36 +122,29 @@ export default function CashFlows() {
 				const invoicesData = Object.assign({}, main.invoices);
 
 				response.data.invoices.forEach((fe) => {
-					const isNotGenerated = response.data.projects.filter((f) => f.id == fe.project_id);
-
-					if (dayjs(fe.receipt_date).isAfter(today) && fe.amount_received == 0) {
+					if (dayjs(fe.due_date).isBefore(today)) {
 						invoicesData.due.amount += Number(fe.amount);
 						invoicesData.due.count++;
-					} else if (isNotGenerated.length) {
-						invoicesData.notGenerated.amount++;
-						invoicesData.notGenerated.count = isNotGenerated.length;
-					} else {
-						invoicesData.generated.amount++;
-						invoicesData.generated.count++;
+					}
+
+					if (fe.custom_id) {
+						invoicesData.generated.amount += Number(fe.amount);
+						invoicesData.generated.count += 1;
 					}
 				});
 
-				const reimburseVouchersData = Object.assign({}, main.reimburseVouchers);
+				const invoiceProjectIds = new Set(response.data.invoices.map((m) => m.project_id));
 
-				response.data.reimburseVouchers.forEach((fe) => {
-					const isNotGenerated = response.data.projects.filter((f) => f.id == fe.project_id);
+				const isNotGenerated = response.data.projects.filter((f) => !invoiceProjectIds.has(f.id));
 
-					if (dayjs(fe.receipt_date).isAfter(today) && fe.amount_received == 0) {
-						reimburseVouchersData.due.amount++;
-						reimburseVouchersData.due.count++;
-					} else if (isNotGenerated.length) {
-						reimburseVouchersData.notGenerated.amount++;
-						reimburseVouchersData.notGenerated.count = isNotGenerated.length;
-					} else {
-						reimburseVouchersData.generated.amount++;
-						reimburseVouchersData.generated.count++;
-					}
+				isNotGenerated.forEach((fe, i) => {
+					invoicesData.notGenerated.amount += Number(fe.quote);
+					invoicesData.notGenerated.count = i + 1;
 				});
+
+				const allInvoicesAmount = response.data.invoices.reduce((pv, cv) => pv + Number(cv.amount), 0);
+
+				const totalInvoicesAmount = allInvoicesAmount + invoicesData.notGenerated.amount;
 
 				setApi((s) => ({
 					...s,
@@ -127,10 +152,28 @@ export default function CashFlows() {
 					reimburseVouchers: response.data.reimburseVouchers,
 				}));
 
+				const reimburseVouchersData = Object.assign({}, main.reimburseVouchers);
+
+				// response.data.reimburseVouchers.forEach((fe) => {
+				// 	const isNotGenerated = response.data.projects.filter((f) => f.id == fe.project_id);
+
+				// 	if (dayjs(fe.receipt_date).isAfter(today) && fe.amount_received == 0) {
+				// 		reimburseVouchersData.due.amount++;
+				// 		reimburseVouchersData.due.count++;
+				// 	} else if (isNotGenerated.length) {
+				// 		reimburseVouchersData.notGenerated.amount++;
+				// 		reimburseVouchersData.notGenerated.count = isNotGenerated.length;
+				// 	} else {
+				// 		reimburseVouchersData.generated.amount++;
+				// 		reimburseVouchersData.generated.count++;
+				// 	}
+				// });
+
 				setMain((s) => ({
 					...s,
 					invoices: invoicesData,
 					reimburseVouchers: reimburseVouchersData,
+					totalInvoicesAmount: MyGlobal.ThousandSeparator(totalInvoicesAmount),
 				}));
 			}
 		} catch (error) {
@@ -139,21 +182,81 @@ export default function CashFlows() {
 		}
 	}
 
-	function toggleNewCashFlowView() {
+	function toggleNewCashFlowView(module) {
+		setMain((s) => ({ ...s, module }));
 		setMounted((s) => ({ ...s, newCashFlow: !mounted.newCashFlow }));
 	}
 
 	// UI Components
-	function uiBody() {
+	function uiAffiliates() {
 		return (
-			<div className="flex w-full h-full justify-center items-start">
-				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiModules()}</div>
-				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center rounded shadow contrast-background">{uiSelectedModule()}</div>
+			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
+				<div className="flex w-full justify-start items-center">
+					<div className="flex w-fit space-x-2.5 justify-center items-center">
+						<span className="view-heading">{affiliatesView}</span>
+						{uiNew(affiliatesView)}
+					</div>
+				</div>
+				<div className="flex w-full space-x-12 justify-between items-center">{uiAffiliatesBlock()}</div>
 			</div>
 		);
 	}
 
-	function uiInvoicesBlock() {
+	function uiAffiliatesBlock() {
+		return Object.values(main.affiliates).map((m, n) => {
+			const aesthetics = getAesthetics(n);
+
+			return (
+				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
+					<div className={`flex flex-col w-full p-5 space-y-2.5 justify-center items-center ${aesthetics.textColour}`}>
+						<div className="flex space-x-1 justify-center items-center">
+							<span className="font-medium-18">{m.count}</span>
+						</div>
+						<span className="font-medium-22">{MyGlobal.FormatCurrency(m.amount)}</span>
+					</div>
+					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
+				</div>
+			);
+		});
+	}
+
+	function uiBody() {
+		return (
+			<div className="flex w-full h-full justify-center items-start">
+				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiModules()}</div>
+				<div className="flex flex-col w-[90%] h-[calc(100vh-100px)] mr-5 justify-start items-center rounded shadow overflow-y-auto scrollbar-gutter contrast-background">
+					{uiSelectedModule()}
+				</div>
+			</div>
+		);
+	}
+
+	function uiInward() {
+		return (
+			<div className="flex flex-col w-full h-full space-y-6 justify-start items-center">
+				{uiInwardInvoices()}
+				{uiInwardOtherExpense()}
+			</div>
+		);
+	}
+
+	function uiInwardInvoices() {
+		return (
+			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
+				<div className="flex w-full justify-between items-center">
+					<div className="flex w-fit space-x-2.5 justify-start items-center">
+						<span className="view-heading">{invoicesView}</span>
+						{uiNew("Inward Invoices")}
+						<Badge value={api.invoices.length} />
+						<Badge value={`Total ${main.totalInvoicesAmount}`} />
+					</div>
+				</div>
+				<div className="flex w-full space-x-16 justify-between items-center">{uiInwardInvoicesBlock()}</div>
+			</div>
+		);
+	}
+
+	function uiInwardInvoicesBlock() {
 		return Object.values(main.invoices).map((m, n) => {
 			const aesthetics = getAesthetics(n);
 
@@ -171,19 +274,33 @@ export default function CashFlows() {
 		});
 	}
 
-	function uiInward() {
+	function uiInwardOtherExpense() {
 		return (
-			<div className="flex flex-col w-full h-full space-y-6 justify-start items-center">
-				<div className="flex flex-col w-full space-y-2 justify-center items-start">
-					<span className="view-heading">{MyConstants.Modules.Base.Invoices}</span>
-					<div className="flex w-full space-x-6 space-x-2 justify-center items-center">{uiInvoicesBlock()}</div>
+			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
+				<div className="flex w-full justify-start items-center">
+					<div className="flex w-fit space-x-2.5 justify-center items-center">
+						<span className="view-heading">Other Expense</span>
+						{uiNew("Inward Other Expense")}
+					</div>
 				</div>
-				{/* <div className="flex flex-col w-full space-y-2 justify-center items-start">
-					<span className="view-heading">RVs</span>
-					<div className="flex w-full space-x-6 space-y-2 justify-center items-center">{uiReimburseVouchersBlock()}</div>
-				</div> */}
+				<div className="flex w-full space-x-32 justify-between items-center">{uiInwardOtherExpenseBlock()}</div>
 			</div>
 		);
+	}
+
+	function uiInwardOtherExpenseBlock() {
+		return Object.values(main.otherExpense).map((m, n) => {
+			const aesthetics = getAesthetics(n);
+
+			return (
+				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
+					<div className={`flex flex-col w-full p-5 justify-center items-center ${aesthetics.textColour}`}>
+						<span className="font-medium-22">{MyGlobal.FormatCurrency(m.amount)}</span>
+					</div>
+					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
+				</div>
+			);
+		});
 	}
 
 	function uiMain() {
@@ -194,7 +311,7 @@ export default function CashFlows() {
 				</div>
 			);
 		} else if (mounted.newCashFlow) {
-			return <NewCashFlow reload={setSupportData} unmount={toggleNewCashFlowView} />;
+			return <NewCashFlow module={main.module} reload={setSupportData} unmount={toggleNewCashFlowView} />;
 		} else {
 			return (
 				<div className="flex flex-col w-full h-full justify-start items-center">
@@ -203,7 +320,7 @@ export default function CashFlows() {
 							<span className="view-heading">{thisView}</span>
 							{api.cashFlows.length > 0 && <Badge value={api.cashFlows.length} />}
 						</div>
-						<div className="flex w-1/2 space-x-2 justify-end items-center">{uiNew()}</div>
+						<div className="flex w-1/2 space-x-2 justify-end items-center"></div>
 					</div>
 					{uiBody()}
 				</div>
@@ -213,30 +330,124 @@ export default function CashFlows() {
 
 	function uiModules() {
 		return Object.values(modules).map((m, i) => {
+			const icon = m == modules.Inward ? faTurnDown : faTurnUp;
+
 			const selectedStyle =
 				m == main.selectedModule ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
-			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedStyle} font-regular-10 hovered-rows`;
+			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedStyle} font-medium-10 hovered-rows`;
 
 			return (
 				<button className={wrapper} key={i} onClick={() => setModule(m)}>
-					{m}
+					<span>{m}</span>
+					<FontAwesomeIcon icon={icon} />
 				</button>
 			);
 		});
 	}
 
-	function uiNew() {
-		return (
-			<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleNewCashFlowView()}>
-				<FontAwesomeIcon icon={faPlusCircle} />
-				<span>New</span>
-			</button>
-		);
+	function uiNew(module) {
+		const action = () => (module == "Inward Invoices" ? setModuleProps(invoicesView, 1) : toggleNewCashFlowView(module));
+
+		return <FontAwesomeIcon className="cursor-pointer blue-text" icon={faPlusCircle} onClick={() => action()} size="lg" />;
 	}
 
 	function uiOutward() {
-		return <></>;
+		return (
+			<div className="flex flex-col w-full h-full space-y-6 justify-start items-center">
+				{uiAffiliates()}
+				{uiOutwardOfficeExpense()}
+				{uiOutwardOtherExpense()}
+				{uiOutwardPettyCash()}
+			</div>
+		);
+	}
+
+	function uiOutwardOfficeExpense() {
+		return (
+			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
+				<div className="flex w-full justify-start items-center">
+					<div className="flex w-fit space-x-2.5 justify-center items-center">
+						<span className="view-heading">Office Expense</span>
+						{uiNew("Outward Office Expense")}
+					</div>
+				</div>
+				<div className="flex w-full space-x-32 justify-between items-center">{uiOutwardOfficeExpenseBlock()}</div>
+			</div>
+		);
+	}
+
+	function uiOutwardOfficeExpenseBlock() {
+		return Object.values(main.officeExpense).map((m, n) => {
+			const aesthetics = getAesthetics(n);
+
+			return (
+				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
+					<div className={`flex flex-col w-full p-5 justify-center items-center ${aesthetics.textColour}`}>
+						<span className="font-medium-22">{MyGlobal.FormatCurrency(m.amount)}</span>
+					</div>
+					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
+				</div>
+			);
+		});
+	}
+
+	function uiOutwardOtherExpense() {
+		return (
+			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
+				<div className="flex w-full justify-start items-center">
+					<div className="flex w-fit space-x-2.5 justify-center items-center">
+						<span className="view-heading">Other Expense</span>
+						{uiNew("Outward Other Expense")}
+					</div>
+				</div>
+				<div className="flex w-full space-x-32 justify-between items-center">{uiOutwardOtherExpenseBlock()}</div>
+			</div>
+		);
+	}
+
+	function uiOutwardOtherExpenseBlock() {
+		return Object.values(main.otherExpense).map((m, n) => {
+			const aesthetics = getAesthetics(n);
+
+			return (
+				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
+					<div className={`flex flex-col w-full p-5 justify-center items-center ${aesthetics.textColour}`}>
+						<span className="font-medium-22">{MyGlobal.FormatCurrency(m.amount)}</span>
+					</div>
+					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
+				</div>
+			);
+		});
+	}
+
+	function uiOutwardPettyCash() {
+		return (
+			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
+				<div className="flex w-full justify-start items-center">
+					<div className="flex w-fit space-x-2.5 justify-center items-center">
+						<span className="view-heading">Petty Cash</span>
+						{uiNew("Outward Petty Cash")}
+					</div>
+				</div>
+				<div className="flex w-full space-x-32 justify-between items-center">{uiOutwardPettyCashBlock()}</div>
+			</div>
+		);
+	}
+
+	function uiOutwardPettyCashBlock() {
+		return Object.values(main.pettyCash).map((m, n) => {
+			const aesthetics = getAesthetics(n);
+
+			return (
+				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
+					<div className={`flex flex-col w-full p-5 justify-center items-center ${aesthetics.textColour}`}>
+						<span className="font-medium-22">{MyGlobal.FormatCurrency(m.amount)}</span>
+					</div>
+					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
+				</div>
+			);
+		});
 	}
 
 	function uiReimburseVouchersBlock() {
@@ -268,6 +479,11 @@ export default function CashFlows() {
 	// Hooks
 	useEffect(() => {
 		setSupportData();
+
+		return () => {
+			setModuleProps(invoicesView, null);
+			setModuleProps(thisView, null);
+		};
 	}, []);
 
 	// Main UI

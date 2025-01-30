@@ -498,6 +498,10 @@ export const MyGlobal = Object.freeze({
 		return new Intl.NumberFormat("en-IN").format(value);
 	},
 
+	TrimInnerSpace: (value) => {
+		return String(value).replace(/\s/g, "");
+	},
+
 	ValidateEmailAddress(emailAddress) {
 		const _emailAddress = String(emailAddress);
 
