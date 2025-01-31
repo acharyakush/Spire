@@ -71,7 +71,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 	// Functions
 	function addNewClient(client) {
 		const copy = [...api.clients.copy];
-		const name = MyGlobal.Capitalize(client);
+		const name = client;
 
 		const revised = copy.filter((f) => f.id != 0);
 		revised.unshift({ id: 0, name });
@@ -84,7 +84,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 
 	function addNewReference(reference) {
 		const copy = [...api.references.copy];
-		const name = MyGlobal.Capitalize(reference);
+		const name = reference;
 
 		const revised = copy.filter((f) => f.id != 0);
 		revised.unshift({ id: 0, name });
@@ -97,7 +97,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 
 	function addNewSubProject(subProject) {
 		const copy = [...api.subProjects.copy];
-		copy.unshift({ id: 0, name: MyGlobal.Capitalize(subProject) });
+		copy.unshift({ id: 0, name: subProject });
 
 		setFind("subProject", "");
 

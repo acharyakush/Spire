@@ -8,7 +8,7 @@ import jsPDF from "jspdf";
 import Tippy from "@tippyjs/react";
 import html2canvas from "html2canvas";
 import MyConstants from "@/utilities/constants";
-import NewInvoicePreview from "@/modals/invoices/NewInvoicePreview";
+import NewRvPreview from "@/modals/rv/NewRvPreview";
 
 import { QRCode } from "react-qrcode-logo";
 import { useEffect, useState } from "react";
@@ -29,13 +29,13 @@ import {
 	faTasks,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewInvoice({ project, reload, unmount }) {
+export default function NewRv({ project, reload, unmount }) {
 	// Business Logic
 	const financialYear = `${dayjs(new Date()).subtract(1, "y").format("YYYY")}-${dayjs(new Date()).format("YY")}`;
 
 	const today = new Date();
-	const invoiceDueDate = new Date(today);
-	invoiceDueDate.setDate(invoiceDueDate.getDate() + 7);
+	const rvDueDate = new Date(today);
+	rvDueDate.setDate(rvDueDate.getDate() + 7);
 
 	const quote = Number(project.quote);
 
@@ -45,7 +45,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 	});
 
 	const [loading, setLoading] = useState({
-		addInvoice: false,
+		addRv: false,
 		downloadPdf: false,
 		supportData: false,
 	});
@@ -61,11 +61,11 @@ export default function NewInvoice({ project, reload, unmount }) {
 			upiId: "",
 		},
 		financialYear,
-		invoiceDate: new Date(),
-		invoiceDueDate,
-		invoiceId: 0,
-		invoiceNumber: 0,
-		invoicesPaymentHistory: [],
+		rvDate: new Date(),
+		rvDueDate: rvDueDate,
+		rvId: 0,
+		rvNumber: 0,
+		rvPaymentHistory: [],
 		ownersFirm: {
 			address: "",
 			id: "",
@@ -99,9 +99,9 @@ export default function NewInvoice({ project, reload, unmount }) {
 	const finalPendingAmount = String.fromCharCode(8377) + ` ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
 
 	// Functions
-	async function addInvoice() {
+	async function addRv() {
 		try {
-			const customId = `${MyGlobal.GetInitials(main.ownersFirm.name)}/${main.financialYear}/${main.invoiceId}`;
+			const customId = `${MyGlobal.GetInitials(main.ownersFirm.name)}/${main.financialYear}/${main.rvId}`;
 
 			const body = {
 				amount: totalAmount,
@@ -109,22 +109,22 @@ export default function NewInvoice({ project, reload, unmount }) {
 				customId,
 				clientId: project.client_id,
 				id: project.id,
-				receiptDate: main.invoiceDate,
+				receiptDate: main.rvDate,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Invoices.AddInvoice, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.Rv.AddRv, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Generated invoice <b>${customId}</b> for <b>${project.id}</b>`, MyConstants.Modules.Derived.NewInvoice);
+				MyGlobal.AddActivity(`Generated RV <b>${customId}</b> for <b>${project.id}</b>`, MyConstants.Modules.Derived.NewRv);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.InvoiceAdded);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.RvAdded);
 			} else {
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewInvoice);
+			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewRv);
 		} finally {
 			unmount();
 		}
@@ -159,22 +159,22 @@ export default function NewInvoice({ project, reload, unmount }) {
 	function downloadPdf() {
 		setLoading((s) => ({ ...s, downloadPdf: true }));
 
-		const fileName = `${MyGlobal.GetInitials(main.ownersFirm.name)}_${main.financialYear}_${main.invoiceId}_${getCompanyDetails().name}`;
+		const fileName = `${MyGlobal.GetInitials(main.ownersFirm.name)}_${main.financialYear}_${main.rvId}_${getCompanyDetails().name}`;
 
 		const pdf = new jsPDF("p", "mm", "a4");
-		const invoiceBody = document.getElementById("invoiceBody");
+		const rvBody = document.getElementById("rvBody");
 		const pageHeight = pdf.internal.pageSize.getHeight();
 		const marginBottom = 50;
 
 		const originalStyle = {
-			height: invoiceBody.style.height,
-			overflow: invoiceBody.style.overflow,
+			height: rvBody.style.height,
+			overflow: rvBody.style.overflow,
 		};
 
-		invoiceBody.style.height = "auto";
-		invoiceBody.style.overflow = "visible";
+		rvBody.style.height = "auto";
+		rvBody.style.overflow = "visible";
 
-		html2canvas(invoiceBody, { scale: 2, scrollX: 0, scrollY: 0 })
+		html2canvas(rvBody, { scale: 2, scrollX: 0, scrollY: 0 })
 			.then((c) => {
 				const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
 				const imgHeight = (c.height * pdfWidth) / c.width;
@@ -207,11 +207,11 @@ export default function NewInvoice({ project, reload, unmount }) {
 				}
 
 				pdf.save(`${fileName}.pdf`);
-				addInvoice();
+				addRv();
 			})
 			.finally(() => {
-				invoiceBody.style.height = originalStyle.height;
-				invoiceBody.style.overflow = originalStyle.overflow;
+				rvBody.style.height = originalStyle.height;
+				rvBody.style.overflow = originalStyle.overflow;
 
 				setLoading((s) => ({ ...s, downloadPdf: false }));
 			});
@@ -248,13 +248,13 @@ export default function NewInvoice({ project, reload, unmount }) {
 	}
 
 	function setInputs(key, value) {
-		if (key == "invoiceDate") {
+		if (key == "rvDate") {
 			const newDueDate = new Date(value);
 			newDueDate.setDate(newDueDate.getDate() + 7);
 
-			setMain((s) => ({ ...s, invoiceDueDate: newDueDate, invoiceDate: value }));
-		} else if (key == "invoiceDueDate") {
-			setMain((s) => ({ ...s, invoiceDueDate: value }));
+			setMain((s) => ({ ...s, rvDueDate: newDueDate, rvDate: value }));
+		} else if (key == "rvDueDate") {
+			setMain((s) => ({ ...s, rvDueDate: value }));
 		} else if (key == "termsConditions") {
 			setMain((s) => ({ ...s, ownersFirm: { ...s.ownersFirm, termsConditions: value } }));
 		} else {
@@ -281,7 +281,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 		try {
 			setLoading((s) => ({ ...s, supportData: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetNewInvoiceSupportData, MyGlobal.GetHeaders({ projectId: project.id }));
+			const response = await axios.get(MyConstants.ApiEndpoints.Rv.GetNewRvSupportData, MyGlobal.GetHeaders({ projectId: project.id }));
 
 			if (response.status === 200) {
 				const ownersFirm = {
@@ -309,13 +309,13 @@ export default function NewInvoice({ project, reload, unmount }) {
 					ownersFirmsBank.name = getOwnersFirmsBank.name;
 				}
 
-				const getAmountReceived = response.data.invoicesPaymentHistory.filter((f) => f.project_id == project.id);
+				const getAmountReceived = response.data.rvPaymentHistory.filter((f) => f.project_id == project.id);
 
 				const totalAmountReceived = getAmountReceived.reduce((pv, cv) => {
 					return pv + Number(cv.amount);
 				}, 0);
 
-				const invoicesPaymentHistory = response.data.invoicesPaymentHistory.map((m) => {
+				const rvPaymentHistory = response.data.rvPaymentHistory.map((m) => {
 					let source = "";
 
 					const getSource = MyGlobal.GetPaymentSourceList(response.data.ownerFirmsBanks).find((f) => f.id === m.source);
@@ -343,14 +343,14 @@ export default function NewInvoice({ project, reload, unmount }) {
 						id: ownersFirmsBank.id,
 						name: ownersFirmsBank.name,
 					},
-					invoiceId: MyGlobal.MakeNewInvoiceId(response.data.invoices),
-					invoicesPaymentHistory,
+					rvId: MyGlobal.MakeNewInvoiceId(response.data.rv),
+					rvPaymentHistory: rvPaymentHistory,
 					ownersFirm,
 					totalAmountReceived,
 				}));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewInvoice);
+			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewRv);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -397,11 +397,11 @@ export default function NewInvoice({ project, reload, unmount }) {
 				<div className="flex flex-col w-full h-full px-4 py-2 space-y-1 justify-start items-center overflow-y-auto bg-white">
 					<div className="flex w-full px-5 space-x-5 justify-between items-center">
 						{uiInputFinancialYear()}
-						{uiInputInvoiceId()}
+						{uiInputRvId()}
 					</div>
 					<div className="flex w-full px-5 space-x-5 justify-between items-center">
-						{uiInputInvoiceDate()}
-						{uiInputInvoiceDueDate()}
+						{uiInputRvDate()}
+						{uiInputRvDueDate()}
 					</div>
 					<div className="flex w-full px-5 space-x-5 justify-between items-center">{uiInputBank()}</div>
 					<div className="flex flex-col w-full px-5 justify-between items-center">{uiInputParticularsRows()}</div>
@@ -426,42 +426,24 @@ export default function NewInvoice({ project, reload, unmount }) {
 		);
 	}
 
-	function uiInputInvoiceDate() {
-		return (
-			<DatePicker
-				icon={faCalendar}
-				label="Invoice Date"
-				onChange={(e) => setInputs("invoiceDate", e)}
-				tabIndex={1}
-				value={main.invoiceDate}
-				width="w-full"
-			/>
-		);
+	function uiInputRvDate() {
+		return <DatePicker icon={faCalendar} label="RV Date" onChange={(e) => setInputs("rvDate", e)} tabIndex={1} value={main.rvDate} width="w-full" />;
 	}
 
-	function uiInputInvoiceDueDate() {
-		return (
-			<DatePicker
-				icon={faCalendar}
-				label="Due Date"
-				onChange={(e) => setInputs("invoiceDueDate", e)}
-				tabIndex={2}
-				value={main.invoiceDueDate}
-				width="w-full"
-			/>
-		);
+	function uiInputRvDueDate() {
+		return <DatePicker icon={faCalendar} label="Due Date" onChange={(e) => setInputs("rvDueDate", e)} tabIndex={2} value={main.rvDueDate} width="w-full" />;
 	}
 
-	function uiInputInvoiceId() {
+	function uiInputRvId() {
 		return (
 			<TextInput
 				icon={faHashtag}
 				label="ID"
 				maxLength={5}
-				onChange={(e) => setInputs("invoiceId", e.target.value)}
+				onChange={(e) => setInputs("rvId", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex={2}
-				value={main.invoiceId}
+				value={main.rvId}
 				width="w-full"
 			/>
 		);
@@ -553,7 +535,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 		);
 	}
 
-	// UI Invoice Sheet
+	// UI RV Sheet
 	function uiBank() {
 		const label = "flex w-1/2 justify-start items-center font-regular-10";
 		const value = `flex w-1/2 justify-start items-center font-semibold-10`;
@@ -629,72 +611,6 @@ export default function NewInvoice({ project, reload, unmount }) {
 		);
 	}
 
-	function uiInvoice() {
-		const invoiceDate = dayjs(main.invoiceDate).format("DD-MM-YYYY");
-		const invoiceDueDate = dayjs(main.invoiceDueDate).format("DD-MM-YYYY");
-
-		return (
-			<div className="flex flex-col w-full space-y-1 justify-start items-center">
-				<span className="w-full text-left font-medium-16 logo-green-text">Invoice</span>
-				<div className="flex w-full justify-start items-center">
-					<span className="w-2/5 font-regular-10 gray-text">Invoice</span>
-					<div className="flex w-3/5 space-x-1 font-medium-10 black-text">
-						<span>{MyGlobal.GetInitials(main.ownersFirm.name)}</span>
-						<span>/</span>
-						<span>{main.financialYear}</span>
-						<span>/</span>
-						<span>{main.invoiceId}</span>
-					</div>
-				</div>
-				<div className="flex w-full justify-start items-center">
-					<span className="w-2/5 font-regular-10 gray-text">Invoice Date</span>
-					<span className="flex w-3/5 font-medium-10">{invoiceDate}</span>
-				</div>
-				<div className="flex w-full justify-start items-center">
-					<span className="w-2/5 font-regular-10 gray-text">Invoice Due Date</span>
-					<span className="flex w-3/5 font-medium-10">{invoiceDueDate}</span>
-				</div>
-				<div className="flex w-full justify-start items-center">
-					<span className="w-2/5 font-regular-10 gray-text">Bank</span>
-					<span className="flex w-3/5 font-medium-10 black-text">{main.bank.name}</span>
-				</div>
-			</div>
-		);
-	}
-
-	function uiInvoiceSheet() {
-		return (
-			<div className="flex w-1/2 h-full justify-center items-center" id="invoiceWrapper">
-				<div className="flex flex-col w-full h-full px-4 py-2 space-y-4 justify-start items-center overflow-y-auto bg-white" id="invoiceBody">
-					<div className="flex w-full justify-between items-center bg-white">
-						{uiInvoice()}
-						<div className="flex w-full justify-end items-center">
-							<img src="../logo.png" width="55" height="75" />
-						</div>
-					</div>
-					<div className="flex w-full space-x-5 justify-between items-start">
-						{uiBilledBy()}
-						{uiBilledTo()}
-					</div>
-					<div className="flex flex-col w-full justify-between items-center">
-						{uiParticularsHeaders()}
-						{uiParticularsRows()}
-					</div>
-					<div className="flex w-full h-full space-x-2.5 justify-between items-end">
-						{uiBank()}
-						{uiQrCode()}
-					</div>
-					{uiTotalAmount()}
-					<div className="flex w-full h-full justify-between items-end">{uiTermsAndConditions()}</div>
-					<div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
-						<div className="flex w-full h-full justify-between items-center bottom-border">{uiTransactionHistoryHeaders()}</div>
-						<div className="flex flex-col w-full h-full justify-between items-center">{uiTransactionHistory()}</div>
-					</div>
-				</div>
-			</div>
-		);
-	}
-
 	function uiParticularsHeaders() {
 		return (
 			<div className="flex flex-col w-full justify-center items-start">
@@ -731,6 +647,72 @@ export default function NewInvoice({ project, reload, unmount }) {
 		);
 	}
 
+	function uiRv() {
+		const rvDate = dayjs(main.rvDate).format("DD-MM-YYYY");
+		const rvDueDate = dayjs(main.rvDueDate).format("DD-MM-YYYY");
+
+		return (
+			<div className="flex flex-col w-full space-y-1 justify-start items-center">
+				<span className="w-full text-left font-medium-16 logo-green-text">RV</span>
+				<div className="flex w-full justify-start items-center">
+					<span className="w-2/5 font-regular-10 gray-text">RV</span>
+					<div className="flex w-3/5 space-x-1 font-medium-10 black-text">
+						<span>{MyGlobal.GetInitials(main.ownersFirm.name)}</span>
+						<span>/</span>
+						<span>{main.financialYear}</span>
+						<span>/</span>
+						<span>{main.rvId}</span>
+					</div>
+				</div>
+				<div className="flex w-full justify-start items-center">
+					<span className="w-2/5 font-regular-10 gray-text">RV Date</span>
+					<span className="flex w-3/5 font-medium-10">{rvDate}</span>
+				</div>
+				<div className="flex w-full justify-start items-center">
+					<span className="w-2/5 font-regular-10 gray-text">RV Due Date</span>
+					<span className="flex w-3/5 font-medium-10">{rvDueDate}</span>
+				</div>
+				<div className="flex w-full justify-start items-center">
+					<span className="w-2/5 font-regular-10 gray-text">Bank</span>
+					<span className="flex w-3/5 font-medium-10 black-text">{main.bank.name}</span>
+				</div>
+			</div>
+		);
+	}
+
+	function uiRvSheet() {
+		return (
+			<div className="flex w-1/2 h-full justify-center items-center" id="rvWrapper">
+				<div className="flex flex-col w-full h-full px-4 py-2 space-y-4 justify-start items-center overflow-y-auto bg-white" id="rvBody">
+					<div className="flex w-full justify-between items-center bg-white">
+						{uiRv()}
+						<div className="flex w-full justify-end items-center">
+							<img src="../logo.png" width="55" height="75" />
+						</div>
+					</div>
+					<div className="flex w-full space-x-5 justify-between items-start">
+						{uiBilledBy()}
+						{uiBilledTo()}
+					</div>
+					<div className="flex flex-col w-full justify-between items-center">
+						{uiParticularsHeaders()}
+						{uiParticularsRows()}
+					</div>
+					<div className="flex w-full h-full space-x-2.5 justify-between items-end">
+						{uiBank()}
+						{uiQrCode()}
+					</div>
+					{uiTotalAmount()}
+					<div className="flex w-full h-full justify-between items-end">{uiTermsAndConditions()}</div>
+					<div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
+						<div className="flex w-full h-full justify-between items-center bottom-border">{uiTransactionHistoryHeaders()}</div>
+						<div className="flex flex-col w-full h-full justify-between items-center">{uiTransactionHistory()}</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
 	function uiTermsAndConditions() {
 		let termsConditions = "";
 
@@ -751,8 +733,8 @@ export default function NewInvoice({ project, reload, unmount }) {
 	}
 
 	function uiTransactionHistory() {
-		return main.invoicesPaymentHistory.map((m, i) => {
-			const bottomBorder = i == main.invoicesPaymentHistory.length - 1 ? "" : "bottom-border";
+		return main.rvPaymentHistory.map((m, i) => {
+			const bottomBorder = i == main.rvPaymentHistory.length - 1 ? "" : "bottom-border";
 			const wrapper = `flex w-full justify-center items-center ${bottomBorder} font-regular-11`;
 
 			return (
@@ -809,13 +791,13 @@ export default function NewInvoice({ project, reload, unmount }) {
 				<div className="flex w-full space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 					<div className="flex w-full justify-start items-center">
-						<span className="view-heading">New Invoice</span>
+						<span className="view-heading">New RV</span>
 					</div>
 				</div>
 			</div>
 			<div className="flex w-full h-[calc(100vh-148px)] space-x-2.5 justify-between items-center overflow-y-auto contrast-background">
 				{uiInputFields()}
-				{uiInvoiceSheet()}
+				{uiRvSheet()}
 			</div>
 			<footer className="w-full dialog-footer">
 				<button className="primary-button-condensed" onClick={() => togglePreview()}>
@@ -823,9 +805,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				</button>
 			</footer>
 
-			{mounted.preview && (
-				<NewInvoicePreview mount={mounted.preview} invoice={uiInvoiceSheet} isGeneratingPdf={loading.downloadPdf} unmount={togglePreview} />
-			)}
+			{mounted.preview && <NewRvPreview mount={mounted.preview} isGeneratingPdf={loading.downloadPdf} rv={uiRvSheet} unmount={togglePreview} />}
 		</div>
 	);
 }

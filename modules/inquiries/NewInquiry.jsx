@@ -90,7 +90,7 @@ export default function NewInquiry({ reload, unmount }) {
 
 	function addNewClient(client) {
 		const copy = [...api.clients.copy];
-		const name = MyGlobal.Capitalize(client);
+		const name = client;
 
 		const revisedCopy = copy.filter((f) => f.id != 0);
 		revisedCopy.unshift({ id: 0, name });
@@ -103,7 +103,7 @@ export default function NewInquiry({ reload, unmount }) {
 
 	function addNewReference(reference) {
 		const copy = [...api.references.copy];
-		const name = MyGlobal.Capitalize(reference);
+		const name = reference;
 
 		const revisedCopy = copy.filter((f) => f.id != 0);
 		revisedCopy.unshift({ id: 0, name });
@@ -116,7 +116,7 @@ export default function NewInquiry({ reload, unmount }) {
 
 	function addNewSubProject(subProject) {
 		const copy = [...api.subProjects.copy];
-		copy.unshift({ id: 0, name: MyGlobal.Capitalize(subProject) });
+		copy.unshift({ id: 0, name: subProject });
 
 		setFind("subProject", "");
 
@@ -458,6 +458,7 @@ export default function NewInquiry({ reload, unmount }) {
 		return (
 			<TextInput
 				icon={faIndianRupee}
+				id="quote"
 				label="Quote"
 				onChange={(e) => setLightInputs("quote", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}

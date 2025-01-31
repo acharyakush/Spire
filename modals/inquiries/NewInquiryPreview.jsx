@@ -62,7 +62,6 @@ export default function NewInquiryPreview({ inquiry, mount, unmount }) {
 							{uiRow("Reference", inquiry.reference.name)}
 							{uiRow("Entry Date", dayjs(inquiry.entryDate).format("DD MMMM, YYYY"))}
 							{uiRow("Quote", MyGlobal.FormatCurrency(inquiry.quote))}
-							{uiRow("Status", inquiry.status)}
 							{uiRow("Follow Ups", followUps)}
 							{uiRow("Note", inquiry.note)}
 						</div>

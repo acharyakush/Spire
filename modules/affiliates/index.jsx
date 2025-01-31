@@ -275,13 +275,13 @@ export default function Affiliates() {
 									{main.selectedAffiliate.details.email_address}
 								</span>
 							</div>
-							<div className="flex space-x-2.5 justify-center items-center">
-								<FontAwesomeIcon className="gray-text" icon={faBank} />
-								<span className="font-regular-11 gray-text">{main.selectedAffiliate.details.upi_id}</span>
+							<div className="flex space-x-2.5 justify-center items-center primary-text">
+								<FontAwesomeIcon icon={faBank} />
+								<span className="font-regular-11">{main.selectedAffiliate.details.upi_id}</span>
 							</div>
 						</div>
 					</div>
-					<div className="flex w-full space-x-5 justify-start items-center">{uiCards()}</div>
+					<div className="flex w-full space-x-2.5 justify-start items-center">{uiCards()}</div>
 				</div>
 			);
 		}

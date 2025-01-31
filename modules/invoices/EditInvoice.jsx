@@ -29,14 +29,8 @@ import {
 	faTasks,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewInvoice({ project, reload, unmount }) {
+export default function EditInvoice({ project, reload, unmount }) {
 	// Business Logic
-	const financialYear = `${dayjs(new Date()).subtract(1, "y").format("YYYY")}-${dayjs(new Date()).format("YY")}`;
-
-	const today = new Date();
-	const invoiceDueDate = new Date(today);
-	invoiceDueDate.setDate(invoiceDueDate.getDate() + 7);
-
 	const quote = Number(project.quote);
 
 	const [api, setApi] = useState({
@@ -45,7 +39,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 	});
 
 	const [loading, setLoading] = useState({
-		addInvoice: false,
+		editInvoice: false,
 		downloadPdf: false,
 		supportData: false,
 	});
@@ -60,9 +54,9 @@ export default function NewInvoice({ project, reload, unmount }) {
 			name: "",
 			upiId: "",
 		},
-		financialYear,
+		financialYear: new Date(),
 		invoiceDate: new Date(),
-		invoiceDueDate,
+		invoiceDueDate: new Date(),
 		invoiceId: 0,
 		invoiceNumber: 0,
 		invoicesPaymentHistory: [],
@@ -99,7 +93,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 	const finalPendingAmount = String.fromCharCode(8377) + ` ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
 
 	// Functions
-	async function addInvoice() {
+	async function editInvoice() {
 		try {
 			const customId = `${MyGlobal.GetInitials(main.ownersFirm.name)}/${main.financialYear}/${main.invoiceId}`;
 
@@ -112,14 +106,14 @@ export default function NewInvoice({ project, reload, unmount }) {
 				receiptDate: main.invoiceDate,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Invoices.AddInvoice, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.Invoices.EditInvoice, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Generated invoice <b>${customId}</b> for <b>${project.id}</b>`, MyConstants.Modules.Derived.NewInvoice);
+				MyGlobal.AddActivity(`Edited invoice <b>${customId}</b> for <b>${project.id}</b>`, MyConstants.Modules.Derived.NewInvoice);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.InvoiceAdded);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.InvoiceEdited);
 			} else {
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.SomeErrorOccurred);
 			}
@@ -207,7 +201,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				}
 
 				pdf.save(`${fileName}.pdf`);
-				addInvoice();
+				editInvoice();
 			})
 			.finally(() => {
 				invoiceBody.style.height = originalStyle.height;
@@ -809,7 +803,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				<div className="flex w-full space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 					<div className="flex w-full justify-start items-center">
-						<span className="view-heading">New Invoice</span>
+						<span className="view-heading">Edit Invoice</span>
 					</div>
 				</div>
 			</div>

@@ -444,7 +444,7 @@ export default function Projects() {
 			const clientName = MyGlobal.HighlightText(row.client_name, main.findText);
 
 			return (
-				<Tippy allowHTML content={<Tooltip text={tooltipText} />}>
+				<Tippy content={<Tooltip text={tooltipText} />} placement="bottom">
 					<span dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleProjectView(row)} />
 				</Tippy>
 			);
@@ -454,9 +454,8 @@ export default function Projects() {
 	function uiExport() {
 		if (api.projects.data.length && api.projects.copy.length) {
 			return (
-				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => doExcelExport()}>
+				<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
-					<span>Export</span>
 				</button>
 			);
 		}
@@ -575,7 +574,7 @@ export default function Projects() {
 				<span className={style} dangerouslySetInnerHTML={{ __html: companyName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
 
-				<Tippy arrow allowHTML content={`Due On: ${dueOn}`} placement="bottom">
+				<Tippy content={<Tooltip text={`Due On ${dueOn}`} />} placement="bottom">
 					<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
 				</Tippy>
 
@@ -600,8 +599,6 @@ export default function Projects() {
 
 		return (
 			<Tippy
-				arrow
-				allowHTML
 				content={
 					<div className="flex flex-col py-1 justify-start items-center">
 						<div className={actionButtonStyle} onClick={() => toggleDeleteProjectBox(row)}>
@@ -626,13 +623,11 @@ export default function Projects() {
 		const isCompleted = row.status == statuses.Completed;
 		const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none font-regular-11 !py-0`;
 
-		const icon = isCompleted ? faBolt : faChevronDown;
-
 		return (
 			<Menu as="div" className="flex w-24 justify-center items-center relative">
 				<MenuButton className={wrapper}>
 					<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.findText) }} />
-					<FontAwesomeIcon icon={icon} />
+					{!isCompleted && <FontAwesomeIcon icon={faChevronDown} />}
 				</MenuButton>
 				{!isCompleted && (
 					<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">
@@ -666,7 +661,7 @@ export default function Projects() {
 		if (names.includes(",")) {
 			if (total > 2) {
 				return (
-					<Tippy allowHTML content={uiTeamsListTooltip(names)}>
+					<Tippy content={uiTeamsListTooltip(names)} placement="bottom">
 						<span className="cursor-help primary-text">{total}</span>
 					</Tippy>
 				);
@@ -701,7 +696,7 @@ export default function Projects() {
 
 	function uiTeamsTooltip(badgeText, tooltipText) {
 		return (
-			<Tippy allowHTML content={<Tooltip text={tooltipText} />}>
+			<Tippy content={<Tooltip text={tooltipText} />} placement="bottom">
 				<span className="cursor-help">
 					<BadgeSmall value={badgeText} />
 				</span>

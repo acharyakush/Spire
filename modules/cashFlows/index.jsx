@@ -48,7 +48,12 @@ export default function CashFlows({ setModuleProps }) {
 			paid: { amount: 0, label: "PAID" },
 			total: { amount: 0, label: "TOTAL" },
 		},
-		otherExpense: {
+		inwardOtherExpense: {
+			pending: { amount: 0, label: "PENDING" },
+			paid: { amount: 0, label: "PAID" },
+			total: { amount: 0, label: "TOTAL" },
+		},
+		outwardOtherExpense: {
 			pending: { amount: 0, label: "PENDING" },
 			paid: { amount: 0, label: "PAID" },
 			total: { amount: 0, label: "TOTAL" },
@@ -58,13 +63,14 @@ export default function CashFlows({ setModuleProps }) {
 			received: { amount: 0, label: "RECEIVED" },
 			balance: { amount: 0, label: "BALANCE" },
 		},
-		reimburseVouchers: {
+		rv: {
 			due: { amount: 0, count: 0, label: "DUE" },
 			generated: { amount: 0, count: 0, label: "GENERATED" },
 			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
 		},
 		selectedModule: modules.Inward,
 		totalInvoicesAmount: 0,
+		totalRvAmount: 0,
 	});
 
 	const [mounted, setMounted] = useState({
@@ -119,32 +125,62 @@ export default function CashFlows({ setModuleProps }) {
 
 			if (response.status == 200) {
 				const today = dayjs().startOf("day");
-				const invoicesData = Object.assign({}, main.invoices);
+				const invoicesObj = Object.assign({}, main.invoices);
 
 				response.data.invoices.forEach((fe) => {
 					if (dayjs(fe.due_date).isBefore(today)) {
-						invoicesData.due.amount += Number(fe.amount);
-						invoicesData.due.count++;
+						invoicesObj.due.amount += Number(fe.amount);
+						invoicesObj.due.count++;
 					}
 
 					if (fe.custom_id) {
-						invoicesData.generated.amount += Number(fe.amount);
-						invoicesData.generated.count += 1;
+						invoicesObj.generated.amount += Number(fe.amount);
+						invoicesObj.generated.count += 1;
 					}
 				});
 
 				const invoiceProjectIds = new Set(response.data.invoices.map((m) => m.project_id));
 
-				const isNotGenerated = response.data.projects.filter((f) => !invoiceProjectIds.has(f.id));
+				const notGeneratedInvoices = response.data.projects.filter((f) => !invoiceProjectIds.has(f.id));
 
-				isNotGenerated.forEach((fe, i) => {
-					invoicesData.notGenerated.amount += Number(fe.quote);
-					invoicesData.notGenerated.count = i + 1;
+				notGeneratedInvoices.forEach((fe, i) => {
+					invoicesObj.notGenerated.amount += Number(fe.quote);
+					invoicesObj.notGenerated.count = i + 1;
 				});
 
 				const allInvoicesAmount = response.data.invoices.reduce((pv, cv) => pv + Number(cv.amount), 0);
 
-				const totalInvoicesAmount = allInvoicesAmount + invoicesData.notGenerated.amount;
+				const totalInvoicesAmount = allInvoicesAmount + invoicesObj.notGenerated.amount;
+
+				// ================= //
+				// Reimburse Voucher //
+				// ================= //
+
+				const rvObj = Object.assign({}, main.rv);
+
+				response.data.reimburseVouchers.forEach((fe) => {
+					if (dayjs(fe.due_date).isBefore(today)) {
+						rvObj.due.amount += Number(fe.amount);
+						rvObj.due.count++;
+					}
+
+					if (fe.custom_id) {
+						rvObj.generated.amount += Number(fe.amount);
+						rvObj.generated.count += 1;
+					}
+				});
+
+				const rvProjectIds = new Set(response.data.reimburseVouchers.map((m) => m.project_id));
+
+				const notGeneratedRvs = response.data.projects.filter((f) => !rvProjectIds.has(f.id));
+
+				notGeneratedRvs.forEach((fe, i) => {
+					rvObj.notGenerated.amount += Number(fe.quote);
+					rvObj.notGenerated.count = i + 1;
+				});
+
+				const allRvAmount = response.data.reimburseVouchers.reduce((pv, cv) => pv + Number(cv.amount), 0);
+				const totalRvAmount = allRvAmount + rvObj.notGenerated.amount;
 
 				setApi((s) => ({
 					...s,
@@ -152,31 +188,56 @@ export default function CashFlows({ setModuleProps }) {
 					reimburseVouchers: response.data.reimburseVouchers,
 				}));
 
-				const reimburseVouchersData = Object.assign({}, main.reimburseVouchers);
+				const inwardOtherExpense = {
+					pending: { amount: 0, label: "PENDING" },
+					paid: { amount: 0, label: "PAID" },
+					total: { amount: 0, label: "TOTAL" },
+				};
 
-				// response.data.reimburseVouchers.forEach((fe) => {
-				// 	const isNotGenerated = response.data.projects.filter((f) => f.id == fe.project_id);
+				const officeExpense = {
+					pending: { amount: 0, label: "PENDING" },
+					paid: { amount: 0, label: "PAID" },
+					total: { amount: 0, label: "TOTAL" },
+				};
 
-				// 	if (dayjs(fe.receipt_date).isAfter(today) && fe.amount_received == 0) {
-				// 		reimburseVouchersData.due.amount++;
-				// 		reimburseVouchersData.due.count++;
-				// 	} else if (isNotGenerated.length) {
-				// 		reimburseVouchersData.notGenerated.amount++;
-				// 		reimburseVouchersData.notGenerated.count = isNotGenerated.length;
-				// 	} else {
-				// 		reimburseVouchersData.generated.amount++;
-				// 		reimburseVouchersData.generated.count++;
-				// 	}
-				// });
+				const outwardOtherExpense = {
+					pending: { amount: 0, label: "PENDING" },
+					paid: { amount: 0, label: "PAID" },
+					total: { amount: 0, label: "TOTAL" },
+				};
+
+				const pettyCash = {
+					paid: { amount: 0, label: "PAID" },
+					received: { amount: 0, label: "RECEIVED" },
+					balance: { amount: 0, label: "BALANCE" },
+				};
+
+				response.data.cashFlows.forEach((fe) => {
+					if (fe.module === "Inward Other Expense") {
+						inwardOtherExpense.total.amount += Number(fe.amount_received);
+					} else if (fe.module === "Outward Office Expense") {
+						officeExpense.paid.amount += Number(fe.amount_paid);
+					} else if (fe.module === "Outward Other Expense") {
+						outwardOtherExpense.paid.amount += Number(fe.amount_paid);
+					} else if (fe.module === "Outward Petty Cash") {
+						pettyCash.paid.amount += Number(fe.amount_paid);
+					}
+				});
 
 				setMain((s) => ({
 					...s,
-					invoices: invoicesData,
-					reimburseVouchers: reimburseVouchersData,
+					invoices: invoicesObj,
+					inwardOtherExpense,
+					officeExpense,
+					outwardOtherExpense,
+					pettyCash,
+					rv: rvObj,
 					totalInvoicesAmount: MyGlobal.ThousandSeparator(totalInvoicesAmount),
+					totalRvAmount,
 				}));
 			}
 		} catch (error) {
+			MyGlobal.HandleErrors(error, `${thisView} => Get Support Data`);
 		} finally {
 			setMain((s) => ({ ...s, isLoading: false }));
 		}
@@ -235,6 +296,7 @@ export default function CashFlows({ setModuleProps }) {
 		return (
 			<div className="flex flex-col w-full h-full space-y-6 justify-start items-center">
 				{uiInwardInvoices()}
+				{uiInwardRVs()}
 				{uiInwardOtherExpense()}
 			</div>
 		);
@@ -289,12 +351,46 @@ export default function CashFlows({ setModuleProps }) {
 	}
 
 	function uiInwardOtherExpenseBlock() {
-		return Object.values(main.otherExpense).map((m, n) => {
+		return Object.values(main.inwardOtherExpense).map((m, n) => {
 			const aesthetics = getAesthetics(n);
 
 			return (
 				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
 					<div className={`flex flex-col w-full p-5 justify-center items-center ${aesthetics.textColour}`}>
+						<span className="font-medium-22">{MyGlobal.FormatCurrency(m.amount)}</span>
+					</div>
+					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
+				</div>
+			);
+		});
+	}
+
+	function uiInwardRVs() {
+		return (
+			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
+				<div className="flex w-full justify-between items-center">
+					<div className="flex w-fit space-x-2.5 justify-start items-center">
+						<span className="view-heading">{MyConstants.Modules.Base.Rv}</span>
+						{uiNew("Inward RVs")}
+						<Badge value={api.reimburseVouchers.length} />
+						<Badge value={`Total ${main.totalRvAmount}`} />
+					</div>
+				</div>
+				<div className="flex w-full space-x-16 justify-between items-center">{uiInwardRVsBlock()}</div>
+			</div>
+		);
+	}
+
+	function uiInwardRVsBlock() {
+		return Object.values(main.rv).map((m, n) => {
+			const aesthetics = getAesthetics(n);
+
+			return (
+				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
+					<div className={`flex flex-col w-full p-5 space-y-2.5 justify-center items-center ${aesthetics.textColour}`}>
+						<div className="flex space-x-1 justify-center items-center">
+							<span className="font-medium-18">{m.count}</span>
+						</div>
 						<span className="font-medium-22">{MyGlobal.FormatCurrency(m.amount)}</span>
 					</div>
 					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
@@ -407,7 +503,7 @@ export default function CashFlows({ setModuleProps }) {
 	}
 
 	function uiOutwardOtherExpenseBlock() {
-		return Object.values(main.otherExpense).map((m, n) => {
+		return Object.values(main.outwardOtherExpense).map((m, n) => {
 			const aesthetics = getAesthetics(n);
 
 			return (
@@ -443,24 +539,6 @@ export default function CashFlows({ setModuleProps }) {
 				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
 					<div className={`flex flex-col w-full p-5 justify-center items-center ${aesthetics.textColour}`}>
 						<span className="font-medium-22">{MyGlobal.FormatCurrency(m.amount)}</span>
-					</div>
-					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
-				</div>
-			);
-		});
-	}
-
-	function uiReimburseVouchersBlock() {
-		return Object.values(main.reimburseVouchers).map((m, n) => {
-			const aesthetics = getAesthetics(n);
-
-			return (
-				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
-					<div className={`flex flex-col w-full p-5 space-y-2.5 justify-center items-center ${aesthetics.textColour}`}>
-						<div className="flex">
-							<span className="font-medium-16">{m.count}</span>/<span className="font-medium-12">{api.reimburseVouchers.length}</span>
-						</div>
-						<span className="font-medium-20">{m.amount}</span>
 					</div>
 					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
 				</div>

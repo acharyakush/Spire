@@ -59,7 +59,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 	// Functions
 	function addNewCompany(company) {
 		const copy = [...api.clientsCompanies.copy];
-		const name = MyGlobal.Capitalize(company);
+		const name = company;
 
 		const revised = copy.filter((f) => f.id != 0);
 		revised.unshift({ id: 0, name });
@@ -72,7 +72,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 
 	function addNewSubProject(subProject) {
 		const copy = [...api.subProjects.copy];
-		copy.unshift({ id: 0, name: MyGlobal.Capitalize(subProject) });
+		copy.unshift({ id: 0, name: subProject });
 
 		setFind("subProject", "");
 
@@ -117,7 +117,13 @@ export default function NewProject({ inquiry, reload, unmount }) {
 	function calculateQuote() {
 		const totalAmount = MyGlobal.GetNumbers(main.invoiceFees) + MyGlobal.GetNumbers(main.reimburseVoucher);
 
-		setMain((s) => ({ ...s, quote: MyGlobal.ThousandSeparator(totalAmount) }));
+		let quote = MyGlobal.ThousandSeparator(totalAmount);
+
+		if (!main.invoiceFees && !main.reimburseVoucher) {
+			quote = Number(inquiry.quote);
+		}
+
+		setMain((s) => ({ ...s, quote }));
 	}
 
 	function detectEscapeKey(event) {
@@ -195,12 +201,16 @@ export default function NewProject({ inquiry, reload, unmount }) {
 	}
 
 	function setInputs(key, value) {
-		if (value) {
-			if (key == "dueOn" || key == "invoiceFees" || key == "reimburseVoucher" || key == "note") {
-				setMain((s) => ({ ...s, [key]: value }));
-			} else {
-				setFind(key, "");
-				setMain((s) => ({ ...s, [key]: { id: value.id, name: value.name } }));
+		if (key == "invoiceFees" || key == "reimburseVoucher") {
+			setMain((s) => ({ ...s, [key]: value }));
+		} else {
+			if (value) {
+				if (key == "dueOn" || key == "note") {
+					setMain((s) => ({ ...s, [key]: value }));
+				} else {
+					setFind(key, "");
+					setMain((s) => ({ ...s, [key]: { id: value.id, name: value.name } }));
+				}
 			}
 		}
 	}
@@ -356,6 +366,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 				filteredData={api.ownerFirms}
 				hasDataObject
 				icon={faBriefcase}
+				isMenuInverted
 				isReadOnly={false}
 				label="Invoice Firm"
 				onChange={(e) => setInputs("invoiceFirm", e)}
@@ -462,11 +473,11 @@ export default function NewProject({ inquiry, reload, unmount }) {
 		return (
 			<TextInput
 				icon={faIndianRupee}
-				id="newProjectReimburseVoucher"
+				id="newProjectRv"
 				label="Reimbursement Voucher"
 				onChange={(e) => setInputs("reimburseVoucher", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={8}
+				tabIndex="8"
 				value={main.reimburseVoucher}
 				width="w-full"
 			/>
@@ -523,9 +534,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 	}, []);
 
 	useEffect(() => {
-		if (main.invoiceFees || main.reimburseVoucher) {
-			calculateQuote();
-		}
+		calculateQuote();
 	}, [main.invoiceFees, main.reimburseVoucher]);
 
 	useEffect(() => {

@@ -11,7 +11,7 @@ import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { SpinnerBig } from "@/components/Elements";
+import { SpinnerBig, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
 	AddParticularRemark,
@@ -401,7 +401,7 @@ export default function Tasks({ project }) {
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.remark, main.findText) }} />
 
-				<Tippy className="font-regular-11" content={dayjs(row.entry_at).format("hh:mm:ss a")} placement="bottom">
+				<Tippy content={<Tooltip text={dayjs(row.entry_at).format("hh:mm:ss a")} />} placement="bottom">
 					<span className={style}>{dayjs(row.entry_at).format("DD MMM, YYYY")}</span>
 				</Tippy>
 
@@ -450,9 +450,7 @@ export default function Tasks({ project }) {
 
 		return (
 			<Tippy
-				allowHTML
 				animation="fade"
-				arrow
 				className="relative z-40"
 				content={
 					<div className="flex flex-col justify-center items-center">

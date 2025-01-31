@@ -117,7 +117,7 @@ export default function NewAffiliate({ reload, unmount }) {
 		const object = copy.find((f) => f.rowId == rowId);
 
 		if (typeof object === "object") {
-			object[key] = key == "name" ? MyGlobal.Capitalize(value) : value;
+			object[key] = key == "name" ? value : value;
 
 			const revised = copy.filter((f) => f.rowId != rowId);
 			revised.push({ ...object });

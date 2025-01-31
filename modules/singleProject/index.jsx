@@ -256,7 +256,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 				<div className="flex w-4/5 space-x-2.5 justify-start items-center">
 					<div className="flex flex-col w-fit -space-y-2 justify-center items-start">
 						<span className="font-medium-10 primary-text">{project.company_name}'s</span>
-						<Tippy allowHTML content={uiClientInformationTooltip()} disabled={!isSourceSingleClient} interactive>
+						<Tippy content={uiClientInformationTooltip()} disabled={!isSourceSingleClient} interactive placement="bottom">
 							<span className="view-heading">{project.sub_project_name}</span>
 						</Tippy>
 					</div>
@@ -275,7 +275,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 							<FontAwesomeIcon className="w-4 primary-text" icon={faBriefcase} />
 							<span>{project.company_name}</span>
 						</span>
-						<Tippy allowHTML className="w-full" content={uiFeesBifurcationTooltip()} disabled={!isSourceSingleClient}>
+						<Tippy className="w-full" content={uiFeesBifurcationTooltip()} disabled={!isSourceSingleClient} placement="bottom">
 							<span className={wrapperSansAesthetics}>
 								<FontAwesomeIcon className="w-4 primary-text" icon={faIndianRupeeSign} />
 								<span>{MyGlobal.ThousandSeparator(quote)}</span>
@@ -294,7 +294,6 @@ export default function SingleProject({ client, project, reload, source, unmount
 					</div>
 					<div className={columnWrapper}>
 						<Tippy
-							allowHTML
 							content={Object.keys(main.affiliates.tooltip).length && <TooltipList payload={main.affiliates.tooltip} />}
 							disabled={!Object.keys(main.affiliates.tooltip).length}
 							placement="top">
@@ -303,7 +302,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 								<span>{main.affiliates.initials || "No affiliates mapped"}</span>
 							</span>
 						</Tippy>
-						<Tippy allowHTML content={<TooltipList payload={project.team_names} />} placement="bottom">
+						<Tippy content={<TooltipList payload={project.team_names} />} placement="bottom">
 							<span className={wrapperSansAesthetics}>
 								<FontAwesomeIcon className="w-4 primary-text" icon={faUserGroup} />
 								<span>{String(project.team_names_initials)}</span>

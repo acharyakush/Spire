@@ -3,6 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
+import RV from "@/modules/rv";
 import Dashboard from "./dashboard";
 import Clients from "@/modules/clients";
 import Projects from "@/modules/projects";
@@ -14,16 +15,19 @@ import MyConstants from "@/utilities/constants";
 
 import { useRouter } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
-import { useEffect, useLayoutEffect, useState } from "react";
 import { applicationName, MyGlobal } from "@/utilities/global";
 import { ErrorFallbackComponent } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { faCheck, faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 export default function Home() {
 	// Business Logic
 	const router = useRouter();
+	const tabRefs = useRef([]);
+	const gliderRef = useRef(null);
+	const tabsContainerRef = useRef(null);
 	const baseModules = MyConstants.Modules.Base;
 
 	const [api, setApi] = useState({
@@ -37,7 +41,7 @@ export default function Home() {
 		mode: null,
 		selectedModule: { name: baseModules.Dashboard, sequence: 0 },
 		singleProjectObject: {},
-		status: { cashFlow: "", inquiries: "", invoices: "", projects: "", tasks: "" },
+		status: { cashFlow: "", inquiries: "", invoices: "", projects: "", rv: "", tasks: "" },
 		user: { fullName: "", designation: "", role: "" },
 	});
 
@@ -236,17 +240,15 @@ export default function Home() {
 		return api.modules
 			.filter((f) => f.sequence <= 8)
 			.map((m, i) => {
-				const aesthetics =
-					i == main.selectedModule.sequence
-						? "rounded-tl-md rounded-tr-md primary-border-colour primary-background-transparent-01 primary-text"
-						: "border-transparent gray-text";
-
-				const wrapper = `p-2 border-b-4 whitespace-nowrap font-regular-11 ${aesthetics}`;
+				const isSelected = i == main.selectedModule.sequence;
 
 				return (
-					<button className={wrapper} key={i} onClick={() => setModule(m, m.sequence)}>
-						{m.name}
-					</button>
+					<span className="flex justify-center items-center relative font-regular-11" key={i} onClick={() => setModule(m, m.sequence)}>
+						<input type="radio" id={`radio${i}`} name="tabs" checked={isSelected} readOnly />
+						<label className="whitespace-nowrap tab" htmlFor={`radio${i}`} ref={(r) => (r ? (tabRefs.current[i] = r) : null)}>
+							{m.name}
+						</label>
+					</span>
 				);
 			});
 	}
@@ -254,10 +256,10 @@ export default function Home() {
 	function uiOtherModules() {
 		const aesthetics =
 			main.selectedModule.sequence == -1 ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
-		const wrapper = `p-2 border-b-4 whitespace-nowrap font-regular-11 ${aesthetics}`;
+		const wrapper = `py-2 font-regular-11 ${aesthetics}`;
 
 		return (
-			<Menu as="div" className="relative z-50 inline-block text-left">
+			<Menu as="div" className="relative z-50 -top-0 inline-block text-left">
 				<MenuButton className={wrapper}>
 					<span>More</span>
 				</MenuButton>
@@ -280,7 +282,7 @@ export default function Home() {
 						as="div"
 						className={`p-2 space-x-2.5 cursor-pointer border-y ${aesthetics} font-regular-11 hovered-rows`}
 						key={i}
-						onClick={() => setModule(m, 0)}>
+						onClick={() => setModule(m, m.sequence)}>
 						{isSelected && <FontAwesomeIcon icon={faCheck} />}
 						<span>{m.name}</span>
 					</MenuItem>
@@ -351,6 +353,15 @@ export default function Home() {
 						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Projects)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Projects />
+					</ErrorBoundary>
+				);
+			case baseModules.Rv:
+				return (
+					<ErrorBoundary
+						key={`ErrorBoundary_${baseModules.Rv}`}
+						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Rv)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<RV status={main.status.rv} />
 					</ErrorBoundary>
 				);
 			// case Constants.primaryModules.admins.name:
@@ -428,6 +439,34 @@ export default function Home() {
 	}, []);
 
 	useEffect(() => {
+		const updateGlider = () => {
+			if (!gliderRef.current || !tabRefs.current[main.selectedModule.sequence] || !tabsContainerRef.current) return;
+
+			const tab = tabRefs.current[main.selectedModule.sequence];
+			const container = tabsContainerRef.current;
+
+			const tabRect = tab.getBoundingClientRect();
+			const containerRect = container.getBoundingClientRect();
+
+			const tabOffset = tabRect.left - containerRect.left + container.scrollLeft;
+			const tabWidth = tabRect.width;
+
+			window.requestAnimationFrame(() => {
+				gliderRef.current.style.width = `${tabWidth}px`;
+				gliderRef.current.style.transform = `translateX(${tabOffset - 12}px)`;
+				gliderRef.current.style.transition = "transform 0.25s ease-out, width 0.25s ease-out";
+				gliderRef.current.style.opacity = "1";
+				gliderRef.current.style.display = "block";
+			});
+		};
+
+		updateGlider();
+		window.addEventListener("resize", updateGlider);
+
+		return () => window.removeEventListener("resize", updateGlider);
+	}, [main.selectedModule.sequence]);
+
+	useEffect(() => {
 		if (main.user) {
 			document.title = `${main.user.fullName || ""} ${String.fromCharCode(183)} ${applicationName}`;
 		}
@@ -457,8 +496,12 @@ export default function Home() {
 					<span className="uppercase dashboard-heading">{applicationName}</span>
 				</div>
 				<div className="flex w-full justify-center items-center">
-					<div className="flex space-x-2 relative text-white">
-						{uiModules()} {uiOtherModules()}
+					<div className="flex justify-center items-center relative">
+						<div className="tabs relative" ref={tabsContainerRef}>
+							{uiModules()}
+							<span className="glider absolute" ref={gliderRef} />
+						</div>
+						{uiOtherModules()}
 					</div>
 				</div>
 				<div className="flex w-full justify-end items-center">{uiUserMenu()}</div>

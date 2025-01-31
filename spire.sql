@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 30, 2025 at 07:51 PM
+-- Generation Time: Jan 31, 2025 at 08:45 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -366,7 +366,23 @@ INSERT INTO `activities` (`id`, `entry_by_id`, `module`, `activity`, `ip_address
 (283, 'A3', 'Cash Flow', 'Added <b>Outward Office Expense</b> entry.', 'Localhost', '2025-01-31 00:01:16', ''),
 (284, 'A3', 'Cash Flow', 'Added <b>Outward Office Expense</b> entry.', 'Localhost', '2025-01-31 00:02:00', ''),
 (285, 'A3', 'Cash Flow', 'Added <b>Outward Petty Cash</b> entry.', 'Localhost', '2025-01-31 00:02:54', ''),
-(286, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-31 00:15:43', '');
+(286, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-31 00:15:43', ''),
+(287, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-31 19:22:05', ''),
+(288, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-31 20:11:44', ''),
+(289, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-31 20:11:47', ''),
+(290, 'A3', 'General', 'Logged out.', 'Localhost', '2025-01-31 20:12:17', ''),
+(291, 'A3', 'General', 'Logged in.', 'Localhost', '2025-01-31 20:24:09', ''),
+(292, 'A3', 'New Invoice', 'Generated invoice <b>SA/2024-25/00003</b> for <b>PJ000001</b>', 'Localhost', '2025-01-31 20:52:39', ''),
+(293, 'A3', 'New Invoice', 'Generated invoice <b>SA/2024-25/00004</b> for <b>PJ000001</b>', 'Localhost', '2025-01-31 20:57:08', ''),
+(294, 'A3', 'New Invoice', 'Generated invoice <b>SA/2024-25/00005</b> for <b>PJ000001</b>', 'Localhost', '2025-01-31 20:58:07', ''),
+(295, 'A3', 'New Invoice', 'Generated invoice <b>SA/2024-25/00006</b> for <b>PJ000001</b>', 'Localhost', '2025-01-31 20:58:22', ''),
+(296, 'A3', 'New Invoice', 'Generated invoice <b>SA/2024-25/00007</b> for <b>PJ000001</b>', 'Localhost', '2025-01-31 20:58:41', ''),
+(297, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000003</b>.', 'Localhost', '2025-01-31 23:01:12', ''),
+(298, 'A3', 'Tasks', 'Edited Particular from <b>Hi</b> to <b>His</b> of <b>TK000007</b> in <b>PJ000003</b>.', 'Localhost', '2025-01-31 23:01:18', ''),
+(299, 'A3', 'Tasks', 'Edited Remark from <b>Bye</b> to <b>Byes</b> of <b>TK000007</b> in <b>PJ000003</b>.', 'Localhost', '2025-01-31 23:01:24', ''),
+(300, 'A3', 'Tasks', 'Edited Task from <b>Task @1</b> to <b>Tasks @1</b> of <b>TK000007</b> in <b>PJ000003</b>.', 'Localhost', '2025-01-31 23:01:31', ''),
+(301, 'A3', 'Tasks', 'Disabled <b>TK000007</b> in <b>PJ000003</b> due to <b>Lol.</b>', 'Localhost', '2025-01-31 23:01:53', ''),
+(302, 'A3', 'Tasks', 'Enabled <b>TK000007</b> in <b>PJ000003</b> due to <b>Pop.</b>', 'Localhost', '2025-01-31 23:02:13', '');
 
 -- --------------------------------------------------------
 
@@ -482,8 +498,8 @@ CREATE TABLE `cash_flows` (
 --
 
 INSERT INTO `cash_flows` (`id`, `affiliate_id`, `owner_firm_id`, `owner_firm_bank_id`, `particulars`, `payment_for`, `payment_type`, `amount_paid`, `amount_received`, `remarks`, `module`, `entry_at`, `entry_by_id`, `is_deleted`) VALUES
-(1, NULL, 'AC01', 'BK01', 'NA', 'Aaj Tak News Subscription.', NULL, NULL, 500.00, '', '', '2025-01-18 12:46:50', 'A3', 0),
-(2, NULL, 'AC02', 'BK02', 'NA', 'Aaj Tak News Subscription.', NULL, NULL, 557.00, '', '', '2025-01-18 12:46:50', 'A3', 0),
+(1, NULL, 'AC01', 'BK01', 'NA', 'Aaj Tak News Subscription.', NULL, NULL, 500.00, '', 'Office Expense', '2025-01-18 12:46:50', 'A3', 0),
+(2, NULL, 'AC02', 'BK02', 'NA', 'Aaj Tak News Subscription.', NULL, NULL, 557.00, '', 'Office Expense', '2025-01-18 12:46:50', 'A3', 0),
 (3, NULL, 'AC02', 'BK02', 'NA', 'Aaj Tak News Subscription.', NULL, NULL, 557.00, '', '', '2025-01-18 12:46:50', 'A3', 0),
 (4, '', 'AC01', 'BK01', 'Inward Other Expense Particular #1', 'Inward Other Expense Payment For #1', 'Professional Fees', 0.00, 2500.00, 'Inward Other Expense Remarks #1', 'Inward Other Expense', '2025-01-30 12:38:21', 'A3', 0),
 (5, '', 'AC01', 'BK01', 'Inward Other Expense Particular #1', 'Inward Other Expense Payment For #1', 'Professional Fees', 0.00, 2500.00, 'Inward Other Expense Remarks #1', 'Inward Other Expense', '2025-01-30 12:38:21', 'A3', 0),
@@ -978,7 +994,11 @@ INSERT INTO `permissions` (`id`, `name`, `module`, `type`, `sequence`) VALUES
 (43, 'Enable Task', 'Tasks', 'Derived', 0),
 (44, 'Mark Sub Task Completed', 'Tasks', 'Derived', 0),
 (45, 'Mark Task Completed', 'Tasks', 'Derived', 0),
-(46, 'New Task', 'Tasks', 'Derived', 0);
+(46, 'New Task', 'Tasks', 'Derived', 0),
+(47, 'RV', 'RV', 'Base', 13),
+(48, 'Delete RV', 'RV', 'Derived', 0),
+(49, 'Edit RV', 'RV', 'Derived', 0),
+(50, 'New RV', 'RV', 'Derived', 0);
 
 -- --------------------------------------------------------
 
@@ -1326,19 +1346,36 @@ INSERT INTO `projects_settings` (`id`, `key`, `value`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `reimburse_vouchers`
+-- Table structure for table `reimburse_voucher`
 --
 
-CREATE TABLE `reimburse_vouchers` (
+CREATE TABLE `reimburse_voucher` (
   `id` int(11) NOT NULL,
   `custom_id` varchar(100) NOT NULL,
+  `invoice_custom_id` varchar(100) NOT NULL,
   `client_id` char(8) DEFAULT NULL,
   `project_id` char(8) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL CHECK (`amount` >= 0),
-  `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `receipt_date` datetime DEFAULT current_timestamp(),
-  `payment_received` tinyint(1) NOT NULL DEFAULT 0
+  `amount_received` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `due_date` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `receipt_date` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reimburse_voucher_payment_history`
+--
+
+CREATE TABLE `reimburse_voucher_payment_history` (
+  `id` int(11) NOT NULL,
+  `rv_custom_id` varchar(100) NOT NULL,
+  `project_id` char(8) NOT NULL,
+  `entry_at` datetime DEFAULT current_timestamp(),
+  `particulars` varchar(255) DEFAULT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `source` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -1469,7 +1506,7 @@ INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `entry_b
 ('TK000004', 'CN000001', 'PJ000001', 'Task #4', '2025-02-01', 'A3', 100.00, 0, 0, NULL, NULL),
 ('TK000005', 'CN000005', 'PJ000002', 'Task #1', '2025-02-01', 'A3', 500.00, 1, 0, 'Yes.', NULL),
 ('TK000006', 'CN000005', 'PJ000002', 'Task #2', '2025-02-01', 'A3', 750.00, 1, 0, 'Lol.', NULL),
-('TK000007', 'CN000004', 'PJ000003', 'Task @1', '2025-03-05', 'A3', 2500.00, 0, 0, NULL, NULL),
+('TK000007', 'CN000004', 'PJ000003', 'Tasks @1', '2025-03-05', 'A3', 2500.00, 0, 0, 'Pop.', NULL),
 ('TK000008', 'CN000005', 'PJ000002', 'One', '2025-02-06', 'A3', 50.00, 1, 0, 'Done.', NULL);
 
 -- --------------------------------------------------------
@@ -1508,7 +1545,8 @@ INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particu
 (13, 'TK000005', 'PJ000002', 'Trello', 'Yellow', 1, 'By Administrator', 'A3', '2025-01-25 17:27:00'),
 (15, 'TK000005', 'PJ000002', 'Nice', 'One', 1, 'By Administrator', 'A3', '2025-01-25 17:29:19'),
 (17, 'TK000006', 'PJ000002', 'Hello', 'Bello', 1, 'By Administrator', 'A3', '2025-01-30 00:15:32'),
-(18, 'TK000008', 'PJ000002', 'Like', 'Mike', 1, 'By Administrator', 'A3', '2025-01-30 00:29:00');
+(18, 'TK000008', 'PJ000002', 'Like', 'Mike', 1, 'By Administrator', 'A3', '2025-01-30 00:29:00'),
+(19, 'TK000007', 'PJ000003', 'His', 'Byes', 0, NULL, 'A3', '2025-01-31 23:01:12');
 
 -- --------------------------------------------------------
 
@@ -1848,12 +1886,19 @@ ALTER TABLE `projects_settings`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `reimburse_vouchers`
+-- Indexes for table `reimburse_voucher`
 --
-ALTER TABLE `reimburse_vouchers`
+ALTER TABLE `reimburse_voucher`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_reimburse_vouchers_client_id` (`client_id`),
-  ADD KEY `fk_reimburse_vouchers_project_id` (`project_id`);
+  ADD KEY `fk_rv_client_id` (`client_id`),
+  ADD KEY `fk_rv_project_id` (`project_id`);
+
+--
+-- Indexes for table `reimburse_voucher_payment_history`
+--
+ALTER TABLE `reimburse_voucher_payment_history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `rv_payment_history_project_id` (`project_id`);
 
 --
 -- Indexes for table `statuses`
@@ -1904,7 +1949,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=287;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=303;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
@@ -1934,7 +1979,7 @@ ALTER TABLE `customers`
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `invoices_payment_history`
@@ -1997,10 +2042,16 @@ ALTER TABLE `projects_settings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `reimburse_vouchers`
+-- AUTO_INCREMENT for table `reimburse_voucher`
 --
-ALTER TABLE `reimburse_vouchers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `reimburse_voucher`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `reimburse_voucher_payment_history`
+--
+ALTER TABLE `reimburse_voucher_payment_history`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `statuses`
@@ -2012,7 +2063,7 @@ ALTER TABLE `statuses`
 -- AUTO_INCREMENT for table `tasks_particulars_remarks`
 --
 ALTER TABLE `tasks_particulars_remarks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `tasks_settings`
@@ -2102,11 +2153,17 @@ ALTER TABLE `projects`
   ADD CONSTRAINT `fk_project_sub_project_id` FOREIGN KEY (`sub_project_id`) REFERENCES `sub_projects` (`id`);
 
 --
--- Constraints for table `reimburse_vouchers`
+-- Constraints for table `reimburse_voucher`
 --
-ALTER TABLE `reimburse_vouchers`
-  ADD CONSTRAINT `fk_reimburse_vouchers_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
-  ADD CONSTRAINT `fk_reimburse_vouchers_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
+ALTER TABLE `reimburse_voucher`
+  ADD CONSTRAINT `fk_rv_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
+  ADD CONSTRAINT `fk_rv_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
+
+--
+-- Constraints for table `reimburse_voucher_payment_history`
+--
+ALTER TABLE `reimburse_voucher_payment_history`
+  ADD CONSTRAINT `rv_payment_history_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
 
 --
 -- Constraints for table `tasks`

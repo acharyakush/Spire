@@ -485,9 +485,8 @@ export default function SingleClient({ client, unmount }) {
 					</span>
 				</div>
 				<div className="flex w-1/5 space-x-2.5 justify-end items-center cursor-pointer font-regular-10 primary-text">
-					<button className="space-x-1.5 primary-button-transparent-background" onClick={() => doExcelExport()}>
+					<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
 						<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
-						<span>Export</span>
 					</button>
 				</div>
 			</div>
@@ -652,11 +651,11 @@ export default function SingleClient({ client, unmount }) {
 			<div className="flex w-full justify-center items-center black-white-background bottom-border font-regular-11 black-text" key={i}>
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.id, main.filter.find) }} />
 
-				<Tippy className="font-regular-11" content={dayjs(row.started_on).format("hh:mm:ss A")}>
+				<Tippy content={<Tooltip text={dayjs(row.started_on).format("hh:mm:ss A")} />} placement="bottom">
 					<span className={tooltipStyle}>{dayjs(row.started_on).format("DD/MM/YYYY")}</span>
 				</Tippy>
 
-				<Tippy className="font-regular-11" content={row.main_project_name}>
+				<Tippy content={<Tooltip text={row.main_project_name} />} placement="bottom">
 					<span
 						className={`${tooltipStyle} cursor-pointer`}
 						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.sub_project_name, main.filter.find) }}
@@ -668,11 +667,11 @@ export default function SingleClient({ client, unmount }) {
 					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.company_name, main.filter.find) }} />
 				)}
 
-				<Tippy allowHTML content={<UsersTooltipList list={row.teams} />}>
+				<Tippy content={<UsersTooltipList list={row.teams} />} placement="bottom">
 					<span className={`${style} space-x-1 cursor-help primary-text`}>{row.teams.length}</span>
 				</Tippy>
 
-				<Tippy allowHTML content={<Tooltip text={row.invoice_firm_name} />}>
+				<Tippy content={<Tooltip text={row.invoice_firm_name} />} placement="bottom">
 					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_firm_initials, main.filter.find) }} />
 				</Tippy>
 
@@ -686,7 +685,7 @@ export default function SingleClient({ client, unmount }) {
 
 				<span className={totalFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.total_fees, main.filter.find) }} />
 
-				<Tippy allowHTML content={row.completed_on} disabled={row.status != "Completed"}>
+				<Tippy content={<Tooltip text={row.completed_on} />} disabled={row.status != "Completed"} placement="bottom">
 					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.filter.find) }} />
 				</Tippy>
 			</div>

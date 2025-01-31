@@ -543,9 +543,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiExport() {
 		if (api.inquiries.data.length && api.inquiries.copy.length) {
 			return (
-				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => doExcelExport()}>
+				<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
-					<span>Export</span>
 				</button>
 			);
 		}
@@ -577,7 +576,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		if (names.includes(",")) {
 			if (total > 2) {
 				return (
-					<Tippy allowHTML content={<TooltipList payload={names} />}>
+					<Tippy content={<TooltipList payload={names} />} placement="bottom">
 						<span className="cursor-help primary-text">{total}</span>
 					</Tippy>
 				);
@@ -591,7 +590,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiFollowUpsTooltip(badgeText, inquiry, tooltipText) {
 		return (
-			<Tippy allowHTML content={<Tooltip text={tooltipText} />}>
+			<Tippy content={<Tooltip text={tooltipText} />} placement="bottom">
 				<span className="cursor-help">
 					<BadgeSmallWithBackground style={getStatusSeverityBackground(inquiry.status)} value={badgeText} />
 				</span>
@@ -726,13 +725,13 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<span className={style}>{row.entry_date}</span>
 
 				<span className={`${style} space-x-2 ${clientNameTextStyle}`}>
-					<Tippy allowHTML content={<Tooltip text={row.client_id_and_name} />}>
+					<Tippy content={<Tooltip text={row.client_id_and_name} />} placement="bottom">
 						<span dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleEditInquiryView(row, true)} />
 					</Tippy>
 				</span>
 
 				<span className={`${style} cursor-pointer primary-text`}>
-					<Tippy allowHTML content={<Tooltip text="Open this contact on WhatsApp Web." />}>
+					<Tippy content={<Tooltip text="Open this contact on WhatsApp Web." />} placement="bottom">
 						<span dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsAppWeb(row.phone_number)} />
 					</Tippy>
 				</span>
@@ -741,7 +740,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: subProject }} />
 
 				<span className={`${style} cursor-help`}>
-					<Tippy allowHTML content={<Tooltip text={row.reference_id_and_name} />}>
+					<Tippy content={<Tooltip text={row.reference_id_and_name} />} placement="bottom">
 						<span dangerouslySetInnerHTML={{ __html: referenceName }} />
 					</Tippy>
 				</span>
@@ -752,7 +751,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<span className={style}>{uiNotes(row)}</span>
 
 				<span className={`${style} cursor-help`}>
-					<Tippy allowHTML content={<Tooltip text={row.entry_by_id_and_name} />}>
+					<Tippy content={<Tooltip text={row.entry_by_id_and_name} />} placement="bottom">
 						<span dangerouslySetInnerHTML={{ __html: entryBy }} />
 					</Tippy>
 				</span>
@@ -816,7 +815,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const icon = isConfirmed ? <FontAwesomeIcon icon={faCircleCheck} size="sm" /> : <FontAwesomeIcon icon={faChevronDown} size="sm" />;
 
 		return (
-			<Tippy allowHTML={false} content={<Tooltip text={row.closure_reason} />} disabled={row.is_closed == 0 && !row.closure_reason}>
+			<Tippy content={<Tooltip text={row.closure_reason} />} disabled={row.is_closed == 0 && !row.closure_reason} placement="bottom">
 				<Menu as="div" className="flex w-24 justify-center items-center relative">
 					<MenuButton className={wrapper}>
 						<span dangerouslySetInnerHTML={{ __html: highlightText(true, row.status) }} />

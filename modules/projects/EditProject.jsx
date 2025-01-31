@@ -61,7 +61,7 @@ export default function EditProject({ project, reload, unmount }) {
 	// Functions
 	function addNewCompany(company) {
 		const copy = [...api.clientsCompanies.copy];
-		const name = MyGlobal.Capitalize(company);
+		const name = company;
 
 		const revised = copy.filter((f) => f.id != 0);
 		revised.unshift({ id: 0, name });
@@ -74,7 +74,7 @@ export default function EditProject({ project, reload, unmount }) {
 
 	function addNewSubProject(subProject) {
 		const copy = [...api.subProjects.copy];
-		copy.unshift({ id: 0, name: MyGlobal.Capitalize(subProject) });
+		copy.unshift({ id: 0, name: subProject });
 
 		setFind("subProject", "");
 

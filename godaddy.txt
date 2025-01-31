@@ -1,0 +1,32 @@
+===============
+GoDaddy Account
+===============
+Name:				Signiix Advisors
+Address:			D-608, The First, Behind IIM, Vastrapur, Ahmedabad, GJ 380015
+Email Address:		signiixadvisors@gmail.com
+Phone Number:		+91 87805 77704
+Customer Number:	607155980
+PIN:				4657
+
+Username:			SigniixAdvisors
+Password:			TopNotchAdvisors#2024
+Domains:			signiixadvisors.com
+URL:				https://www.signiixadvisors.com
+Default Website:	https://signiixadvisorsportal.godaddysites.com
+
+==============
+cPanel Account
+==============
+Username:			fco1t1x9fsye
+Password:			TopNotchAdvisors#2024
+IP Address:			118.139.162.57
+Port Number:		22
+SSH Access:			On
+Home Directory:		/home/fco1t1x9fsye
+User Analytics ID:	13bf3b57-b952-4cac-b33a-25d84effbe09
+
+======================
+PhpMyAdmin Credentials
+======================
+spire
+SpireCrmBySigniixAdvisors#2024

@@ -248,9 +248,8 @@ export default function Clients() {
 	const uiExport = () => {
 		if (api.clients.data.length && api.clients.copy.length) {
 			return (
-				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => doExcelExport()}>
+				<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
-					<span>Export</span>
 				</button>
 			);
 		}
@@ -328,15 +327,15 @@ export default function Clients() {
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text" key={row.id}>
 				<span className={style} dangerouslySetInnerHTML={{ __html: clientId }} />
 
-				<Tippy allowHTML content={<Tooltip text="Open this client's detailed view." />}>
+				<Tippy content={<Tooltip text="Open this client's detailed view." />} placement="bottom">
 					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleClient(row)} />
 				</Tippy>
 
-				<Tippy allowHTML content={<Tooltip text="Open this contact on WhatsApp Web." />}>
+				<Tippy content={<Tooltip text="Open this contact on WhatsApp Web." />} placement="bottom">
 					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsApp(row.phone_number)} />
 				</Tippy>
 
-				<Tippy allowHTML content={<Tooltip text={row.email_address} />}>
+				<Tippy content={<Tooltip text={row.email_address} />} placement="bottom">
 					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: emailAddress }} onClick={() => openEmailClient(row.email_address)} />
 				</Tippy>
 

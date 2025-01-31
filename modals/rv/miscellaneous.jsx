@@ -84,14 +84,14 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 			const body = {
 				amount: main.amountReceived,
-				customInvoiceId: project.invoice_id,
+				customRvId: project.rv_id,
 				entryAt: main.entryAt,
 				particulars: main.particulars,
 				projectId: project.id,
 				source: main.paymentSource.id,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Invoices.AddTransaction, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.Rv.AddTransaction, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
@@ -112,7 +112,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.Invoices} => Transaction History => Add Transaction`);
+			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.Rv} => Transaction History => Add Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, adding: false }));
 		}
@@ -190,8 +190,11 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 		try {
 			const response = await axios.get(
-				MyConstants.ApiEndpoints.Invoices.GetHistorySupportData,
-				MyGlobal.GetHeaders({ ownerFirmId: project.invoice_firm_id, projectId: project.id }),
+				MyConstants.ApiEndpoints.Rv.GetHistorySupportData,
+				MyGlobal.GetHeaders({
+					ownerFirmId: project.invoice_firm_id,
+					projectId: project.id,
+				}),
 			);
 
 			if (response.status === 200) {
@@ -225,7 +228,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				});
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.Invoices} => Payment Received => Get Support Data`);
+			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.Rv} => Payment Received => Get Support Data`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}

@@ -645,7 +645,7 @@ html {
 .dashboard-heading,
 .view-heading {
 	@apply text-[var(--primary)] text-[16pt];
-	font-family: var(--semibold);
+	font-family: var(--bold);
 }
 
 .dialog-footer {
@@ -757,7 +757,8 @@ html {
 	font-family: var(--regular);
 }
 
-#invoicePreviewWrapper > #invoiceWrapper {
+#invoicePreviewWrapper > #invoiceWrapper,
+#rvPreviewWrapper > #rvWrapper {
 	width: 100%;
 }
 
@@ -822,4 +823,55 @@ html {
 ::-webkit-scrollbar-track {
 	background-color: #f0f0f0;
 	border-radius: 4px;
+}
+
+/******************/
+/******************/
+/***Tab Bar Tabs***/
+/******************/
+/******************/
+
+.tabs {
+	display: flex;
+	position: relative;
+	padding: 12px;
+	border-radius: 99px;
+	overflow: hidden;
+}
+
+.tabs * {
+	z-index: 2;
+}
+
+input[type="radio"] {
+	display: none;
+}
+
+.tab {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 30px;
+	padding: 0 10px;
+	border-radius: 99px;
+	cursor: pointer;
+	color: var(--gray);
+	transition: color 0.15s ease-in;
+	text-align: center;
+}
+
+input[type="radio"]:checked + label {
+	color: var(--primary);
+}
+
+.glider {
+	position: absolute;
+	display: flex;
+	height: 30px;
+	background-color: var(--primary-transparent-01);
+	z-index: 1;
+	border-radius: 99px;
+	opacity: 1;
+	display: block;
+	transition: transform 0.25s ease-out, width 0.25s ease-out;
 }

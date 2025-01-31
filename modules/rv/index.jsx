@@ -6,9 +6,8 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import axios from "axios";
 import dayjs from "dayjs";
+import NewRv from "./NewRv";
 import Tippy from "@tippyjs/react";
-import NewInvoice from "./NewInvoice";
-import EditInvoice from "./EditInvoice";
 import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
@@ -18,14 +17,14 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, Spinner, Tooltip } from "@/components/Elements";
-import { Transactions } from "@/modals/invoices/miscellaneous";
+import { Transactions } from "@/modals/rv/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar, faCoins, faFileDownload, faFileExcel, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
-export default function Invoices({ status }) {
+export default function RV({ status }) {
 	// Business Logic
-	const headers = MyConstants.TableHeaders.Invoices;
-	const thisView = MyConstants.Modules.Base.Invoices;
+	const headers = MyConstants.TableHeaders.ReimburseVouchers;
+	const thisView = MyConstants.Modules.Base.Rv;
 
 	const [api, setApi] = useState({
 		projects: [],
@@ -44,12 +43,11 @@ export default function Invoices({ status }) {
 	});
 
 	const [mounted, setMounted] = useState({
-		editInvoice: false,
-		newInvoice: false,
+		newRv: false,
 		transactions: false,
 	});
 
-	const allowNewInvoice = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInvoice);
+	const allowNewRv = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewRv);
 
 	const showFromDateClearIcon = main.filter.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearIcon = main.filter.to ? "cursor-pointer primary-text" : "hidden";
@@ -234,7 +232,7 @@ export default function Invoices({ status }) {
 	}
 
 	function getTotals() {
-		let total = { amount: 0, pending: 0, received: 0 };
+		const total = { amount: 0, pending: 0, received: 0 };
 
 		for (const i of api.projects) {
 			total.amount += i.amount;
@@ -261,7 +259,7 @@ export default function Invoices({ status }) {
 		try {
 			setMain((s) => ({ ...s, isLoading: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(MyConstants.ApiEndpoints.Rv.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				const revised = response.data.projects.map((m) => {
@@ -279,7 +277,9 @@ export default function Invoices({ status }) {
 						}, 0);
 					}
 
-					if (amountReceived != 0) {
+					const cashFlow = response.data.cashFlows.find((f) => f.client_id == m.client_id);
+
+					if (typeof cashFlow === "object") {
 						amountPending = Number(m.quote) - amountReceived;
 					}
 
@@ -289,16 +289,16 @@ export default function Invoices({ status }) {
 						companyName = company.name;
 					}
 
-					const invoice = response.data.invoices.find((f) => f.project_id == m.id);
+					const rv = response.data.rv.find((f) => f.project_id == m.id);
 
-					let invoiceId = "";
-					let invoiceCreatedAt = "";
-					let invoiceCreatedAtTime = "";
+					let rvId = "";
+					let rvCreatedAt = "";
+					let rvCreatedAtTime = "";
 
-					if (typeof invoice === "object") {
-						invoiceId = invoice.custom_id;
-						invoiceCreatedAt = dayjs(invoice.created_at).format("DD/MM/YYYY");
-						invoiceCreatedAtTime = dayjs(invoice.created_at).format("hh:mm:ss a");
+					if (typeof rv === "object") {
+						rvId = rv.custom_id;
+						rvCreatedAt = dayjs(rv.created_at).format("DD/MM/YYYY");
+						rvCreatedAtTime = dayjs(rv.created_at).format("hh:mm:ss a");
 					}
 
 					const mainProject = response.data.mainProjects.find((f) => f.id == m.main_project_id);
@@ -319,11 +319,12 @@ export default function Invoices({ status }) {
 						amount_pending: amountPending,
 						amount_received: amountReceived,
 						company_name: companyName,
-						created_at: invoiceCreatedAt,
-						created_at_time: invoiceCreatedAtTime,
-						invoice_id: invoiceId,
+						created_at: rvCreatedAt,
+						created_at_time: rvCreatedAtTime,
+						invoice_id: "",
 						main_project_name: mainProjectName,
 						sub_project_name: subProjectName,
+						rv_id: rvId,
 					};
 				});
 
@@ -340,14 +341,9 @@ export default function Invoices({ status }) {
 		}
 	}
 
-	function toggleEditInvoice(object) {
+	function toggleNewRV(object) {
 		setMain((s) => ({ ...s, selectedProject: object }));
-		setMounted((s) => ({ ...s, editInvoice: object ? true : false }));
-	}
-
-	function toggleNewInvoice(object) {
-		setMain((s) => ({ ...s, selectedProject: object }));
-		setMounted((s) => ({ ...s, newInvoice: object ? true : false }));
+		setMounted((s) => ({ ...s, newRv: object ? true : false }));
 	}
 
 	function toggleTransactions(object) {
@@ -360,9 +356,9 @@ export default function Invoices({ status }) {
 		if (main.isLoading) {
 			return <div className={blankDataWrapper}>Loading...</div>;
 		} else if (!api.projectsCopy.length) {
-			return <div className={blankDataWrapper}>No invoices generated.</div>;
+			return <div className={blankDataWrapper}>No RVs generated.</div>;
 		} else if (!api.projects.length) {
-			return <div className={blankDataWrapper}>No invoices found.</div>;
+			return <div className={blankDataWrapper}>No RVs found.</div>;
 		} else {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border">
@@ -464,7 +460,7 @@ export default function Invoices({ status }) {
 	}
 
 	function uiMain() {
-		if (!mounted.newInvoice) {
+		if (!mounted.newRv) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-center">
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
@@ -488,10 +484,8 @@ export default function Invoices({ status }) {
 					)}
 				</div>
 			);
-		} else if (mounted.editInvoice) {
-			return <EditInvoice project={main.selectedProject} reload={setSupportData} unmount={toggleEditInvoice} />;
 		} else {
-			return <NewInvoice project={main.selectedProject} reload={setSupportData} unmount={toggleNewInvoice} />;
+			return <NewRv project={main.selectedProject} reload={setSupportData} unmount={toggleNewRV} />;
 		}
 	}
 
@@ -514,16 +508,18 @@ export default function Invoices({ status }) {
 
 		const amountReceived = MyGlobal.HighlightText(row.amount_received, main.filter.find);
 
-		let generateInvoiceTooltip = "";
+		let generateRvTooltip = "";
 
-		if (!allowNewInvoice) {
-			generateInvoiceTooltip = "You do not have permission to generate invoice";
-		} else if (_invoiceId != "Generate") {
-			generateInvoiceTooltip = "Edit this invoice";
+		if (_invoiceId != "Generate") {
+			generateRvTooltip = "Download this RV";
+		} else if (!allowNewRv) {
+			generateRvTooltip = "You do not have permission to generate RV";
 		}
+
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
 				<span className={style} dangerouslySetInnerHTML={{ __html: id }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: row.invoice_id }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: companyName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
@@ -535,11 +531,11 @@ export default function Invoices({ status }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountPending }} />
-				<Tippy content={<Tooltip text={generateInvoiceTooltip} />} disabled={!generateInvoiceTooltip} placement="bottom">
+				<Tippy content={<Tooltip text={generateRvTooltip} />} disabled={!generateRvTooltip} placement="bottom">
 					<span
 						className={`${style} cursor-pointer primary-text`}
 						dangerouslySetInnerHTML={{ __html: _invoiceId }}
-						onClick={() => allowNewInvoice && toggleNewInvoice(row)}
+						onClick={() => allowNewRv && toggleNewRV(row)}
 					/>
 				</Tippy>
 				<span className={`${style} space-x-5`}>

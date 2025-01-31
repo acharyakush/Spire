@@ -5,7 +5,7 @@
 import Tippy from "@tippyjs/react";
 import ReactDatePicker from "react-datepicker";
 
-import { applicationName, MyGlobal } from "@/utilities/global";
+import { applicationName } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown, faCheck, faEnvelope, faLock, faMultiply, faUser } from "@fortawesome/free-solid-svg-icons";
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
@@ -25,7 +25,7 @@ export const ComboBox = ({
 	width,
 }) => {
 	const wrapper = `flex flex-col ${width} p-2 space-y-1`;
-	const noItemFound = allowCreatingNewItem ? `Create ${MyGlobal.Capitalize(searchedItem)}` : "Nothing found.";
+	const noItemFound = allowCreatingNewItem ? `Create ${searchedItem}` : "Nothing found.";
 	const noItemFoundClickAction = allowCreatingNewItem ? onClick : () => {};
 
 	let _filteredData;
@@ -104,6 +104,7 @@ export const ComboBox2 = ({
 	filteredData,
 	hasDataObject,
 	icon,
+	isMenuInverted = false,
 	isReadOnly,
 	label,
 	onChange,
@@ -119,7 +120,7 @@ export const ComboBox2 = ({
 	const clickEvent = isReadOnly ? "pointer-events-none" : "pointer-events-auto";
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 ${aesthetics}`;
 	const inputWrapper = `relative w-full ${clickEvent}`;
-	const noItemFound = allowCreatingNewItem ? `Create ${MyGlobal.Capitalize(searchedItem)}` : "Nothing found.";
+	const noItemFound = allowCreatingNewItem ? `Create ${searchedItem}` : "Nothing found.";
 	const noItemFoundClickAction = allowCreatingNewItem ? onClick : () => {};
 
 	let _filteredData;
@@ -151,7 +152,9 @@ export const ComboBox2 = ({
 									<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
 								</ComboboxButton>
 							</div>
-							<ComboboxOptions className="absolute w-full max-h-[273px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border primary-light-background">
+							<ComboboxOptions
+								className="absolute w-full max-h-[273px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border primary-light-background"
+								style={{ top: isMenuInverted ? "-160px" : "66px", zIndex: 50 }}>
 								{uiList()}
 							</ComboboxOptions>
 						</div>
@@ -250,7 +253,7 @@ export const ComboBoxWithChips = ({
 
 			if (selectedItems?.length > 5) {
 				return (
-					<Tippy allowHTML content={uiTooltipUi()}>
+					<Tippy allowHTML content={uiTooltipUi()} placement="bottom">
 						<span className={`${wrapper} cursor-pointer`}>{selectedItems?.length} people selected</span>
 					</Tippy>
 				);
