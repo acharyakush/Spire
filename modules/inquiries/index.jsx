@@ -186,19 +186,19 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				const findText = main.findText.toLowerCase();
 
 				return (
-					f.client_id.includes(findText) ||
-					f.client_name.includes(findText) ||
+					String(f.client_id).toLowerCase().includes(findText) ||
+					String(f.client_name).toLowerCase().includes(findText) ||
 					String(f.phone_number).includes(findText) ||
-					f.main_project.includes(findText) ||
-					f.sub_project.includes(findText) ||
-					f.reference_id.includes(findText) ||
-					f.reference_name.includes(findText) ||
-					f.follow_ups.includes(findText) ||
-					f.follow_ups_initials.includes(findText) ||
+					String(f.main_project).toLowerCase().includes(findText) ||
+					String(f.sub_project).toLowerCase().includes(findText) ||
+					String(f.reference_id).toLowerCase().includes(findText) ||
+					String(f.reference_name).toLowerCase().includes(findText) ||
+					String(f.follow_ups).toLowerCase().includes(findText) ||
+					String(f.follow_ups_initials).toLowerCase().includes(findText) ||
 					String(f.quote).includes(findText) ||
-					f.status.includes(findText) ||
-					f.notes.includes(findText) ||
-					f.entry_by_name.includes(findText)
+					String(f.status).toLowerCase().includes(findText) ||
+					String(f.notes).toLowerCase().includes(findText) ||
+					String(f.entry_by_name).toLowerCase().includes(findText)
 				);
 			}
 		});
@@ -283,11 +283,22 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 				response.data.forEach((fe) => {
 					const clientName = MyGlobal.GetNameFromId(fe.client_id, supportData.clients);
+
 					const referenceName = MyGlobal.GetNameFromId(fe.reference_id, supportData.references);
 
 					const followUps = MyGlobal.GetAnyDataFromId(fe.follow_ups, "full_name");
 
 					const entryBy = MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name");
+
+					let phoneNumber = fe.phone_number;
+
+					const client = supportData.clients.find((f) => f.id == fe.client_id);
+
+					if (typeof client === "object") {
+						if (client.is_edited == 1) {
+							phoneNumber = client.phone_number;
+						}
+					}
 
 					const data = {
 						...fe,
@@ -301,6 +312,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						follow_ups_initials: MyGlobal.GetInitials(followUps),
 						main_project: MyGlobal.GetNameFromId(fe.main_project_id, supportData.mainProjects),
 						notes: "",
+						phone_number: phoneNumber,
 						reference_id_and_name: `${fe.reference_id} - ${referenceName}`,
 						reference_name: referenceName,
 						sub_project: MyGlobal.GetNameFromId(fe.sub_project_id, supportData.subProjects),
@@ -724,7 +736,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
 				<span className={style}>{row.entry_date}</span>
 
-				<span className={`${style} space-x-2 ${clientNameTextStyle}`}>
+				<span className={`${style} font-semibold-10 space-x-2 ${clientNameTextStyle}`}>
 					<Tippy content={<Tooltip text={row.client_id_and_name} />} placement="bottom">
 						<span dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleEditInquiryView(row, true)} />
 					</Tippy>

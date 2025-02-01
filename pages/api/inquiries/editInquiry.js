@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { client, phoneNumber, emailAddress, entryDate, followUps, id, mainProjectId, quote, reference, subProject, userId } = req.body;
+		const { client, phoneNumber, emailAddress, entryDate, followUps, id, isEdited, mainProjectId, quote, reference, subProject, userId } = req.body;
 
 		let newReferenceId = reference.id;
 
@@ -73,8 +73,8 @@ export default async function handler(req, res) {
 		}
 
 		const inquiryUpdateResult = await query(
-			`UPDATE inquiries SET client_id=?, reference_id=?, main_project_id=?, sub_project_id=?, entry_date=?, phone_number=?, email_address=?, follow_ups=?, quote=? WHERE id=?`,
-			[newClientId, newReferenceId, mainProjectId, newSubProjectId, entryDate, phoneNumber, emailAddress, followUps, quote, id],
+			`UPDATE inquiries SET client_id=?, reference_id=?, main_project_id=?, sub_project_id=?, entry_date=?, phone_number=?, email_address=?, follow_ups=?, is_edited=?, quote=? WHERE id=?`,
+			[newClientId, newReferenceId, mainProjectId, newSubProjectId, entryDate, phoneNumber, emailAddress, followUps, isEdited, quote, id],
 		);
 
 		if (inquiryUpdateResult.affectedRows == 0) {

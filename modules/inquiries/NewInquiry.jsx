@@ -76,8 +76,6 @@ export default function NewInquiry({ reload, unmount }) {
 				MyGlobal.AddActivity(`Added <b>${response.data}</b>.`, MyConstants.Modules.Base.Inquiries);
 
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryAdded);
-
-				unmount();
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
@@ -85,6 +83,7 @@ export default function NewInquiry({ reload, unmount }) {
 			MyGlobal.HandleErrors(error, "New Inquiry");
 		} finally {
 			setOther((s) => ({ ...s, isLoading: false }));
+			unmount();
 		}
 	}
 
@@ -97,7 +96,14 @@ export default function NewInquiry({ reload, unmount }) {
 
 		setFind("client", "");
 
-		setMain((s) => ({ ...s, client: { id: 0, name } }));
+		setMain((s) => ({
+			...s,
+			client: { id: 0, name },
+			emailAddress: "",
+			phoneNumber: "",
+			reference: { id: "", name: "" },
+		}));
+
 		setApi((s) => ({ ...s, clients: { copy: revisedCopy, data: revisedCopy } }));
 	}
 
@@ -305,10 +311,22 @@ export default function NewInquiry({ reload, unmount }) {
 
 			if (response.status == 200) {
 				setApi({
-					clients: { data: response.data.clients, copy: response.data.clients },
-					mainProjects: { data: response.data.mainProjects, copy: response.data.mainProjects },
-					references: { data: response.data.references, copy: response.data.references },
-					subProjects: { data: response.data.subProjects, copy: response.data.subProjects },
+					clients: {
+						data: response.data.clients,
+						copy: response.data.clients,
+					},
+					mainProjects: {
+						data: response.data.mainProjects,
+						copy: response.data.mainProjects,
+					},
+					references: {
+						data: response.data.references,
+						copy: response.data.references,
+					},
+					subProjects: {
+						data: response.data.subProjects,
+						copy: response.data.subProjects,
+					},
 				});
 			}
 		} catch (error) {
@@ -432,7 +450,7 @@ export default function NewInquiry({ reload, unmount }) {
 			<TextInput
 				icon={faPhone}
 				label="Phone Number"
-				maxLength={10}
+				maxLength={12}
 				onChange={(e) => setLightInputs("phoneNumber", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex={2}

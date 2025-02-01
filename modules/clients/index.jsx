@@ -12,6 +12,7 @@ import MyConstants from "@/utilities/constants";
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
+import { EditClient } from "@/modals/singleClient";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, Spinner, SpinnerBig, Tooltip } from "@/components/Elements";
@@ -31,6 +32,7 @@ export default function Clients() {
 	});
 
 	const [mounted, setMounted] = useState({
+		editClient: false,
 		mainComponent: false,
 		singleClient: false,
 	});
@@ -175,8 +177,16 @@ export default function Clients() {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetClients, MyGlobal.GetHeaders());
 
+			const confirmedClients = response.data.filter((f) => f.is_confirmed == 1);
+
 			if (response.status === 200) {
-				setApi({ clients: { copy: response.data, data: response.data } });
+				setApi({
+					clients: {
+						copy: confirmedClients,
+						data: confirmedClients,
+					},
+				});
+
 				setMounted((s) => ({ ...s, mainComponent: true }));
 			}
 		} catch (error) {
@@ -225,6 +235,11 @@ export default function Clients() {
 		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
 	}
 
+	function toggleEditClient(clientId) {
+		setMain((s) => ({ ...s, selectedClient: clientId ?? {} }));
+		setMounted((s) => ({ ...s, editClient: clientId ? true : false }));
+	}
+
 	function toggleSingleClient(clientId) {
 		setMain((s) => ({ ...s, selectedClient: clientId ?? {} }));
 		setMounted((s) => ({ ...s, singleClient: clientId ? true : false }));
@@ -241,6 +256,8 @@ export default function Clients() {
 					itemContent={(i, row) => uiRows(row, i)}
 					totalCount={api.clients.data.length}
 				/>
+
+				{mounted.editClient && <EditClient client={main.selectedClient} mount={mounted.editClient} reload={getAllClients} unmount={toggleEditClient} />}
 			</div>
 		);
 	};
@@ -325,7 +342,9 @@ export default function Clients() {
 
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text" key={row.id}>
-				<span className={style} dangerouslySetInnerHTML={{ __html: clientId }} />
+				<Tippy content={<Tooltip text="Edit this client's details." />} placement="bottom">
+					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientId }} onClick={() => toggleEditClient(row)} />
+				</Tippy>
 
 				<Tippy content={<Tooltip text="Open this client's detailed view." />} placement="bottom">
 					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleClient(row)} />

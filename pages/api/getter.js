@@ -29,9 +29,8 @@ export default async function handler(req, res) {
 		} else if (request.type === "get-users") {
 			const administrators = await query("SELECT * FROM administrators", []);
 			const employees = await query("SELECT * FROM employees WHERE access_revoked=0", []);
-			const response = { administrators, employees };
 
-			return res.status(200).send(response);
+			return res.status(200).send({ administrators, employees });
 		} else if (request.type === "get-notes") {
 			queryString = "SELECT * FROM notes";
 		} else if (request.type === "get-tasks") {
@@ -45,6 +44,8 @@ export default async function handler(req, res) {
 			queryParameters = [request.inquiryId, request.projectId];
 		} else if (request.type === "get-affiliates") {
 			queryString = "SELECT * FROM affiliates";
+		} else if (request.type === "get-activities") {
+			queryString = "SELECT * FROM activities";
 		} else {
 			return res.status(400).send({ error: "Invalid request type" });
 		}

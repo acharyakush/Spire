@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 31, 2025 at 08:45 PM
+-- Generation Time: Feb 01, 2025 at 05:16 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -382,7 +382,99 @@ INSERT INTO `activities` (`id`, `entry_by_id`, `module`, `activity`, `ip_address
 (299, 'A3', 'Tasks', 'Edited Remark from <b>Bye</b> to <b>Byes</b> of <b>TK000007</b> in <b>PJ000003</b>.', 'Localhost', '2025-01-31 23:01:24', ''),
 (300, 'A3', 'Tasks', 'Edited Task from <b>Task @1</b> to <b>Tasks @1</b> of <b>TK000007</b> in <b>PJ000003</b>.', 'Localhost', '2025-01-31 23:01:31', ''),
 (301, 'A3', 'Tasks', 'Disabled <b>TK000007</b> in <b>PJ000003</b> due to <b>Lol.</b>', 'Localhost', '2025-01-31 23:01:53', ''),
-(302, 'A3', 'Tasks', 'Enabled <b>TK000007</b> in <b>PJ000003</b> due to <b>Pop.</b>', 'Localhost', '2025-01-31 23:02:13', '');
+(302, 'A3', 'Tasks', 'Enabled <b>TK000007</b> in <b>PJ000003</b> due to <b>Pop.</b>', 'Localhost', '2025-01-31 23:02:13', ''),
+(303, 'A3', 'General', 'Logged out.', 'Localhost', '2025-02-01 01:16:15', ''),
+(304, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-01 11:30:30', ''),
+(305, 'A3', 'Inquiries', 'Added <b>IQ000011</b>.', 'Localhost', '2025-02-01 12:07:57', ''),
+(306, 'A3', 'Inquiries', 'Added <b>IQ000012</b>.', 'Localhost', '2025-02-01 12:16:46', ''),
+(307, 'A3', 'Inquiries', 'Added <b>IQ000013</b>.', 'Localhost', '2025-02-01 12:18:42', ''),
+(308, 'A3', 'Inquiries', 'Closed <b>IQ000010</b> due to <b>#Hashtag@ 123</b>.', 'Localhost', '2025-02-01 12:19:54', ''),
+(309, 'A3', 'Inquiries', 'Edited <b>IQ000007</b>.', 'Localhost', '2025-02-01 12:24:45', ''),
+(310, 'A3', 'Inquiries', 'Edited <b>IQ000012</b>.', 'Localhost', '2025-02-01 12:32:52', ''),
+(311, 'A3', 'Single Client', 'Edited Email Address from <b>suresh@Yahoo.com</b> to <b>suresh@outlook.com</b>, Phone Number from <b>8780577811</b> to <b>9099300543</b> of <b>CN000006</b>.', 'Localhost', '2025-02-01 13:14:29', ''),
+(312, 'A3', 'Single Client', 'Edited Email Address from <b>soni.dipen@gmail.com</b> to <b>change@gmail.com</b>, Phone Number from <b>9909436171</b> to <b>9998733006</b> of <b>CN000005</b>.', 'Localhost', '2025-02-01 13:15:42', ''),
+(313, 'A3', 'Inquiries', 'Added <b>IQ000014</b>.', 'Localhost', '2025-02-01 13:39:03', ''),
+(314, 'A3', 'Inquiries', 'Added <b>IQ000015</b>.', 'Localhost', '2025-02-01 13:41:07', ''),
+(315, 'A3', 'Inquiries', 'Added <b>IQ000016</b>.', 'Localhost', '2025-02-01 13:42:18', ''),
+(316, 'A3', 'Inquiries', 'Update status of <b>IQ000015</b> to <b>Hold</b> from <b>Open</b>.', 'Localhost', '2025-02-01 13:42:33', ''),
+(317, 'A3', 'Inquiries', 'Closed <b>IQ000014</b> due to <b>Not Interested.</b>.', 'Localhost', '2025-02-01 13:42:42', ''),
+(318, 'A3', 'Inquiries', 'Update status of <b>IQ000016</b> to <b>Hold</b> from <b>Open</b>.', 'Localhost', '2025-02-01 13:43:40', ''),
+(319, 'A3', 'Inquiries', 'Added <b>PJ000004</b>.', 'Localhost', '2025-02-01 13:44:26', ''),
+(320, 'A3', 'Single Client', 'Edited Email Address from <b>salma@salim.com</b> to <b>abhishek@sal.com</b>, Name from <b>Salman</b> to <b>Gor Maharaj</b>, Phone Number from <b>254546816846</b> to <b>8000721554</b> of <b>CN000012</b>.', 'Localhost', '2025-02-01 13:51:09', ''),
+(321, 'A3', 'Single Client', 'Edited Name from <b>Sameer</b> to <b>DS</b> of <b>CN000011</b>.', 'Localhost', '2025-02-01 13:51:45', ''),
+(322, 'A3', 'Inquiries', 'Added <b>IQ000017</b>.', 'Localhost', '2025-02-01 13:59:09', ''),
+(323, 'A3', 'Inquiries', 'Edited <b>IQ000017</b>.', 'Localhost', '2025-02-01 14:04:19', ''),
+(324, 'A3', 'Inquiries', 'Edited <b>IQ000004</b>.', 'Localhost', '2025-02-01 14:13:44', ''),
+(325, 'A3', 'Inquiries', 'Edited <b>IQ000017</b>.', 'Localhost', '2025-02-01 15:22:13', ''),
+(326, 'A3', 'Inquiries', 'Edited <b>IQ000017</b>.', 'Localhost', '2025-02-01 15:24:17', ''),
+(327, 'A3', 'Inquiries', 'Added <b>PJ000005</b>.', 'Localhost', '2025-02-01 15:26:58', ''),
+(328, 'A3', 'Inquiries', 'Added <b>PJ000006</b>.', 'Localhost', '2025-02-01 15:41:10', ''),
+(329, 'A3', 'Inquiries', 'Added <b>PJ000007</b>.', 'Localhost', '2025-02-01 15:43:00', ''),
+(330, 'A3', 'Projects', 'Cancelled <b>PJ000001</b> from <b>Active</b>', 'Localhost', '2025-02-01 15:59:05', ''),
+(331, 'A3', 'Projects', 'Resumed <b>PJ000001</b> from <b>Cancelled</b>', 'Localhost', '2025-02-01 15:59:12', ''),
+(332, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-01 16:01:19', ''),
+(333, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-01 16:01:35', ''),
+(334, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-01 16:01:44', ''),
+(335, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-01 16:01:49', ''),
+(336, 'A3', 'Tasks', 'Deleted particular <b>adnasdnk</b> with remark <b>qdknksdfnkszndf</b> of <b>TK000003</b> in <b>PJ000001</b>', 'Localhost', '2025-02-01 16:01:59', ''),
+(337, 'A3', 'Tasks', 'Deleted particular <b>zzzzzzzzzzzzz</b> with remark <b>aaaaaaaaaaaaaaaaa</b> of <b>TK000003</b> in <b>PJ000001</b>', 'Localhost', '2025-02-01 16:02:03', ''),
+(338, 'A3', 'Tasks', 'Edited Particular from <b>popopopopop</b> to <b>adnaannnnnnnnnnnnnn</b>, Remark from <b>lolololooo</b> to <b>cv</b> of <b>TK000003</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-01 16:02:18', ''),
+(339, 'A3', 'Tasks', 'Edited Particular from <b>vvvvvvvvvvv</b> to <b>r</b>, Remark from <b>sssssssssssssss</b> to <b>t</b> of <b>TK000003</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-01 16:02:26', ''),
+(340, 'A3', 'Tasks', 'Marked sub task having <b>adnaannnnnnnnnnnnnn</b> & <b>cv</b> as completed of <b>TK000003</b> in <b>PJ000001</b>', 'Localhost', '2025-02-01 16:03:33', ''),
+(341, 'A3', 'Tasks', 'Marked sub task having <b>r</b> & <b>t</b> as completed of <b>TK000003</b> in <b>PJ000001</b>', 'Localhost', '2025-02-01 16:04:15', ''),
+(342, 'A3', 'Tasks', 'Marked Task as Completed <b>TK000003</b> in <b>PJ000001</b> due to <b>yyyyy</b>', 'Localhost', '2025-02-01 16:04:23', ''),
+(343, 'A3', 'Tasks', 'Marked all sub tasks as completed of <b>TK000003</b> in <b>PJ000001</b>', 'Localhost', '2025-02-01 16:04:23', ''),
+(344, 'A3', 'Tasks', 'Disabled <b>TK000004</b> in <b>PJ000001</b> due to <b>rrrrrrrrrrrrr</b>', 'Localhost', '2025-02-01 16:04:33', ''),
+(345, 'A3', 'Tasks', 'Enabled <b>TK000004</b> in <b>PJ000001</b> due to <b>xxxxxxxxxx</b>', 'Localhost', '2025-02-01 16:05:18', ''),
+(346, 'A3', 'Tasks', 'Disabled <b>TK000004</b> in <b>PJ000001</b> due to <b>xxxxxxxxxx</b>', 'Localhost', '2025-02-01 16:05:39', ''),
+(347, 'A3', 'Tasks', 'Enabled <b>TK000004</b> in <b>PJ000001</b> due to <b>vvvvvvv</b>', 'Localhost', '2025-02-01 16:06:07', ''),
+(348, 'A3', 'Tasks', 'Deleted <b>TK000004</b> in <b>PJ000001</b>', 'Localhost', '2025-02-01 16:08:33', ''),
+(349, 'A3', 'Tasks', 'Added <b>TK000009</b> in <b>PJ000001</b>', 'Localhost', '2025-02-01 16:09:02', ''),
+(350, 'A3', 'Tasks', 'Disabled <b>TK000009</b> in <b>PJ000001</b> due to <b>Ret.</b>', 'Localhost', '2025-02-01 16:09:16', ''),
+(351, 'A3', 'Tasks', 'Deleted <b>TK000009</b> in <b>PJ000001</b>', 'Localhost', '2025-02-01 16:22:07', ''),
+(352, 'A3', 'Tasks', 'Marked project <b>PJ000001</b> completed.', 'Localhost', '2025-02-01 16:22:16', ''),
+(353, 'A3', 'Projects', '<b>PJ000003</b> kept on <b>Hold</b> from <b>Active</b>', 'Localhost', '2025-02-01 16:23:09', ''),
+(354, 'A3', 'Projects', '<b>PJ000004</b> kept on <b>Hold</b> from <b>Active</b>', 'Localhost', '2025-02-01 16:23:13', ''),
+(355, 'A3', 'Projects', '<b>PJ000005</b> kept on <b>Hold</b> from <b>Active</b>', 'Localhost', '2025-02-01 16:23:18', ''),
+(356, 'A3', 'Projects', '<b>PJ000006</b> kept on <b>Hold</b> from <b>Active</b>', 'Localhost', '2025-02-01 16:23:27', ''),
+(357, 'A3', 'Projects', '<b>PJ000007</b> kept on <b>Hold</b> from <b>Active</b>', 'Localhost', '2025-02-01 16:23:32', ''),
+(358, 'A3', 'Projects', 'Resumed <b>PJ000007</b> from <b>Hold</b>', 'Localhost', '2025-02-01 16:24:36', ''),
+(359, 'A3', 'Projects', 'Resumed <b>PJ000006</b> from <b>Hold</b>', 'Localhost', '2025-02-01 16:24:58', ''),
+(360, 'A3', 'Projects', 'Resumed <b>PJ000005</b> from <b>Hold</b>', 'Localhost', '2025-02-01 16:25:00', ''),
+(361, 'A3', 'Projects', 'Resumed <b>PJ000004</b> from <b>Hold</b>', 'Localhost', '2025-02-01 16:25:03', ''),
+(362, 'A3', 'Projects', 'Resumed <b>PJ000003</b> from <b>Hold</b>', 'Localhost', '2025-02-01 16:25:05', ''),
+(363, 'A3', 'Tasks', 'Added <b>TK000009</b> in <b>PJ000004</b>', 'Localhost', '2025-02-01 16:25:42', ''),
+(364, 'A3', 'Tasks', 'Edited Expense from <b>2525.00</b> to <b>4545</b> of <b>TK000009</b> in <b>PJ000004</b>.', 'Localhost', '2025-02-01 16:26:26', ''),
+(365, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000004</b>.', 'Localhost', '2025-02-01 16:26:30', ''),
+(366, 'A3', 'Tasks', 'Deleted particular <b>c</b> with remark <b>v</b> of <b>TK000009</b> in <b>PJ000004</b>', 'Localhost', '2025-02-01 16:28:29', ''),
+(367, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000004</b>.', 'Localhost', '2025-02-01 16:28:33', ''),
+(368, 'A3', 'Tasks', 'Added <b>TK000010</b> in <b>PJ000005</b>', 'Localhost', '2025-02-01 16:28:53', ''),
+(369, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000005</b>.', 'Localhost', '2025-02-01 16:28:59', ''),
+(370, 'A3', 'Tasks', 'Added <b>TK000011</b> in <b>PJ000007</b>', 'Localhost', '2025-02-01 16:29:23', ''),
+(371, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000007</b>.', 'Localhost', '2025-02-01 16:29:30', ''),
+(372, 'A3', 'Tasks', 'Added <b>TK000012</b> in <b>PJ000001</b>', 'Localhost', '2025-02-01 16:30:02', ''),
+(373, 'A3', 'Projects', 'Resumed <b>PJ000001</b> from <b>Completed</b>', 'Localhost', '2025-02-01 16:42:57', ''),
+(374, 'A3', 'Projects', '<b>PJ000003</b> kept on <b>Hold</b> from <b>Active</b>', 'Localhost', '2025-02-01 16:46:52', ''),
+(375, 'A3', 'Projects', '<b>PJ000005</b> kept on <b>Hold</b> from <b>Active</b> due to <b>vvvvvvvvvvvvv</b>', 'Localhost', '2025-02-01 16:49:53', ''),
+(376, 'A3', 'Projects', 'Resumed <b>PJ000005</b> from <b>Hold</b>', 'Localhost', '2025-02-01 16:51:22', ''),
+(377, 'A3', 'Tasks', 'Added <b>TK000013</b> in <b>PJ000005</b>', 'Localhost', '2025-02-01 16:52:32', ''),
+(378, 'A3', 'Tasks', 'Deleted particular <b>v</b> with remark <b>v</b> of <b>TK000010</b> in <b>PJ000005</b>', 'Localhost', '2025-02-01 16:56:38', ''),
+(379, 'A3', 'Tasks', 'Deleted <b>TK000010</b> in <b>PJ000005</b>', 'Localhost', '2025-02-01 16:56:43', ''),
+(380, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000005</b>.', 'Localhost', '2025-02-01 16:57:36', ''),
+(381, 'A3', 'Tasks', 'Added <b>TK000014</b> in <b>PJ000005</b>', 'Localhost', '2025-02-01 16:57:40', ''),
+(382, 'A3', 'Tasks', 'Deleted <b>TK000014</b> in <b>PJ000005</b>', 'Localhost', '2025-02-01 17:03:42', ''),
+(383, 'A3', 'Tasks', 'Deleted particular <b>c</b> with remark <b>c</b> of <b>TK000013</b> in <b>PJ000005</b>', 'Localhost', '2025-02-01 17:03:52', ''),
+(384, 'A3', 'Tasks', 'Deleted <b>TK000013</b> in <b>PJ000005</b>', 'Localhost', '2025-02-01 17:04:09', ''),
+(385, 'A3', 'Projects', 'Edited <b>PJ000007</b>.', 'Localhost', '2025-02-01 17:06:41', ''),
+(386, 'A3', 'Tasks', 'Marked Task as Completed <b>TK000007</b> in <b>PJ000003</b> due to <b>bbbb</b>', 'Localhost', '2025-02-01 17:08:43', ''),
+(387, 'A3', 'Tasks', 'Marked all sub tasks as completed of <b>TK000007</b> in <b>PJ000003</b>', 'Localhost', '2025-02-01 17:08:43', ''),
+(388, 'A3', 'Invoices', 'Added transaction in <b></b>.', 'Localhost', '2025-02-01 20:32:37', ''),
+(389, 'A3', 'Invoices', 'Added transaction in <b></b>.', 'Localhost', '2025-02-01 20:32:53', ''),
+(390, 'A3', 'Projects', 'Mapped <b>(AF000002)</b> to <b>PJ000001</b>.', 'Localhost', '2025-02-01 20:56:32', ''),
+(391, 'A3', 'Cash Flow', 'Added <b>Affiliates</b> entry.', 'Localhost', '2025-02-01 20:58:04', ''),
+(392, 'A3', 'Projects', 'Mapped <b>(AF000002)</b> to <b>PJ000004</b>.', 'Localhost', '2025-02-01 20:58:48', ''),
+(393, 'A3', 'Projects', 'Mapped <b>(AF000002)</b> to <b>PJ000007</b>.', 'Localhost', '2025-02-01 20:59:05', ''),
+(394, 'A3', 'General', 'Logged out.', 'Localhost', '2025-02-01 21:46:31', '');
 
 -- --------------------------------------------------------
 
@@ -468,7 +560,10 @@ INSERT INTO `affiliates_projects` (`id`, `affiliate_id`, `adjusted_fees`, `adjus
 (1, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 7500.00, 'Cash', 5000.00),
 (2, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 7500.00, 'Credit Card', 5000.00),
 (3, 'AF000001', 0.00, NULL, 'CN000001', 'PJ000001', 7500.00, 'Net Banking', 5000.00),
-(4, 'AF000001', 0.00, NULL, 'CN000005', 'PJ000002', 7500.00, NULL, 1250.00);
+(4, 'AF000001', 0.00, NULL, 'CN000005', 'PJ000002', 7500.00, NULL, 1250.00),
+(5, 'AF000002', 0.00, NULL, 'CN000001', 'PJ000001', 500.00, NULL, 500.00),
+(6, 'AF000002', 0.00, NULL, 'CN000012', 'PJ000004', 0.00, NULL, 1000.00),
+(7, 'AF000002', 0.00, NULL, 'CN000011', 'PJ000007', 0.00, NULL, 2000.00);
 
 -- --------------------------------------------------------
 
@@ -509,7 +604,8 @@ INSERT INTO `cash_flows` (`id`, `affiliate_id`, `owner_firm_id`, `owner_firm_ban
 (9, 'AF000001', 'AC04', 'BK04', 'Outward Affiliates Particulars #1', 'Outward Affiliates Payment For #1', 'Professional Fees', 7500.00, 0.00, 'Outward Affiliates Remarks #1', 'Affiliates', '2025-01-31 12:59:19', 'A3', 0),
 (10, '', 'AC01', 'BK01', 'Outward Other Expense Particulars #1', 'Outward Other Expense Payment For #1', 'Professional Fees', 3500.00, 0.00, 'Outward Other Expense Remarks #1', 'Outward Other Expense', '2025-01-30 13:00:36', 'A3', 0),
 (11, '', 'AC03', 'BK03', 'Outward Office Expense Particulars #1', 'Outward Office Expense Payment For #1', 'Professional Fees', 5525.00, 0.00, 'Outward Office Expense Remarks #1', 'Outward Office Expense', '2025-01-30 13:01:32', 'A3', 0),
-(12, '', 'AC02', 'BK02', 'Outward Petty Cash Particulars #1', 'Outward Petty Cash Payment For #1', 'Professional Fees', 11500.00, 0.00, 'Outward Petty Cash Remarks #1', 'Outward Petty Cash', '2025-01-31 13:02:24', 'A3', 0);
+(12, '', 'AC02', 'BK02', 'Outward Petty Cash Particulars #1', 'Outward Petty Cash Payment For #1', 'Professional Fees', 11500.00, 0.00, 'Outward Petty Cash Remarks #1', 'Outward Petty Cash', '2025-01-31 13:02:24', 'A3', 0),
+(13, 'AF000002', 'AC02', 'BK02', 'pp', 'bb', 'Professional Fees', 500.00, 0.00, 'ppm', 'Affiliates', '2025-02-01 09:57:35', 'A3', 0);
 
 -- --------------------------------------------------------
 
@@ -546,13 +642,11 @@ CREATE TABLE `clients` (
   `address` varchar(500) DEFAULT NULL,
   `phone_number` bigint(20) DEFAULT NULL,
   `email_address` varchar(200) DEFAULT NULL,
-  `industry` varchar(100) DEFAULT NULL,
   `is_confirmed` tinyint(1) DEFAULT 0,
   `is_deleted` tinyint(1) DEFAULT 0,
   `joined_on` datetime DEFAULT current_timestamp(),
   `notes` varchar(500) DEFAULT NULL,
   `rating` tinyint(3) UNSIGNED DEFAULT 0,
-  `tags` varchar(500) DEFAULT NULL,
   `entry_at` datetime DEFAULT current_timestamp(),
   `entry_by_id` char(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -561,13 +655,19 @@ CREATE TABLE `clients` (
 -- Dumping data for table `clients`
 --
 
-INSERT INTO `clients` (`id`, `affiliate_ids`, `company_id`, `reference_id`, `name`, `address`, `phone_number`, `email_address`, `industry`, `is_confirmed`, `is_deleted`, `joined_on`, `notes`, `rating`, `tags`, `entry_at`, `entry_by_id`) VALUES
-('CN000001', 'AF000001', 'CP000001', 'RF000001', 'Kush Acharya', NULL, 8780577704, 'acharyakush2604@gmail.com', NULL, 1, 0, '2024-12-15 15:28:07', NULL, 0, NULL, '2024-12-15 15:28:07', NULL),
-('CN000002', NULL, NULL, 'RF000002', 'Kevin Vyas', NULL, 8780577812, 'vyas.kevin@outlook.com', NULL, 0, 0, '2024-12-18 00:05:18', NULL, 0, NULL, '2024-12-18 00:05:18', NULL),
-('CN000003', NULL, NULL, 'RF000003', 'Mudra Rawal', NULL, 9601432558, 'mudra.rawal@gmail.com', NULL, 0, 0, '2025-01-11 19:15:23', NULL, 0, NULL, '2025-01-11 19:15:23', NULL),
-('CN000004', NULL, 'CP000003', 'RF000003', 'Parth Acharya', NULL, 8866359953, 'parth.acharya@gmail.com', NULL, 1, 0, '2025-01-11 19:45:34', NULL, 0, NULL, '2025-01-11 19:45:34', NULL),
-('CN000005', 'AF000001', 'CP000002', 'RF000005', 'Dipen Soni', NULL, 9909436171, 'soni.dipen@gmail.com', NULL, 1, 0, '2025-01-12 11:18:02', NULL, 0, NULL, '2025-01-12 11:18:02', NULL),
-('CN000006', NULL, NULL, 'RF000003', 'Suresh', NULL, 9978075347, 'suresh@gmail.com', NULL, 0, 0, '2025-01-30 19:24:27', NULL, 0, NULL, '2025-01-30 19:24:27', NULL);
+INSERT INTO `clients` (`id`, `affiliate_ids`, `company_id`, `reference_id`, `name`, `address`, `phone_number`, `email_address`, `is_confirmed`, `is_deleted`, `joined_on`, `notes`, `rating`, `entry_at`, `entry_by_id`) VALUES
+('CN000001', 'AF000002', 'CP000001', 'RF000001', 'Kush Acharya', NULL, 8780577704, 'acharyakush2604@gmail.com', 1, 0, '2024-12-15 15:28:07', NULL, 0, '2024-12-15 15:28:07', NULL),
+('CN000002', NULL, NULL, 'RF000002', 'Kevin Vyas', NULL, 8780577812, 'vyas.kevin@outlook.com', 0, 0, '2024-12-18 00:05:18', NULL, 0, '2024-12-18 00:05:18', NULL),
+('CN000003', NULL, NULL, 'RF000003', 'Mudra Rawal', NULL, 9601432558, 'mudra.rawal@gmail.com', 0, 0, '2025-01-11 19:15:23', NULL, 0, '2025-01-11 19:15:23', NULL),
+('CN000004', NULL, 'CP000003', 'RF000003', 'Parth Acharya', NULL, 8866359953, 'parth.acharya@gmail.com', 1, 0, '2025-01-11 19:45:34', NULL, 0, '2025-01-11 19:45:34', NULL),
+('CN000005', 'AF000001', 'CP000002', 'RF000005', 'Dipen Soni', NULL, 9998733006, 'change@gmail.com', 1, 0, '2025-01-12 11:18:02', NULL, 0, '2025-01-12 11:18:02', NULL),
+('CN000006', NULL, NULL, 'RF000003', 'Suresh', NULL, 9099300543, 'suresh@outlook.com', 0, 0, '2025-01-30 19:24:27', NULL, 0, '2025-01-30 19:24:27', NULL),
+('CN000007', NULL, 'CP000005', 'RF000013', 'Dilip Kumar', 'We also do not know yet.', 8780577704, 'dilip@gmail.com', 1, 0, '2025-02-01 12:06:43', 'Very good employee', 0, '2025-02-01 12:06:43', NULL),
+('CN000008', NULL, NULL, 'RF000014', 'Mr Deelip', NULL, 8780577704, 'sna@sna.com', 0, 0, '2025-02-01 12:07:56', NULL, 0, '2025-02-01 12:07:56', NULL),
+('CN000009', NULL, NULL, 'RF000015', 'Wadia', NULL, 15786465465, 'wadia@aidaw.com', 0, 0, '2025-02-01 12:16:46', NULL, 0, '2025-02-01 12:16:46', NULL),
+('CN000010', NULL, NULL, 'RF000017', 'Sameer', NULL, 9099300543, 'sameer.patel@yahoo.com', 0, 0, '2025-02-01 13:37:22', NULL, 0, '2025-02-01 13:37:22', NULL),
+('CN000011', 'AF000002', 'CP000008', 'RF000018', 'DS', NULL, 9099300543, 'sameer.patel@yahoo.com', 1, 0, '2025-02-01 13:39:02', NULL, 0, '2025-02-01 13:39:02', NULL),
+('CN000012', 'AF000002', 'CP000004', 'RF000004', 'Gor Maharaj', NULL, 8000721554, 'abhishek@sal.com', 1, 0, '2025-02-01 13:41:07', NULL, 0, '2025-02-01 13:41:07', NULL);
 
 -- --------------------------------------------------------
 
@@ -596,9 +696,14 @@ CREATE TABLE `companies` (
 --
 
 INSERT INTO `companies` (`id`, `client_id`, `name`, `phone_number`, `email_address`, `address`, `pan`, `gstin`, `reimbursement_voucher`, `invoice_fees`, `total_affiliate_fees`, `entry_at`, `entry_by_id`) VALUES
-('CP000001', 'CN000001', 'Sun Pharma Pvt Ltd', '07925462408', 'support@sunpharma.com', NULL, 'BBXPA8126Q', NULL, NULL, 500.00, 5000.00, '2024-12-17 23:48:41', 'A3'),
+('CP000001', 'CN000001', 'Sun Pharma Pvt Ltd', '07925462408', 'support@sunpharma.com', NULL, 'BBXPA8126Q', NULL, NULL, 500.00, 500.00, '2024-12-17 23:48:41', 'A3'),
 ('CP000002', 'CN000005', 'Vivek Football League', NULL, NULL, NULL, NULL, NULL, NULL, 557.00, 1250.00, '2025-01-12 11:41:51', 'A3'),
-('CP000003', 'CN000004', 'Mitesh Enterprise', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-01-28 23:46:17', 'A3');
+('CP000003', 'CN000004', 'Mitesh Enterprise', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-01-28 23:46:17', 'A3'),
+('CP000004', 'CN000012', 'Being Human', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1000.00, '2025-02-01 13:44:26', 'A3'),
+('CP000005', 'CN000007', 'Al Habibi Pvt Ltd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-02-01 15:26:57', 'A3'),
+('CP000006', 'CN000011', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-02-01 15:43:00', 'A3'),
+('CP000007', 'CN000011', 'Babul', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-02-01 17:05:28', 'A3'),
+('CP000008', 'CN000011', 'Babul', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2000.00, '2025-02-01 17:06:39', 'A3');
 
 -- --------------------------------------------------------
 
@@ -683,6 +788,7 @@ CREATE TABLE `inquiries` (
   `email_address` varchar(200) NOT NULL,
   `follow_ups` varchar(255) NOT NULL,
   `is_closed` tinyint(1) DEFAULT 0,
+  `is_edited` tinyint(1) NOT NULL DEFAULT 0,
   `closure_reason` varchar(255) DEFAULT NULL,
   `quote` decimal(10,2) NOT NULL DEFAULT 2500.00,
   `status` enum('Closed','Confirmed','Hold','Open') NOT NULL DEFAULT 'Open',
@@ -695,16 +801,24 @@ CREATE TABLE `inquiries` (
 -- Dumping data for table `inquiries`
 --
 
-INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `sub_project_id`, `entry_date`, `phone_number`, `email_address`, `follow_ups`, `is_closed`, `closure_reason`, `quote`, `status`, `tags`, `entry_at`, `entry_by_id`) VALUES
-('IQ000001', 'CN000001', 'RF000001', 'MP000004', 'SP000003', '2024-12-15 09:39:42', 8780577704, 'acharyakush2604@gmail.com', 'A1,A2', 0, '', 2500.00, 'Confirmed', NULL, '2024-12-15 15:28:07', 'A3'),
-('IQ000002', 'CN000002', 'RF000002', 'MP000011', 'SP000004', '2024-12-18 12:00:00', 8780577812, 'vyas.kevin@outlook.com', 'A1,A3', 0, '', 15080.00, 'Open', NULL, '2024-12-18 00:05:18', 'A3'),
-('IQ000003', 'CN000003', 'RF000003', 'MP000006', 'SP000012', '2025-01-10 12:00:00', 9601432558, 'mudra.rawal@gmail.com', 'A1,A2', 0, '', 7520.00, 'Hold', NULL, '2025-01-11 19:15:23', 'A3'),
-('IQ000004', 'CN000002', 'RF000004', 'MP000005', 'SP000011', '2025-01-06 12:00:00', 8780577812, 'vyas.kevin@outlook.com', 'A1,A3', 0, '', 8550.00, 'Hold', NULL, '2025-01-11 19:32:46', 'A3'),
-('IQ000005', 'CN000004', 'RF000003', 'MP000012', 'SP000023', '2025-01-05 14:13:11', 8866359953, 'parth.acharya@gmail.com', 'A1', 0, NULL, 2000.00, 'Confirmed', NULL, '2025-01-11 19:45:34', 'A3'),
-('IQ000006', 'CN000003', 'RF000003', 'MP000003', 'SP000007', '2025-01-02 14:24:03', 9601432558, 'mudra.rawal@gmail.com', 'A2', 1, 'I am done with this work.', 10000.00, 'Closed', NULL, '2025-01-11 19:54:38', 'A3'),
-('IQ000007', 'CN000005', 'RF000005', 'MP000001', 'SP000010', '2025-01-12 05:46:59', 9909436171, 'soni.dipen@gmail.com', 'A2', 0, NULL, 5000.00, 'Confirmed', NULL, '2025-01-12 11:18:02', 'A3'),
-('IQ000008', 'CN000001', 'RF000001', 'MP000005', 'SP000014', '2025-01-12 09:05:32', 8780577704, 'acharyakush2604@gmail.com', 'A1', 0, NULL, 4550.00, 'Open', NULL, '2025-01-12 14:36:15', 'A3'),
-('IQ000009', 'CN000006', 'RF000003', 'MP000002', 'SP000002', '2025-02-06 13:47:30', 9978075347, 'suresh@gmail.com', 'A3', 0, NULL, 2500.00, 'Open', NULL, '2025-01-30 19:24:27', 'A3');
+INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `sub_project_id`, `entry_date`, `phone_number`, `email_address`, `follow_ups`, `is_closed`, `is_edited`, `closure_reason`, `quote`, `status`, `tags`, `entry_at`, `entry_by_id`) VALUES
+('IQ000001', 'CN000001', 'RF000001', 'MP000004', 'SP000003', '2024-12-15 09:39:42', 8780577704, 'acharyakush2604@gmail.com', 'A1,A2', 0, 0, '', 2500.00, 'Confirmed', NULL, '2024-12-15 15:28:07', 'A3'),
+('IQ000002', 'CN000002', 'RF000002', 'MP000011', 'SP000004', '2024-12-18 12:00:00', 8780577812, 'vyas.kevin@outlook.com', 'A1,A3', 0, 0, '', 15080.00, 'Open', NULL, '2024-12-18 00:05:18', 'A3'),
+('IQ000003', 'CN000003', 'RF000003', 'MP000006', 'SP000012', '2025-01-10 12:00:00', 9601432558, 'mudra.rawal@gmail.com', 'A1,A2', 0, 0, '', 7520.00, 'Hold', NULL, '2025-01-11 19:15:23', 'A3'),
+('IQ000004', 'CN000002', 'RF000004', 'MP000005', 'SP000011', '2025-01-06 12:00:00', 9000000000, 'vyas.kevin@outlook.com', 'A1,A3', 0, 0, '', 8550.00, 'Hold', NULL, '2025-01-11 19:32:46', 'A3'),
+('IQ000005', 'CN000004', 'RF000003', 'MP000012', 'SP000023', '2025-01-05 14:13:11', 8866359953, 'parth.acharya@gmail.com', 'A1', 0, 0, NULL, 2000.00, 'Confirmed', NULL, '2025-01-11 19:45:34', 'A3'),
+('IQ000006', 'CN000003', 'RF000003', 'MP000003', 'SP000007', '2025-01-02 14:24:03', 9601432558, 'mudra.rawal@gmail.com', 'A2', 1, 0, 'I am done with this work.', 10000.00, 'Closed', NULL, '2025-01-11 19:54:38', 'A3'),
+('IQ000007', 'CN000005', 'RF000005', 'MP000001', 'SP000010', '2025-01-12 12:00:00', 9909436171, 'sony.dipens@gmail.com', 'A2', 0, 0, NULL, 5000.00, 'Confirmed', NULL, '2025-01-12 11:18:02', 'A3'),
+('IQ000008', 'CN000001', 'RF000001', 'MP000005', 'SP000014', '2025-01-12 09:05:32', 8780577704, 'acharyakush2604@gmail.com', 'A1', 0, 0, NULL, 4550.00, 'Open', NULL, '2025-01-12 14:36:15', 'A3'),
+('IQ000009', 'CN000006', 'RF000003', 'MP000002', 'SP000002', '2025-02-06 13:47:30', 9978075347, 'suresh@gmail.com', 'A3', 0, 0, NULL, 2500.00, 'Open', NULL, '2025-01-30 19:24:27', 'A3'),
+('IQ000010', 'CN000007', 'RF000013', 'MP000005', 'SP000036', '2025-01-22 06:33:22', 8780577704, 'na@na.com', 'A2', 1, 0, '#Hashtag@ 123', 1800000.00, 'Confirmed', NULL, '2025-02-01 12:06:43', 'A3'),
+('IQ000011', 'CN000008', 'RF000014', 'MP000011', 'SP000037', '2025-01-22 06:36:55', 8780577704, 'sna@sna.com', 'A2,A1,A3', 0, 0, NULL, 1800000.00, 'Open', NULL, '2025-02-01 12:07:56', 'A3'),
+('IQ000012', 'CN000009', 'RF000015', 'MP000002', 'SP000004', '2024-12-20 12:00:00', 2222222222, 'wadia@gmail.com', 'A3', 0, 0, NULL, 250000.00, 'Open', NULL, '2025-02-01 12:16:46', 'A3'),
+('IQ000013', 'CN000005', 'RF000016', 'MP000007', 'SP000006', '2025-03-03 06:47:14', 9909436171, 'sony.dipens@gmail.com', 'A1,A2,A3', 0, 0, NULL, 500.00, 'Confirmed', NULL, '2025-02-01 12:18:42', 'A3'),
+('IQ000014', 'CN000011', 'RF000018', 'MP000006', 'SP000039', '2025-02-20 08:06:02', 9099300543, 'sameer.patel@yahoo.com', 'A3', 1, 0, 'Not Interested.', 30002.00, 'Confirmed', NULL, '2025-02-01 13:39:02', 'A3'),
+('IQ000015', 'CN000012', 'RF000004', 'MP000011', 'SP000025', '2025-02-01 08:09:55', 254546816846, 'salma@salim.com', 'A3', 0, 0, '', 85000.00, 'Confirmed', NULL, '2025-02-01 13:41:07', 'A3'),
+('IQ000016', 'CN000001', 'RF000001', 'MP000001', 'SP000003', '2025-03-05 08:11:12', 8780577704, 'acharyakush2604@gmail.com', 'A2', 0, 0, '', 50075.00, 'Hold', NULL, '2025-02-01 13:42:18', 'A3'),
+('IQ000017', 'CN000012', 'RF000004', 'MP000002', 'SP000002', '2025-02-01 12:00:00', 9999999999, 'abhishek@sal.com', 'A3', 0, 0, NULL, 10000.00, 'Open', NULL, '2025-02-01 13:59:08', 'A3');
 
 -- --------------------------------------------------------
 
@@ -755,7 +869,9 @@ CREATE TABLE `invoices_payment_history` (
 INSERT INTO `invoices_payment_history` (`id`, `invoice_custom_id`, `project_id`, `entry_at`, `particulars`, `amount`, `source`) VALUES
 (1, 'SA/2025-26/00001', 'PJ000001', '2025-01-27 16:31:10', 'Jan-March Installments', 500.00, 'DC'),
 (2, 'SA/2025-26/00001', 'PJ000001', '2025-01-30 17:18:47', 'Happy New Year.', 155.00, 'CASH'),
-(3, 'SA/2025-26/00001', 'PJ000001', '2025-02-06 17:34:17', 'Good evening.', 855.00, 'BK01');
+(3, 'SA/2025-26/00001', 'PJ000001', '2025-02-06 17:34:17', 'Good evening.', 855.00, 'BK01'),
+(4, '', 'PJ000004', '2025-02-01 15:02:16', 'Salman crushed one person on footpath. ', 15000.00, 'CHEQUE'),
+(5, '', 'PJ000004', '2025-02-01 15:02:34', 'Arbaz did the same too.', 2000.00, 'NETBANKING');
 
 -- --------------------------------------------------------
 
@@ -872,7 +988,19 @@ INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `task_id`, `original_entr
 (20, 'IQ000007', 'PJ000002', NULL, 'A3', 'A3', 'This is a project\'s test.', 'Projects', '2025-01-12 11:41:51'),
 (21, 'IQ000008', NULL, NULL, '', 'A3', 'Hello There.', 'Inquiries', '2025-01-12 14:36:15'),
 (22, 'IQ000005', 'PJ000003', NULL, 'A3', 'A3', 'None.', 'Projects', '2025-01-28 23:46:17'),
-(23, 'IQ000009', NULL, NULL, '', 'A3', 'sdfsdfsdfs', 'Inquiries', '2025-01-30 19:24:27');
+(23, 'IQ000009', NULL, NULL, '', 'A3', 'sdfsdfsdfs', 'Inquiries', '2025-01-30 19:24:27'),
+(24, 'IQ000010', NULL, NULL, '', 'A3', 'Hello.', 'Inquiries', '2025-02-01 12:06:43'),
+(25, 'IQ000011', NULL, NULL, '', 'A3', 'Nice Guy To Work With.', 'Inquiries', '2025-02-01 12:07:56'),
+(26, 'IQ000012', NULL, NULL, '', 'A3', 'Testing note.', 'Inquiries', '2025-02-01 12:16:46'),
+(27, 'IQ000013', NULL, NULL, '', 'A3', '@#...', 'Inquiries', '2025-02-01 12:18:42'),
+(28, 'IQ000014', NULL, NULL, '', 'A3', 'Notes #1.', 'Inquiries', '2025-02-01 13:39:02'),
+(29, 'IQ000015', NULL, NULL, '', 'A3', 'Hello. Hello. Hello.', 'Inquiries', '2025-02-01 13:41:07'),
+(30, 'IQ000016', NULL, NULL, '', 'A3', 'Lol.', 'Inquiries', '2025-02-01 13:42:18'),
+(31, 'IQ000015', 'PJ000004', NULL, 'A3', 'A3', 'Nothing Important.', 'Projects', '2025-02-01 13:44:26'),
+(32, 'IQ000017', NULL, NULL, '', 'A3', 'Lol.', 'Inquiries', '2025-02-01 13:59:08'),
+(33, 'IQ000010', 'PJ000005', NULL, 'A3', 'A3', 'Where does the RV amount go?', 'Projects', '2025-02-01 15:26:57'),
+(34, 'IQ000013', 'PJ000006', NULL, 'A3', 'A3', 'Lol.', 'Projects', '2025-02-01 15:41:09'),
+(35, 'IQ000014', 'PJ000007', NULL, 'A3', 'A3', 'NA', 'Projects', '2025-02-01 15:43:00');
 
 -- --------------------------------------------------------
 
@@ -1302,7 +1430,6 @@ CREATE TABLE `projects` (
   `quote` decimal(10,2) NOT NULL CHECK (`quote` >= 0),
   `due_on` datetime NOT NULL DEFAULT current_timestamp(),
   `total_affiliate_fees` decimal(10,2) DEFAULT NULL,
-  `reimbursement_voucher` decimal(10,2) NOT NULL CHECK (`reimbursement_voucher` >= 0),
   `invoice_fees` decimal(10,2) NOT NULL CHECK (`invoice_fees` >= 0),
   `teams` varchar(500) NOT NULL,
   `started_on` datetime NOT NULL DEFAULT current_timestamp(),
@@ -1319,10 +1446,14 @@ CREATE TABLE `projects` (
 -- Dumping data for table `projects`
 --
 
-INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `invoice_firm_id`, `government_id`, `main_project_id`, `sub_project_id`, `quote`, `due_on`, `total_affiliate_fees`, `reimbursement_voucher`, `invoice_fees`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `entry_at`, `entry_by_id`, `completed_on`, `reason`) VALUES
-('PJ000001', 'CN000001', 'CP000001', 'AF000001', 'IQ000001', 'AC01', 'PJ1/22/12/2024', 'MP000004', 'SP000003', 5750.00, '2024-12-15 04:09:42', 5000.00, 1250.00, 575.00, 'A3,A2', '2024-12-17 23:48:41', 'Active', 0, 0, '2024-12-17 23:48:41', 'A3', NULL, NULL),
-('PJ000002', 'CN000005', 'CP000002', 'AF000001', 'IQ000007', 'AC02', NULL, 'MP000001', 'SP000010', 2500.00, '2025-01-30 21:23:36', 1250.00, 1000.00, 1500.00, 'A3', '2025-01-12 11:41:51', 'Completed', 0, 0, '2025-01-12 11:41:51', 'A3', '2025-01-30 00:51:35', NULL),
-('PJ000003', 'CN000004', 'CP000003', NULL, 'IQ000005', 'AC03', NULL, 'MP000012', 'SP000023', 2050.00, '2025-01-04 18:30:00', NULL, 550.00, 1500.00, 'A1', '2025-01-28 23:46:17', 'Active', 0, 0, '2025-01-28 23:46:17', 'A3', NULL, NULL);
+INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `invoice_firm_id`, `government_id`, `main_project_id`, `sub_project_id`, `quote`, `due_on`, `total_affiliate_fees`, `invoice_fees`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `entry_at`, `entry_by_id`, `completed_on`, `reason`) VALUES
+('PJ000001', 'CN000001', 'CP000001', 'AF000002', 'IQ000001', 'AC01', 'PJ1/22/12/2024', 'MP000004', 'SP000003', 5750.00, '2024-12-15 04:09:42', 500.00, 575.00, 'A3,A2', '2024-12-17 23:48:41', 'Active', 0, 0, '2024-12-17 23:48:41', 'A3', '2025-02-01 16:22:15', ''),
+('PJ000002', 'CN000005', 'CP000002', 'AF000001', 'IQ000007', 'AC02', NULL, 'MP000001', 'SP000010', 2500.00, '2025-01-30 21:23:36', 1250.00, 1500.00, 'A3', '2025-01-12 11:41:51', 'Completed', 0, 0, '2025-01-12 11:41:51', 'A3', '2025-01-30 00:51:35', NULL),
+('PJ000003', 'CN000004', 'CP000003', NULL, 'IQ000005', 'AC03', NULL, 'MP000012', 'SP000023', 2050.00, '2025-01-04 18:30:00', NULL, 1500.00, 'A1', '2025-01-28 23:46:17', 'Hold', 0, 0, '2025-01-28 23:46:17', 'A3', NULL, 'mm'),
+('PJ000004', 'CN000012', 'CP000004', 'AF000002', 'IQ000015', 'AC03', NULL, 'MP000011', 'SP000025', 80000.00, '2025-01-31 18:30:00', 1000.00, 15000.00, 'A3,A1', '2025-02-01 13:44:26', 'Active', 0, 0, '2025-02-01 13:44:26', 'A3', NULL, ''),
+('PJ000005', 'CN000007', 'CP000005', NULL, 'IQ000010', 'AC01', NULL, 'MP000005', 'SP000036', 515000.00, '2026-07-12 18:30:00', NULL, 15000.00, 'A2', '2025-02-01 15:26:57', 'Active', 0, 0, '2025-02-01 15:26:57', 'A3', NULL, ''),
+('PJ000006', 'CN000005', 'CP000002', NULL, 'IQ000013', 'AC01', NULL, 'MP000007', 'SP000006', 500.00, '2025-03-02 18:30:00', NULL, 100.00, 'A1,A2,A3', '2025-02-01 15:41:09', 'Active', 0, 0, '2025-02-01 15:41:09', 'A3', NULL, ''),
+('PJ000007', 'CN000011', 'CP000008', 'AF000002', 'IQ000014', 'AC01', NULL, 'MP000006', 'SP000039', 30002.00, '2025-02-19 13:00:00', 2000.00, 30000.00, 'A3', '2025-02-01 15:43:00', 'Active', 0, 0, '2025-02-01 15:43:00', 'A3', NULL, '');
 
 -- --------------------------------------------------------
 
@@ -1449,7 +1580,17 @@ INSERT INTO `sub_projects` (`id`, `name`, `entry_at`, `entry_by_id`, `updated_at
 ('SP000026', 'TDS Return', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
 ('SP000027', 'Trademark Assignment', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
 ('SP000028', 'Trademark Registration', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
-('SP000029', 'Trademark Reply', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL);
+('SP000029', 'Trademark Reply', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
+('SP000030', 'Halal Certificates', '2025-02-01 11:55:04', 'A3', '2025-02-01 11:55:04', NULL, NULL),
+('SP000031', 'Halal Certificates', '2025-02-01 11:58:18', 'A3', '2025-02-01 11:58:18', NULL, NULL),
+('SP000032', 'Halal Certificates', '2025-02-01 11:59:20', 'A3', '2025-02-01 11:59:20', NULL, NULL),
+('SP000033', 'Halal Certificates', '2025-02-01 12:00:15', 'A3', '2025-02-01 12:00:15', NULL, NULL),
+('SP000034', 'Halala Certificates', '2025-02-01 12:04:19', 'A3', '2025-02-01 12:04:19', NULL, NULL),
+('SP000035', 'Halala Certificates', '2025-02-01 12:06:12', 'A3', '2025-02-01 12:06:12', NULL, NULL),
+('SP000036', 'Halala Certificates', '2025-02-01 12:06:43', 'A3', '2025-02-01 12:06:43', NULL, NULL),
+('SP000037', 'Halalaa Certificates', '2025-02-01 12:07:56', 'A3', '2025-02-01 12:07:56', NULL, NULL),
+('SP000038', 'Yakhni Pulao', '2025-02-01 13:37:22', 'A3', '2025-02-01 13:37:22', NULL, NULL),
+('SP000039', 'Yakhni Pulao', '2025-02-01 13:39:02', 'A3', '2025-02-01 13:39:02', NULL, NULL);
 
 --
 -- Triggers `sub_projects`
@@ -1502,12 +1643,14 @@ CREATE TABLE `tasks` (
 INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `entry_by_id`, `expense`, `is_completed`, `is_disabled`, `reason`, `completed_on`) VALUES
 ('TK000001', 'CN000001', 'PJ000001', 'Task #1', '2025-01-21', 'A3', 5100.00, 1, 0, 'Nice.', NULL),
 ('TK000002', 'CN000001', 'PJ000001', 'Task #3', '2025-01-15', 'A3', 450.00, 1, 0, 'Hello.', NULL),
-('TK000003', 'CN000001', 'PJ000001', 'Task #2', '2025-01-30', 'A3', 1500.00, 0, 0, NULL, NULL),
-('TK000004', 'CN000001', 'PJ000001', 'Task #4', '2025-02-01', 'A3', 100.00, 0, 0, NULL, NULL),
+('TK000003', 'CN000001', 'PJ000001', 'Task #2', '2025-01-30', 'A3', 1500.00, 1, 0, 'yyyyy', NULL),
 ('TK000005', 'CN000005', 'PJ000002', 'Task #1', '2025-02-01', 'A3', 500.00, 1, 0, 'Yes.', NULL),
 ('TK000006', 'CN000005', 'PJ000002', 'Task #2', '2025-02-01', 'A3', 750.00, 1, 0, 'Lol.', NULL),
-('TK000007', 'CN000004', 'PJ000003', 'Tasks @1', '2025-03-05', 'A3', 2500.00, 0, 0, 'Pop.', NULL),
-('TK000008', 'CN000005', 'PJ000002', 'One', '2025-02-06', 'A3', 50.00, 1, 0, 'Done.', NULL);
+('TK000007', 'CN000004', 'PJ000003', 'Tasks @1', '2025-03-05', 'A3', 2500.00, 1, 0, 'bbbb', NULL),
+('TK000008', 'CN000005', 'PJ000002', 'One', '2025-02-06', 'A3', 50.00, 1, 0, 'Done.', NULL),
+('TK000009', 'CN000012', 'PJ000004', 'pop', '2024-12-08', 'A3', 4545.00, 0, 0, NULL, NULL),
+('TK000011', 'CN000011', 'PJ000007', 'zzz', '2025-02-08', 'A3', 0.00, 0, 0, NULL, NULL),
+('TK000012', 'CN000001', 'PJ000001', 'zzzzzz', '2025-02-08', 'A3', 0.00, 0, 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1546,7 +1689,11 @@ INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particu
 (15, 'TK000005', 'PJ000002', 'Nice', 'One', 1, 'By Administrator', 'A3', '2025-01-25 17:29:19'),
 (17, 'TK000006', 'PJ000002', 'Hello', 'Bello', 1, 'By Administrator', 'A3', '2025-01-30 00:15:32'),
 (18, 'TK000008', 'PJ000002', 'Like', 'Mike', 1, 'By Administrator', 'A3', '2025-01-30 00:29:00'),
-(19, 'TK000007', 'PJ000003', 'His', 'Byes', 0, NULL, 'A3', '2025-01-31 23:01:12');
+(19, 'TK000007', 'PJ000003', 'His', 'Byes', 1, 'By Administrator', 'A3', '2025-01-31 23:01:12'),
+(21, 'TK000003', 'PJ000001', 'adnaannnnnnnnnnnnnn', 'cv', 1, 'By Administrator', 'A3', '2025-02-01 16:01:35'),
+(22, 'TK000003', 'PJ000001', 'r', 't', 1, 'By Administrator', 'A3', '2025-02-01 16:01:43'),
+(25, 'TK000009', 'PJ000004', 'v', 'b', 0, NULL, 'A3', '2025-02-01 16:28:33'),
+(27, 'TK000011', 'PJ000007', 'v', 'g', 0, NULL, 'A3', '2025-02-01 16:29:29');
 
 -- --------------------------------------------------------
 
@@ -1600,7 +1747,20 @@ INSERT INTO `the_references` (`id`, `client_id`, `name`, `address`, `phone_numbe
 ('RF000002', 'CN000002', 'Vrushank Soni', NULL, NULL, NULL, 0, '2024-12-18 00:05:18', NULL, NULL, 0, NULL, NULL, '2024-12-18 00:05:18', NULL),
 ('RF000003', 'CN000003', 'Krishna Patel', NULL, NULL, NULL, 0, '2025-01-11 19:15:23', NULL, NULL, 0, NULL, NULL, '2025-01-11 19:15:23', NULL),
 ('RF000004', 'CN000002', 'Ronak Patel', NULL, NULL, NULL, 0, '2025-01-11 19:32:46', NULL, NULL, 0, NULL, NULL, '2025-01-11 19:32:46', NULL),
-('RF000005', 'CN000005', 'Ritesh Rami', NULL, NULL, NULL, 0, '2025-01-12 11:18:02', NULL, NULL, 0, NULL, NULL, '2025-01-12 11:18:02', NULL);
+('RF000005', 'CN000005', 'Ritesh Rami', NULL, NULL, NULL, 0, '2025-01-12 11:18:02', NULL, NULL, 0, NULL, NULL, '2025-01-12 11:18:02', NULL),
+('RF000006', 'CN000007', 'Suresh Kumar', NULL, NULL, NULL, 0, '2025-02-01 11:53:12', NULL, NULL, 0, NULL, NULL, '2025-02-01 11:53:12', NULL),
+('RF000007', 'CN000007', 'Suresh Kumar', NULL, NULL, NULL, 0, '2025-02-01 11:55:04', NULL, NULL, 0, NULL, NULL, '2025-02-01 11:55:04', NULL),
+('RF000008', 'CN000007', 'Suresh Kumar', NULL, NULL, NULL, 0, '2025-02-01 11:58:18', NULL, NULL, 0, NULL, NULL, '2025-02-01 11:58:18', NULL),
+('RF000009', 'CN000007', 'Suresh Kumar', NULL, NULL, NULL, 0, '2025-02-01 11:59:20', NULL, NULL, 0, NULL, NULL, '2025-02-01 11:59:20', NULL),
+('RF000010', 'CN000007', 'Suresh Kumar', NULL, NULL, NULL, 0, '2025-02-01 12:00:15', NULL, NULL, 0, NULL, NULL, '2025-02-01 12:00:15', NULL),
+('RF000011', 'CN000007', 'Abhishek Patel', NULL, NULL, NULL, 0, '2025-02-01 12:04:19', NULL, NULL, 0, NULL, NULL, '2025-02-01 12:04:19', NULL),
+('RF000012', 'CN000007', 'Abhishek Patel', NULL, NULL, NULL, 0, '2025-02-01 12:06:12', NULL, NULL, 0, NULL, NULL, '2025-02-01 12:06:12', NULL),
+('RF000013', 'CN000007', 'Abhishek Patel', NULL, NULL, NULL, 0, '2025-02-01 12:06:43', NULL, NULL, 0, NULL, NULL, '2025-02-01 12:06:43', NULL),
+('RF000014', 'CN000008', 'Abhishek Ruchi', NULL, NULL, NULL, 0, '2025-02-01 12:07:55', NULL, NULL, 0, NULL, NULL, '2025-02-01 12:07:55', NULL),
+('RF000015', 'CN000009', 'Prity Zinta', NULL, NULL, NULL, 0, '2025-02-01 12:16:45', NULL, NULL, 0, NULL, NULL, '2025-02-01 12:16:45', NULL),
+('RF000016', 'CN000005', 'Dipen Soni', NULL, NULL, NULL, 0, '2025-02-01 12:18:42', NULL, NULL, 0, NULL, NULL, '2025-02-01 12:18:42', NULL),
+('RF000017', 'CN000010', 'Hameer', NULL, NULL, NULL, 0, '2025-02-01 13:37:21', NULL, NULL, 0, NULL, NULL, '2025-02-01 13:37:21', NULL),
+('RF000018', 'CN000011', 'Hameer', NULL, NULL, NULL, 0, '2025-02-01 13:39:02', NULL, NULL, 0, NULL, NULL, '2025-02-01 13:39:02', NULL);
 
 --
 -- Indexes for dumped tables
@@ -1949,19 +2109,19 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=303;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=395;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
 --
 ALTER TABLE `affiliates_projects`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `cash_flows`
 --
 ALTER TABLE `cash_flows`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `cash_flows_settings`
@@ -1985,7 +2145,7 @@ ALTER TABLE `invoices`
 -- AUTO_INCREMENT for table `invoices_payment_history`
 --
 ALTER TABLE `invoices_payment_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `licenses`
@@ -1997,7 +2157,7 @@ ALTER TABLE `licenses`
 -- AUTO_INCREMENT for table `notes`
 --
 ALTER TABLE `notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `pma__bookmark`
@@ -2063,7 +2223,7 @@ ALTER TABLE `statuses`
 -- AUTO_INCREMENT for table `tasks_particulars_remarks`
 --
 ALTER TABLE `tasks_particulars_remarks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `tasks_settings`

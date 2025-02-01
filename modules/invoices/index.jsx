@@ -280,7 +280,9 @@ export default function Invoices({ status }) {
 					}
 
 					if (amountReceived != 0) {
-						amountPending = Number(m.quote) - amountReceived;
+						amountPending = Number(m.invoice_fees) - amountReceived;
+					} else {
+						amountPending = Number(m.invoice_fees);
 					}
 
 					const company = response.data.companies.find((f) => f.id == m.company_id);
@@ -315,7 +317,7 @@ export default function Invoices({ status }) {
 
 					return {
 						...m,
-						amount: Number(m.quote),
+						amount: Number(m.invoice_fees),
 						amount_pending: amountPending,
 						amount_received: amountReceived,
 						company_name: companyName,

@@ -121,12 +121,19 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 		try {
 			setOther((s) => ({ ...s, isLoading: true }));
 
+			let isEdited = false;
+
+			if (main.emailAddress != inquiry.email_address || main.phoneNumber != inquiry.phone_number) {
+				isEdited = true;
+			}
+
 			const body = {
 				...main,
 				entryDate: dayjs(main.entryDate).format("YYYY-MM-DD hh:mm:ss"),
 				followUps: getFollowUpsIds(),
 				mainProjectId: main.mainProject.id,
 				id: inquiry.id,
+				isEdited,
 				source: MyConstants.Modules.Base.Inquiries,
 				type: "edit-inquiry",
 				userId: MyGlobal.GetUserId(),
@@ -142,12 +149,11 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
-
-			unmount();
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Inquiry");
 		} finally {
 			setOther((s) => ({ ...s, isLoading: false }));
+			unmount();
 		}
 	}
 

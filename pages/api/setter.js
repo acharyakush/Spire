@@ -81,6 +81,9 @@ export default async function handler(req, res) {
 			} else if (request.type == "delete-tasks-particular-remark") {
 				queryString = "DELETE FROM tasks_particulars_remarks WHERE id=? AND task_id=? AND project_id=?";
 				queryParameters = [request.rowId, request.taskId, request.projectId];
+			} else if (request.type == "edit-client") {
+				queryString = "UPDATE clients SET name=?, address=?, phone_number=?, email_address=?, notes=? WHERE id=?";
+				queryParameters = [request.name, request.address, request.phone_number, request.email_address, request.notes, request.id];
 			} else if (request.type == "edit-company") {
 				queryString = "UPDATE companies SET name=?, phone_number=?, email_address=?, address=?, pan=?, gstin=? WHERE id=?";
 				queryParameters = [request.name, request.phoneNumber, request.emailAddress, request.address, request.pan, request.gstin, request.id];

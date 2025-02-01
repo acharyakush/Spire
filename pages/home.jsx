@@ -11,6 +11,7 @@ import Invoices from "@/modules/invoices";
 import Inquiries from "@/modules/inquiries";
 import CashFlows from "@/modules/cashFlows";
 import Affiliates from "@/modules/affiliates";
+import Activities from "@/modules/activities";
 import MyConstants from "@/utilities/constants";
 
 import { useRouter } from "next/navigation";
@@ -28,6 +29,7 @@ export default function Home() {
 	const tabRefs = useRef([]);
 	const gliderRef = useRef(null);
 	const tabsContainerRef = useRef(null);
+
 	const baseModules = MyConstants.Modules.Base;
 
 	const [api, setApi] = useState({
@@ -177,8 +179,8 @@ export default function Home() {
 			if (response.status == 200) {
 				const allUsers = [];
 
-				response.data.administrators.forEach((administrator) => allUsers.push(administrator));
-				response.data.employees.forEach((employee) => allUsers.push(employee));
+				response.data.administrators.forEach((fe) => allUsers.push(fe));
+				response.data.employees.forEach((fe) => allUsers.push(fe));
 
 				setApi((s) => ({ ...s, allUsers }));
 				MyGlobal.SetAllUsers(allUsers);
@@ -224,13 +226,7 @@ export default function Home() {
 	// UI Components
 	function uiMain() {
 		if (mounted.activities) {
-			// return <Activities staff={apiData.allUsers} close={toggleActivitiesView} />;
-		} else if (mounted.employees) {
-			return <EmployeeManagement close={toggleEmployeeView} staffData={api.allUsers} />;
-		} else if (mounted.settings) {
-			return <Settings close={toggleSettingsView} settings={api.settings} staff={api.allUsers} />;
-		} else if (mounted.profile) {
-			return <ProfileManagement close={toggleProfileView} payload={main.user} />;
+			return <Activities unmount={toggleActivitiesView} />;
 		} else {
 			return uiSelectedModule();
 		}

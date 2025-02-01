@@ -34,7 +34,6 @@ export default function NewProject({ inquiry, reload, unmount }) {
 		note: "",
 		phoneNumber: "",
 		quote: 0,
-		reimburseVoucher: "",
 		subProject: { id: 0, name: "" },
 		teams: [],
 	});
@@ -89,7 +88,6 @@ export default function NewProject({ inquiry, reload, unmount }) {
 			inquiryId: inquiry.id,
 			invoiceFees: MyGlobal.GetNumbers(main.invoiceFees),
 			quote: MyGlobal.GetNumbers(main.quote),
-			reimburseVoucher: MyGlobal.GetNumbers(main.reimburseVoucher),
 			teams: getTeamsIds(),
 			userId: MyGlobal.GetUserId(),
 		};
@@ -115,11 +113,11 @@ export default function NewProject({ inquiry, reload, unmount }) {
 	}
 
 	function calculateQuote() {
-		const totalAmount = MyGlobal.GetNumbers(main.invoiceFees) + MyGlobal.GetNumbers(main.reimburseVoucher);
+		const totalAmount = MyGlobal.GetNumbers(main.invoiceFees);
 
 		let quote = MyGlobal.ThousandSeparator(totalAmount);
 
-		if (!main.invoiceFees && !main.reimburseVoucher) {
+		if (!main.invoiceFees) {
 			quote = Number(inquiry.quote);
 		}
 
@@ -201,7 +199,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 	}
 
 	function setInputs(key, value) {
-		if (key == "invoiceFees" || key == "reimburseVoucher") {
+		if (key == "invoiceFees") {
 			setMain((s) => ({ ...s, [key]: value }));
 		} else {
 			if (value) {
@@ -462,23 +460,8 @@ export default function NewProject({ inquiry, reload, unmount }) {
 				label={label}
 				onChange={() => {}}
 				onKeyPress={() => {}}
-				tabIndex={9}
-				value={MyGlobal.ThousandSeparator(main.quote)}
-				width="w-full"
-			/>
-		);
-	}
-
-	function uiReimburseVoucher() {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				id="newProjectRv"
-				label="Reimbursement Voucher"
-				onChange={(e) => setInputs("reimburseVoucher", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex="8"
-				value={main.reimburseVoucher}
+				value={MyGlobal.ThousandSeparator(main.quote)}
 				width="w-full"
 			/>
 		);
@@ -535,7 +518,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 
 	useEffect(() => {
 		calculateQuote();
-	}, [main.invoiceFees, main.reimburseVoucher]);
+	}, [main.invoiceFees]);
 
 	useEffect(() => {
 		if (mounted.teamsMenu) {
@@ -581,7 +564,6 @@ export default function NewProject({ inquiry, reload, unmount }) {
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
 							{uiInvoiceFees()}
-							{uiReimburseVoucher()}
 							{uiQuote()}
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiTeams()}</div>

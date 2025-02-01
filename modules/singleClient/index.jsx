@@ -530,20 +530,28 @@ export default function SingleClient({ client, unmount }) {
 	function uiFooter() {
 		const totalValues = getTotalValues();
 
-		return Object.values(headers).map((m, i) => {
-			const showTotalValues = i > 5 && i < 11 ? "visible" : "invisible";
-			const wrapper = `w-[8.33%] space-x-1 text-center text-white font-medium-10 ${showTotalValues}`;
+		return Object.values(headers)
+			.filter((f) => {
+				if (main.selectedCompany.id != 0) {
+					return f != headers.Company;
+				}
+				return f;
+			})
+			.map((m, i) => {
+				const showTotalValues = i > 5 && i < 11 ? "visible" : "invisible";
+				const width = main.selectedCompany.id != 0 ? "w-[14.28%]" : "w-[8.33%]";
+				const wrapper = `${width} space-x-1.5 text-center text-white font-medium-10 ${showTotalValues}`;
 
-			return (
-				<span className={wrapper} key={i}>
-					<span>{i == 6 && totalValues.invoiceFees}</span>
-					<span>{i == 7 && totalValues.reimburseVoucher}</span>
-					<span>{i == 8 && totalValues.amountReceived}</span>
-					<span>{i == 9 && totalValues.amountPending}</span>
-					<span>{i == 10 && totalValues.totalFees}</span>
-				</span>
-			);
-		});
+				return (
+					<span className={wrapper} key={i}>
+						<span>{i == 6 && totalValues.invoiceFees}</span>
+						<span>{i == 7 && totalValues.reimburseVoucher}</span>
+						<span>{i == 8 && totalValues.amountReceived}</span>
+						<span>{i == 9 && totalValues.amountPending}</span>
+						<span>{i == 10 && totalValues.totalFees}</span>
+					</span>
+				);
+			});
 	}
 
 	function uiFromDate() {

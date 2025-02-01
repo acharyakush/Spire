@@ -221,7 +221,6 @@ export default function EditProject({ project, reload, unmount }) {
 						name: project.main_project_name,
 					},
 					quote: Number(project.quote),
-					reimburseVoucher: Number(project.reimbursement_voucher),
 					subProject: {
 						id: project.sub_project_id,
 						name: project.sub_project_name,

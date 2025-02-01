@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { client, phoneNumber, emailAddress, entryDate, followUps, mainProjectId, note, quote, reference, status, subProject, userId } = req.body;
+		const { client, phoneNumber, emailAddress, entryDate, followUps, mainProjectId, note, quote, reference, subProject, userId } = req.body;
 
 		await query("CALL generate_dynamic_id('IQ', 'inquiries', @new_inquiry_id)", []);
 		const [inquiryResponse] = await query("SELECT @new_inquiry_id AS new_id;", []);
@@ -75,6 +75,16 @@ export default async function handler(req, res) {
 			}
 		}
 
+		const updateClientDetailsQueryResult = await query("UPDATE clients SET email_address=?, phone_number=? WHERE id=?", [
+			emailAddress,
+			phoneNumber,
+			newClientId,
+		]);
+
+		if (updateClientDetailsQueryResult.affectedRows == 0) {
+			return res.status(400).send("Could not update Client.");
+		}
+
 		const inquiryInsertResult = await query(
 			"INSERT INTO inquiries (id, client_id, reference_id, main_project_id, sub_project_id, entry_date, phone_number, email_address, follow_ups, quote, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 			[
@@ -82,7 +92,7 @@ export default async function handler(req, res) {
 				newClientId,
 				newReferenceId,
 				mainProjectId,
-				subProject.id,
+				newSubProjectId,
 				entryDate,
 				phoneNumber,
 				emailAddress,

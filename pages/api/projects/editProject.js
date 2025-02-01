@@ -70,8 +70,8 @@ export default async function handler(req, res) {
 		}
 
 		const projectQueryResult = await query(
-			"UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, quote=?, due_on=?, reimbursement_voucher=?, invoice_fees=?, invoice_firm_id=?, teams=?, updated_at=NOW() WHERE id=?",
-			[newClientId, newCompanyId, mainProjectId, newSubProjectId, quote, dueOn, reimburseVoucher, invoiceFees, invoiceFirmId, teams, id],
+			"UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, quote=?, due_on=?, invoice_fees=?, invoice_firm_id=?, teams=? WHERE id=?",
+			[newClientId, newCompanyId, mainProjectId, newSubProjectId, quote, dueOn, invoiceFees, invoiceFirmId, teams, id],
 		);
 
 		if (client.id == 0) {

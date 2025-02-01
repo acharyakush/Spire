@@ -154,7 +154,7 @@ export const ComboBox2 = ({
 							</div>
 							<ComboboxOptions
 								className="absolute w-full max-h-[273px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border primary-light-background"
-								style={{ top: isMenuInverted ? "-160px" : "66px", zIndex: 50 }}>
+								style={{ top: isMenuInverted ? "-160px" : "36px", zIndex: 50 }}>
 								{uiList()}
 							</ComboboxOptions>
 						</div>

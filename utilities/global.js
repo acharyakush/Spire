@@ -334,7 +334,7 @@ export const MyGlobal = Object.freeze({
 		const regex = new RegExp(searchString.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
 
 		if (searchString) {
-			return String(payload).replace(regex, (match) => `<span class='highlight-characters'>${match}</span>`);
+			return String(payload).replace(regex, (m) => `<span class='highlight-characters'>${m}</span>`);
 		} else {
 			return payload;
 		}

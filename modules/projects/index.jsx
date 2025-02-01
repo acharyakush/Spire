@@ -18,7 +18,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
-import { faBolt, faCheck, faChevronDown, faFileExcel, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faChevronDown, faFileExcel, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects() {
 	// Business Logic
@@ -50,8 +50,10 @@ export default function Projects() {
 	const statuses = MyConstants.Statuses.Projects;
 	const thisView = MyConstants.Modules.Base.Projects;
 	const tableHeaders = MyConstants.TableHeaders.Projects;
+	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const allowDeletingProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteProject);
+
 	const allowEditingProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditProject);
 
 	const showFindBoxClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
@@ -352,6 +354,8 @@ export default function Projects() {
 
 					const mainProjectName = MyGlobal.GetNameFromId(fe.main_project_id, response.data.mainProjects);
 
+					const reimburseVoucher = response.data.tasks.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.expense), 0);
+
 					const subProjectName = MyGlobal.GetNameFromId(fe.sub_project_id, response.data.subProjects);
 
 					const teamNames = MyGlobal.GetAnyDataFromId(fe.teams, "full_name");
@@ -361,6 +365,7 @@ export default function Projects() {
 						client_name: clientName,
 						company_name: companyName,
 						main_project_name: mainProjectName,
+						reimburse_voucher: reimburseVoucher,
 						sub_project_name: subProjectName,
 						team_names: teamNames,
 						team_names_initials: MyGlobal.GetInitials(teamNames),
@@ -629,10 +634,16 @@ export default function Projects() {
 					<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.findText) }} />
 					{!isCompleted && <FontAwesomeIcon icon={faChevronDown} />}
 				</MenuButton>
-				{!isCompleted && (
+				{!isCompleted ? (
 					<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">
 						{uiStatusMenuList(row)}
 					</MenuItems>
+				) : (
+					isUserAdministrator && (
+						<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">
+							{uiStatusMenuList(row)}
+						</MenuItems>
+					)
 				)}
 			</Menu>
 		);

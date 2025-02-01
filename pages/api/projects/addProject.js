@@ -13,8 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { clientId, company, dueOn, inquiryId, invoiceFees, invoiceFirm, mainProject, note, quote, reimburseVoucher, subProject, teams, userId } =
-			req.body;
+		const { clientId, company, dueOn, inquiryId, invoiceFees, invoiceFirm, mainProject, note, quote, subProject, teams, userId } = req.body;
 
 		// New Project ID
 		await query("CALL generate_dynamic_id('PJ', 'projects', @new_project_id)", []);
@@ -58,7 +57,7 @@ export default async function handler(req, res) {
 		}
 
 		const response = await query(
-			`INSERT INTO projects (id, client_id, company_id, inquiry_id, invoice_firm_id, main_project_id, sub_project_id, quote, due_on, reimbursement_voucher, invoice_fees, teams, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			`INSERT INTO projects (id, client_id, company_id, inquiry_id, invoice_firm_id, main_project_id, sub_project_id, quote, due_on, invoice_fees, teams, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			[
 				projectResponse.new_id,
 				clientId,
@@ -69,10 +68,9 @@ export default async function handler(req, res) {
 				newSubProjectId,
 				quote,
 				dueOn,
-				reimburseVoucher,
 				invoiceFees,
 				teams,
-				"Active",
+				MyConstants.Statuses.Projects.Active,
 				userId,
 			],
 		);
@@ -80,8 +78,8 @@ export default async function handler(req, res) {
 		const clientQuery = `UPDATE clients SET company_id=?, is_confirmed=1 WHERE id=?`;
 		const clientParameters = [newCompanyId, clientId];
 
-		const inquiryQuery = `UPDATE inquiries SET status=? WHERE id=?`;
-		const inquiryParameters = [MyConstants.Statuses.Inquiries.Confirmed, inquiryId];
+		const inquiryQuery = `UPDATE inquiries SET closure_reason=?, follow_ups=?, main_project_id=?, sub_project_id=?, status=?, quote=? WHERE id=?`;
+		const inquiryParameters = ["", teams, mainProject.id, newSubProjectId, MyConstants.Statuses.Inquiries.Confirmed, quote, inquiryId];
 
 		const noteQuery = `INSERT INTO notes (inquiry_id, project_id, original_entry_by_id, entry_by_id, content, source) VALUES (?, ?, ?, ?, ?, ?)`;
 		const noteParameters = [inquiryId, projectResponse.new_id, userId, userId, MyGlobal.EscapeString(note), MyConstants.Modules.Base.Projects];

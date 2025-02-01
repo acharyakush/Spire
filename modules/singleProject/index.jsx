@@ -151,46 +151,15 @@ export default function SingleProject({ client, project, reload, source, unmount
 	}
 
 	function uiFeesBifurcationTooltip() {
-		let totalBifurcatedAffiliateFees = 0;
-		let bifurcatedAffiliateFeesUi = "---";
-
-		if (project.affiliate_ids) {
-			bifurcatedAffiliateFeesUi = String(project.affiliate_ids)
-				.split(",")
-				.map((m) => {
-					const obj = api.affiliates.length ? api.affiliates.filter((f) => f.id == m && f.client_id == client.id) : [];
-
-					if (obj.length > 0) {
-						return obj.map((m) => {
-							totalBifurcatedAffiliateFees += Number(m.total_fees);
-
-							return (
-								<div className="flex w-full justify-between items-center" key={m}>
-									<span className="flex w-1/2 justify-start items-center">{m.name}</span>
-									<span className="flex w-1/2 justify-end items-center">{m.total_fees}</span>
-								</div>
-							);
-						});
-					}
-				});
-		}
-
 		return (
 			<div className="flex flex-col w-full justify-center items-center font-regular-12">
 				<div className="flex w-full py-1 justify-between items-center bottom-border">
 					<span className="flex w-1/2 justify-start items-center">Invoice</span>
 					<span className="flex w-1/2 justify-end items-center">{project.invoice_fees}</span>
 				</div>
-				<div className="flex flex-col w-full py-1 justify-center items-center">
-					<div className="flex flex-col w-full justify-center items-center">{bifurcatedAffiliateFeesUi}</div>
-					<div className="flex w-full pb-1 justify-between items-center bottom-border">
-						<span className="flex w-1/2 justify-start items-center">Total</span>
-						<span className="flex w-1/2 justify-end items-center">{totalBifurcatedAffiliateFees}</span>
-					</div>
-				</div>
 				<div className="flex w-full py-1 justify-between items-center">
 					<span className="flex w-1/2 justify-start items-center">Reimbursement Voucher</span>
-					<span className="flex w-1/2 justify-end items-center">{project.reimbursement_voucher}</span>
+					<span className="flex w-1/2 justify-end items-center">{project.reimburse_voucher}</span>
 				</div>
 			</div>
 		);
@@ -249,7 +218,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 
 		const dueOnTimeLeft = dayjs(project.due_on).format("DD-MM-YYYY") == dayjs().format("DD-MM-YYYY") ? "Today" : dayjs(project.due_on).fromNow();
 
-		const quote = Number(project.quote);
+		const quote = Number(project.invoice_fees);
 
 		return (
 			<div className="flex w-full justify-between items-center">
@@ -278,7 +247,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 						<Tippy className="w-full" content={uiFeesBifurcationTooltip()} disabled={!isSourceSingleClient} placement="bottom">
 							<span className={wrapperSansAesthetics}>
 								<FontAwesomeIcon className="w-4 primary-text" icon={faIndianRupeeSign} />
-								<span>{MyGlobal.ThousandSeparator(quote)}</span>
+								<span>{quote}</span>
 							</span>
 						</Tippy>
 					</div>

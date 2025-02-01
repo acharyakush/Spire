@@ -3,7 +3,7 @@
 export const Badge = ({ value }) => {
 	return (
 		<div className="relative inline-block">
-			<span className="flex min-w-[1.5rem] h-6 px-2 justify-center items-center rounded-full text-white font-semibold-10 primary-background">
+			<span className="flex min-w-[1.5rem] w-max h-6 px-2 justify-center items-center rounded-full text-white font-semibold-10 primary-background">
 				{value}
 			</span>
 		</div>
@@ -67,8 +67,9 @@ export const TooltipList = ({ payload }) => {
 					const name = String(m).trim();
 
 					return (
-						<div className="flex w-full space-x-2 py-1 justify-between items-center whitespace-pre" key={i}>
-							<span>{i + 1}</span>.<span>{name}</span>
+						<div className="flex w-full py-1 space-x-1.5 justify-start items-center whitespace-pre" key={i}>
+							<span>{i + 1}.</span>
+							<span>{name}</span>
 						</div>
 					);
 				})

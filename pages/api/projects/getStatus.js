@@ -13,12 +13,9 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const projectId = req.query.projectId;
+		const response = await query(`SELECT * FROM tasks WHERE project_id=?`, [req.query.projectId]);
 
-		const invoices = await query(`SELECT * FROM invoices WHERE project_id=?`, [projectId]);
-		const tasks = await query(`SELECT * FROM tasks WHERE project_id=?`, [projectId]);
-
-		return res.status(200).json({ invoices, tasks });
+		return res.status(200).json(response);
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");

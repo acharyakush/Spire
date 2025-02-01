@@ -222,8 +222,17 @@ export default function Tasks({ project }) {
 	}
 
 	function toggleDeleteTaskBox(task) {
-		setMain((s) => ({ ...s, selectedTask: task ?? {} }));
-		setMounted((s) => ({ ...s, deleteTask: !s.deleteTask }));
+		if (task) {
+			if (task.particulars_remarks.length) {
+				MyGlobal.ShowErrorToast("Cannot delete task where sub tasks are added.");
+			} else {
+				setMain((s) => ({ ...s, selectedTask: task }));
+				setMounted((s) => ({ ...s, deleteTask: true }));
+			}
+		} else {
+			setMain((s) => ({ ...s, selectedTask: {} }));
+			setMounted((s) => ({ ...s, deleteTask: false }));
+		}
 	}
 
 	function toggleEditParticularRemarkBox(remark) {
@@ -440,7 +449,8 @@ export default function Tasks({ project }) {
 
 		const editTaskStyle = allowEditingTask && (task.is_disabled == 1 || task.is_completed == 1) ? noClickAndHalfOpacity : clickAndFullOpacity;
 
-		const deleteTaskStyle = allowDeletingTask ? noClickAndHalfOpacity : clickAndFullOpacity;
+		const deleteTaskStyle = allowDeletingTask ? clickAndFullOpacity : noClickAndHalfOpacity;
+
 		const enableTaskStyle = allowEnablingTask && task.is_disabled == 1 ? clickAndFullOpacity : noClickAndHalfOpacity;
 
 		const disableTaskStyle = allowDisablingTask && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
@@ -546,7 +556,7 @@ export default function Tasks({ project }) {
 						</div>
 						{totalParticularsAndRemarks > 0 && <span className="font-regular-10 gray-text">{totalParticularsAndRemarks}</span>}
 					</button>
-					{allowNewTask && showAddTaskButton && (
+					{allowNewTask && showAddTaskButton && project.status != MyConstants.Statuses.Projects.Completed && (
 						<FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleAddTaskBox()} size="lg" />
 					)}
 				</div>

@@ -2,6 +2,7 @@
 
 const MyConstants = Object.freeze({
 	ApiEndpoints: Object.freeze({
+		Activities: "/api/activities",
 		Affiliates: Object.freeze({
 			AddAffiliate: "api/affiliates/addAffiliates",
 			GetAffiliates: "api/affiliates/getAffiliates",
@@ -69,6 +70,7 @@ const MyConstants = Object.freeze({
 		BadRequest: "Incompatible request sent.",
 		CashFlowAdded: "Cash Flow added.",
 		CashFlowEdited: "Cash Flow edited.",
+		ClientEdited: "Client edited.",
 		CompanyAdded: "New company added.",
 		CompanyEdited: "Company edited.",
 		EmployeeAdded: "New employee added.",
@@ -201,6 +203,12 @@ const MyConstants = Object.freeze({
 		}),
 	}),
 	TableHeaders: Object.freeze({
+		Activities: Object.freeze({
+			EntryAt: "Entry At",
+			Module: "Module",
+			Activity: "Activity",
+			EntryBy: "Entry By",
+		}),
 		Clients: Object.freeze({
 			Id: "ID",
 			Name: "Name",

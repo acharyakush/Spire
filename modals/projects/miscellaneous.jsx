@@ -149,15 +149,15 @@ export function EditStatus({ mount, project, reload, unmount }) {
 			messageBody = "Are you sure you want to re-active this project?";
 			break;
 		case statuses.Cancelled:
-			activityMessage = `Cancelled <b>${project.id}</b> from <b>${project.status}</b>`;
+			activityMessage = `Cancelled <b>${project.id}</b> from <b>${project.status}</b> due to <b>${main.reason}</b>`;
 			messageBody = "Are you sure you want to cancel this project? You are required to write a cancellation reason below.";
 			break;
 		case statuses.Closed:
-			activityMessage = `Closed <b>${project.id}</b> from <b>${project.status}</b>`;
+			activityMessage = `Closed <b>${project.id}</b> from <b>${project.status}</b> due to <b>${main.reason}</b>`;
 			messageBody = "Are you sure you want to close this project? You are required to write a closure reason below.";
 			break;
 		case statuses.Hold:
-			activityMessage = `<b>${project.id}</b> kept on <b>${project.new_status}</b> from <b>${project.status}</b>`;
+			activityMessage = `<b>${project.id}</b> kept on <b>${project.new_status}</b> from <b>${project.status}</b> due to <b>${main.reason}</b>`;
 			messageBody = "Are you sure you want to keep this project on hold? You are required to write a reason below.";
 			break;
 	}
@@ -277,12 +277,9 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 		isLoading: false,
 		isMarking: false,
 		status: {
-			invoices: { anyGenerated: false, total: 0 },
 			tasks: { allCompleted: false, total: 0, completed: 0 },
 		},
 	});
-
-	const isCompletionEligible = main.status.invoices.anyGenerated && main.status.tasks.allCompleted;
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -331,23 +328,19 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetStatus, MyGlobal.GetHeaders({ projectId: project.id }));
 
 			if (response.status === 200) {
-				const tasks = response.data.tasks;
-				const invoices = response.data.invoices;
+				const tasks = response.data;
 
 				const completedTasks = tasks.filter((f) => f.is_completed == 1).length;
+				const totalTasks = tasks.filter((f) => f.is_disabled != 1).length;
 				const areAllTasksCompleted = tasks.length && tasks.every((f) => f.is_completed == 1);
 
 				setMain((s) => ({
 					...s,
 					status: {
-						invoices: {
-							anyGenerated: invoices.length > 0,
-							total: invoices.length,
-						},
 						tasks: {
 							allCompleted: areAllTasksCompleted,
 							completed: completedTasks,
-							total: tasks.length,
+							total: totalTasks,
 						},
 					},
 				}));
@@ -377,25 +370,17 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 				</div>
 			);
 
-			const label2 = (
-				<div className="flex flex-col w-full -space-y-px">
-					<span>Is any invoice generated?</span>
-					<span className="font-regular-9">Generated {main.status.invoices.total}</span>
-				</div>
-			);
-
 			return (
 				<div className="flex flex-col w-full px-5 py-4 space-y-3 justify-between items-center">
 					<div className="w-full text-left font-medium-11 black-text">These statistics determine the project's eligibility for completion.</div>
 					{uiRow(label1, main.status.tasks.allCompleted)}
-					{uiRow(label2, main.status.invoices.anyGenerated)}
 				</div>
 			);
 		}
 	}
 
 	function uiButton() {
-		if (isCompletionEligible) {
+		if (main.status.tasks.allCompleted) {
 			let buttonLabel = "Mark Completed";
 
 			if (main.isMarking) {

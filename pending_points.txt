@@ -20,6 +20,7 @@ Tasks
 1. Menu of Task Action does not disappear after child item is clicked.
 2. Sub Task view not reloading after Edit, Enable, Disable, Mark Task Completed.
 3. In Sub Task view, If there is only one sub task and If it is marked as completed, then the parent "Task" will not be marked as completed. But vice versa is possible.
+4. Add "All Notes" button 
 
 Reimbursement Voucher
 1. Thorough testing
@@ -27,3 +28,6 @@ Reimbursement Voucher
 
 Modules
 1. Activities, Employees, Profile, Settings
+
+Clients
+1. Add "Rating" field in "Edit Client" window
