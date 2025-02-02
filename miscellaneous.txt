@@ -4,11 +4,3 @@ Important Information
 
 New Cash Flow => Affiliate
 1. Only affiliates mapped to any project will be shown in the "Affiliates" menu.
-
-
-==============
-Todays Changes
-==============
-1. New RV permissions in Permissions table
-2. New table rv
-3. New Table rv_payment_history

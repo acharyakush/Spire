@@ -541,10 +541,6 @@ export default function NewInquiry({ reload, unmount }) {
 	}, []);
 
 	useEffect(() => {
-		console.log(other.find);
-	}, [other.find]);
-
-	useEffect(() => {
 		if (mounted.followUpsMenu) {
 			document.addEventListener("mousedown", detectOutsideClick);
 			document.addEventListener("keydown", detectEscapeKey);

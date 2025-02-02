@@ -7,11 +7,11 @@ import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Spinner, SpinnerBig } from "@/components/Elements";
 import { EmailAddress, TextInput } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGooglePay } from "@fortawesome/free-brands-svg-icons";
-import { faChevronLeft, faCircleMinus, faPhone, faPlusCircle, faTriangleExclamation, faUser } from "@fortawesome/free-solid-svg-icons";
+import { Badge, Spinner, SpinnerBig } from "@/components/Elements";
+import { faChevronRight, faCircleMinus, faPhone, faPlusCircle, faTriangleExclamation, faUser } from "@fortawesome/free-solid-svg-icons";
 
 export default function NewAffiliate({ reload, unmount }) {
 	// Business Logic
@@ -143,7 +143,7 @@ export default function NewAffiliate({ reload, unmount }) {
 		return (
 			<EmailAddress
 				key={1}
-				label={`Email Address #${rowId + 1}`}
+				label="Email Address"
 				onChange={(e) => setInputs("emailAddress", rowId, e.target.value)}
 				suffix=""
 				tabIndex={`${rowId}3`}
@@ -158,7 +158,7 @@ export default function NewAffiliate({ reload, unmount }) {
 			<TextInput
 				icon={faUser}
 				id={`name${rowId}`}
-				label={`Name #${rowId + 1}`}
+				label="Name"
 				onChange={(e) => setInputs("name", rowId, e.target.value)}
 				onKeyPress={() => {}}
 				tabIndex={`${rowId}1`}
@@ -173,7 +173,7 @@ export default function NewAffiliate({ reload, unmount }) {
 			<TextInput
 				icon={faPhone}
 				id={`phoneNumber${rowId}`}
-				label={`Phone Number #${rowId + 1}`}
+				label="Phone Number"
 				onChange={(e) => setInputs("phoneNumber", rowId, e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex={`${rowId}2`}
@@ -189,7 +189,7 @@ export default function NewAffiliate({ reload, unmount }) {
 				icon={faGooglePay}
 				iconSize="2x"
 				id={`upiId${rowId}`}
-				label={`UPI ID #${rowId + 1}`}
+				label="UPI ID"
 				onChange={(e) => setInputs("upiId", rowId, e.target.value)}
 				onKeyPress={() => {}}
 				tabIndex={`${rowId}4`}
@@ -207,10 +207,14 @@ export default function NewAffiliate({ reload, unmount }) {
 				const showDeleteButton = main.group.length > 1 ? "visible" : "invisible";
 
 				const addButtonWrapper = `flex w-fit h-[55px] justify-center items-center ${showAddButton}`;
+
 				const deleteButtonWrapper = `flex w-fit h-[55px] justify-center items-center ${showDeleteButton}`;
 
 				return (
 					<div className="flex w-full space-x-3 justify-between items-end" key={m.rowId}>
+						<div className="flex w-fit h-[55px] justify-center items-center">
+							<Badge value={i + 1} />
+						</div>
 						{uiName(m, i)}
 						{uiPhoneNumber(m, i)}
 						{uiEmailAddress(m, i)}
@@ -240,27 +244,24 @@ export default function NewAffiliate({ reload, unmount }) {
 	} else {
 		return (
 			<div className="flex flex-col w-full h-full justify-center items-center">
-				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
+				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border">
 					<div className="flex w-full space-x-2.5 justify-start items-center">
-						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
-						<div className="flex w-full justify-start items-center">
-							<span className="view-heading">New Affiliate</span>
+						<div className="flex w-full space-x-2.5 justify-start items-center">
+							<span className="cursor-pointer view-heading" onClick={() => unmount()}>
+								{MyConstants.Modules.Base.Affiliates}
+							</span>
+							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
+							<span className="view-heading">{MyConstants.Modules.Derived.NewAffiliate}</span>
 						</div>
 					</div>
 				</div>
-				<div className="flex w-full h-full justify-center items-center contrast-background">
-					<div className="flex flex-col w-4/5 h-full space-y-3 justify-start items-center">
-						<div className="flex flex-col w-full h-full p-4 space-y-2.5 overflow-y-auto">
-							{uiRows()}
-							<div className={errorTextStyle}>
-								<FontAwesomeIcon icon={faTriangleExclamation} size="2x" />
-								<span dangerouslySetInnerHTML={{ __html: main.error }} />
-							</div>
+				<div className="flex w-full h-[calc(100vh-150px)] justify-center items-center overflow-y-auto contrast-background scrollbar-gutter">
+					<div className="flex flex-col w-4/5 h-full p-4 space-y-3 justify-start items-center">
+						{uiRows()}
+						<div className={errorTextStyle}>
+							<FontAwesomeIcon icon={faTriangleExclamation} size="2x" />
+							<span dangerouslySetInnerHTML={{ __html: main.error }} />
 						</div>
-
-						<span className="py-2 italic font-regular-11 gray-text">
-							*** Fill up all the rows and fields. Partially filled rows will not be saved. ***
-						</span>
 					</div>
 				</div>
 				<footer className="w-full dialog-footer">

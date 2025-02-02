@@ -318,7 +318,7 @@ export default function NewRv({ project, reload, unmount }) {
 				const rvPaymentHistory = response.data.rvPaymentHistory.map((m) => {
 					let source = "";
 
-					const getSource = MyGlobal.GetPaymentSourceList(response.data.ownerFirmsBanks).find((f) => f.id === m.source);
+					const getSource = MyGlobal.GetRevisedPaymentSourceList(response.data.ownerFirmsBanks).find((f) => f.id === m.source);
 
 					if (typeof getSource === "object") {
 						source = getSource.name;

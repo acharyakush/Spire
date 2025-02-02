@@ -10,9 +10,9 @@ import Projects from "@/modules/projects";
 import Invoices from "@/modules/invoices";
 import Inquiries from "@/modules/inquiries";
 import CashFlows from "@/modules/cashFlows";
-import Affiliates from "@/modules/affiliates";
 import Activities from "@/modules/activities";
 import MyConstants from "@/utilities/constants";
+import Affiliates from "@/modules/cashFlows/affiliates";
 
 import { useRouter } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
@@ -41,7 +41,7 @@ export default function Home() {
 	const [main, setMain] = useState({
 		isDarkModeEnabled: false,
 		mode: null,
-		selectedModule: { name: baseModules.Dashboard, sequence: 0 },
+		selectedModule: { index: 0, name: baseModules.Dashboard },
 		singleProjectObject: {},
 		status: { cashFlow: "", inquiries: "", invoices: "", projects: "", rv: "", tasks: "" },
 		user: { fullName: "", designation: "", role: "" },
@@ -106,8 +106,8 @@ export default function Home() {
 			setMain((s) => ({
 				...s,
 				selectedModule: {
+					index: 0,
 					name: sequentialModules.at(0).module,
-					sequence: sequentialModules.at(0).sequence - 1,
 				},
 			}));
 		} catch (error) {
@@ -198,8 +198,8 @@ export default function Home() {
 		router.replace("/");
 	}
 
-	function setModule(module, sequence) {
-		setMain((s) => ({ ...s, selectedModule: { name: module.name, sequence: sequence - 1 } }));
+	function setModule(index, module) {
+		setMain((s) => ({ ...s, selectedModule: { index, name: module.name } }));
 	}
 
 	function setModuleProps(key, value) {
@@ -223,6 +223,27 @@ export default function Home() {
 		setMounted((s) => ({ ...s, settings: !mounted.settings }));
 	}
 
+	function updateGliderPosition() {
+		if (!gliderRef.current || !tabRefs.current[main.selectedModule.index] || !tabsContainerRef.current) return;
+
+		const tab = tabRefs.current[main.selectedModule.index];
+		const container = tabsContainerRef.current;
+
+		const tabRect = tab.getBoundingClientRect();
+		const containerRect = container.getBoundingClientRect();
+
+		const tabOffset = tabRect.left - containerRect.left + container.scrollLeft;
+		const tabWidth = tabRect.width;
+
+		window.requestAnimationFrame(() => {
+			gliderRef.current.style.width = `${tabWidth}px`;
+			gliderRef.current.style.transform = `translateX(${tabOffset - 12}px)`;
+			gliderRef.current.style.transition = "transform 0.25s ease-out, width 0.25s ease-out";
+			gliderRef.current.style.opacity = "1";
+			gliderRef.current.style.display = "block";
+		});
+	}
+
 	// UI Components
 	function uiMain() {
 		if (mounted.activities) {
@@ -234,14 +255,15 @@ export default function Home() {
 
 	function uiModules() {
 		return api.modules
+			.filter((f) => f.name != baseModules.Affiliates && f.name != baseModules.Invoices && f.name != baseModules.Owners)
 			.filter((f) => f.sequence <= 8)
 			.map((m, i) => {
-				const isSelected = i == main.selectedModule.sequence;
+				const isSelected = i == main.selectedModule.index;
 
 				return (
-					<span className="flex justify-center items-center relative font-regular-11" key={i} onClick={() => setModule(m, m.sequence)}>
+					<span className="flex justify-center items-center relative font-regular-11" key={i} onClick={() => setModule(i, m)}>
 						<input type="radio" id={`radio${i}`} name="tabs" checked={isSelected} readOnly />
-						<label className="whitespace-nowrap tab" htmlFor={`radio${i}`} ref={(r) => (r ? (tabRefs.current[i] = r) : null)}>
+						<label className="whitespace-nowrap tab" htmlFor={`radio${i}`} ref={(r) => (tabRefs.current[i] = r)}>
 							{m.name}
 						</label>
 					</span>
@@ -251,7 +273,7 @@ export default function Home() {
 
 	function uiOtherModules() {
 		const aesthetics =
-			main.selectedModule.sequence == -1 ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
+			main.selectedModule.index == -1 ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
 		const wrapper = `py-2 font-regular-11 ${aesthetics}`;
 
 		return (
@@ -278,7 +300,7 @@ export default function Home() {
 						as="div"
 						className={`p-2 space-x-2.5 cursor-pointer border-y ${aesthetics} font-regular-11 hovered-rows`}
 						key={i}
-						onClick={() => setModule(m, m.sequence)}>
+						onClick={() => setModule(i, m)}>
 						{isSelected && <FontAwesomeIcon icon={faCheck} />}
 						<span>{m.name}</span>
 					</MenuItem>
@@ -292,7 +314,7 @@ export default function Home() {
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${baseModules.Affiliates}`}
-						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Affiliates)}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Affiliates)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Affiliates />
 					</ErrorBoundary>
@@ -301,7 +323,7 @@ export default function Home() {
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${baseModules.CashFlow}`}
-						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.CashFlow)}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.CashFlow)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<CashFlows setModuleProps={setModuleProps} />
 					</ErrorBoundary>
@@ -310,7 +332,7 @@ export default function Home() {
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${baseModules.Clients}`}
-						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Clients)}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Clients)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Clients />
 					</ErrorBoundary>
@@ -319,7 +341,7 @@ export default function Home() {
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${baseModules.Dashboard}`}
-						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Dashboard)}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Dashboard)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Dashboard setModuleProps={setModuleProps} />
 					</ErrorBoundary>
@@ -328,7 +350,7 @@ export default function Home() {
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${baseModules.Inquiries}`}
-						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Inquiries)}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Inquiries)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Inquiries presetStatus={main.status.inquiries} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
@@ -337,7 +359,7 @@ export default function Home() {
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${baseModules.Invoices}`}
-						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Invoices)}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Invoices)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Invoices status={main.status.invoices} />
 					</ErrorBoundary>
@@ -346,7 +368,7 @@ export default function Home() {
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${baseModules.Projects}`}
-						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Projects)}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Projects)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Projects />
 					</ErrorBoundary>
@@ -355,20 +377,11 @@ export default function Home() {
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${baseModules.Rv}`}
-						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Rv)}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Rv)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<RV status={main.status.rv} />
 					</ErrorBoundary>
 				);
-			// case Constants.primaryModules.admins.name:
-			// 	return (
-			// 		<ErrorBoundary
-			// 			key="ErrorBoundary_Admins"
-			// 			onError={(error) => Global.handleErrors(error.message, "Admins")}
-			// 			FallbackComponent={ErrorFallbackComponent}>
-			// 			<Admins />
-			// 		</ErrorBoundary>
-			// 	);
 		}
 	}
 
@@ -435,32 +448,11 @@ export default function Home() {
 	}, []);
 
 	useEffect(() => {
-		const updateGlider = () => {
-			if (!gliderRef.current || !tabRefs.current[main.selectedModule.sequence] || !tabsContainerRef.current) return;
+		updateGliderPosition();
+		window.addEventListener("resize", updateGliderPosition);
 
-			const tab = tabRefs.current[main.selectedModule.sequence];
-			const container = tabsContainerRef.current;
-
-			const tabRect = tab.getBoundingClientRect();
-			const containerRect = container.getBoundingClientRect();
-
-			const tabOffset = tabRect.left - containerRect.left + container.scrollLeft;
-			const tabWidth = tabRect.width;
-
-			window.requestAnimationFrame(() => {
-				gliderRef.current.style.width = `${tabWidth}px`;
-				gliderRef.current.style.transform = `translateX(${tabOffset - 12}px)`;
-				gliderRef.current.style.transition = "transform 0.25s ease-out, width 0.25s ease-out";
-				gliderRef.current.style.opacity = "1";
-				gliderRef.current.style.display = "block";
-			});
-		};
-
-		updateGlider();
-		window.addEventListener("resize", updateGlider);
-
-		return () => window.removeEventListener("resize", updateGlider);
-	}, [main.selectedModule.sequence]);
+		return () => window.removeEventListener("resize", updateGliderPosition);
+	}, [main.selectedModule.index]);
 
 	useEffect(() => {
 		if (main.user) {
@@ -497,7 +489,7 @@ export default function Home() {
 							{uiModules()}
 							<span className="glider absolute" ref={gliderRef} />
 						</div>
-						{uiOtherModules()}
+						{/* {uiOtherModules()} */}
 					</div>
 				</div>
 				<div className="flex w-full justify-end items-center">{uiUserMenu()}</div>

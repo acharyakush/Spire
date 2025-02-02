@@ -224,7 +224,19 @@ export const MyGlobal = Object.freeze({
 		return Number(String(payload).replace(/[^0-9]/g, ""));
 	},
 
-	GetPaymentSourceList: (payload) => {
+	GetBasicPaymentSourceList: () => {
+		return [
+			{ id: "CASH", name: "Cash" },
+			{ id: "CHEQUE", name: "Cheque" },
+			{ id: "CC", name: "Credit Card" },
+			{ id: "DC", name: "Debit Card" },
+			{ id: "INSTAMOJO", name: "InstaMojo" },
+			{ id: "NETBANKING", name: "NetBanking" },
+			{ id: "UPI", name: "UPI" },
+		];
+	},
+
+	GetRevisedPaymentSourceList: (payload) => {
 		const list = [...payload];
 
 		list.push(
@@ -236,6 +248,7 @@ export const MyGlobal = Object.freeze({
 			{ id: "NETBANKING", name: "NetBanking" },
 			{ id: "UPI", name: "UPI" },
 		);
+
 		return list;
 	},
 

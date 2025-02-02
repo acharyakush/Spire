@@ -32,7 +32,7 @@ import {
 
 export function Transactions({ mount, project, reload, unmount }) {
 	// Business Logic
-	const headers = MyConstants.TableHeaders.PaymentReceived;
+	const headers = MyConstants.TableHeaders.Transactions.Invoice;
 
 	const [api, setApi] = useState({
 		history: { copy: [], data: [] },
@@ -198,7 +198,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 			);
 
 			if (response.status === 200) {
-				const ownerFirmsBanks = MyGlobal.GetPaymentSourceList(response.data.ownerFirmsBanks);
+				const ownerFirmsBanks = MyGlobal.GetRevisedPaymentSourceList(response.data.ownerFirmsBanks);
 
 				const history = response.data.history.map((m) => {
 					let source = "";

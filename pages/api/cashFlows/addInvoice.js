@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 		const updateInvoiceResult = await query("UPDATE invoices SET amount_received=? WHERE custom_id=?", [amountReceived, invoiceId]);
 
 		const addCashFlowResult = await query(
-			"INSERT INTO cash_flows (client_id, project_id, invoice_id, owner_firm_id, owner_firm_bank_id, particulars, payment_for, amount_received, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO cash_flows (client_id, project_id, invoice_id, owner_firms_id, owner_firms_banks_id, particulars, payment_for, amount_received, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 			[clientId, projectId, invoiceId, ownerFirmsId, ownerFirmsBankId, particulars, paymentFor, amountReceived, entryAt, userId],
 		);
 

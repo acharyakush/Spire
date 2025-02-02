@@ -312,7 +312,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 				const invoicesPaymentHistory = response.data.invoicesPaymentHistory.map((m) => {
 					let source = "";
 
-					const getSource = MyGlobal.GetPaymentSourceList(response.data.ownerFirmsBanks).find((f) => f.id === m.source);
+					const getSource = MyGlobal.GetRevisedPaymentSourceList(response.data.ownerFirmsBanks).find((f) => f.id === m.source);
 
 					if (typeof getSource === "object") {
 						source = getSource.name;

@@ -4,22 +4,25 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import NewCashFlow from "./NewCashFlow";
+import Affiliates from "./affiliates";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Badge, SpinnerBig } from "@/components/Elements";
+import { ErrorBoundary } from "react-error-boundary";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlusCircle, faTurnDown, faTurnUp } from "@fortawesome/free-solid-svg-icons";
+import { Badge, ErrorFallbackComponent, SpinnerBig } from "@/components/Elements";
+import { faArrowUpRightFromSquare, faStar, faTurnDown, faTurnUp } from "@fortawesome/free-solid-svg-icons";
+import Transactions from "./Transactions";
 
 export default function CashFlows({ setModuleProps }) {
 	// Business Logic
-	const modules = MyConstants.Modules.Other.CashFlow;
+	const baseModules = MyConstants.Modules.Base;
+	const categories = MyConstants.Modules.Other.CashFlow;
 
-	const thisView = MyConstants.Modules.Base.CashFlow;
-	const affiliatesView = MyConstants.Modules.Base.Affiliates;
-	const invoicesView = MyConstants.Modules.Base.Invoices;
+	const thisView = baseModules.CashFlow;
+	const affiliatesView = baseModules.Affiliates;
+	const invoicesView = baseModules.Invoices;
 
 	const [api, setApi] = useState({
 		affiliates: [],
@@ -31,9 +34,8 @@ export default function CashFlows({ setModuleProps }) {
 
 	const [main, setMain] = useState({
 		affiliates: {
-			workPending: { amount: 0, count: 0, label: "WORK PENDING" },
-			workCompleted: { amount: 0, count: 0, label: "WORK COMPLETED" },
-			amountPending: { amount: 0, count: 0, label: "AMOUNT PENDING" },
+			pending: { amount: 0, count: 0, label: "PENDING" },
+			paid: { amount: 0, count: 0, label: "PAID" },
 			total: { amount: 0, count: 0, label: "TOTAL" },
 		},
 		invoices: {
@@ -42,13 +44,13 @@ export default function CashFlows({ setModuleProps }) {
 			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
 		},
 		isLoading: false,
-		module: affiliatesView,
+		module: "",
 		officeExpense: {
 			pending: { amount: 0, label: "PENDING" },
 			paid: { amount: 0, label: "PAID" },
 			total: { amount: 0, label: "TOTAL" },
 		},
-		inwardOtherExpense: {
+		inwardOtherIncome: {
 			pending: { amount: 0, label: "PENDING" },
 			paid: { amount: 0, label: "PAID" },
 			total: { amount: 0, label: "TOTAL" },
@@ -68,18 +70,36 @@ export default function CashFlows({ setModuleProps }) {
 			generated: { amount: 0, count: 0, label: "GENERATED" },
 			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
 		},
-		selectedModule: modules.Inward,
+		selectedCategory: categories.Inward,
 		totalInvoicesAmount: 0,
 		totalRvAmount: 0,
-	});
-
-	const [mounted, setMounted] = useState({
-		newCashFlow: false,
 	});
 
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
 	// Functions
+	function clearData(module) {
+		if (module == affiliatesView) {
+			setMain((s) => ({
+				...s,
+				affiliates: {
+					pending: { amount: 0, count: 0, label: "PENDING" },
+					paid: { amount: 0, count: 0, label: "PAID" },
+					total: { amount: 0, count: 0, label: "TOTAL" },
+				},
+			}));
+		} else if (module == "Inward Other Income" || module == "Outward Office Expense" || module == "Outward Other Expense") {
+			setMain((s) => ({
+				...s,
+				[module]: {
+					pending: { amount: 0, label: "PENDING" },
+					paid: { amount: 0, label: "PAID" },
+					total: { amount: 0, label: "TOTAL" },
+				},
+			}));
+		}
+	}
+
 	function getAesthetics(id) {
 		const object = { background: "", border: "", textColour: "", transparentBackground: "" };
 
@@ -113,11 +133,7 @@ export default function CashFlows({ setModuleProps }) {
 		return object;
 	}
 
-	function setModule(module) {
-		setMain((s) => ({ ...s, selectedModule: module }));
-	}
-
-	async function setSupportData() {
+	async function getSupportData() {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
@@ -125,17 +141,42 @@ export default function CashFlows({ setModuleProps }) {
 
 			if (response.status == 200) {
 				const today = dayjs().startOf("day");
-				const invoicesObj = Object.assign({}, main.invoices);
+
+				// ========== //
+				// Affiliates //
+				// ========== //
+
+				const _affiliates = Object.assign({}, main.affiliates);
+
+				response.data.affiliatesProjects.forEach((fe) => {
+					_affiliates.total.amount += Number(fe.total_fees);
+					_affiliates.total.count += 1;
+				});
+
+				response.data.affiliatesTransactions.forEach((fe) => {
+					_affiliates.paid.amount += Number(fe.amount);
+					_affiliates.paid.count += 1;
+				});
+
+				_affiliates.pending.amount = _affiliates.total.amount - _affiliates.paid.amount;
+
+				_affiliates.pending.count = _affiliates.total.count - _affiliates.paid.count;
+
+				// ======== //
+				// Invoices //
+				// ======== //
+
+				const _invoices = Object.assign({}, main.invoices);
 
 				response.data.invoices.forEach((fe) => {
 					if (dayjs(fe.due_date).isBefore(today)) {
-						invoicesObj.due.amount += Number(fe.amount);
-						invoicesObj.due.count++;
+						_invoices.due.amount += Number(fe.amount);
+						_invoices.due.count++;
 					}
 
 					if (fe.custom_id) {
-						invoicesObj.generated.amount += Number(fe.amount);
-						invoicesObj.generated.count += 1;
+						_invoices.generated.amount += Number(fe.amount);
+						_invoices.generated.count += 1;
 					}
 				});
 
@@ -144,29 +185,29 @@ export default function CashFlows({ setModuleProps }) {
 				const notGeneratedInvoices = response.data.projects.filter((f) => !invoiceProjectIds.has(f.id));
 
 				notGeneratedInvoices.forEach((fe, i) => {
-					invoicesObj.notGenerated.amount += Number(fe.quote);
-					invoicesObj.notGenerated.count = i + 1;
+					_invoices.notGenerated.amount += Number(fe.quote);
+					_invoices.notGenerated.count = i + 1;
 				});
 
 				const allInvoicesAmount = response.data.invoices.reduce((pv, cv) => pv + Number(cv.amount), 0);
 
-				const totalInvoicesAmount = allInvoicesAmount + invoicesObj.notGenerated.amount;
+				const totalInvoicesAmount = allInvoicesAmount + _invoices.notGenerated.amount;
 
 				// ================= //
 				// Reimburse Voucher //
 				// ================= //
 
-				const rvObj = Object.assign({}, main.rv);
+				const _rv = Object.assign({}, main.rv);
 
 				response.data.reimburseVouchers.forEach((fe) => {
 					if (dayjs(fe.due_date).isBefore(today)) {
-						rvObj.due.amount += Number(fe.amount);
-						rvObj.due.count++;
+						_rv.due.amount += Number(fe.amount);
+						_rv.due.count++;
 					}
 
 					if (fe.custom_id) {
-						rvObj.generated.amount += Number(fe.amount);
-						rvObj.generated.count += 1;
+						_rv.generated.amount += Number(fe.amount);
+						_rv.generated.count += 1;
 					}
 				});
 
@@ -175,12 +216,12 @@ export default function CashFlows({ setModuleProps }) {
 				const notGeneratedRvs = response.data.projects.filter((f) => !rvProjectIds.has(f.id));
 
 				notGeneratedRvs.forEach((fe, i) => {
-					rvObj.notGenerated.amount += Number(fe.quote);
-					rvObj.notGenerated.count = i + 1;
+					_rv.notGenerated.amount += Number(fe.quote);
+					_rv.notGenerated.count = i + 1;
 				});
 
 				const allRvAmount = response.data.reimburseVouchers.reduce((pv, cv) => pv + Number(cv.amount), 0);
-				const totalRvAmount = allRvAmount + rvObj.notGenerated.amount;
+				const totalRvAmount = allRvAmount + _rv.notGenerated.amount;
 
 				setApi((s) => ({
 					...s,
@@ -188,7 +229,7 @@ export default function CashFlows({ setModuleProps }) {
 					reimburseVouchers: response.data.reimburseVouchers,
 				}));
 
-				const inwardOtherExpense = {
+				const inwardOtherIncome = {
 					pending: { amount: 0, label: "PENDING" },
 					paid: { amount: 0, label: "PAID" },
 					total: { amount: 0, label: "TOTAL" },
@@ -213,8 +254,8 @@ export default function CashFlows({ setModuleProps }) {
 				};
 
 				response.data.cashFlows.forEach((fe) => {
-					if (fe.module === "Inward Other Expense") {
-						inwardOtherExpense.total.amount += Number(fe.amount_received);
+					if (fe.module === "Inward Other Income") {
+						inwardOtherIncome.total.amount += Number(fe.amount_received);
 					} else if (fe.module === "Outward Office Expense") {
 						officeExpense.paid.amount += Number(fe.amount_paid);
 					} else if (fe.module === "Outward Other Expense") {
@@ -226,12 +267,13 @@ export default function CashFlows({ setModuleProps }) {
 
 				setMain((s) => ({
 					...s,
-					invoices: invoicesObj,
-					inwardOtherExpense,
+					affiliates: _affiliates,
+					invoices: _invoices,
+					inwardOtherIncome,
 					officeExpense,
 					outwardOtherExpense,
 					pettyCash,
-					rv: rvObj,
+					rv: _rv,
 					totalInvoicesAmount: MyGlobal.ThousandSeparator(totalInvoicesAmount),
 					totalRvAmount,
 				}));
@@ -243,9 +285,18 @@ export default function CashFlows({ setModuleProps }) {
 		}
 	}
 
-	function toggleNewCashFlowView(module) {
-		setMain((s) => ({ ...s, module }));
-		setMounted((s) => ({ ...s, newCashFlow: !mounted.newCashFlow }));
+	function setCategory(module) {
+		setMain((s) => ({ ...s, selectedCategory: module }));
+	}
+
+	function toggleModule(module) {
+		if (module) {
+			setMain((s) => ({ ...s, module }));
+			clearData(affiliatesView);
+		} else {
+			setMain((s) => ({ ...s, module: "" }));
+			getSupportData();
+		}
 	}
 
 	// UI Components
@@ -255,10 +306,10 @@ export default function CashFlows({ setModuleProps }) {
 				<div className="flex w-full justify-start items-center">
 					<div className="flex w-fit space-x-2.5 justify-center items-center">
 						<span className="view-heading">{affiliatesView}</span>
-						{uiNew(affiliatesView)}
+						<sup>{uiOpenCategory(affiliatesView)}</sup>
 					</div>
 				</div>
-				<div className="flex w-full space-x-12 justify-between items-center">{uiAffiliatesBlock()}</div>
+				<div className="flex w-full space-x-32 justify-between items-center">{uiAffiliatesBlock()}</div>
 			</div>
 		);
 	}
@@ -283,13 +334,30 @@ export default function CashFlows({ setModuleProps }) {
 
 	function uiBody() {
 		return (
-			<div className="flex w-full h-full justify-center items-start">
-				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiModules()}</div>
-				<div className="flex flex-col w-[90%] h-[calc(100vh-100px)] mr-5 justify-start items-center rounded shadow overflow-y-auto scrollbar-gutter contrast-background">
+			<div className="flex flex-col w-full h-full mx-5 justify-center items-start">
+				<div className="flex flex-col w-full h-[calc(100vh-105px)] justify-start items-center rounded shadow overflow-y-auto scrollbar-gutter contrast-background">
 					{uiSelectedModule()}
 				</div>
 			</div>
 		);
+	}
+
+	function uiCategories() {
+		return Object.values(categories).map((m, i) => {
+			const icon = m == categories.Inward ? faTurnDown : m == categories.Outward ? faTurnUp : faStar;
+
+			const selectedStyle =
+				m == main.selectedCategory ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+
+			const wrapper = `flex w-fit px-4 py-1 space-x-2 justify-between items-center rounded shadow ${selectedStyle} font-medium-10 hovered-rows`;
+
+			return (
+				<button className={wrapper} key={i} onClick={() => setCategory(m)}>
+					<span>{m}</span>
+					<FontAwesomeIcon icon={icon} size="sm" />
+				</button>
+			);
+		});
 	}
 
 	function uiInward() {
@@ -297,7 +365,7 @@ export default function CashFlows({ setModuleProps }) {
 			<div className="flex flex-col w-full h-full space-y-6 justify-start items-center">
 				{uiInwardInvoices()}
 				{uiInwardRVs()}
-				{uiInwardOtherExpense()}
+				{uiInwardOtherIncome()}
 			</div>
 		);
 	}
@@ -308,7 +376,7 @@ export default function CashFlows({ setModuleProps }) {
 				<div className="flex w-full justify-between items-center">
 					<div className="flex w-fit space-x-2.5 justify-start items-center">
 						<span className="view-heading">{invoicesView}</span>
-						{uiNew("Inward Invoices")}
+						{uiOpenCategory("Inward Invoices")}
 						<Badge value={api.invoices.length} />
 						<Badge value={`Total ${main.totalInvoicesAmount}`} />
 					</div>
@@ -336,22 +404,22 @@ export default function CashFlows({ setModuleProps }) {
 		});
 	}
 
-	function uiInwardOtherExpense() {
+	function uiInwardOtherIncome() {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
 				<div className="flex w-full justify-start items-center">
 					<div className="flex w-fit space-x-2.5 justify-center items-center">
-						<span className="view-heading">Other Expense</span>
-						{uiNew("Inward Other Expense")}
+						<span className="view-heading">Other Income</span>
+						{uiOpenCategory("Inward Other Income")}
 					</div>
 				</div>
-				<div className="flex w-full space-x-32 justify-between items-center">{uiInwardOtherExpenseBlock()}</div>
+				<div className="flex w-full space-x-32 justify-between items-center">{uiInwardOtherIncomeBlock()}</div>
 			</div>
 		);
 	}
 
-	function uiInwardOtherExpenseBlock() {
-		return Object.values(main.inwardOtherExpense).map((m, n) => {
+	function uiInwardOtherIncomeBlock() {
+		return Object.values(main.inwardOtherIncome).map((m, n) => {
 			const aesthetics = getAesthetics(n);
 
 			return (
@@ -370,8 +438,8 @@ export default function CashFlows({ setModuleProps }) {
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
 				<div className="flex w-full justify-between items-center">
 					<div className="flex w-fit space-x-2.5 justify-start items-center">
-						<span className="view-heading">{MyConstants.Modules.Base.Rv}</span>
-						{uiNew("Inward RVs")}
+						<span className="view-heading">{baseModules.Rv}</span>
+						{uiOpenCategory("Inward RVs")}
 						<Badge value={api.reimburseVouchers.length} />
 						<Badge value={`Total ${main.totalRvAmount}`} />
 					</div>
@@ -406,17 +474,32 @@ export default function CashFlows({ setModuleProps }) {
 					<SpinnerBig />
 				</div>
 			);
-		} else if (mounted.newCashFlow) {
-			return <NewCashFlow module={main.module} reload={setSupportData} unmount={toggleNewCashFlowView} />;
+		} else if (main.module) {
+			if (main.module == baseModules.Affiliates) {
+				return (
+					<ErrorBoundary
+						key={`ErrorBoundary_${baseModules.Affiliates}`}
+						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Affiliates)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<Affiliates reload={getSupportData} unmount={toggleModule} />
+					</ErrorBoundary>
+				);
+			} else {
+				return (
+					<ErrorBoundary
+						key={`ErrorBoundary_${module}`}
+						onError={(error) => MyGlobal.LogErrors(error.message, module)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<Transactions module={main.module} reload={getSupportData} unmount={toggleModule} />
+					</ErrorBoundary>
+				);
+			}
 		} else {
 			return (
-				<div className="flex flex-col w-full h-full justify-start items-center">
+				<div className="flex flex-col w-full h-full justify-between items-center">
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
-						<div className="flex w-1/2 space-x-2 justify-start items-center">
-							<span className="view-heading">{thisView}</span>
-							{api.cashFlows.length > 0 && <Badge value={api.cashFlows.length} />}
-						</div>
-						<div className="flex w-1/2 space-x-2 justify-end items-center"></div>
+						<span className="flex w-2/5 pl-2.5 justify-start items-center view-heading">{thisView}</span>
+						<div className="flex w-3/5 space-x-2 justify-start items-center">{uiCategories()}</div>
 					</div>
 					{uiBody()}
 				</div>
@@ -424,28 +507,8 @@ export default function CashFlows({ setModuleProps }) {
 		}
 	}
 
-	function uiModules() {
-		return Object.values(modules).map((m, i) => {
-			const icon = m == modules.Inward ? faTurnDown : faTurnUp;
-
-			const selectedStyle =
-				m == main.selectedModule ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
-
-			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedStyle} font-medium-10 hovered-rows`;
-
-			return (
-				<button className={wrapper} key={i} onClick={() => setModule(m)}>
-					<span>{m}</span>
-					<FontAwesomeIcon icon={icon} />
-				</button>
-			);
-		});
-	}
-
-	function uiNew(module) {
-		const action = () => (module == "Inward Invoices" ? setModuleProps(invoicesView, 1) : toggleNewCashFlowView(module));
-
-		return <FontAwesomeIcon className="cursor-pointer blue-text" icon={faPlusCircle} onClick={() => action()} size="lg" />;
+	function uiOpenCategory(category) {
+		return <FontAwesomeIcon className="cursor-pointer blue-text" icon={faArrowUpRightFromSquare} onClick={() => toggleModule(category)} />;
 	}
 
 	function uiOutward() {
@@ -465,7 +528,7 @@ export default function CashFlows({ setModuleProps }) {
 				<div className="flex w-full justify-start items-center">
 					<div className="flex w-fit space-x-2.5 justify-center items-center">
 						<span className="view-heading">Office Expense</span>
-						{uiNew("Outward Office Expense")}
+						<sup>{uiOpenCategory("Outward Office Expense")}</sup>
 					</div>
 				</div>
 				<div className="flex w-full space-x-32 justify-between items-center">{uiOutwardOfficeExpenseBlock()}</div>
@@ -494,7 +557,7 @@ export default function CashFlows({ setModuleProps }) {
 				<div className="flex w-full justify-start items-center">
 					<div className="flex w-fit space-x-2.5 justify-center items-center">
 						<span className="view-heading">Other Expense</span>
-						{uiNew("Outward Other Expense")}
+						<sup>{uiOpenCategory("Outward Other Expense")}</sup>
 					</div>
 				</div>
 				<div className="flex w-full space-x-32 justify-between items-center">{uiOutwardOtherExpenseBlock()}</div>
@@ -523,7 +586,7 @@ export default function CashFlows({ setModuleProps }) {
 				<div className="flex w-full justify-start items-center">
 					<div className="flex w-fit space-x-2.5 justify-center items-center">
 						<span className="view-heading">Petty Cash</span>
-						{uiNew("Outward Petty Cash")}
+						<sup>{uiOpenCategory("Outward Petty Cash")}</sup>
 					</div>
 				</div>
 				<div className="flex w-full space-x-32 justify-between items-center">{uiOutwardPettyCashBlock()}</div>
@@ -549,14 +612,14 @@ export default function CashFlows({ setModuleProps }) {
 	function uiSelectedModule() {
 		return (
 			<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">
-				{main.selectedModule == modules.Inward ? uiInward() : uiOutward()}
+				{main.selectedCategory == categories.Inward ? uiInward() : uiOutward()}
 			</div>
 		);
 	}
 
 	// Hooks
 	useEffect(() => {
-		setSupportData();
+		getSupportData();
 
 		return () => {
 			setModuleProps(invoicesView, null);

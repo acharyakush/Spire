@@ -5,15 +5,16 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import NewAffiliate from "./NewAffiliate";
+import Transactions from "./Transactions";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, BadgeSmall, Spinner } from "@/components/Elements";
-import { faAt, faBank, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faBank, faChevronLeft, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 
-export default function Affiliates() {
+export default function Affiliates({ reload, unmount }) {
 	// Business Logic
 
 	const [api, setApi] = useState({
@@ -33,12 +34,14 @@ export default function Affiliates() {
 			},
 			id: 0,
 			projects: [],
+			selectedProject: {},
 		},
 	});
 
 	const [mounted, setMounted] = useState({
 		mainComponent: false,
 		newAffiliate: false,
+		transactions: false,
 	});
 
 	const thisView = MyConstants.Modules.Base.Affiliates;
@@ -78,6 +81,7 @@ export default function Affiliates() {
 		setMain((s) => ({
 			...s,
 			selectedAffiliate: {
+				...s.selectedAffiliate,
 				details: object,
 				id: object.id,
 				projects: object.projects,
@@ -85,17 +89,21 @@ export default function Affiliates() {
 		}));
 	}
 
-	async function setSupportData() {
+	async function setSupportData(action) {
+		if (action) {
+			reload();
+		}
+
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Affiliates.GetAffiliates, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				const revisedAffiliates = [];
+				const affiliates = [];
 
 				response.data.affiliates.forEach((fe) => {
-					const revisedProjects = [];
+					const projects = [];
 
 					response.data.affiliatesProjects
 						.filter((f) => f.affiliate_id == fe.id)
@@ -119,11 +127,18 @@ export default function Affiliates() {
 								}
 							}
 
+							let paidFees = 0;
+
+							response.data.transactions.forEach((__fe) => {
+								if (__fe.project_id == _fe.project_id) {
+									paidFees += Number(__fe.amount);
+								}
+							});
+
 							const totalFees = Number(_fe.total_fees);
-							const paidFees = Number(_fe.paid_fees);
 							const pendingFees = MyGlobal.ThousandSeparator(totalFees - paidFees);
 
-							revisedProjects.push({
+							projects.push({
 								..._fe,
 								company_name: companyName,
 								main_project_name: mainProjectName,
@@ -133,11 +148,12 @@ export default function Affiliates() {
 							});
 						});
 
-					revisedAffiliates.push({ ...fe, projects: revisedProjects });
+					affiliates.push({ ...fe, projects });
 				});
 
-				setApi({ affiliates: revisedAffiliates });
+				setApi({ affiliates });
 				setMounted((s) => ({ ...s, mainComponent: true }));
+				setSelectedAffiliate(affiliates.at(0));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Get All Affiliates`);
@@ -148,6 +164,11 @@ export default function Affiliates() {
 
 	function toggleNewAffiliate() {
 		setMounted((s) => ({ ...s, newAffiliate: !s.newAffiliate }));
+	}
+
+	function toggleTransactions(object) {
+		setMain((s) => ({ ...s, selectedAffiliate: { ...s.selectedAffiliate, selectedProject: object ?? {} } }));
+		setMounted((s) => ({ ...s, transactions: object ? true : false }));
 	}
 
 	// UI Components
@@ -164,7 +185,7 @@ export default function Affiliates() {
 		return main.selectedAffiliate.projects.map((m) => {
 			return (
 				<div
-					className="flex flex-col w-1/3 p-4 space-y-3 justify-center items-center rounded shadow primary-border primary-background-transparent-01"
+					className="flex flex-col w-1/3 p-4 space-y-3 justify-center items-center relative rounded shadow primary-border primary-background-transparent-01"
 					key={m.id}>
 					<span className="font-medium-16 black-text">{m.company_name}</span>
 					<div className="flex space-x-2.5 justify-center items-center font-regular-14 black-text">
@@ -187,13 +208,11 @@ export default function Affiliates() {
 							<span className="font-medium-14 black-text">{MyGlobal.ThousandSeparator(m.total_fees)}</span>
 						</div>
 					</div>
-					<div className="flex flex-col w-full p-4 rounded shadow contrast-background">
-						<div className="flex w-full justify-between items-center">
-							<span className="font-regular-12">Payment Mode</span>
-							<span className="font-medium-12 black-text">
-								<BadgeSmall value={m.payment_mode} />
-							</span>
-						</div>
+					<div className="absolute -bottom-5 cursor-pointer" onClick={() => toggleTransactions(m)}>
+						<span className="flex w-fit px-4 py-2 space-x-2.5 justify-center items-center rounded-full text-white font-medium-11 primary-background primary-border">
+							<FontAwesomeIcon icon={faCoins} />
+							<span>Transactions</span>
+						</span>
 					</div>
 				</div>
 			);
@@ -220,7 +239,6 @@ export default function Affiliates() {
 
 	function uiModules() {
 		const modules = api.affiliates.length ? [...api.affiliates] : [];
-		// modules.unshift({ id: 0, name: "All" });
 
 		return modules.map((m, i) => {
 			const selectedStyle =
@@ -270,7 +288,7 @@ export default function Affiliates() {
 								</span>
 							</div>
 							<div className="flex space-x-2.5 justify-center items-center">
-								<FontAwesomeIcon className="primary-text" icon={faAt} />
+								<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
 								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openEmailClient()}>
 									{main.selectedAffiliate.details.email_address}
 								</span>
@@ -300,11 +318,16 @@ export default function Affiliates() {
 		return;
 	}
 
-	if (!mounted.newAffiliate) {
+	if (mounted.newAffiliate) {
+		return <NewAffiliate reload={setSupportData} unmount={toggleNewAffiliate} />;
+	} else if (mounted.transactions) {
+		return <Transactions project={main.selectedAffiliate.selectedProject} reload={setSupportData} unmount={toggleTransactions} />;
+	} else {
 		return (
 			<div className="flex flex-col w-full h-full justify-start items-center">
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
-					<div className="flex w-1/2 space-x-2 justify-start items-center">
+					<div className="flex w-full space-x-2 justify-start items-center">
+						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 						<span className="view-heading">{thisView}</span>
 						{getIconOrBadge()}
 					</div>
@@ -313,7 +336,5 @@ export default function Affiliates() {
 				{uiMain()}
 			</div>
 		);
-	} else {
-		return <NewAffiliate reload={setSupportData} unmount={toggleNewAffiliate} />;
 	}
 }

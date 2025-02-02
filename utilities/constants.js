@@ -5,13 +5,17 @@ const MyConstants = Object.freeze({
 		Activities: "/api/activities",
 		Affiliates: Object.freeze({
 			AddAffiliate: "api/affiliates/addAffiliates",
+			AddTransaction: "api/affiliates/addTransaction",
 			GetAffiliates: "api/affiliates/getAffiliates",
+			GetTransactionSupportData: "api/affiliates/getTransactionSupportData",
 		}),
 		Authenticate: "/api/authenticate",
 		CashFlows: Object.freeze({
 			AddCashFlow: "api/cashFlows/addCashFlow",
+			AddTransaction: "api/cashFlows/addTransaction",
 			AddInvoice: "api/cashFlows/addInvoice",
 			GetSupportData: "api/cashFlows/getSupportData",
+			GetTransactionSupportData: "api/cashFlows/getTransactionSupportData",
 		}),
 		Clients: Object.freeze({
 			GetClients: "api/clients/getClients",
@@ -32,8 +36,8 @@ const MyConstants = Object.freeze({
 			AddTransaction: "api/invoices/addTransaction",
 			EditInvoice: "api/invoices/editInvoice",
 			GetHistorySupportData: "api/invoices/getHistorySupportData",
-			GetSupportData: "api/invoices/getSupportData",
 			GetNewInvoiceSupportData: "api/invoices/getNewInvoiceSupportData",
+			GetSupportData: "api/invoices/getSupportData",
 		}),
 		Notes: Object.freeze({
 			AddNote: "api/notes/addNote",
@@ -120,7 +124,6 @@ const MyConstants = Object.freeze({
 	}),
 	Modules: Object.freeze({
 		Base: Object.freeze({
-			Admins: "Admins",
 			Affiliates: "Affiliates",
 			CashFlow: "Cash Flow",
 			Clients: "Clients",
@@ -130,6 +133,7 @@ const MyConstants = Object.freeze({
 			Inquiries: "Inquiries",
 			Invoices: "Invoices",
 			Notes: "Notes",
+			Owners: "Owners",
 			Projects: "Projects",
 			References: "References",
 			Tasks: "Tasks",
@@ -165,6 +169,7 @@ const MyConstants = Object.freeze({
 			EnableTask: "Enable Task",
 			MarkSubTaskCompleted: "Mark Sub Task Completed",
 			MarkTaskCompleted: "Mark Task Completed",
+			NewAffiliate: "New Affiliate",
 			NewInquiry: "New Inquiry",
 			NewInvoice: "New Invoice",
 			NewOwnerFirm: "New Owner Firm",
@@ -175,6 +180,7 @@ const MyConstants = Object.freeze({
 		}),
 		Other: Object.freeze({
 			CashFlow: Object.freeze({
+				All: "All",
 				Inward: "Inward",
 				Outward: "Outward",
 			}),
@@ -246,12 +252,6 @@ const MyConstants = Object.freeze({
 			note: "Note",
 			entryBy: "Entry By",
 		}),
-		PaymentReceived: Object.freeze({
-			Date: "Date",
-			Particulars: "Particulars",
-			AmountReceived: "Amt Received",
-			PaymentSource: "Payment Source",
-		}),
 		Projects: Object.freeze({
 			Started: "Started On",
 			GovermentId: "Gov ID",
@@ -300,6 +300,25 @@ const MyConstants = Object.freeze({
 			Date: "Date",
 			WrittenBy: "Written By",
 		}),
+		Transactions: Object.freeze({
+			General: Object.freeze({
+				Date: "Date",
+				Firm: "Firm",
+				Bank: "Bank",
+				Amount: "Amount",
+				Particulars: "Particulars",
+				PaymentSource: "Payment Source",
+				PaymentType: "Payment Type",
+				Remarks: "Remarks",
+				EntryBy: "Entry By",
+			}),
+			Invoice: Object.freeze({
+				Date: "Date",
+				Particulars: "Particulars",
+				AmountReceived: "Amt Received",
+				PaymentSource: "Payment Source",
+			}),
+		}),
 	}),
 	ToastTypes: Object.freeze({
 		Error: "error",
@@ -312,7 +331,6 @@ const MyConstants = Object.freeze({
 		Employees: "Employees",
 		Profile: "Profile",
 		Settings: "Settings",
-		Storage: "Storage",
 		Logout: "Logout",
 	}),
 	UserType: Object.freeze({
