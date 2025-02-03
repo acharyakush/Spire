@@ -17,7 +17,6 @@ export default async function handler(req, res) {
 			query("SELECT * FROM affiliates_transactions WHERE project_id=?", [req.query.projectId]), // Queries
 			query("SELECT * FROM owner_firms", []),
 			query("SELECT * FROM owner_firms_banks", []),
-			query("SELECT * FROM cash_flows_settings WHERE `key`='payment_types'", []),
 		]);
 
 		return res.status(200).json({

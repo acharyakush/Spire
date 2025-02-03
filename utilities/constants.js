@@ -7,15 +7,17 @@ const MyConstants = Object.freeze({
 			AddAffiliate: "api/affiliates/addAffiliates",
 			AddTransaction: "api/affiliates/addTransaction",
 			GetAffiliates: "api/affiliates/getAffiliates",
-			GetTransactionSupportData: "api/affiliates/getTransactionSupportData",
+			GetNewTransactionSupportData: "api/affiliates/getNewTransactionSupportData",
+			GetTransactionsSupportData: "api/affiliates/getTransactionsSupportData",
 		}),
 		Authenticate: "/api/authenticate",
 		CashFlows: Object.freeze({
 			AddCashFlow: "api/cashFlows/addCashFlow",
 			AddTransaction: "api/cashFlows/addTransaction",
 			AddInvoice: "api/cashFlows/addInvoice",
+			GetNewTransactionSupportData: "api/cashFlows/getNewTransactionSupportData",
 			GetSupportData: "api/cashFlows/getSupportData",
-			GetTransactionSupportData: "api/cashFlows/getTransactionSupportData",
+			GetTransactionSupportData: "api/cashFlows/getTransactionsSupportData",
 		}),
 		Clients: Object.freeze({
 			GetClients: "api/clients/getClients",
@@ -64,6 +66,13 @@ const MyConstants = Object.freeze({
 		}),
 		Tasks: Object.freeze({
 			AddTask: "api/tasks/addTask",
+		}),
+		Vendors: Object.freeze({
+			AddVendor: "api/vendors/addVendors",
+			AddTransaction: "api/vendors/addTransaction",
+			GetVendors: "api/vendors/getVendors",
+			GetNewTransactionSupportData: "api/vendors/getNewTransactionSupportData",
+			GetTransactionsSupportData: "api/vendors/getTransactionsSupportData",
 		}),
 	}),
 	Messages: Object.freeze({
@@ -121,6 +130,7 @@ const MyConstants = Object.freeze({
 		TaskParticularRemarkEdited: "Task Particular/Remark edited.",
 		TransactionAdded: "Transaction added.",
 		UnauthorizedAccess: "Unauthorized access.",
+		VendorAdded: "Vendor(s) added.",
 	}),
 	Modules: Object.freeze({
 		Base: Object.freeze({
@@ -136,8 +146,9 @@ const MyConstants = Object.freeze({
 			Owners: "Owners",
 			Projects: "Projects",
 			References: "References",
-			Tasks: "Tasks",
 			Rv: "RV",
+			Tasks: "Tasks",
+			Vendors: "Vendors",
 		}),
 		Derived: Object.freeze({
 			DeleteAffiliate: "Delete Affiliate",
@@ -176,6 +187,7 @@ const MyConstants = Object.freeze({
 			NewProject: "New Project",
 			NewRv: "New RV",
 			NewTask: "New Task",
+			NewVendor: "New Vendor",
 			PaymentReceived: "Payment Received",
 		}),
 		Other: Object.freeze({

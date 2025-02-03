@@ -44,6 +44,8 @@ export default async function handler(req, res) {
 			queryParameters = [request.inquiryId, request.projectId];
 		} else if (request.type === "get-affiliates") {
 			queryString = "SELECT * FROM affiliates";
+		} else if (request.type === "get-vendors") {
+			queryString = "SELECT * FROM vendors";
 		} else if (request.type === "get-activities") {
 			queryString = "SELECT * FROM activities";
 		} else {

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 02, 2025 at 07:33 PM
+-- Generation Time: Feb 03, 2025 at 07:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,80 @@ SET time_zone = "+00:00";
 --
 -- Database: `spire`
 --
+
+DELIMITER $$
+--
+-- Procedures
+--
+CREATE DEFINER=`spire`@`%` PROCEDURE `generate_dynamic_id` (`prefix` CHAR(8), `table_name` VARCHAR(255), OUT `new_id` CHAR(8))   BEGIN
+    DECLARE current_max_id char(8) DEFAULT NULL;
+    DECLARE new_number INT DEFAULT 1;
+    DECLARE sql_query VARCHAR(255);
+    DECLARE lock_acquired BOOLEAN DEFAULT FALSE;
+    DECLARE id_exists INT DEFAULT 0;
+    DECLARE max_attempts INT DEFAULT 10;
+    DECLARE attempt INT DEFAULT 0;
+    DECLARE full_prefix char(8);
+
+    -- Retry loop to acquire lock
+    lock_retry: REPEAT
+        SELECT GET_LOCK('id_generation_lock', 5) INTO lock_acquired;
+
+        IF lock_acquired THEN
+            -- Lock acquired, proceed with ID generation
+            SET full_prefix = CONCAT(prefix, '%');
+
+            -- Select the current max ID
+            SET sql_query = CONCAT('SELECT MAX(id) INTO @current_max_id FROM ', table_name, ' WHERE id LIKE ?');
+            PREPARE stmt FROM sql_query;
+            EXECUTE stmt USING full_prefix;
+            DEALLOCATE PREPARE stmt;
+
+            SELECT @current_max_id INTO current_max_id;
+
+            -- Extract numeric part and generate new ID
+            IF current_max_id IS NOT NULL THEN
+                SET new_number = CAST(SUBSTRING(current_max_id, LENGTH(prefix) + 1) AS UNSIGNED) + 1;
+            END IF;
+
+            SET new_id = CONCAT(prefix, LPAD(new_number, 6, '0'));
+
+            -- Check if new ID already exists
+            SET sql_query = CONCAT('SELECT COUNT(*) INTO @id_exists FROM ', table_name, ' WHERE id = ?');
+            PREPARE stmt FROM sql_query;
+            EXECUTE stmt USING new_id;
+            DEALLOCATE PREPARE stmt;
+
+            SELECT @id_exists INTO id_exists;
+
+            -- Regenerate if ID exists
+            WHILE id_exists > 0 DO
+                SET new_number = new_number + 1;
+                SET new_id = CONCAT(prefix, LPAD(new_number, 6, '0'));
+
+                PREPARE stmt FROM sql_query;
+                EXECUTE stmt USING new_id;
+                DEALLOCATE PREPARE stmt;
+
+                SELECT @id_exists INTO id_exists;
+            END WHILE;
+
+            -- Release the lock
+            DO RELEASE_LOCK('id_generation_lock');
+            LEAVE lock_retry;
+
+        ELSE
+            -- Retry mechanism
+            SET attempt = attempt + 1;
+            IF attempt >= max_attempts THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Could not acquire lock for ID generation after max retries';
+                LEAVE lock_retry;
+            END IF;
+        END IF;
+    UNTIL lock_acquired END REPEAT;
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -418,7 +492,17 @@ INSERT INTO `activities` (`id`, `entry_by_id`, `module`, `activity`, `ip_address
 (409, 'A3', 'Cash Flow', 'Added transaction for <b>Inward Other Income</b>.', 'Localhost', '2025-02-02 23:33:38', ''),
 (410, 'A3', 'General', 'Logged out.', 'Localhost', '2025-02-02 23:43:50', ''),
 (411, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-02 23:43:57', ''),
-(412, 'A3', 'General', 'Logged out.', 'Localhost', '2025-02-03 00:01:32', '');
+(412, 'A3', 'General', 'Logged out.', 'Localhost', '2025-02-03 00:01:32', ''),
+(413, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-03 19:33:51', ''),
+(414, 'A3', 'Affiliates', 'Added transaction for <b>AF000001</b>.', 'Localhost', '2025-02-03 21:09:53', ''),
+(415, 'A3', 'Affiliates', 'Added transaction for <b>AF000001</b>.', 'Localhost', '2025-02-03 21:10:50', ''),
+(416, 'A3', 'Cash Flow', 'Added transaction for <b>Outward Office Expense</b>.', 'Localhost', '2025-02-03 21:32:34', ''),
+(417, 'A3', 'Cash Flow', 'Added transaction for <b>Outward Office Expense</b>.', 'Localhost', '2025-02-03 21:33:07', ''),
+(418, 'A3', 'Cash Flow', 'Added transaction for <b>Outward Office Expense</b>.', 'Localhost', '2025-02-03 21:52:27', ''),
+(419, 'A3', 'Cash Flow', 'Added transaction for <b>Outward Office Expense</b>.', 'Localhost', '2025-02-03 21:53:36', ''),
+(420, 'A3', 'Cash Flow', 'Added transaction for <b>Outward Office Expense</b>.', 'Localhost', '2025-02-03 21:56:56', ''),
+(421, 'A3', 'Inquiries', 'Added <b>PJ000008</b>.', 'Localhost', '2025-02-03 22:56:42', ''),
+(422, 'A3', 'General', 'Logged out.', 'Localhost', '2025-02-03 23:29:46', '');
 
 -- --------------------------------------------------------
 
@@ -543,7 +627,9 @@ INSERT INTO `affiliates_transactions` (`id`, `affiliate_id`, `project_id`, `owne
 (9, 'AF000001', 'PJ000001', 'AC02', 'BK02', 1.00, 'm', 'CASH', 'Professional Fees', 'b', '2025-02-02 16:37:14', 'A3'),
 (10, 'AF000002', 'PJ000004', 'AC02', 'BK02', 152.00, 'ppol', 'DC', 'Reimbursement Voucher', 'mkop', '2025-02-02 16:42:59', 'A3'),
 (11, 'AF000001', 'PJ000002', 'AC04', 'BK04', 1.00, 'mlll', 'CHEQUE', 'Reimbursement Voucher', 'bbm', '2025-02-02 16:48:37', 'A3'),
-(12, 'AF000002', 'PJ000004', 'AC03', 'BK03', 99.00, 'op', 'INSTAMOJO', 'Reimbursement Voucher', 'hghg', '2025-02-02 16:49:46', 'A3');
+(12, 'AF000002', 'PJ000004', 'AC03', 'BK03', 99.00, 'op', 'INSTAMOJO', 'Reimbursement Voucher', 'hghg', '2025-02-02 16:49:46', 'A3'),
+(13, 'AF000001', 'PJ000001', 'AC04', 'BK04', 8889.00, 'mko', 'CHEQUE', 'Professional Fees', 'mklo', '2025-02-03 15:38:46', 'A3'),
+(14, 'AF000001', 'PJ000001', 'AC02', 'BK02', 12.00, 'er', 'BK02', 'Professional Fees', 'tr', '2025-02-05 15:40:37', 'A3');
 
 -- --------------------------------------------------------
 
@@ -589,7 +675,12 @@ INSERT INTO `cash_flows` (`id`, `affiliate_id`, `owner_firms_id`, `owner_firms_b
 (14, NULL, 'AC03', 'BK03', 75.00, 0.00, 'Outward Office Expense', 'polll', 'DC', 'Professional Fees', 'jhjhbjbj', 0, '2025-02-02 12:25:46', 'A3'),
 (15, NULL, 'AC03', 'BK03', 45.00, 0.00, 'Outward Other Expense', 'p[]', 'CHEQUE', 'Reimbursement Voucher', 'l;\'', 0, '2025-02-20 12:31:56', 'A3'),
 (16, NULL, 'AC04', 'BK04', 200.00, 0.00, 'Outward Petty Cash', 'popop', 'CC', 'Professional Fees', 'nbjbjbj', 0, '2025-02-02 12:32:30', 'A3'),
-(17, NULL, 'AC01', 'BK01', 0.00, 1500.00, 'Inward Other Income', 'mlp', 'CHEQUE', 'Professional Fees', 'mklp', 0, '2025-02-06 12:33:09', 'A3');
+(17, NULL, 'AC01', 'BK01', 0.00, 1500.00, 'Inward Other Income', 'mlp', 'CHEQUE', 'Professional Fees', 'mklp', 0, '2025-02-06 12:33:09', 'A3'),
+(18, NULL, 'AC01', 'BK01', 75.00, 0.00, 'Outward Office Expense', '323', 'CHEQUE', 'Professional Fees', '2232', 0, '2025-02-03 10:32:20', 'A3'),
+(19, NULL, 'AC01', 'BK01', 25.00, 0.00, 'Outward Office Expense', '889', 'BK01', 'Professional Fees', '6665', 0, '2025-02-03 10:32:50', 'A3'),
+(20, NULL, 'AC02', 'BK02', 885.00, 0.00, 'Outward Office Expense', 'zxc', 'NETBANKING', 'Professional Fees', 'zxc', 0, '2025-02-03 10:49:31', 'A3'),
+(21, NULL, 'AC02', 'BK02', 1.00, 0.00, 'Outward Office Expense', 'qwe', 'CHEQUE', 'Reimbursement Voucher', 'qwer', 0, '2025-02-03 10:53:09', 'A3'),
+(22, NULL, 'AC03', 'BK03', 14.00, 0.00, 'Outward Office Expense', 'geret', 'UPI', 'Reimbursement Voucher', '64564564', 0, '2025-02-03 10:56:33', 'A3');
 
 -- --------------------------------------------------------
 
@@ -640,7 +731,7 @@ CREATE TABLE `clients` (
 --
 
 INSERT INTO `clients` (`id`, `affiliate_ids`, `company_id`, `reference_id`, `name`, `address`, `phone_number`, `email_address`, `is_confirmed`, `is_deleted`, `joined_on`, `notes`, `rating`, `entry_at`, `entry_by_id`) VALUES
-('CN000001', 'AF000002', 'CP000001', 'RF000001', 'Kush Acharya', NULL, 8780577704, 'acharyakush2604@gmail.com', 1, 0, '2024-12-15 15:28:07', NULL, 0, '2024-12-15 15:28:07', NULL),
+('CN000001', 'AF000002', 'CP000009', 'RF000001', 'Kush Acharya', NULL, 8780577704, 'acharyakush2604@gmail.com', 1, 0, '2024-12-15 15:28:07', NULL, 0, '2024-12-15 15:28:07', NULL),
 ('CN000002', NULL, NULL, 'RF000002', 'Kevin Vyas', NULL, 8780577812, 'vyas.kevin@outlook.com', 0, 0, '2024-12-18 00:05:18', NULL, 0, '2024-12-18 00:05:18', NULL),
 ('CN000003', NULL, NULL, 'RF000003', 'Mudra Rawal', NULL, 9601432558, 'mudra.rawal@gmail.com', 0, 0, '2025-01-11 19:15:23', NULL, 0, '2025-01-11 19:15:23', NULL),
 ('CN000004', NULL, 'CP000003', 'RF000003', 'Parth Acharya', NULL, 8866359953, 'parth.acharya@gmail.com', 1, 0, '2025-01-11 19:45:34', NULL, 0, '2025-01-11 19:45:34', NULL),
@@ -687,7 +778,8 @@ INSERT INTO `companies` (`id`, `client_id`, `name`, `phone_number`, `email_addre
 ('CP000005', 'CN000007', 'Al Habibi Pvt Ltd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-02-01 15:26:57', 'A3'),
 ('CP000006', 'CN000011', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-02-01 15:43:00', 'A3'),
 ('CP000007', 'CN000011', 'Babul', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-02-01 17:05:28', 'A3'),
-('CP000008', 'CN000011', 'Babul', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2000.00, '2025-02-01 17:06:39', 'A3');
+('CP000008', 'CN000011', 'Babul', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2000.00, '2025-02-01 17:06:39', 'A3'),
+('CP000009', 'CN000001', 'Moon Pharma Pvt Ltd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-02-03 22:56:42', 'A3');
 
 -- --------------------------------------------------------
 
@@ -793,7 +885,7 @@ INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `
 ('IQ000005', 'CN000004', 'RF000003', 'MP000012', 'SP000023', '2025-01-05 14:13:11', 8866359953, 'parth.acharya@gmail.com', 'A1', 0, 0, NULL, 2000.00, 'Confirmed', NULL, '2025-01-11 19:45:34', 'A3'),
 ('IQ000006', 'CN000003', 'RF000003', 'MP000003', 'SP000007', '2025-01-02 14:24:03', 9601432558, 'mudra.rawal@gmail.com', 'A2', 1, 0, 'I am done with this work.', 10000.00, 'Closed', NULL, '2025-01-11 19:54:38', 'A3'),
 ('IQ000007', 'CN000005', 'RF000005', 'MP000001', 'SP000010', '2025-01-12 12:00:00', 9909436171, 'sony.dipens@gmail.com', 'A2', 0, 0, NULL, 5000.00, 'Confirmed', NULL, '2025-01-12 11:18:02', 'A3'),
-('IQ000008', 'CN000001', 'RF000001', 'MP000005', 'SP000014', '2025-01-12 09:05:32', 8780577704, 'acharyakush2604@gmail.com', 'A1', 0, 0, NULL, 4550.00, 'Open', NULL, '2025-01-12 14:36:15', 'A3'),
+('IQ000008', 'CN000001', 'RF000001', 'MP000005', 'SP000014', '2025-01-12 09:05:32', 8780577704, 'acharyakush2604@gmail.com', 'A1,A3', 0, 0, '', 123345.00, 'Confirmed', NULL, '2025-01-12 14:36:15', 'A3'),
 ('IQ000009', 'CN000006', 'RF000003', 'MP000002', 'SP000002', '2025-02-06 13:47:30', 9978075347, 'suresh@gmail.com', 'A3', 0, 0, NULL, 2500.00, 'Open', NULL, '2025-01-30 19:24:27', 'A3'),
 ('IQ000010', 'CN000007', 'RF000013', 'MP000005', 'SP000036', '2025-01-22 06:33:22', 8780577704, 'na@na.com', 'A2', 1, 0, '#Hashtag@ 123', 1800000.00, 'Confirmed', NULL, '2025-02-01 12:06:43', 'A3'),
 ('IQ000011', 'CN000008', 'RF000014', 'MP000011', 'SP000037', '2025-01-22 06:36:55', 8780577704, 'sna@sna.com', 'A2,A1,A3', 0, 0, NULL, 1800000.00, 'Open', NULL, '2025-02-01 12:07:56', 'A3'),
@@ -984,7 +1076,8 @@ INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `task_id`, `original_entr
 (32, 'IQ000017', NULL, NULL, '', 'A3', 'Lol.', 'Inquiries', '2025-02-01 13:59:08'),
 (33, 'IQ000010', 'PJ000005', NULL, 'A3', 'A3', 'Where does the RV amount go?', 'Projects', '2025-02-01 15:26:57'),
 (34, 'IQ000013', 'PJ000006', NULL, 'A3', 'A3', 'Lol.', 'Projects', '2025-02-01 15:41:09'),
-(35, 'IQ000014', 'PJ000007', NULL, 'A3', 'A3', 'NA', 'Projects', '2025-02-01 15:43:00');
+(35, 'IQ000014', 'PJ000007', NULL, 'A3', 'A3', 'NA', 'Projects', '2025-02-01 15:43:00'),
+(36, 'IQ000008', 'PJ000008', NULL, 'A3', 'A3', 'vbnm', 'Projects', '2025-02-03 22:56:42');
 
 -- --------------------------------------------------------
 
@@ -1115,6 +1208,289 @@ INSERT INTO `permissions` (`id`, `name`, `module`, `type`, `sequence`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `pma__bookmark`
+--
+
+CREATE TABLE `pma__bookmark` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `dbase` varchar(255) NOT NULL DEFAULT '',
+  `user` varchar(255) NOT NULL DEFAULT '',
+  `label` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `query` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Bookmarks';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__central_columns`
+--
+
+CREATE TABLE `pma__central_columns` (
+  `db_name` varchar(64) NOT NULL,
+  `col_name` varchar(64) NOT NULL,
+  `col_type` varchar(64) NOT NULL,
+  `col_length` text DEFAULT NULL,
+  `col_collation` varchar(64) NOT NULL,
+  `col_isNull` tinyint(1) NOT NULL,
+  `col_extra` varchar(255) DEFAULT '',
+  `col_default` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Central list of columns';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__column_info`
+--
+
+CREATE TABLE `pma__column_info` (
+  `id` int(5) UNSIGNED NOT NULL,
+  `db_name` varchar(64) NOT NULL DEFAULT '',
+  `table_name` varchar(64) NOT NULL DEFAULT '',
+  `column_name` varchar(64) NOT NULL DEFAULT '',
+  `comment` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `mimetype` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
+  `transformation` varchar(255) NOT NULL DEFAULT '',
+  `transformation_options` varchar(255) NOT NULL DEFAULT '',
+  `input_transformation` varchar(255) NOT NULL DEFAULT '',
+  `input_transformation_options` varchar(255) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Column information for phpMyAdmin';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__designer_settings`
+--
+
+CREATE TABLE `pma__designer_settings` (
+  `username` varchar(64) NOT NULL,
+  `settings_data` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Settings related to Designer';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__export_templates`
+--
+
+CREATE TABLE `pma__export_templates` (
+  `id` int(5) UNSIGNED NOT NULL,
+  `username` varchar(64) NOT NULL,
+  `export_type` varchar(10) NOT NULL,
+  `template_name` varchar(64) NOT NULL,
+  `template_data` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Saved export templates';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__favorite`
+--
+
+CREATE TABLE `pma__favorite` (
+  `username` varchar(64) NOT NULL,
+  `tables` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Favorite tables';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__history`
+--
+
+CREATE TABLE `pma__history` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `username` varchar(64) NOT NULL DEFAULT '',
+  `db` varchar(64) NOT NULL DEFAULT '',
+  `table` varchar(64) NOT NULL DEFAULT '',
+  `timevalue` timestamp NOT NULL DEFAULT current_timestamp(),
+  `sqlquery` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='SQL history for phpMyAdmin';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__navigationhiding`
+--
+
+CREATE TABLE `pma__navigationhiding` (
+  `username` varchar(64) NOT NULL,
+  `item_name` varchar(64) NOT NULL,
+  `item_type` varchar(64) NOT NULL,
+  `db_name` varchar(64) NOT NULL,
+  `table_name` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Hidden items of navigation tree';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__pdf_pages`
+--
+
+CREATE TABLE `pma__pdf_pages` (
+  `db_name` varchar(64) NOT NULL DEFAULT '',
+  `page_nr` int(10) UNSIGNED NOT NULL,
+  `page_descr` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='PDF relation pages for phpMyAdmin';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__recent`
+--
+
+CREATE TABLE `pma__recent` (
+  `username` varchar(64) NOT NULL,
+  `tables` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Recently accessed tables';
+
+--
+-- Dumping data for table `pma__recent`
+--
+
+INSERT INTO `pma__recent` (`username`, `tables`) VALUES
+('spire', '[{\"db\":\"spire\",\"table\":\"invoices_payment_history\"},{\"db\":\"spire\",\"table\":\"owner_firms_banks\"},{\"db\":\"spire\",\"table\":\"tasks_settings\"},{\"db\":\"spire\",\"table\":\"cash_flows_settings\"},{\"db\":\"spire\",\"table\":\"projects_settings\"},{\"db\":\"spire\",\"table\":\"owner_firms\"},{\"db\":\"spire\",\"table\":\"projects\"},{\"db\":\"spire\",\"table\":\"invoices\"},{\"db\":\"spire\",\"table\":\"tasks_particulars_remarks\"},{\"db\":\"spire\",\"table\":\"tasks\"}]');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__relation`
+--
+
+CREATE TABLE `pma__relation` (
+  `master_db` varchar(64) NOT NULL DEFAULT '',
+  `master_table` varchar(64) NOT NULL DEFAULT '',
+  `master_field` varchar(64) NOT NULL DEFAULT '',
+  `foreign_db` varchar(64) NOT NULL DEFAULT '',
+  `foreign_table` varchar(64) NOT NULL DEFAULT '',
+  `foreign_field` varchar(64) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Relation table';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__savedsearches`
+--
+
+CREATE TABLE `pma__savedsearches` (
+  `id` int(5) UNSIGNED NOT NULL,
+  `username` varchar(64) NOT NULL DEFAULT '',
+  `db_name` varchar(64) NOT NULL DEFAULT '',
+  `search_name` varchar(64) NOT NULL DEFAULT '',
+  `search_data` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Saved searches';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__table_coords`
+--
+
+CREATE TABLE `pma__table_coords` (
+  `db_name` varchar(64) NOT NULL DEFAULT '',
+  `table_name` varchar(64) NOT NULL DEFAULT '',
+  `pdf_page_number` int(11) NOT NULL DEFAULT 0,
+  `x` float UNSIGNED NOT NULL DEFAULT 0,
+  `y` float UNSIGNED NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Table coordinates for phpMyAdmin PDF output';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__table_info`
+--
+
+CREATE TABLE `pma__table_info` (
+  `db_name` varchar(64) NOT NULL DEFAULT '',
+  `table_name` varchar(64) NOT NULL DEFAULT '',
+  `display_field` varchar(64) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Table information for phpMyAdmin';
+
+--
+-- Dumping data for table `pma__table_info`
+--
+
+INSERT INTO `pma__table_info` (`db_name`, `table_name`, `display_field`) VALUES
+('spire', 'invoices', 'custom_id'),
+('spire', 'reimburse_vouchers', 'custom_id');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__table_uiprefs`
+--
+
+CREATE TABLE `pma__table_uiprefs` (
+  `username` varchar(64) NOT NULL,
+  `db_name` varchar(64) NOT NULL,
+  `table_name` varchar(64) NOT NULL,
+  `prefs` text NOT NULL,
+  `last_update` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Tables'' UI preferences';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__tracking`
+--
+
+CREATE TABLE `pma__tracking` (
+  `db_name` varchar(64) NOT NULL,
+  `table_name` varchar(64) NOT NULL,
+  `version` int(10) UNSIGNED NOT NULL,
+  `date_created` datetime NOT NULL,
+  `date_updated` datetime NOT NULL,
+  `schema_snapshot` text NOT NULL,
+  `schema_sql` text DEFAULT NULL,
+  `data_sql` longtext DEFAULT NULL,
+  `tracking` set('UPDATE','REPLACE','INSERT','DELETE','TRUNCATE','CREATE DATABASE','ALTER DATABASE','DROP DATABASE','CREATE TABLE','ALTER TABLE','RENAME TABLE','DROP TABLE','CREATE INDEX','DROP INDEX','CREATE VIEW','ALTER VIEW','DROP VIEW') DEFAULT NULL,
+  `tracking_active` int(1) UNSIGNED NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Database changes tracking for phpMyAdmin';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__userconfig`
+--
+
+CREATE TABLE `pma__userconfig` (
+  `username` varchar(64) NOT NULL,
+  `timevalue` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `config_data` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='User preferences storage for phpMyAdmin';
+
+--
+-- Dumping data for table `pma__userconfig`
+--
+
+INSERT INTO `pma__userconfig` (`username`, `timevalue`, `config_data`) VALUES
+('spire', '2025-01-28 13:37:12', '{\"Console\\/Mode\":\"collapse\"}');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__usergroups`
+--
+
+CREATE TABLE `pma__usergroups` (
+  `usergroup` varchar(64) NOT NULL,
+  `tab` varchar(64) NOT NULL,
+  `allowed` enum('Y','N') NOT NULL DEFAULT 'N'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='User groups with configured menu items';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pma__users`
+--
+
+CREATE TABLE `pma__users` (
+  `username` varchar(64) NOT NULL,
+  `usergroup` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Users and their assignments to user groups';
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `projects`
 --
 
@@ -1128,6 +1504,7 @@ CREATE TABLE `projects` (
   `government_id` varchar(100) DEFAULT NULL,
   `main_project_id` char(8) NOT NULL,
   `sub_project_id` char(8) NOT NULL,
+  `vendor_id` char(8) DEFAULT NULL,
   `quote` decimal(10,2) NOT NULL CHECK (`quote` >= 0),
   `due_on` datetime NOT NULL DEFAULT current_timestamp(),
   `total_affiliate_fees` decimal(10,2) DEFAULT NULL,
@@ -1147,14 +1524,15 @@ CREATE TABLE `projects` (
 -- Dumping data for table `projects`
 --
 
-INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `invoice_firm_id`, `government_id`, `main_project_id`, `sub_project_id`, `quote`, `due_on`, `total_affiliate_fees`, `invoice_fees`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `entry_at`, `entry_by_id`, `completed_on`, `reason`) VALUES
-('PJ000001', 'CN000001', 'CP000001', 'AF000002', 'IQ000001', 'AC01', 'PJ1/22/12/2024', 'MP000004', 'SP000003', 5750.00, '2024-12-15 04:09:42', 500.00, 575.00, 'A3,A2', '2024-12-17 23:48:41', 'Active', 0, 0, '2024-12-17 23:48:41', 'A3', '2025-02-01 16:22:15', ''),
-('PJ000002', 'CN000005', 'CP000002', 'AF000001', 'IQ000007', 'AC02', NULL, 'MP000001', 'SP000010', 2500.00, '2025-01-30 21:23:36', 1250.00, 1500.00, 'A3', '2025-01-12 11:41:51', 'Completed', 0, 0, '2025-01-12 11:41:51', 'A3', '2025-01-30 00:51:35', NULL),
-('PJ000003', 'CN000004', 'CP000003', NULL, 'IQ000005', 'AC03', NULL, 'MP000012', 'SP000023', 2050.00, '2025-01-04 18:30:00', NULL, 1500.00, 'A1', '2025-01-28 23:46:17', 'Hold', 0, 0, '2025-01-28 23:46:17', 'A3', NULL, 'mm'),
-('PJ000004', 'CN000012', 'CP000004', 'AF000002', 'IQ000015', 'AC03', NULL, 'MP000011', 'SP000025', 80000.00, '2025-01-31 18:30:00', 1000.00, 15000.00, 'A3,A1', '2025-02-01 13:44:26', 'Active', 0, 0, '2025-02-01 13:44:26', 'A3', NULL, ''),
-('PJ000005', 'CN000007', 'CP000005', NULL, 'IQ000010', 'AC01', NULL, 'MP000005', 'SP000036', 515000.00, '2026-07-12 18:30:00', NULL, 15000.00, 'A2', '2025-02-01 15:26:57', 'Active', 0, 0, '2025-02-01 15:26:57', 'A3', NULL, ''),
-('PJ000006', 'CN000005', 'CP000002', NULL, 'IQ000013', 'AC01', NULL, 'MP000007', 'SP000006', 500.00, '2025-03-02 18:30:00', NULL, 100.00, 'A1,A2,A3', '2025-02-01 15:41:09', 'Active', 0, 0, '2025-02-01 15:41:09', 'A3', NULL, ''),
-('PJ000007', 'CN000011', 'CP000008', 'AF000002', 'IQ000014', 'AC01', NULL, 'MP000006', 'SP000039', 30002.00, '2025-02-19 13:00:00', 2000.00, 30000.00, 'A3', '2025-02-01 15:43:00', 'Active', 0, 0, '2025-02-01 15:43:00', 'A3', NULL, '');
+INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `invoice_firm_id`, `government_id`, `main_project_id`, `sub_project_id`, `vendor_id`, `quote`, `due_on`, `total_affiliate_fees`, `invoice_fees`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `entry_at`, `entry_by_id`, `completed_on`, `reason`) VALUES
+('PJ000001', 'CN000001', 'CP000001', 'AF000002', 'IQ000001', 'AC01', 'PJ1/22/12/2024', 'MP000004', 'SP000003', NULL, 5750.00, '2024-12-15 04:09:42', 500.00, 575.00, 'A3,A2', '2024-12-17 23:48:41', 'Active', 0, 0, '2024-12-17 23:48:41', 'A3', '2025-02-01 16:22:15', ''),
+('PJ000002', 'CN000005', 'CP000002', 'AF000001', 'IQ000007', 'AC02', NULL, 'MP000001', 'SP000010', NULL, 2500.00, '2025-01-30 21:23:36', 1250.00, 1500.00, 'A3', '2025-01-12 11:41:51', 'Completed', 0, 0, '2025-01-12 11:41:51', 'A3', '2025-01-30 00:51:35', NULL),
+('PJ000003', 'CN000004', 'CP000003', NULL, 'IQ000005', 'AC03', NULL, 'MP000012', 'SP000023', NULL, 2050.00, '2025-01-04 18:30:00', NULL, 1500.00, 'A1', '2025-01-28 23:46:17', 'Hold', 0, 0, '2025-01-28 23:46:17', 'A3', NULL, 'mm'),
+('PJ000004', 'CN000012', 'CP000004', 'AF000002', 'IQ000015', 'AC03', NULL, 'MP000011', 'SP000025', NULL, 80000.00, '2025-01-31 18:30:00', 1000.00, 15000.00, 'A3,A1', '2025-02-01 13:44:26', 'Active', 0, 0, '2025-02-01 13:44:26', 'A3', NULL, ''),
+('PJ000005', 'CN000007', 'CP000005', NULL, 'IQ000010', 'AC01', NULL, 'MP000005', 'SP000036', NULL, 515000.00, '2026-07-12 18:30:00', NULL, 15000.00, 'A2', '2025-02-01 15:26:57', 'Active', 0, 0, '2025-02-01 15:26:57', 'A3', NULL, ''),
+('PJ000006', 'CN000005', 'CP000002', NULL, 'IQ000013', 'AC01', NULL, 'MP000007', 'SP000006', NULL, 500.00, '2025-03-02 18:30:00', NULL, 100.00, 'A1,A2,A3', '2025-02-01 15:41:09', 'Active', 0, 0, '2025-02-01 15:41:09', 'A3', NULL, ''),
+('PJ000007', 'CN000011', 'CP000008', 'AF000002', 'IQ000014', 'AC01', NULL, 'MP000006', 'SP000039', NULL, 30002.00, '2025-02-19 13:00:00', 2000.00, 30000.00, 'A3', '2025-02-01 15:43:00', 'Active', 0, 0, '2025-02-01 15:43:00', 'A3', NULL, ''),
+('PJ000008', 'CN000001', 'CP000009', NULL, 'IQ000008', 'AC03', NULL, 'MP000005', 'SP000014', NULL, 123345.00, '2025-01-11 18:30:00', NULL, 123345.00, 'A1,A3', '2025-02-03 22:56:42', 'Active', 0, 0, '2025-02-03 22:56:42', 'A3', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1463,6 +1841,61 @@ INSERT INTO `the_references` (`id`, `client_id`, `name`, `address`, `phone_numbe
 ('RF000017', 'CN000010', 'Hameer', NULL, NULL, NULL, 0, '2025-02-01 13:37:21', NULL, NULL, 0, NULL, NULL, '2025-02-01 13:37:21', NULL),
 ('RF000018', 'CN000011', 'Hameer', NULL, NULL, NULL, 0, '2025-02-01 13:39:02', NULL, NULL, 0, NULL, NULL, '2025-02-01 13:39:02', NULL);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vendors`
+--
+
+CREATE TABLE `vendors` (
+  `id` char(8) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email_address` varchar(255) DEFAULT NULL,
+  `phone_number` varchar(15) DEFAULT NULL,
+  `upi_id` varchar(200) DEFAULT NULL,
+  `joined_on` timestamp NULL DEFAULT current_timestamp(),
+  `status` enum('Active','Inactive') DEFAULT 'Active',
+  `entry_at` timestamp NULL DEFAULT current_timestamp(),
+  `entry_by_id` char(8) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vendors_projects`
+--
+
+CREATE TABLE `vendors_projects` (
+  `id` int(11) NOT NULL,
+  `vendor_id` char(8) NOT NULL,
+  `client_id` char(8) DEFAULT NULL,
+  `project_id` char(8) DEFAULT NULL,
+  `adjusted_project_id` char(8) DEFAULT NULL,
+  `adjusted_fees` decimal(10,2) DEFAULT 0.00,
+  `total_fees` decimal(10,2) DEFAULT 0.00
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vendors_transactions`
+--
+
+CREATE TABLE `vendors_transactions` (
+  `id` int(11) NOT NULL,
+  `vendor_id` char(8) NOT NULL,
+  `project_id` char(8) NOT NULL,
+  `owner_firms_id` char(4) NOT NULL,
+  `owner_firms_banks_id` char(8) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `particulars` varchar(500) NOT NULL,
+  `payment_source` varchar(500) NOT NULL,
+  `payment_type` varchar(50) NOT NULL,
+  `remarks` varchar(500) NOT NULL,
+  `entry_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `entry_by_id` char(8) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -1619,6 +2052,126 @@ ALTER TABLE `permissions`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `pma__bookmark`
+--
+ALTER TABLE `pma__bookmark`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `pma__central_columns`
+--
+ALTER TABLE `pma__central_columns`
+  ADD PRIMARY KEY (`db_name`,`col_name`);
+
+--
+-- Indexes for table `pma__column_info`
+--
+ALTER TABLE `pma__column_info`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `db_name` (`db_name`,`table_name`,`column_name`);
+
+--
+-- Indexes for table `pma__designer_settings`
+--
+ALTER TABLE `pma__designer_settings`
+  ADD PRIMARY KEY (`username`);
+
+--
+-- Indexes for table `pma__export_templates`
+--
+ALTER TABLE `pma__export_templates`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `u_user_type_template` (`username`,`export_type`,`template_name`);
+
+--
+-- Indexes for table `pma__favorite`
+--
+ALTER TABLE `pma__favorite`
+  ADD PRIMARY KEY (`username`);
+
+--
+-- Indexes for table `pma__history`
+--
+ALTER TABLE `pma__history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `username` (`username`,`db`,`table`,`timevalue`);
+
+--
+-- Indexes for table `pma__navigationhiding`
+--
+ALTER TABLE `pma__navigationhiding`
+  ADD PRIMARY KEY (`username`,`item_name`,`item_type`,`db_name`,`table_name`);
+
+--
+-- Indexes for table `pma__pdf_pages`
+--
+ALTER TABLE `pma__pdf_pages`
+  ADD PRIMARY KEY (`page_nr`),
+  ADD KEY `db_name` (`db_name`);
+
+--
+-- Indexes for table `pma__recent`
+--
+ALTER TABLE `pma__recent`
+  ADD PRIMARY KEY (`username`);
+
+--
+-- Indexes for table `pma__relation`
+--
+ALTER TABLE `pma__relation`
+  ADD PRIMARY KEY (`master_db`,`master_table`,`master_field`),
+  ADD KEY `foreign_field` (`foreign_db`,`foreign_table`);
+
+--
+-- Indexes for table `pma__savedsearches`
+--
+ALTER TABLE `pma__savedsearches`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `u_savedsearches_username_dbname` (`username`,`db_name`,`search_name`);
+
+--
+-- Indexes for table `pma__table_coords`
+--
+ALTER TABLE `pma__table_coords`
+  ADD PRIMARY KEY (`db_name`,`table_name`,`pdf_page_number`);
+
+--
+-- Indexes for table `pma__table_info`
+--
+ALTER TABLE `pma__table_info`
+  ADD PRIMARY KEY (`db_name`,`table_name`);
+
+--
+-- Indexes for table `pma__table_uiprefs`
+--
+ALTER TABLE `pma__table_uiprefs`
+  ADD PRIMARY KEY (`username`,`db_name`,`table_name`);
+
+--
+-- Indexes for table `pma__tracking`
+--
+ALTER TABLE `pma__tracking`
+  ADD PRIMARY KEY (`db_name`,`table_name`,`version`);
+
+--
+-- Indexes for table `pma__userconfig`
+--
+ALTER TABLE `pma__userconfig`
+  ADD PRIMARY KEY (`username`);
+
+--
+-- Indexes for table `pma__usergroups`
+--
+ALTER TABLE `pma__usergroups`
+  ADD PRIMARY KEY (`usergroup`,`tab`,`allowed`);
+
+--
+-- Indexes for table `pma__users`
+--
+ALTER TABLE `pma__users`
+  ADD PRIMARY KEY (`username`,`usergroup`);
+
+--
 -- Indexes for table `projects`
 --
 ALTER TABLE `projects`
@@ -1693,6 +2246,31 @@ ALTER TABLE `the_references`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `vendors`
+--
+ALTER TABLE `vendors`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `vendors_projects`
+--
+ALTER TABLE `vendors_projects`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_vp_vendor_id` (`vendor_id`),
+  ADD KEY `fk_vp_client_id` (`client_id`),
+  ADD KEY `fk_vp_project_id` (`project_id`);
+
+--
+-- Indexes for table `vendors_transactions`
+--
+ALTER TABLE `vendors_transactions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_vt_vendor_id` (`vendor_id`),
+  ADD KEY `fk_vt_owner_firms_bank_id` (`owner_firms_banks_id`),
+  ADD KEY `fk_vt_owner_firms_id` (`owner_firms_id`),
+  ADD KEY `fk_vt_project_id` (`project_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -1700,7 +2278,7 @@ ALTER TABLE `the_references`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=413;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=423;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
@@ -1712,13 +2290,13 @@ ALTER TABLE `affiliates_projects`
 -- AUTO_INCREMENT for table `affiliates_transactions`
 --
 ALTER TABLE `affiliates_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `cash_flows`
 --
 ALTER TABLE `cash_flows`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `cash_flows_settings`
@@ -1754,7 +2332,43 @@ ALTER TABLE `licenses`
 -- AUTO_INCREMENT for table `notes`
 --
 ALTER TABLE `notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+
+--
+-- AUTO_INCREMENT for table `pma__bookmark`
+--
+ALTER TABLE `pma__bookmark`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `pma__column_info`
+--
+ALTER TABLE `pma__column_info`
+  MODIFY `id` int(5) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `pma__export_templates`
+--
+ALTER TABLE `pma__export_templates`
+  MODIFY `id` int(5) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `pma__history`
+--
+ALTER TABLE `pma__history`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `pma__pdf_pages`
+--
+ALTER TABLE `pma__pdf_pages`
+  MODIFY `page_nr` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `pma__savedsearches`
+--
+ALTER TABLE `pma__savedsearches`
+  MODIFY `id` int(5) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `projects_settings`
@@ -1791,6 +2405,18 @@ ALTER TABLE `tasks_particulars_remarks`
 --
 ALTER TABLE `tasks_settings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `vendors_projects`
+--
+ALTER TABLE `vendors_projects`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `vendors_transactions`
+--
+ALTER TABLE `vendors_transactions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -1908,6 +2534,23 @@ ALTER TABLE `tasks`
 ALTER TABLE `tasks_particulars_remarks`
   ADD CONSTRAINT `fk_task_particulars_remarks_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`),
   ADD CONSTRAINT `fk_task_particulars_remarks_task_id` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`);
+
+--
+-- Constraints for table `vendors_projects`
+--
+ALTER TABLE `vendors_projects`
+  ADD CONSTRAINT `fk_vp_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
+  ADD CONSTRAINT `fk_vp_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`),
+  ADD CONSTRAINT `fk_vp_vendor_id` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `vendors_transactions`
+--
+ALTER TABLE `vendors_transactions`
+  ADD CONSTRAINT `fk_vt_owner_firms_bank_id` FOREIGN KEY (`owner_firms_banks_id`) REFERENCES `owner_firms_banks` (`id`),
+  ADD CONSTRAINT `fk_vt_owner_firms_id` FOREIGN KEY (`owner_firms_id`) REFERENCES `owner_firms` (`id`),
+  ADD CONSTRAINT `fk_vt_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`),
+  ADD CONSTRAINT `fk_vt_vendor_id` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -5,6 +5,7 @@
 import Tippy from "@tippyjs/react";
 import ReactDatePicker from "react-datepicker";
 
+import { useRef } from "react";
 import { applicationName } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown, faCheck, faEnvelope, faLock, faMultiply, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -55,7 +56,7 @@ export const ComboBox = ({
 									<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
 								</ComboboxButton>
 							</div>
-							<ComboboxOptions className="absolute w-full max-h-[273px] mt-1 overflow-auto divide-y rounded bottom-shadow outline-none z-50 full-border primary-light-background">
+							<ComboboxOptions className="absolute w-full max-h-[150px] mt-1 overflow-auto divide-y rounded bottom-shadow outline-none z-50 full-border primary-light-background">
 								{uiList()}
 							</ComboboxOptions>
 						</div>
@@ -79,7 +80,7 @@ export const ComboBox = ({
 				const isSelected = comparisonValue == m;
 
 				const nameStyle = isSelected ? `font-regular-10 primary-text` : "font-regular-10 black-text";
-				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer hovered-rows ${
+				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y hovered-rows ${
 					isSelected && "primary-background-transparent-01"
 				}`;
 
@@ -116,6 +117,8 @@ export const ComboBox2 = ({
 	value,
 	width,
 }) => {
+	const mainBoxReference = useRef(null);
+
 	const aesthetics = isReadOnly ? "cursor-not-allowed opacity-50" : "cursor-default opacity-100";
 	const clickEvent = isReadOnly ? "pointer-events-none" : "pointer-events-auto";
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 ${aesthetics}`;
@@ -131,9 +134,11 @@ export const ComboBox2 = ({
 		_filteredData = filteredData;
 	}
 
+	const top = mainBoxReference.current && mainBoxReference.current.getBoundingClientRect();
+
 	const uiBox = () => {
 		return (
-			<div className={wrapper}>
+			<div className={wrapper} ref={mainBoxReference}>
 				<span className="font-regular-10 light-slate-gray-text">{label}</span>
 				<div className="flex w-full justify-start items-center">
 					<Combobox onChange={onChange} onKeyPress={onKeyPress} value={value}>
@@ -153,7 +158,7 @@ export const ComboBox2 = ({
 								</ComboboxButton>
 							</div>
 							<ComboboxOptions
-								className="absolute w-full max-h-[273px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border primary-light-background"
+								className="absolute w-full max-h-[150px] mt-1 overflow-auto rounded bottom-shadow outline-none z-50 full-border primary-light-background"
 								style={{ top: isMenuInverted ? "-160px" : "36px", zIndex: 50 }}>
 								{uiList()}
 							</ComboboxOptions>
@@ -217,7 +222,15 @@ export const ComboBoxWithChips = ({
 				<div className="flex w-full h-full px-3 space-x-1 justify-center items-center rounded primary-background-transparent-01 primary-bottom-border-transparent-05">
 					<FontAwesomeIcon className="primary-text" icon={icon} />
 					<div className="flex w-full h-[34px] pl-2.5 justify-between items-center relative">
-						<div className="flex w-full space-x-1 justify-start items-center font-regular-11 black-text">{uiSelectedItems()}</div>
+						<div
+							className="flex w-full space-x-1 justify-start items-center cursor-pointer font-regular-11 black-text"
+							onClick={(e) => {
+								if (!e.target.closest(".selected-item")) {
+									toggleMenu();
+								}
+							}}>
+							{uiSelectedItems()}
+						</div>
 						<FontAwesomeIcon className="cursor-pointer gray-text" icon={faAngleDown} onClick={toggleMenu} />
 					</div>
 				</div>
@@ -260,9 +273,16 @@ export const ComboBoxWithChips = ({
 			} else {
 				return selectedItems?.map((m, n) => {
 					return (
-						<span className={wrapper} key={n}>
+						<span className={wrapper} key={n} onClick={(e) => e.stopPropagation()}>
 							<span>{m?.[displayKey]}</span>
-							<FontAwesomeIcon className="cursor-pointer gray-text" icon={faMultiply} onClick={() => onSelectedItemClick(m)} />
+							<FontAwesomeIcon
+								className="cursor-pointer gray-text"
+								icon={faMultiply}
+								onClick={(e) => {
+									e.stopPropagation();
+									onSelectedItemClick(m);
+								}}
+							/>
 						</span>
 					);
 				});

@@ -2,12 +2,6 @@
 Pending Points
 ==============
 
-New Inquiry
-1. Follow Ups dropdown should open on clicking the display bar.
-
-New Project
-1. Teams dropdown should open on clicking the display bar.
-
 Invoices
 1. The "Invoice ID" column should open "Edit Invoice" if user is administrator.
 2. The download icon in the "Actions" column should download the invoice.
@@ -27,7 +21,7 @@ Reimbursement Voucher
 2. Edit Reimbursement Voucher
 
 Modules
-1. Activities, Employees, Profile, Settings
+1. Employees, Profile, Settings
 
 Clients
 1. Add "Rating" field in "Edit Client" window

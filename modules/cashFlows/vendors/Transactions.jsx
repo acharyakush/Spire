@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
-import NewTransaction from "@/modals/cashFlows/NewTransaction";
+import NewTransaction from "@/modals/cashFlows/vendors/NewTransaction";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -26,7 +26,7 @@ import {
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function Transactions({ module, reload, unmount }) {
+export default function Transactions({ project, reload, unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.Transactions.General;
 
@@ -168,10 +168,13 @@ export default function Transactions({ module, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.GetTransactionSupportData, MyGlobal.GetHeaders({ module }));
+			const response = await axios.get(
+				MyConstants.ApiEndpoints.Vendors.GetTransactionsSupportData,
+				MyGlobal.GetHeaders({ projectId: project.project_id }),
+			);
 
 			if (response.status === 200) {
-				const cashFlows = response.data.cashFlows.map((m) => {
+				const transactions = response.data.transactions.map((m) => {
 					let ownerFirmsName = "";
 					let ownerFirmsBanksName = "";
 
@@ -187,13 +190,9 @@ export default function Transactions({ module, reload, unmount }) {
 						ownerFirmsBanksName = ownerFirmsBanksObj.name;
 					}
 
-					const isOutward = String(module).includes("Outward");
-
-					const amount = isOutward ? Number(m.amount_paid) : Number(m.amount_received);
-
 					return {
 						...m,
-						amount,
+						amount: Number(m.amount),
 						entry_at: new Date(m.entry_at),
 						entry_by_name: MyGlobal.GetAnyDataFromId(m.entry_by_id, "full_name"),
 						owner_firms_name: ownerFirmsName,
@@ -203,15 +202,18 @@ export default function Transactions({ module, reload, unmount }) {
 
 				setApi({
 					transactions: {
-						copy: cashFlows,
-						data: cashFlows,
+						copy: transactions,
+						data: transactions,
 					},
 				});
 
 				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${module} => Get Transaction Support Data`);
+			MyGlobal.HandleErrors(
+				error,
+				`${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Base.Vendors} => ${MyConstants.Modules.Derived.NewVendor} => Add Transaction`,
+			);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -411,7 +413,7 @@ export default function Transactions({ module, reload, unmount }) {
 					/>
 					<div className="flex w-full h-9 justify-center items-center primary-border primary-background">{uiTransactionsFooter()}</div>
 					{other.isNewTransactionsOpen && (
-						<NewTransaction mount={other.isNewTransactionsOpen} module={module} reload={reload} unmount={toggleNewTransaction} />
+						<NewTransaction mount={other.isNewTransactionsOpen} project={project} reload={reload} unmount={toggleNewTransaction} />
 					)}
 				</div>
 			);
@@ -453,18 +455,18 @@ export default function Transactions({ module, reload, unmount }) {
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<div className="flex w-full px-5 py-2.5 justify-between items-center">
-				<div className="flex w-1/2 space-x-2 justify-start items-center">
+				<div className="flex w-1/5 space-x-2 justify-start items-center">
 					<div className="flex w-full space-x-2 justify-start items-center">
 						<span className="cursor-pointer view-heading" onClick={() => unmount()}>
-							{module}
+							{MyConstants.Modules.Base.Vendors}
 						</span>
 						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
 						<span className="view-heading">Transactions</span>
 						{api.transactions.copy.length > 0 && <Badge value={getRowsCount()} />}
 					</div>
 				</div>
-				<div className="flex w-1/2 space-x-2 justify-end items-center">
-					<div className="flex w-full space-x-2 justify-end items-center">
+				<div className="flex w-4/5 space-x-2 justify-end items-center">
+					<div className="flex w-1/2 space-x-2 justify-end items-center">
 						{uiFromDate()}
 						{uiToDate()}
 					</div>

@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, ErrorFallbackComponent, SpinnerBig } from "@/components/Elements";
 import { faArrowUpRightFromSquare, faStar, faTurnDown, faTurnUp } from "@fortawesome/free-solid-svg-icons";
 import Transactions from "./Transactions";
+import Vendors from "./vendors";
 
 export default function CashFlows({ setModuleProps }) {
 	// Business Logic
@@ -22,6 +23,7 @@ export default function CashFlows({ setModuleProps }) {
 
 	const thisView = baseModules.CashFlow;
 	const affiliatesView = baseModules.Affiliates;
+	const vendorsView = baseModules.Vendors;
 	const invoicesView = baseModules.Invoices;
 
 	const [api, setApi] = useState({
@@ -73,6 +75,11 @@ export default function CashFlows({ setModuleProps }) {
 		selectedCategory: categories.Inward,
 		totalInvoicesAmount: 0,
 		totalRvAmount: 0,
+		vendors: {
+			pending: { amount: 0, count: 0, label: "PENDING" },
+			paid: { amount: 0, count: 0, label: "PAID" },
+			total: { amount: 0, count: 0, label: "TOTAL" },
+		},
 	});
 
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
@@ -295,7 +302,10 @@ export default function CashFlows({ setModuleProps }) {
 			clearData(affiliatesView);
 		} else {
 			setMain((s) => ({ ...s, module: "" }));
-			getSupportData();
+
+			if (module == affiliatesView) {
+				getSupportData();
+			}
 		}
 	}
 
@@ -484,6 +494,15 @@ export default function CashFlows({ setModuleProps }) {
 						<Affiliates reload={getSupportData} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
+			} else if (main.module == baseModules.Vendors) {
+				return (
+					<ErrorBoundary
+						key={`ErrorBoundary_${baseModules.Vendors}`}
+						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Vendors)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<Vendors reload={getSupportData} unmount={toggleModule} />
+					</ErrorBoundary>
+				);
 			} else {
 				return (
 					<ErrorBoundary
@@ -515,6 +534,7 @@ export default function CashFlows({ setModuleProps }) {
 		return (
 			<div className="flex flex-col w-full h-full space-y-6 justify-start items-center">
 				{uiAffiliates()}
+				{uiVendors()}
 				{uiOutwardOfficeExpense()}
 				{uiOutwardOtherExpense()}
 				{uiOutwardPettyCash()}
@@ -615,6 +635,38 @@ export default function CashFlows({ setModuleProps }) {
 				{main.selectedCategory == categories.Inward ? uiInward() : uiOutward()}
 			</div>
 		);
+	}
+
+	function uiVendors() {
+		return (
+			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
+				<div className="flex w-full justify-start items-center">
+					<div className="flex w-fit space-x-2.5 justify-center items-center">
+						<span className="view-heading">{vendorsView}</span>
+						<sup>{uiOpenCategory(vendorsView)}</sup>
+					</div>
+				</div>
+				<div className="flex w-full space-x-32 justify-between items-center">{uiVendorsBlock()}</div>
+			</div>
+		);
+	}
+
+	function uiVendorsBlock() {
+		return Object.values(main.vendors).map((m, n) => {
+			const aesthetics = getAesthetics(n);
+
+			return (
+				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
+					<div className={`flex flex-col w-full p-5 space-y-2.5 justify-center items-center ${aesthetics.textColour}`}>
+						<div className="flex space-x-1 justify-center items-center">
+							<span className="font-medium-18">{m.count}</span>
+						</div>
+						<span className="font-medium-22">{MyGlobal.FormatCurrency(m.amount)}</span>
+					</div>
+					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
+				</div>
+			);
+		});
 	}
 
 	// Hooks

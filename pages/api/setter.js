@@ -20,16 +20,20 @@ export default async function handler(req, res) {
 			let queryString = "";
 
 			if (request.type == "add-user-activity") {
-				let ipAddress =
-					String(req.headers["x-forwarded-for"] || "")
-						.split(",")
-						.at(0)
-						.trim() ||
-					req.socket.remoteAddress ||
-					"";
+				let ipAddress = "";
 
-				if (ipAddress === "::1" || ipAddress === "127.0.0.1" || ipAddress === "::ffff:127.0.0.1") {
-					ipAddress = "Localhost";
+				if (request.activity != "Logged out.") {
+					ipAddress =
+						String(req.headers["x-forwarded-for"] || "")
+							.split(",")
+							.at(0)
+							.trim() ||
+						req.socket.remoteAddress ||
+						"";
+
+					if (ipAddress === "::1" || ipAddress === "127.0.0.1" || ipAddress === "::ffff:127.0.0.1") {
+						ipAddress = "Localhost";
+					}
 				}
 
 				queryString = "INSERT INTO activities (entry_by_id, module, activity, ip_address, details) VALUES (?, ?, ?, ?, ?)";

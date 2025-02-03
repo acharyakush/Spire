@@ -448,6 +448,22 @@ export default function Home() {
 	}, []);
 
 	useEffect(() => {
+		const interval = setInterval(() => {
+			if (tabRefs.current[main.selectedModule.index]) {
+				updateGliderPosition();
+				clearInterval(interval);
+			}
+		}, 10);
+
+		window.addEventListener("resize", updateGliderPosition);
+
+		return () => {
+			window.removeEventListener("resize", updateGliderPosition);
+			clearInterval(interval);
+		};
+	}, []);
+
+	useEffect(() => {
 		updateGliderPosition();
 		window.addEventListener("resize", updateGliderPosition);
 
