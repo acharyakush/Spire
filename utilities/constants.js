@@ -19,6 +19,9 @@ const MyConstants = Object.freeze({
 			GetSupportData: "api/cashFlows/getSupportData",
 			GetTransactionSupportData: "api/cashFlows/getTransactionsSupportData",
 		}),
+		CashFlowsModules: Object.freeze({
+			AddEntity: "api/cashFlowsModules/addEntity",
+		}),
 		Clients: Object.freeze({
 			GetClients: "api/clients/getClients",
 			GetSupportData: "api/clients/getSupportData",
@@ -88,6 +91,7 @@ const MyConstants = Object.freeze({
 		CompanyEdited: "Company edited.",
 		EmployeeAdded: "New employee added.",
 		EmployeeEdited: "Employee edited.",
+		EntityAdded: "Entity added.",
 		FilesDeleted: "File(s) deleted.",
 		GovernmentIdAdded: "Government ID added.",
 		GovernmentIdEdited: "Government ID edited.",
@@ -195,6 +199,12 @@ const MyConstants = Object.freeze({
 				All: "All",
 				Inward: "Inward",
 				Outward: "Outward",
+			}),
+			CashFlowModules: Object.freeze({
+				OfficeExpense: { id: "OFEX", name: "Office Expense" },
+				OtherExpense: { id: "OTEX", name: "Other Expense" },
+				OtherIncome: { id: "OTIN", name: "Other Income" },
+				PettyCash: { id: "PECA", name: "Petty Cash" },
 			}),
 			SingleClient: "Single Client",
 			SingleProject: "Single Project",

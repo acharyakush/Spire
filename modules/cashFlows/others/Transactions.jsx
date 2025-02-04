@@ -154,16 +154,6 @@ export default function Transactions({ module, reload, unmount }) {
 		}
 	}
 
-	function getTotalAmount() {
-		let total = 0;
-
-		for (const i of api.transactions.copy) {
-			total += i.amount;
-		}
-
-		return MyGlobal.ThousandSeparator(total);
-	}
-
 	async function getSupportData() {
 		setLoading((s) => ({ ...s, supportData: true }));
 
@@ -187,7 +177,7 @@ export default function Transactions({ module, reload, unmount }) {
 						ownerFirmsBanksName = ownerFirmsBanksObj.name;
 					}
 
-					const isOutward = String(module).includes("Outward");
+					const isOutward = ["Office Expense", "Other Expense", "Petty Cash"].includes(module);
 
 					const amount = isOutward ? Number(m.amount_paid) : Number(m.amount_received);
 
@@ -215,6 +205,16 @@ export default function Transactions({ module, reload, unmount }) {
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
+	}
+
+	function getTotalPaidAmount() {
+		let total = 0;
+
+		for (const i of api.transactions.copy) {
+			total += Number(i.amount);
+		}
+
+		return total;
 	}
 
 	function setFind(key, value) {
@@ -419,16 +419,27 @@ export default function Transactions({ module, reload, unmount }) {
 	}
 
 	function uiTransactionsFooter() {
-		return Object.values(headers).map((m, i) => {
-			const showTotalAmount = i == 3 ? "visible" : "invisible";
-			const wrapper = `w-[11.11%] space-x-1 text-center text-white font-medium-10 ${showTotalAmount}`;
+		const totalPaidAmount = getTotalPaidAmount();
+		const totalAmount = api.transactions.data.reduce((pv, cv) => {
+			return pv + Number(cv.total_amount);
+		}, 0);
+		const totalPending = MyGlobal.ThousandSeparator(totalAmount - totalPaidAmount);
 
-			return (
-				<span className={wrapper} key={i}>
-					<span>{getTotalAmount()}</span>
+		return (
+			<span className="w-full space-x-5 text-center text-white font-regular-10">
+				<span>
+					Pending <b className="font-bold-10">{totalPending}</b>
 				</span>
-			);
-		});
+				<span />
+				<span>
+					Paid <b className="font-bold-10">{MyGlobal.ThousandSeparator(totalPaidAmount)}</b>
+				</span>
+				<span />
+				<span>
+					Total <b className="font-bold-10">{MyGlobal.ThousandSeparator(totalAmount)}</b>
+				</span>
+			</span>
+		);
 	}
 
 	useEffect(() => {

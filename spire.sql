@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 03, 2025 at 07:00 PM
+-- Generation Time: Feb 04, 2025 at 07:54 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -502,7 +502,13 @@ INSERT INTO `activities` (`id`, `entry_by_id`, `module`, `activity`, `ip_address
 (419, 'A3', 'Cash Flow', 'Added transaction for <b>Outward Office Expense</b>.', 'Localhost', '2025-02-03 21:53:36', ''),
 (420, 'A3', 'Cash Flow', 'Added transaction for <b>Outward Office Expense</b>.', 'Localhost', '2025-02-03 21:56:56', ''),
 (421, 'A3', 'Inquiries', 'Added <b>PJ000008</b>.', 'Localhost', '2025-02-03 22:56:42', ''),
-(422, 'A3', 'General', 'Logged out.', 'Localhost', '2025-02-03 23:29:46', '');
+(422, 'A3', 'General', 'Logged out.', 'Localhost', '2025-02-03 23:29:46', ''),
+(423, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-04 19:53:30', ''),
+(424, 'A3', 'Cash Flow', 'Added entity for <b>Office Expense</b>.', 'Localhost', '2025-02-04 22:57:17', ''),
+(425, 'A3', 'Cash Flow', 'Added entity for <b>Office Expense</b>.', 'Localhost', '2025-02-05 00:18:24', ''),
+(426, 'A3', 'General', 'Logged out.', '', '2025-02-05 00:21:22', ''),
+(427, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-05 00:22:10', ''),
+(428, 'A3', 'General', 'Logged out.', '', '2025-02-05 00:24:41', '');
 
 -- --------------------------------------------------------
 
@@ -644,6 +650,7 @@ CREATE TABLE `cash_flows` (
   `owner_firms_banks_id` char(8) DEFAULT NULL,
   `amount_paid` decimal(10,2) DEFAULT NULL,
   `amount_received` decimal(10,2) DEFAULT NULL,
+  `total_amount` decimal(10,2) DEFAULT NULL,
   `module` varchar(50) NOT NULL,
   `particulars` varchar(1000) DEFAULT NULL,
   `payment_source` varchar(500) DEFAULT NULL,
@@ -658,29 +665,83 @@ CREATE TABLE `cash_flows` (
 -- Dumping data for table `cash_flows`
 --
 
-INSERT INTO `cash_flows` (`id`, `affiliate_id`, `owner_firms_id`, `owner_firms_banks_id`, `amount_paid`, `amount_received`, `module`, `particulars`, `payment_source`, `payment_type`, `remarks`, `is_deleted`, `entry_at`, `entry_by_id`) VALUES
-(1, NULL, 'AC01', 'BK01', NULL, 500.00, 'Office Expense', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 12:46:50', 'A3'),
-(2, NULL, 'AC02', 'BK02', NULL, 557.00, 'Office Expense', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 12:46:50', 'A3'),
-(3, NULL, 'AC02', 'BK02', NULL, 557.00, '', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 12:46:50', 'A3'),
-(4, '', 'AC01', 'BK01', 0.00, 2500.00, 'Inward Other Expense', 'Inward Other Expense Particular #1', 'Inward Other Expense Payment For #1', 'Professional Fees', 'Inward Other Expense Remarks #1', 0, '2025-01-30 12:38:21', 'A3'),
-(5, '', 'AC01', 'BK01', 0.00, 2500.00, 'Inward Other Expense', 'Inward Other Expense Particular #1', 'Inward Other Expense Payment For #1', 'Professional Fees', 'Inward Other Expense Remarks #1', 0, '2025-01-30 12:38:21', 'A3'),
-(6, 'AF000002', 'AC03', 'BK03', 7500.00, 0.00, 'Affiliates', 'Outward Affiliates Particulars #1', 'Outward Affiliates Payment For #1', 'Professional Fees', 'Outward Affiliates Remarks #1', 0, '2025-01-30 12:43:24', 'A3'),
-(7, 'AF000002', 'AC02', 'BK02', 7500.00, 0.00, 'Affiliates', 'Outward Affiliates Particulars #1', 'Outward Affiliates Payment For #1', 'Professional Fees', 'Outward Affiliates Remarks #1', 0, '2025-01-31 12:44:28', 'A3'),
-(8, 'AF000001', 'AC04', 'BK04', 7500.00, 0.00, 'Affiliates', 'Outward Affiliates Particulars #1', 'Outward Affiliates Payment For #1', 'Professional Fees', 'Outward Affiliates Remarks #1', 0, '2025-01-31 12:54:26', 'A3'),
-(9, 'AF000001', 'AC04', 'BK04', 7500.00, 0.00, 'Affiliates', 'Outward Affiliates Particulars #1', 'Outward Affiliates Payment For #1', 'Professional Fees', 'Outward Affiliates Remarks #1', 0, '2025-01-31 12:59:19', 'A3'),
-(10, '', 'AC01', 'BK01', 3500.00, 0.00, 'Outward Other Expense', 'Outward Other Expense Particulars #1', 'Outward Other Expense Payment For #1', 'Professional Fees', 'Outward Other Expense Remarks #1', 0, '2025-01-30 13:00:36', 'A3'),
-(11, '', 'AC03', 'BK03', 5525.00, 0.00, 'Outward Office Expense', 'Outward Office Expense Particulars #1', 'Outward Office Expense Payment For #1', 'Professional Fees', 'Outward Office Expense Remarks #1', 0, '2025-01-30 13:01:32', 'A3'),
-(12, '', 'AC02', 'BK02', 11500.00, 0.00, 'Outward Petty Cash', 'Outward Petty Cash Particulars #1', 'Outward Petty Cash Payment For #1', 'Professional Fees', 'Outward Petty Cash Remarks #1', 0, '2025-01-31 13:02:24', 'A3'),
-(13, 'AF000002', 'AC02', 'BK02', 500.00, 0.00, 'Affiliates', 'pp', 'bb', 'Professional Fees', 'ppm', 0, '2025-02-01 09:57:35', 'A3'),
-(14, NULL, 'AC03', 'BK03', 75.00, 0.00, 'Outward Office Expense', 'polll', 'DC', 'Professional Fees', 'jhjhbjbj', 0, '2025-02-02 12:25:46', 'A3'),
-(15, NULL, 'AC03', 'BK03', 45.00, 0.00, 'Outward Other Expense', 'p[]', 'CHEQUE', 'Reimbursement Voucher', 'l;\'', 0, '2025-02-20 12:31:56', 'A3'),
-(16, NULL, 'AC04', 'BK04', 200.00, 0.00, 'Outward Petty Cash', 'popop', 'CC', 'Professional Fees', 'nbjbjbj', 0, '2025-02-02 12:32:30', 'A3'),
-(17, NULL, 'AC01', 'BK01', 0.00, 1500.00, 'Inward Other Income', 'mlp', 'CHEQUE', 'Professional Fees', 'mklp', 0, '2025-02-06 12:33:09', 'A3'),
-(18, NULL, 'AC01', 'BK01', 75.00, 0.00, 'Outward Office Expense', '323', 'CHEQUE', 'Professional Fees', '2232', 0, '2025-02-03 10:32:20', 'A3'),
-(19, NULL, 'AC01', 'BK01', 25.00, 0.00, 'Outward Office Expense', '889', 'BK01', 'Professional Fees', '6665', 0, '2025-02-03 10:32:50', 'A3'),
-(20, NULL, 'AC02', 'BK02', 885.00, 0.00, 'Outward Office Expense', 'zxc', 'NETBANKING', 'Professional Fees', 'zxc', 0, '2025-02-03 10:49:31', 'A3'),
-(21, NULL, 'AC02', 'BK02', 1.00, 0.00, 'Outward Office Expense', 'qwe', 'CHEQUE', 'Reimbursement Voucher', 'qwer', 0, '2025-02-03 10:53:09', 'A3'),
-(22, NULL, 'AC03', 'BK03', 14.00, 0.00, 'Outward Office Expense', 'geret', 'UPI', 'Reimbursement Voucher', '64564564', 0, '2025-02-03 10:56:33', 'A3');
+INSERT INTO `cash_flows` (`id`, `affiliate_id`, `owner_firms_id`, `owner_firms_banks_id`, `amount_paid`, `amount_received`, `total_amount`, `module`, `particulars`, `payment_source`, `payment_type`, `remarks`, `is_deleted`, `entry_at`, `entry_by_id`) VALUES
+(1, NULL, 'AC01', 'BK01', NULL, 500.00, 0.00, 'Office Expense', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 07:16:50', 'A3'),
+(2, NULL, 'AC02', 'BK02', NULL, 557.00, 0.00, 'Office Expense', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 07:16:50', 'A3'),
+(3, NULL, 'AC02', 'BK02', NULL, 557.00, 0.00, '', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 07:16:50', 'A3'),
+(4, '', 'AC01', 'BK01', 0.00, 2500.00, 15750.00, 'Other Income', 'Other Income Particular #1', 'Other Income Payment For #1', 'Professional Fees', 'Other Income Remarks #1', 0, '2025-01-30 07:08:21', 'A3'),
+(5, '', 'AC01', 'BK01', 0.00, 2500.00, 15750.00, 'Other Income', 'Other Income Particular #1', 'Other Income Payment For #1', 'Professional Fees', 'Other Income Remarks #1', 0, '2025-01-30 07:08:21', 'A3'),
+(6, 'AF000002', 'AC03', 'BK03', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-30 07:13:24', 'A3'),
+(7, 'AF000002', 'AC02', 'BK02', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-31 07:14:28', 'A3'),
+(8, 'AF000001', 'AC04', 'BK04', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-31 07:24:26', 'A3'),
+(9, 'AF000001', 'AC04', 'BK04', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-31 07:29:19', 'A3'),
+(10, '', 'AC01', 'BK01', 3500.00, 0.00, 15750.00, 'Other Expense', 'Other Expense Particulars #1', 'Other Expense Payment For #1', 'Professional Fees', 'Other Expense Remarks #1', 0, '2025-01-30 07:30:36', 'A3'),
+(11, '', 'AC03', 'BK03', 5525.00, 0.00, 0.00, 'Office Expense', 'Office Expense Particulars #1', 'Office Expense Payment For #1', 'Professional Fees', 'Office Expense Remarks #1', 0, '2025-01-30 07:31:32', 'A3'),
+(12, '', 'AC02', 'BK02', 11500.00, 0.00, 0.00, 'Petty Cash', 'Petty Cash Particulars #1', 'Petty Cash Payment For #1', 'Professional Fees', 'Petty Cash Remarks #1', 0, '2025-01-31 07:32:24', 'A3'),
+(13, 'AF000002', 'AC02', 'BK02', 500.00, 0.00, 0.00, 'Affiliates', 'pp', 'bb', 'Professional Fees', 'ppm', 0, '2025-02-01 04:27:35', 'A3'),
+(14, NULL, 'AC03', 'BK03', 75.00, 0.00, 0.00, 'Office Expense', 'polll', 'DC', 'Professional Fees', 'jhjhbjbj', 0, '2025-02-02 06:55:46', 'A3'),
+(15, NULL, 'AC03', 'BK03', 45.00, 0.00, 15750.00, 'Other Expense', 'p[]', 'CHEQUE', 'Reimbursement Voucher', 'l', 0, '2025-02-20 07:01:56', 'A3'),
+(16, NULL, 'AC04', 'BK04', 200.00, 0.00, 0.00, 'Petty Cash', 'popop', 'CC', 'Professional Fees', 'nbjbjbj', 0, '2025-02-02 07:02:30', 'A3'),
+(17, NULL, 'AC01', 'BK01', 0.00, 1500.00, 0.00, 'Other Income', 'mlp', 'CHEQUE', 'Professional Fees', 'mklp', 0, '2025-02-06 07:03:09', 'A3'),
+(18, NULL, 'AC01', 'BK01', 75.00, 0.00, 0.00, 'Office Expense', '323', 'CHEQUE', 'Professional Fees', '2232', 0, '2025-02-03 05:02:20', 'A3'),
+(19, NULL, 'AC01', 'BK01', 25.00, 0.00, 0.00, 'Office Expense', '889', 'BK01', 'Professional Fees', '6665', 0, '2025-02-03 05:02:50', 'A3'),
+(20, NULL, 'AC02', 'BK02', 885.00, 0.00, 0.00, 'Office Expense', 'zxc', 'NETBANKING', 'Professional Fees', 'zxc', 0, '2025-02-03 05:19:31', 'A3'),
+(21, NULL, 'AC02', 'BK02', 1.00, 0.00, 0.00, 'Office Expense', 'qwe', 'CHEQUE', 'Reimbursement Voucher', 'qwer', 0, '2025-02-03 05:23:09', 'A3'),
+(22, NULL, 'AC03', 'BK03', 14.00, 0.00, 0.00, 'Office Expense', 'geret', 'UPI', 'Reimbursement Voucher', '64564564', 0, '2025-02-03 05:26:33', 'A3');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cash_flows_entities`
+--
+
+CREATE TABLE `cash_flows_entities` (
+  `id` int(11) UNSIGNED NOT NULL,
+  `module_id` char(4) NOT NULL,
+  `owner_firm_id` char(8) NOT NULL,
+  `owner_firm_bank_id` char(8) NOT NULL,
+  `name` varchar(500) NOT NULL,
+  `email_address` varchar(200) DEFAULT NULL,
+  `phone_number` bigint(12) DEFAULT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `payment_source` varchar(500) NOT NULL,
+  `purpose` varchar(500) NOT NULL,
+  `upi_id` varchar(200) DEFAULT NULL,
+  `entry_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `entry_by_id` char(8) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cash_flows_entities`
+--
+
+INSERT INTO `cash_flows_entities` (`id`, `module_id`, `owner_firm_id`, `owner_firm_bank_id`, `name`, `email_address`, `phone_number`, `amount`, `payment_source`, `purpose`, `upi_id`, `entry_at`, `entry_by_id`) VALUES
+(1, 'OFEX', 'AC03', 'BK03', 'Tea Stall', 'ramesh.parmar@gmail.com', 8000721554, 5000.00, 'INSTAMOJO', 'For monthly tea/coffee', 'parmar.ramesh@axl', '2025-02-04 11:55:20', 'A3'),
+(2, 'OFEX', 'AC02', 'BK02', 'Canteen', NULL, NULL, 8000.00, 'CC', 'Snacks for Clients', NULL, '2025-02-04 13:12:41', 'A3');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cash_flows_modules`
+--
+
+CREATE TABLE `cash_flows_modules` (
+  `id` int(11) NOT NULL,
+  `custom_id` char(4) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `entry_at` datetime NOT NULL,
+  `entry_by` char(8) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cash_flows_modules`
+--
+
+INSERT INTO `cash_flows_modules` (`id`, `custom_id`, `name`, `entry_at`, `entry_by`) VALUES
+(1, 'OFEX', 'Office Expense', '2025-02-04 19:20:29', 'A3'),
+(2, 'OTEX', 'Other Expense', '2025-02-04 19:20:29', 'A3'),
+(3, 'OTIN', 'Other Income', '2025-02-04 19:20:29', 'A3'),
+(4, 'PECA', 'Petty Cash', '2025-02-04 19:20:29', 'A3');
 
 -- --------------------------------------------------------
 
@@ -1946,6 +2007,21 @@ ALTER TABLE `cash_flows`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `cash_flows_entities`
+--
+ALTER TABLE `cash_flows_entities`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_cfe_owner_firm_bank_id` (`owner_firm_bank_id`),
+  ADD KEY `fk_cfe_owner_firm_id` (`owner_firm_id`),
+  ADD KEY `fk_cfe_module_id` (`module_id`);
+
+--
+-- Indexes for table `cash_flows_modules`
+--
+ALTER TABLE `cash_flows_modules`
+  ADD PRIMARY KEY (`custom_id`);
+
+--
 -- Indexes for table `cash_flows_settings`
 --
 ALTER TABLE `cash_flows_settings`
@@ -2278,7 +2354,7 @@ ALTER TABLE `vendors_transactions`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=423;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=429;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
@@ -2297,6 +2373,12 @@ ALTER TABLE `affiliates_transactions`
 --
 ALTER TABLE `cash_flows`
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+
+--
+-- AUTO_INCREMENT for table `cash_flows_entities`
+--
+ALTER TABLE `cash_flows_entities`
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `cash_flows_settings`
@@ -2438,6 +2520,14 @@ ALTER TABLE `affiliates_transactions`
   ADD CONSTRAINT `fk_aph_owner_firms_bank_id` FOREIGN KEY (`owner_firms_banks_id`) REFERENCES `owner_firms_banks` (`id`),
   ADD CONSTRAINT `fk_aph_owner_firms_id` FOREIGN KEY (`owner_firms_id`) REFERENCES `owner_firms` (`id`),
   ADD CONSTRAINT `fk_aph_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
+
+--
+-- Constraints for table `cash_flows_entities`
+--
+ALTER TABLE `cash_flows_entities`
+  ADD CONSTRAINT `fk_cfe_module_id` FOREIGN KEY (`module_id`) REFERENCES `cash_flows_modules` (`custom_id`),
+  ADD CONSTRAINT `fk_cfe_owner_firm_bank_id` FOREIGN KEY (`owner_firm_bank_id`) REFERENCES `owner_firms_banks` (`id`),
+  ADD CONSTRAINT `fk_cfe_owner_firm_id` FOREIGN KEY (`owner_firm_id`) REFERENCES `owner_firms` (`id`);
 
 --
 -- Constraints for table `companies`

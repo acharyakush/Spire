@@ -48,6 +48,9 @@ export default async function handler(req, res) {
 			queryString = "SELECT * FROM vendors";
 		} else if (request.type === "get-activities") {
 			queryString = "SELECT * FROM activities";
+		} else if (request.type === "get-cash-flows-entities") {
+			queryString = "SELECT * FROM cash_flows_entities WHERE module_id=?";
+			queryParameters = [request.moduleId];
 		} else {
 			return res.status(400).send({ error: "Invalid request type" });
 		}

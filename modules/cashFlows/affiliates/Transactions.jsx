@@ -154,14 +154,14 @@ export default function Transactions({ project, reload, unmount }) {
 		}
 	}
 
-	function getTotalAmount() {
+	function getTotalAmountPaid() {
 		let total = 0;
 
 		for (const i of api.transactions.copy) {
-			total += i.amount;
+			total += Number(i.amount);
 		}
 
-		return MyGlobal.ThousandSeparator(total);
+		return total;
 	}
 
 	async function getSupportData() {
@@ -421,16 +421,24 @@ export default function Transactions({ project, reload, unmount }) {
 	}
 
 	function uiTransactionsFooter() {
-		return Object.values(headers).map((m, i) => {
-			const showTotalAmount = i == 3 ? "visible" : "invisible";
-			const wrapper = `w-[11.11%] space-x-1 text-center text-white font-medium-10 ${showTotalAmount}`;
+		const totalAmountPaid = getTotalAmountPaid();
+		const totalPending = MyGlobal.ThousandSeparator(Number(project.total_fees) - totalAmountPaid);
 
-			return (
-				<span className={wrapper} key={i}>
-					<span>{getTotalAmount()}</span>
+		return (
+			<span className="w-full space-x-5 text-center text-white font-regular-10">
+				<span>
+					Pending <b className="font-bold-10">{totalPending}</b>
 				</span>
-			);
-		});
+				<span />
+				<span>
+					Paid <b className="font-bold-10">{MyGlobal.ThousandSeparator(totalAmountPaid)}</b>
+				</span>
+				<span />
+				<span>
+					Total <b className="font-bold-10">{MyGlobal.ThousandSeparator(project.total_fees)}</b>
+				</span>
+			</span>
+		);
 	}
 
 	useEffect(() => {

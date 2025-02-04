@@ -221,7 +221,7 @@ export const MyGlobal = Object.freeze({
 	},
 
 	GetNumbers: (payload) => {
-		return Number(String(payload).replace(/[^0-9]/g, ""));
+		return Number(String(payload).replace(/[^0-9.-]/g, ""));
 	},
 
 	GetBasicPaymentSourceList: () => {
@@ -508,7 +508,7 @@ export const MyGlobal = Object.freeze({
 
 	ThousandSeparator: (payload) => {
 		const value = MyGlobal.GetNumbers(payload);
-		return new Intl.NumberFormat("en-IN").format(value);
+		return new Intl.NumberFormat("en-IN", { signDisplay: "auto" }).format(value);
 	},
 
 	TrimInnerSpace: (value) => {
