@@ -1,34 +1,34 @@
 @font-face {
 	font-family: "Light";
-	src: url("/fonts/ibm_plex_sans/light.ttf") format("truetype");
+	src: url("/fonts/light.ttf") format("truetype");
 	font-weight: 300;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "Regular";
-	src: url("/fonts/ibm_plex_sans/regular.ttf") format("truetype");
+	src: url("/fonts/regular.ttf") format("truetype");
 	font-weight: 400;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "Medium";
-	src: url("/fonts/ibm_plex_sans/medium.ttf") format("truetype");
+	src: url("/fonts/medium.ttf") format("truetype");
 	font-weight: 500;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "SemiBold";
-	src: url("/fonts/ibm_plex_sans/semi_bold.ttf") format("truetype");
+	src: url("/fonts/semi_bold.ttf") format("truetype");
 	font-weight: 600;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: "Bold";
-	src: url("/fonts/ibm_plex_sans/bold.ttf") format("truetype");
+	src: url("/fonts/bold.ttf") format("truetype");
 	font-weight: 700;
 	font-style: normal;
 }
@@ -117,12 +117,12 @@
 	--orange: #d87f2f;
 	--orange-transparent-01: rgba(216, 127, 47, 0.1);
 
-	--primary: #3a5e98;
+	--primary: #525f77;
 	--primary-background: #f4f7fc;
 	--primary-border: #d6dee8;
 	--primary-light: #ecf1fa;
-	--primary-transparent-01: rgba(58, 94, 152, 0.1);
-	--primary-transparent-05: rgba(58, 94, 152, 0.5);
+	--primary-transparent-01: rgba(82, 95, 119, 0.1);
+	--primary-transparent-05: rgba(82, 95, 119, 0.5);
 
 	--red: #b33a3a;
 	--red-transparent-01: rgba(179, 58, 58, 0.1);
@@ -593,6 +593,10 @@ html {
 
 .green-tag-transparent-01 {
 	@apply bg-[var(--green-transparent-01)] border border-[var(--green)] py-0.5 px-1.5 rounded text-[var(--green)];
+}
+
+.green-tag-transparent-02 {
+	@apply bg-[var(--green-transparent-01)] border border-[var(--green)] p-1 rounded text-xs text-[var(--green)];
 }
 
 .orange-tag {

@@ -222,7 +222,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 
 		return (
 			<div className="flex w-full justify-between items-center">
-				<div className="flex w-4/5 space-x-2.5 justify-start items-center">
+				<div className="flex w-fit space-x-2.5 justify-start items-center">
 					<div className="flex flex-col w-fit -space-y-2 justify-center items-start">
 						<span className="font-medium-10 primary-text">{project.company_name}'s</span>
 						<Tippy content={uiClientInformationTooltip()} disabled={!isSourceSingleClient} interactive placement="bottom">
@@ -280,7 +280,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 					</div>
 					{!project.government_id && uiMissingGovernmentId()}
 				</div>
-				<div className="flex w-1/5 justify-end items-center">{uiHamburgerMenu()}</div>
+				<div className="flex w-fit justify-end items-center">{uiHamburgerMenu()}</div>
 			</div>
 		);
 	}

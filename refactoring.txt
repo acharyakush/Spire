@@ -1,0 +1,4 @@
+===========
+Refactoring
+===========
+1. Change "entry_date" column's name to "entry_at" in "Notes" table

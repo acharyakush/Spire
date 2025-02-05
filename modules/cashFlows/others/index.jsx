@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, BadgeSmall, Spinner } from "@/components/Elements";
-import { faBank, faChevronLeft, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faBank, faChevronLeft, faChevronRight, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 
 export default function Others({ module, reload, unmount }) {
 	// Business Logic
@@ -113,10 +113,10 @@ export default function Others({ module, reload, unmount }) {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ moduleId: module.id, type: "get-cash-flows-entities" }));
 
-			if (Array.isArray(response.data) && response.data.length) {
-				const list = [];
-				const modules = [];
+			const list = [];
+			const modules = [];
 
+			if (Array.isArray(response.data) && response.data.length) {
 				response.data.forEach((fe) => {
 					list.push({
 						amount: "",
@@ -144,10 +144,11 @@ export default function Others({ module, reload, unmount }) {
 					});
 				});
 
-				setApi({ list, modules });
-				setMounted((s) => ({ ...s, mainComponent: true }));
 				setEntity(list.at(0));
 			}
+
+			setApi({ list, modules });
+			setMounted((s) => ({ ...s, mainComponent: true }));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${module.name} => Get Support Data`);
 		} finally {
@@ -170,7 +171,6 @@ export default function Others({ module, reload, unmount }) {
 			<div className="flex w-full h-full justify-center items-start">
 				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiModules()}</div>
 				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center rounded shadow contrast-background">{uiSelectedEntity()}</div>
-				{mounted.newEntity && <NewEntity module={module} mount={mounted.newEntity} reload={getSupportData} unmount={toggleNewEntity} />}
 			</div>
 		);
 	}
@@ -222,8 +222,9 @@ export default function Others({ module, reload, unmount }) {
 			);
 		} else if (!api.list.length) {
 			return (
-				<div className={blankDataWrapper}>
-					<span className="font-regular-12 gray-text">No data found.</span>
+				<div className={`${blankDataWrapper} flex-col space-y-2`}>
+					<span className="font-regular-12 gray-text">No records entered.</span>
+					{uiNewButton()}
 				</div>
 			);
 		} else {
@@ -247,9 +248,15 @@ export default function Others({ module, reload, unmount }) {
 	}
 
 	function uiNew() {
+		if (api.list.length) {
+			return <FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleNewEntity()} size="xl" />;
+		}
+	}
+
+	function uiNewButton() {
 		return (
 			<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleNewEntity()}>
-				<FontAwesomeIcon icon={faPlusCircle} />
+				<FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} />
 				<span>New</span>
 			</button>
 		);
@@ -313,13 +320,17 @@ export default function Others({ module, reload, unmount }) {
 			<div className="flex flex-col w-full h-full justify-start items-center">
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-full space-x-2 justify-start items-center">
-						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
+						<span className="cursor-pointer view-heading" onClick={() => unmount()}>
+							{MyConstants.Modules.Base.CashFlow}
+						</span>
+						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
 						<span className="view-heading">{module.name}</span>
 						{getIconOrBadge()}
 					</div>
 					<div className="flex w-1/2 space-x-2 justify-end items-center">{uiNew()}</div>
 				</div>
 				{uiMain()}
+				{mounted.newEntity && <NewEntity module={module} mount={mounted.newEntity} reload={getSupportData} unmount={toggleNewEntity} />}
 			</div>
 		);
 	}

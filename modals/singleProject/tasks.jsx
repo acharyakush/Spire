@@ -13,7 +13,7 @@ import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { DatePicker, TextArea, TextInput } from "@/components/Inputs";
-import { faCalendar, faCoins, faListCheck, faNoteSticky, faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faCoins, faFaceAngry, faListCheck, faNoteSticky, faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function AddParticularRemark({ mount, reload, task, unmount }) {
 	// Business Logic
@@ -137,24 +137,29 @@ export function AddParticularRemark({ mount, reload, task, unmount }) {
 	);
 }
 
-export function AddTask({ mount, reload, project, unmount }) {
+export function AddTask({ mount, reload, project, tasks, unmount }) {
 	// Business Logic
 	const today = dayjs();
 	const sevenDaysFromToday = today.add(7, "day");
 
 	const [main, setMain] = useState({
 		dueOn: sevenDaysFromToday.toDate(),
+		error: "",
 		expense: 0,
 		isBoxMoved: false,
 		isLoading: false,
 		task: "",
 	});
 
-	const addButtonAesthetics = main.task ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+	const addButtonAesthetics = !main.error.length && main.task ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 	const addButtonStyle = `primary-button-condensed ${addButtonAesthetics}`;
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
+
+	const errorStyle = main.error.length
+		? "flex w-full py-2 space-x-2 justify-center items-center rounded font-regular-10 red-background-transparent-01 red-border red-text"
+		: "hidden";
 
 	// Functions
 	async function doInsertion() {
@@ -188,12 +193,32 @@ export function AddTask({ mount, reload, project, unmount }) {
 		}
 	}
 
+	function isTaskNameUsed(name) {
+		let doesExist = false;
+
+		if (typeof name === "string" && name.length) {
+			if (Array.isArray(tasks) && tasks.length) {
+				doesExist = tasks.some((s) => s.task == name);
+			}
+		}
+
+		return doesExist;
+	}
+
 	function setBoxDrag() {
 		setMain((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
 	}
 
 	function setInputs(key, value) {
-		setMain((s) => ({ ...s, [key]: value }));
+		if (key == "task") {
+			if (isTaskNameUsed(value)) {
+				setMain((s) => ({ ...s, error: "A task with this name already exists.", task: value }));
+			} else {
+				setMain((s) => ({ ...s, error: "", task: value }));
+			}
+		} else {
+			setMain((s) => ({ ...s, [key]: value }));
+		}
 	}
 
 	// UI Components
@@ -227,33 +252,39 @@ export function AddTask({ mount, reload, project, unmount }) {
 					<DialogPanel className="w-[400px] h-[510px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full h-[calc(100%-45px)] justify-between items-center">
-							<div className="flex flex-col w-full h-full p-5 space-y-2.5 justify-start items-center">
-								<TextInput
-									icon={faListCheck}
-									label="Task"
-									onChange={(e) => setInputs("task", e.target.value)}
-									onKeyPress={() => {}}
-									tabIndex={1}
-									value={main.task}
-									width="w-full"
-								/>
-								<DatePicker
-									icon={faCalendar}
-									label="Due On"
-									onChange={(e) => setInputs("dueOn", e)}
-									tabIndex={2}
-									value={main.dueOn}
-									width="w-full"
-								/>
-								<TextInput
-									icon={faCoins}
-									label="Expense"
-									onChange={(e) => setInputs("expense", e.target.value)}
-									onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-									tabIndex={3}
-									value={main.expense}
-									width="w-full"
-								/>
+							<div className="flex flex-col w-full h-full px-5 pb-5 justify-between items-center">
+								<div className="flex flex-col w-full h-full py-5 space-y-2.5 justify-start items-center">
+									<TextInput
+										icon={faListCheck}
+										label="Task"
+										onChange={(e) => setInputs("task", e.target.value)}
+										onKeyPress={() => {}}
+										tabIndex={1}
+										value={main.task}
+										width="w-full"
+									/>
+									<DatePicker
+										icon={faCalendar}
+										label="Due On"
+										onChange={(e) => setInputs("dueOn", e)}
+										tabIndex={2}
+										value={main.dueOn}
+										width="w-full"
+									/>
+									<TextInput
+										icon={faCoins}
+										label="Expense"
+										onChange={(e) => setInputs("expense", e.target.value)}
+										onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
+										tabIndex={3}
+										value={main.expense}
+										width="w-full"
+									/>
+								</div>
+								<div className={errorStyle}>
+									<FontAwesomeIcon icon={faFaceAngry} />
+									<span>{main.error}</span>
+								</div>
 							</div>
 							<footer className="dialog-footer w-full">
 								<button className={addButtonStyle} onClick={() => doInsertion()}>

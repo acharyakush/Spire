@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 04, 2025 at 07:54 PM
+-- Generation Time: Feb 05, 2025 at 07:13 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -508,7 +508,39 @@ INSERT INTO `activities` (`id`, `entry_by_id`, `module`, `activity`, `ip_address
 (425, 'A3', 'Cash Flow', 'Added entity for <b>Office Expense</b>.', 'Localhost', '2025-02-05 00:18:24', ''),
 (426, 'A3', 'General', 'Logged out.', '', '2025-02-05 00:21:22', ''),
 (427, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-05 00:22:10', ''),
-(428, 'A3', 'General', 'Logged out.', '', '2025-02-05 00:24:41', '');
+(428, 'A3', 'General', 'Logged out.', '', '2025-02-05 00:24:41', ''),
+(429, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-05 19:42:58', ''),
+(430, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 20:13:33', ''),
+(431, 'A3', 'Tasks', 'Disabled <b>TK000012</b> in <b>PJ000001</b> due to <b>lolsss.</b>', 'Localhost', '2025-02-05 20:48:23', ''),
+(432, 'A3', 'Tasks', 'Enabled <b>TK000012</b> in <b>PJ000001</b> due to <b>molp.</b>', 'Localhost', '2025-02-05 20:50:12', ''),
+(433, 'A3', 'General', 'Logged out.', '', '2025-02-05 20:50:38', ''),
+(434, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-05 20:54:36', ''),
+(435, 'A3', 'Tasks', 'Edited Expense from <b>0.00</b> to <b>150</b>, Task from <b>zzzzzz</b> to <b>Task #4</b> of <b>TK000012</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 21:01:57', ''),
+(436, 'A3', 'Tasks', 'Added <b>TK000013</b> in <b>PJ000001</b>', 'Localhost', '2025-02-05 21:21:11', ''),
+(437, 'A3', 'Tasks', 'Added <b>TK000014</b> in <b>PJ000001</b>', 'Localhost', '2025-02-05 21:21:19', ''),
+(438, 'A3', 'Tasks', 'Added <b>TK000015</b> in <b>PJ000001</b>', 'Localhost', '2025-02-05 21:21:28', ''),
+(439, 'A3', 'Tasks', 'Added <b>TK000016</b> in <b>PJ000001</b>', 'Localhost', '2025-02-05 21:21:37', ''),
+(440, 'A3', 'Tasks', 'Edited Task from <b>Task 5</b> to <b>Task #5</b> of <b>TK000013</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 21:21:46', ''),
+(441, 'A3', 'Tasks', 'Added <b>TK000017</b> in <b>PJ000001</b>', 'Localhost', '2025-02-05 21:22:00', ''),
+(442, 'A3', 'Tasks', 'Added <b>TK000018</b> in <b>PJ000001</b>', 'Localhost', '2025-02-05 21:22:10', ''),
+(443, 'A3', 'Tasks', 'Edited Remark from <b>pl;</b> to <b>pl;s</b> of <b>TK000012</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 21:57:01', ''),
+(444, 'A3', 'Tasks', 'Added <b>TK000019</b> in <b>PJ000001</b>', 'Localhost', '2025-02-05 22:08:27', ''),
+(445, 'A3', 'Tasks', 'Disabled <b>TK000013</b> in <b>PJ000001</b> due to <b>mko</b>', 'Localhost', '2025-02-05 22:18:58', ''),
+(446, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 22:21:07', ''),
+(447, 'A3', 'Tasks', 'Edited Expense from <b>150.00</b> to <b>157.00</b> of <b>TK000012</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 22:21:26', ''),
+(448, 'A3', 'Tasks', 'Disabled <b>TK000012</b> in <b>PJ000001</b> due to <b>vcbcvb</b>', 'Localhost', '2025-02-05 22:21:37', ''),
+(449, 'A3', 'Tasks', 'Enabled <b>TK000012</b> in <b>PJ000001</b> due to <b>poll.</b>', 'Localhost', '2025-02-05 22:33:28', ''),
+(450, 'A3', 'Tasks', 'Edited Expense from <b>157.00</b> to <b>158.00</b> of <b>TK000012</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 22:36:14', ''),
+(451, 'A3', 'Tasks', 'Disabled <b>TK000012</b> in <b>PJ000001</b> due to <b>mkop</b>', 'Localhost', '2025-02-05 22:36:20', ''),
+(452, 'A3', 'Tasks', 'Enabled <b>TK000012</b> in <b>PJ000001</b> due to <b>vvbh</b>', 'Localhost', '2025-02-05 22:36:27', ''),
+(453, 'A3', 'Tasks', 'Enabled <b>TK000013</b> in <b>PJ000001</b> due to <b>mlp</b>', 'Localhost', '2025-02-05 22:36:37', ''),
+(454, 'A3', 'Tasks', 'Marked Task as Completed <b>TK000012</b> in <b>PJ000001</b> due to <b>bbnju</b>', 'Localhost', '2025-02-05 22:36:47', ''),
+(455, 'A3', 'Tasks', 'Marked all sub tasks as completed of <b>TK000012</b> in <b>PJ000001</b>', 'Localhost', '2025-02-05 22:36:47', ''),
+(456, 'A3', 'Tasks', 'Edited Task from <b>Task #5</b> to <b>Task #56</b> of <b>TK000013</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 23:08:13', ''),
+(457, 'A3', 'Tasks', 'Edited Task from <b>Task #56</b> to <b>Task #567</b> of <b>TK000013</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 23:08:23', ''),
+(458, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 23:10:53', ''),
+(459, 'A3', 'Tasks', 'Added <b>TK000020</b> in <b>PJ000006</b>', 'Localhost', '2025-02-05 23:39:47', ''),
+(460, 'A3', 'General', 'Logged out.', '', '2025-02-05 23:43:21', '');
 
 -- --------------------------------------------------------
 
@@ -1768,29 +1800,38 @@ CREATE TABLE `tasks` (
   `project_id` char(8) NOT NULL,
   `task` varchar(255) NOT NULL,
   `due_on` date NOT NULL,
-  `entry_by_id` char(8) NOT NULL,
-  `expense` decimal(10,2) NOT NULL CHECK (`expense` >= 0),
+  `expense` decimal(10,2) NOT NULL,
+  `reason` varchar(500) DEFAULT NULL,
   `is_completed` tinyint(1) NOT NULL DEFAULT 0,
   `is_disabled` tinyint(1) NOT NULL DEFAULT 0,
-  `reason` varchar(500) DEFAULT NULL,
-  `completed_on` date DEFAULT NULL
+  `completed_on` date DEFAULT NULL,
+  `entry_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tasks`
 --
 
-INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `entry_by_id`, `expense`, `is_completed`, `is_disabled`, `reason`, `completed_on`) VALUES
-('TK000001', 'CN000001', 'PJ000001', 'Task #1', '2025-01-21', 'A3', 5100.00, 1, 0, 'Nice.', NULL),
-('TK000002', 'CN000001', 'PJ000001', 'Task #3', '2025-01-15', 'A3', 450.00, 1, 0, 'Hello.', NULL),
-('TK000003', 'CN000001', 'PJ000001', 'Task #2', '2025-01-30', 'A3', 1500.00, 1, 0, 'yyyyy', NULL),
-('TK000005', 'CN000005', 'PJ000002', 'Task #1', '2025-02-01', 'A3', 500.00, 1, 0, 'Yes.', NULL),
-('TK000006', 'CN000005', 'PJ000002', 'Task #2', '2025-02-01', 'A3', 750.00, 1, 0, 'Lol.', NULL),
-('TK000007', 'CN000004', 'PJ000003', 'Tasks @1', '2025-03-05', 'A3', 2500.00, 1, 0, 'bbbb', NULL),
-('TK000008', 'CN000005', 'PJ000002', 'One', '2025-02-06', 'A3', 50.00, 1, 0, 'Done.', NULL),
-('TK000009', 'CN000012', 'PJ000004', 'pop', '2024-12-08', 'A3', 4545.00, 0, 0, NULL, NULL),
-('TK000011', 'CN000011', 'PJ000007', 'zzz', '2025-02-08', 'A3', 0.00, 0, 0, NULL, NULL),
-('TK000012', 'CN000001', 'PJ000001', 'zzzzzz', '2025-02-08', 'A3', 0.00, 0, 0, NULL, NULL);
+INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `expense`, `reason`, `is_completed`, `is_disabled`, `completed_on`, `entry_at`, `entry_by_id`) VALUES
+('TK000001', 'CN000001', 'PJ000001', 'Task #1', '2025-01-21', 5100.00, 'Nice.', 1, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000002', 'CN000001', 'PJ000001', 'Task #3', '2025-01-15', 450.00, 'Hello.', 1, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000003', 'CN000001', 'PJ000001', 'Task #2', '2025-01-30', 1500.00, 'yyyyy', 1, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000005', 'CN000005', 'PJ000002', 'Task #1', '2025-02-01', 500.00, 'Yes.', 1, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000006', 'CN000005', 'PJ000002', 'Task #2', '2025-02-01', 750.00, 'Lol.', 1, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000007', 'CN000004', 'PJ000003', 'Tasks @1', '2025-03-05', 2500.00, 'bbbb', 1, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000008', 'CN000005', 'PJ000002', 'One', '2025-02-06', 50.00, 'Done.', 1, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000009', 'CN000012', 'PJ000004', 'pop', '2024-12-08', 4545.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000011', 'CN000011', 'PJ000007', 'zzz', '2025-02-08', 0.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000012', 'CN000001', 'PJ000001', 'Task #4', '2025-02-08', 158.00, 'bbnju', 1, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000013', 'CN000001', 'PJ000001', 'Task #567', '2025-02-12', 0.00, 'mlp', 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000014', 'CN000001', 'PJ000001', 'Task #6', '2025-02-12', 0.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000015', 'CN000001', 'PJ000001', 'Task #7', '2025-02-12', 0.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000016', 'CN000001', 'PJ000001', 'Task #8', '2025-02-12', 0.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000017', 'CN000001', 'PJ000001', 'Task #9', '2025-02-12', 0.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000018', 'CN000001', 'PJ000001', 'Task #10', '2025-02-12', 0.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000019', 'CN000001', 'PJ000001', 'Task #11', '2025-02-27', 5600.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000020', 'CN000005', 'PJ000006', 'pol', '2025-02-12', 0.00, NULL, 0, 0, NULL, '2025-02-05 23:39:46', 'A3');
 
 -- --------------------------------------------------------
 
@@ -1833,7 +1874,10 @@ INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particu
 (21, 'TK000003', 'PJ000001', 'adnaannnnnnnnnnnnnn', 'cv', 1, 'By Administrator', 'A3', '2025-02-01 16:01:35'),
 (22, 'TK000003', 'PJ000001', 'r', 't', 1, 'By Administrator', 'A3', '2025-02-01 16:01:43'),
 (25, 'TK000009', 'PJ000004', 'v', 'b', 0, NULL, 'A3', '2025-02-01 16:28:33'),
-(27, 'TK000011', 'PJ000007', 'v', 'g', 0, NULL, 'A3', '2025-02-01 16:29:29');
+(27, 'TK000011', 'PJ000007', 'v', 'g', 0, NULL, 'A3', '2025-02-01 16:29:29'),
+(29, 'TK000012', 'PJ000001', 'lol', 'pl;s', 1, 'By Administrator', 'A3', '2025-02-05 20:13:33'),
+(30, 'TK000012', 'PJ000001', 'vbcb', 'sdadasdasd', 1, 'By Administrator', 'A3', '2025-02-05 22:21:07'),
+(31, 'TK000013', 'PJ000001', 'mop', 'mlp', 0, NULL, 'A3', '2025-02-05 23:10:53');
 
 -- --------------------------------------------------------
 
@@ -2354,7 +2398,7 @@ ALTER TABLE `vendors_transactions`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=429;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=461;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
@@ -2480,7 +2524,7 @@ ALTER TABLE `statuses`
 -- AUTO_INCREMENT for table `tasks_particulars_remarks`
 --
 ALTER TABLE `tasks_particulars_remarks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `tasks_settings`

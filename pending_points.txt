@@ -7,15 +7,6 @@ Invoices
 2. The download icon in the "Actions" column should download the invoice.
 3. Store a copy of the generated invoice on the server when generated first time by user.
 
-Module Tabs
-1. If any module is clicked from child view, then navigate to its parent view.
-
-Tasks
-1. Menu of Task Action does not disappear after child item is clicked.
-2. Sub Task view not reloading after Edit, Enable, Disable, Mark Task Completed.
-3. In Sub Task view, If there is only one sub task and If it is marked as completed, then the parent "Task" will not be marked as completed. But vice versa is possible.
-4. Add "All Notes" button 
-
 Reimbursement Voucher
 1. Thorough testing
 2. Edit Reimbursement Voucher
