@@ -26,7 +26,7 @@ import {
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function Transactions({ module, reload, unmount }) {
+export default function Transactions({ entity, reload, unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.Transactions.General;
 
@@ -70,8 +70,8 @@ export default function Transactions({ module, reload, unmount }) {
 
 				const amount = String(f.amount);
 				const entryByName = String(f.entry_by_name).toLowerCase();
-				const ownerFirmsName = String(f.owner_firms_name).toLowerCase();
-				const ownerFirmsBanksName = String(f.owner_firms_banks_name).toLowerCase();
+				const ownerFirmsName = String(f.owner_firm_name).toLowerCase();
+				const ownerFirmsBanksName = String(f.owner_firm_bank_name).toLowerCase();
 				const particulars = String(f.particulars).toLowerCase();
 				const paymentSource = String(f.payment_source).toLowerCase();
 				const paymentType = String(f.payment_type).toLowerCase();
@@ -106,13 +106,13 @@ export default function Transactions({ module, reload, unmount }) {
 				} else if (column == headers.Date && !isAscending) {
 					return bEntryAt - aEntryAt;
 				} else if (column == headers.Firm && isAscending) {
-					return a.owner_firms_name.localeCompare(b.owner_firms_name);
+					return a.owner_firm_name.localeCompare(b.owner_firm_name);
 				} else if (column == headers.Firm && !isAscending) {
-					return b.owner_firms_name.localeCompare(a.owner_firms_name);
+					return b.owner_firm_name.localeCompare(a.owner_firm_name);
 				} else if (column == headers.Bank && isAscending) {
-					return a.owner_firms_banks_name.localeCompare(b.owner_firms_banks_name);
+					return a.owner_firm_bank_name.localeCompare(b.owner_firm_bank_name);
 				} else if (column == headers.Bank && !isAscending) {
-					return b.owner_firms_banks_name.localeCompare(a.owner_firms_banks_name);
+					return b.owner_firm_bank_name.localeCompare(a.owner_firm_bank_name);
 				} else if (column == headers.Amount && isAscending) {
 					return a.amount - b.amount;
 				} else if (column == headers.Amount && !isAscending) {
@@ -158,16 +158,19 @@ export default function Transactions({ module, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.GetTransactionSupportData, MyGlobal.GetHeaders({ module }));
+			const response = await axios.get(
+				MyConstants.ApiEndpoints.CashFlows.Modules.GetTransactions,
+				MyGlobal.GetHeaders({ entityId: entity.id, moduleId: entity.module.id }),
+			);
 
 			if (response.status === 200) {
-				const cashFlows = response.data.cashFlows.map((m) => {
+				const transactions = response.data.transactions.map((m) => {
 					let ownerFirmsName = "";
 					let ownerFirmsBanksName = "";
 
-					const ownerFirmsObj = response.data.ownerFirms.find((f) => f.id === m.owner_firms_id);
+					const ownerFirmsObj = response.data.ownerFirms.find((f) => f.id === m.owner_firm_id);
 
-					const ownerFirmsBanksObj = response.data.ownerFirmsBanks.find((f) => f.id === m.owner_firms_banks_id);
+					const ownerFirmsBanksObj = response.data.ownerFirmsBanks.find((f) => f.id === m.owner_firm_bank_id);
 
 					if (typeof ownerFirmsObj === "object") {
 						ownerFirmsName = ownerFirmsObj.name;
@@ -177,31 +180,27 @@ export default function Transactions({ module, reload, unmount }) {
 						ownerFirmsBanksName = ownerFirmsBanksObj.name;
 					}
 
-					const isOutward = ["Office Expense", "Other Expense", "Petty Cash"].includes(module);
-
-					const amount = isOutward ? Number(m.amount_paid) : Number(m.amount_received);
-
 					return {
 						...m,
-						amount,
+						amount: Number(m.amount),
 						entry_at: new Date(m.entry_at),
 						entry_by_name: MyGlobal.GetAnyDataFromId(m.entry_by_id, "full_name"),
-						owner_firms_name: ownerFirmsName,
-						owner_firms_banks_name: ownerFirmsBanksName,
+						owner_firm_name: ownerFirmsName,
+						owner_firm_bank_name: ownerFirmsBanksName,
 					};
 				});
 
 				setApi({
 					transactions: {
-						copy: cashFlows,
-						data: cashFlows,
+						copy: transactions,
+						data: transactions,
 					},
 				});
 
 				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${module} => Get Transaction Support Data`);
+			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${entity.module.name} => Transactions => Get Support Data`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -319,20 +318,13 @@ export default function Transactions({ module, reload, unmount }) {
 	function uiRows(row, i) {
 		const style = "flex flex-wrap w-[11.11%] min-h-9 justify-center items-center text-center";
 
-		const amount = MyGlobal.HighlightText(row.amount, other.find.transaction);
-
+		const amount = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.amount), other.find.transaction);
 		const entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.transaction);
-
-		const ownerFirmsName = MyGlobal.HighlightText(row.owner_firms_name, other.find.transaction);
-
-		const ownerFirmsBanksName = MyGlobal.HighlightText(row.owner_firms_banks_name, other.find.transaction);
-
+		const ownerFirmsName = MyGlobal.HighlightText(row.owner_firm_name, other.find.transaction);
+		const ownerFirmsBanksName = MyGlobal.HighlightText(row.owner_firm_bank_name, other.find.transaction);
 		const particulars = MyGlobal.HighlightText(row.particulars, other.find.transaction);
-
 		const paymentSource = MyGlobal.HighlightText(row.payment_source, other.find.transaction);
-
 		const paymentType = MyGlobal.HighlightText(row.payment_type, other.find.transaction);
-
 		const remarks = MyGlobal.HighlightText(row.remarks, other.find.transaction);
 
 		return (
@@ -410,18 +402,17 @@ export default function Transactions({ module, reload, unmount }) {
 						totalCount={api.transactions.copy.length}
 					/>
 					<div className="flex w-full h-9 justify-center items-center primary-border primary-background">{uiTransactionsFooter()}</div>
-					{other.isNewTransactionsOpen && (
-						<NewTransaction mount={other.isNewTransactionsOpen} module={module} reload={reload} unmount={toggleNewTransaction} />
-					)}
 				</div>
 			);
 		}
 	}
 
 	function uiTransactionsFooter() {
+		console.log(entity);
+
 		const totalPaidAmount = getTotalPaidAmount();
 		const totalAmount = api.transactions.data.reduce((pv, cv) => {
-			return pv + Number(cv.total_amount);
+			return pv + Number(cv.amount);
 		}, 0);
 		const totalPending = MyGlobal.ThousandSeparator(totalAmount - totalPaidAmount);
 
@@ -436,7 +427,7 @@ export default function Transactions({ module, reload, unmount }) {
 				</span>
 				<span />
 				<span>
-					Total <b className="font-bold-10">{MyGlobal.ThousandSeparator(totalAmount)}</b>
+					Total <b className="font-bold-10">{MyGlobal.ThousandSeparator(entity.amount)}</b>
 				</span>
 			</span>
 		);
@@ -466,11 +457,13 @@ export default function Transactions({ module, reload, unmount }) {
 			<div className="flex w-full px-5 py-2.5 justify-between items-center">
 				<div className="flex w-1/2 space-x-2 justify-start items-center">
 					<div className="flex w-full space-x-2 justify-start items-center">
-						<span className="cursor-pointer view-heading" onClick={() => unmount()}>
-							{module}
+						<span className="view-heading">{MyConstants.Modules.Base.CashFlow}</span>
+						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
+						<span className="cursor-pointer hover:underline hover:underline-offset-8 view-heading" onClick={() => unmount()}>
+							{entity.module.name}
 						</span>
 						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-						<span className="view-heading">Transactions</span>
+						<span className="view-heading">{entity.name}'s Transactions</span>
 						{api.transactions.copy.length > 0 && <Badge value={getRowsCount()} />}
 					</div>
 				</div>
@@ -484,6 +477,9 @@ export default function Transactions({ module, reload, unmount }) {
 				</div>
 			</div>
 			<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiMain()}</div>
+			{other.isNewTransactionsOpen && (
+				<NewTransaction entity={entity} mount={other.isNewTransactionsOpen} reload={reload} unmount={toggleNewTransaction} />
+			)}
 		</div>
 	);
 }

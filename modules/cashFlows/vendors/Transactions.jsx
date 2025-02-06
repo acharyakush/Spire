@@ -322,19 +322,12 @@ export default function Transactions({ project, reload, unmount }) {
 		const style = "flex flex-wrap w-[11.11%] min-h-9 justify-center items-center text-center";
 
 		const amount = MyGlobal.HighlightText(row.amount, other.find.transaction);
-
 		const entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.transaction);
-
 		const ownerFirmsName = MyGlobal.HighlightText(row.owner_firms_name, other.find.transaction);
-
 		const ownerFirmsBanksName = MyGlobal.HighlightText(row.owner_firms_banks_name, other.find.transaction);
-
 		const particulars = MyGlobal.HighlightText(row.particulars, other.find.transaction);
-
 		const paymentSource = MyGlobal.HighlightText(row.payment_source, other.find.transaction);
-
 		const paymentType = MyGlobal.HighlightText(row.payment_type, other.find.transaction);
-
 		const remarks = MyGlobal.HighlightText(row.remarks, other.find.transaction);
 
 		return (

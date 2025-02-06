@@ -6,34 +6,38 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Transactions from "./Transactions";
 import MyConstants from "@/utilities/constants";
+import NewHead from "@/modals/cashFlows/others/NewHead";
 import NewEntity from "@/modals/cashFlows/others/NewEntity";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
+import { Badge, Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Badge, BadgeSmall, Spinner } from "@/components/Elements";
-import { faBank, faChevronLeft, faChevronRight, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faBank, faChevronRight, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 
 export default function Others({ module, reload, unmount }) {
 	// Business Logic
 
 	const [api, setApi] = useState({
 		list: [],
+		cards: [],
+	});
+
+	const [loading, setLoading] = useState({
+		entities: false,
+		supportData: false,
 	});
 
 	const [main, setMain] = useState({
 		find: "",
 		isLoading: false,
 		selectedEntity: {
-			amount: "",
 			emailAddress: "",
 			entryAt: "",
 			entryBy: { id: "", name: "" },
 			id: "",
-			moduleId: "",
+			module: { id: "", name: "" },
 			name: "",
-			ownerFirm: { id: "", name: "" },
-			ownerFirmBank: { id: "", name: "" },
 			paymentSource: "",
 			phoneNumber: "",
 			purpose: "",
@@ -44,10 +48,7 @@ export default function Others({ module, reload, unmount }) {
 	const [mounted, setMounted] = useState({
 		mainComponent: false,
 		newEntity: false,
-	});
-
-	const [other, setOther] = useState({
-		isLoading: false,
+		newHead: false,
 	});
 
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
@@ -63,7 +64,7 @@ export default function Others({ module, reload, unmount }) {
 	}
 
 	function getIconOrBadge() {
-		if (other.isLoading) {
+		if (loading.supportData) {
 			return (
 				<span className="pl-5 relative">
 					<Spinner />
@@ -82,25 +83,30 @@ export default function Others({ module, reload, unmount }) {
 		globalThis.window.open(`https://wa.me/1${main.selectedEntity.phoneNumber}`, "_blank");
 	}
 
-	function setEntity(obj) {
+	function setEntity(object) {
 		setMain((s) => ({
 			...s,
 			selectedEntity: {
-				amount: obj.amount,
-				emailAddress: obj.emailAddress,
-				entryAt: obj.entryAt,
-				entryBy: { id: obj.entryBy.id, name: obj.entryBy.name },
-				id: obj.id,
-				moduleId: obj.moduleId,
-				name: obj.name,
-				ownerFirm: { id: obj.ownerFirm.id, name: obj.ownerFirm.name },
-				ownerFirmBank: { id: obj.ownerFirmBank.id, name: obj.ownerFirmBank.name },
-				paymentSource: obj.paymentSource,
-				phoneNumber: obj.phoneNumber,
-				purpose: obj.purpose,
-				upiId: obj.upiId,
+				emailAddress: object.emailAddress,
+				entryAt: object.entryAt,
+				entryBy: {
+					id: object.entryBy.id,
+					name: object.entryBy.name,
+				},
+				id: object.id,
+				module: {
+					id: object.module.id,
+					name: object.module.name,
+				},
+				name: object.name,
+				paymentSource: object.paymentSource,
+				phoneNumber: object.phoneNumber,
+				purpose: object.purpose,
+				upiId: object.upiId,
 			},
 		}));
+
+		getSelectedEntityCard(object.id);
 	}
 
 	async function getSupportData(action) {
@@ -108,35 +114,35 @@ export default function Others({ module, reload, unmount }) {
 			reload();
 		}
 
-		setOther((s) => ({ ...s, isLoading: true }));
+		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ moduleId: module.id, type: "get-cash-flows-entities" }));
+			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.GetEntities, MyGlobal.GetHeaders({ moduleId: module.id }));
 
 			const list = [];
-			const modules = [];
 
-			if (Array.isArray(response.data) && response.data.length) {
-				response.data.forEach((fe) => {
+			if (Array.isArray(response.data.entities) && response.data.entities.length) {
+				response.data.entities.forEach((fe) => {
+					let moduleName = "";
+					const module = response.data.modules.find((f) => f.custom_id === fe.module_id);
+
+					if (typeof module === "object") {
+						moduleName = module.name;
+					}
+
 					list.push({
-						amount: "",
 						emailAddress: fe.email_address,
 						entryAt: fe.entry_at,
 						entryBy: {
 							id: fe.entry_by_id,
-							name: MyGlobal.GetAnyDataFromId(fe.entry_by, "full_name"),
+							name: MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name"),
 						},
 						id: fe.id,
-						moduleId: fe.module_id,
+						module: {
+							id: fe.module_id,
+							name: moduleName,
+						},
 						name: fe.name,
-						ownerFirm: {
-							id: fe.owner_firm_id,
-							name: "",
-						},
-						ownerFirmBank: {
-							id: fe.owner_firm_bank_id,
-							name: "",
-						},
 						paymentSource: fe.payment_source,
 						phoneNumber: fe.phone_number,
 						purpose: fe.purpose,
@@ -147,12 +153,54 @@ export default function Others({ module, reload, unmount }) {
 				setEntity(list.at(0));
 			}
 
-			setApi({ list, modules });
+			setApi((s) => ({ ...s, list }));
 			setMounted((s) => ({ ...s, mainComponent: true }));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${module.name} => Get Support Data`);
 		} finally {
-			setOther((s) => ({ ...s, isLoading: false }));
+			setLoading((s) => ({ ...s, supportData: false }));
+		}
+	}
+
+	async function getSelectedEntityCard(entityId) {
+		setLoading((s) => ({ ...s, entities: true }));
+
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ entityId, type: "get-cash-flows-heads" }));
+
+			const list = [];
+
+			if (Array.isArray(response.data) && response.data.length) {
+				response.data.forEach((fe) => {
+					list.push({
+						amount: fe.amount,
+						entryAt: fe.entry_at,
+						entryBy: {
+							id: fe.entry_by_id,
+							name: MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name"),
+						},
+						id: fe.id,
+						moduleId: fe.module_id,
+						ownerFirm: {
+							id: fe.owner_firm_id,
+							name: "",
+						},
+						ownerFirmBank: {
+							id: fe.owner_firm_bank_id,
+							name: "",
+						},
+						paymentSource: fe.payment_source,
+						purpose: fe.purpose,
+						remark: fe.remarks,
+					});
+				});
+			}
+
+			setApi((s) => ({ ...s, cards: list }));
+		} catch (error) {
+			MyGlobal.HandleErrors(error, `${module.name} => Get Support Data`);
+		} finally {
+			setLoading((s) => ({ ...s, entities: false }));
 		}
 	}
 
@@ -160,8 +208,13 @@ export default function Others({ module, reload, unmount }) {
 		setMounted((s) => ({ ...s, newEntity: !s.newEntity }));
 	}
 
+	function toggleNewHead() {
+		setMounted((s) => ({ ...s, newHead: !s.newHead }));
+	}
+
 	function toggleTransactions(object) {
-		setMain((s) => ({ ...s, selectedEntity: { ...s.selectedEntity, selectedProject: object ?? {} } }));
+		console.log({ ...main.selectedEntity, ...object });
+		setMain((s) => ({ ...s, selectedEntity: { ...s.selectedEntity, ...object } ?? {} }));
 		setMounted((s) => ({ ...s, transactions: object ? true : false }));
 	}
 
@@ -169,27 +222,23 @@ export default function Others({ module, reload, unmount }) {
 	function uiBody() {
 		return (
 			<div className="flex w-full h-full justify-center items-start">
-				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiModules()}</div>
+				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiEntities()}</div>
 				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center rounded shadow contrast-background">{uiSelectedEntity()}</div>
 			</div>
 		);
 	}
 
 	function uiCards() {
-		return main.selectedEntity.projects.map((m) => {
+		return api.cards.map((m) => {
 			return (
 				<div
 					className="flex flex-col w-1/3 p-4 space-y-3 justify-center items-center relative rounded shadow primary-border primary-background-transparent-01"
 					key={m.id}>
-					<span className="font-medium-16 black-text">{m.company_name}</span>
-					<div className="flex space-x-2.5 justify-center items-center font-regular-14 black-text">
-						<span>{m.main_project_name}</span>
-						<BadgeSmall value={m.project_id} />
-					</div>
+					<span className="font-medium-16 black-text">{m.purpose}</span>
 					<div className="flex flex-col w-full p-4 space-y-2 rounded shadow contrast-background">
 						<div className="flex w-full justify-between items-center">
 							<span className="font-regular-12">Total Pending</span>
-							<span className="font-medium-12 red-text">{MyGlobal.ThousandSeparator(m.pending_fees)}</span>
+							<span className="font-medium-12 red-text">{MyGlobal.ThousandSeparator(m.amount)}</span>
 						</div>
 						<div className="full-border" />
 						<div className="flex w-full justify-between items-center">
@@ -199,7 +248,7 @@ export default function Others({ module, reload, unmount }) {
 						<div className="full-border" />
 						<div className="flex w-full justify-between items-center">
 							<span className="font-regular-12">Total Fees</span>
-							<span className="font-medium-14 black-text">{MyGlobal.ThousandSeparator(m.total_fees)}</span>
+							<span className="font-medium-14 black-text">{MyGlobal.ThousandSeparator(m.amount)}</span>
 						</div>
 					</div>
 					<div className="absolute -bottom-5 cursor-pointer" onClick={() => toggleTransactions(m)}>
@@ -213,8 +262,23 @@ export default function Others({ module, reload, unmount }) {
 		});
 	}
 
+	function uiEntities() {
+		return api.list.map((m, i) => {
+			const selectedStyle =
+				m.id == main.selectedEntity.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+
+			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedStyle} font-regular-10 hovered-rows`;
+
+			return (
+				<button className={wrapper} key={i} onClick={() => setEntity(m)}>
+					{m.name}
+				</button>
+			);
+		});
+	}
+
 	function uiMain() {
-		if (other.isLoading) {
+		if (loading.supportData) {
 			return (
 				<div className={blankDataWrapper}>
 					<span className="font-regular-12 gray-text">Loading...</span>
@@ -232,24 +296,15 @@ export default function Others({ module, reload, unmount }) {
 		}
 	}
 
-	function uiModules() {
-		return api.list.map((m, i) => {
-			const selectedStyle =
-				m.id == main.selectedEntity.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
-
-			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedStyle} font-regular-10 hovered-rows`;
-
-			return (
-				<button className={wrapper} key={i} onClick={() => setEntity(m)}>
-					{m.name}
-				</button>
-			);
-		});
-	}
-
 	function uiNew() {
 		if (api.list.length) {
 			return <FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleNewEntity()} size="xl" />;
+		}
+	}
+
+	function uiNewCard() {
+		if (main.selectedEntity.id) {
+			return <FontAwesomeIcon className="ml-2.5 cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleNewHead()} />;
 		}
 	}
 
@@ -268,33 +323,47 @@ export default function Others({ module, reload, unmount }) {
 				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-center items-center font-medium-12 gray-text">Select an entity</div>
 			);
 		} else {
+			const showEmailAddress = main.selectedEntity.emailAddress && main.selectedEntity.emailAddress.length > 0;
+			const showPhoneNumber = main.selectedEntity.phoneNumber && String(main.selectedEntity.phoneNumber).length > 0;
+			const showUpiId = main.selectedEntity.upiId && main.selectedEntity.upiId.length > 0;
+
 			return (
 				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">
 					<div className="flex w-full justify-between items-center">
 						<div className="flex flex-col w-1/2 justify-center items-start">
-							<span className="view-heading">{main.selectedEntity.name}</span>
+							<span className="view-heading">
+								{main.selectedEntity.name}
+								{uiNewCard()}
+							</span>
+							<span className="font-regular-11 gray-text">Purpose {main.selectedEntity.purpose}</span>
 							<span className="font-regular-11 gray-text">Registered on {dayjs(main.selectedEntity.entryAt).format("DD MMM, YYYY")}</span>
 						</div>
 						<div className="flex flex-col w-1/2 space-y-2 justify-center items-end">
-							<div className="flex space-x-2.5 justify-center items-center">
-								<FontAwesomeIcon className="primary-text" icon={faPhone} />
-								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openWhatsAppWeb()}>
-									{main.selectedEntity.phoneNumber}
-								</span>
-							</div>
-							<div className="flex space-x-2.5 justify-center items-center">
-								<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
-								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openEmailClient()}>
-									{main.selectedEntity.emailAddress}
-								</span>
-							</div>
-							<div className="flex space-x-2.5 justify-center items-center primary-text">
-								<FontAwesomeIcon icon={faBank} />
-								<span className="font-regular-11">{main.selectedEntity.upiId}</span>
-							</div>
+							{showPhoneNumber && (
+								<div className="flex space-x-2.5 justify-center items-center">
+									<FontAwesomeIcon className="primary-text" icon={faPhone} />
+									<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openWhatsAppWeb()}>
+										{main.selectedEntity.phoneNumber}
+									</span>
+								</div>
+							)}
+							{showEmailAddress && (
+								<div className="flex space-x-2.5 justify-center items-center">
+									<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
+									<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openEmailClient()}>
+										{main.selectedEntity.emailAddress}
+									</span>
+								</div>
+							)}
+							{showUpiId && (
+								<div className="flex space-x-2.5 justify-center items-center primary-text">
+									<FontAwesomeIcon icon={faBank} />
+									<span className="font-regular-11">{main.selectedEntity.upiId}</span>
+								</div>
+							)}
 						</div>
 					</div>
-					{/* <div className="flex w-full space-x-2.5 justify-start items-center">{uiCards()}</div> */}
+					<div className="flex w-full space-x-2.5 justify-start items-center">{uiCards()}</div>
 				</div>
 			);
 		}
@@ -314,7 +383,7 @@ export default function Others({ module, reload, unmount }) {
 	}
 
 	if (mounted.transactions) {
-		return <Transactions project={main.selectedEntity.selectedProject} reload={getSupportData} unmount={toggleTransactions} />;
+		return <Transactions entity={main.selectedEntity} reload={getSupportData} unmount={toggleTransactions} />;
 	} else {
 		return (
 			<div className="flex flex-col w-full h-full justify-start items-center">
@@ -330,6 +399,9 @@ export default function Others({ module, reload, unmount }) {
 					<div className="flex w-1/2 space-x-2 justify-end items-center">{uiNew()}</div>
 				</div>
 				{uiMain()}
+
+				{mounted.newHead && <NewHead entity={main.selectedEntity} mount={mounted.newHead} reload={getSupportData} unmount={toggleNewHead} />}
+
 				{mounted.newEntity && <NewEntity module={module} mount={mounted.newEntity} reload={getSupportData} unmount={toggleNewEntity} />}
 			</div>
 		);

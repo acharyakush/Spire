@@ -12,15 +12,20 @@ const MyConstants = Object.freeze({
 		}),
 		Authenticate: "/api/authenticate",
 		CashFlows: Object.freeze({
-			AddCashFlow: "api/cashFlows/addCashFlow",
-			AddTransaction: "api/cashFlows/addTransaction",
-			AddInvoice: "api/cashFlows/addInvoice",
-			GetNewTransactionSupportData: "api/cashFlows/getNewTransactionSupportData",
+			Modules: Object.freeze({
+				Entities: Object.freeze({
+					AddEntity: "api/cashFlows/modules/entities/addEntity",
+					AddHead: "api/cashFlows/modules/entities/addHead",
+					GetEntities: "api/cashFlows/modules/entities/getEntities",
+					GetNewEntitySupportData: "api/cashFlows/modules/entities/getNewEntitySupportData",
+					GetNewHeadSupportData: "api/cashFlows/modules/entities/getNewHeadSupportData",
+				}),
+				AddTransaction: "api/cashFlows/modules/addTransaction",
+				GetNewTransactionSupportData: "api/cashFlows/modules/getNewTransactionSupportData",
+				GetSupportData: "api/cashFlows/modules/getSupportData",
+				GetTransactions: "api/cashFlows/modules/getTransactions",
+			}),
 			GetSupportData: "api/cashFlows/getSupportData",
-			GetTransactionSupportData: "api/cashFlows/getTransactionsSupportData",
-		}),
-		CashFlowsModules: Object.freeze({
-			AddEntity: "api/cashFlowsModules/addEntity",
 		}),
 		Clients: Object.freeze({
 			GetClients: "api/clients/getClients",
@@ -84,6 +89,7 @@ const MyConstants = Object.freeze({
 		AllSubTasksMarkedCompleted: "All sub tasks marked completed.",
 		ApiCallForbidden: "Invalid API method.",
 		BadRequest: "Incompatible request sent.",
+		CardAdded: "Card added.",
 		CashFlowAdded: "Cash Flow added.",
 		CashFlowEdited: "Cash Flow edited.",
 		ClientEdited: "Client edited.",

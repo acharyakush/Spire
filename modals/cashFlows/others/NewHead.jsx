@@ -11,16 +11,15 @@ import { MyGlobal } from "@/utilities/global";
 import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { ComboBox, ComboBox2, DatePicker, TextInput } from "@/components/Inputs";
-import { faBank, faBuilding, faCalendar, faFile, faIndianRupee, faInfoCircle, faList, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { ComboBox2, DatePicker, TextInput } from "@/components/Inputs";
+import { faBank, faBuilding, faCalendar, faClipboardQuestion, faIndianRupee, faList, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewTransaction({ entity, mount, reload, unmount }) {
+export default function NewHead({ entity, mount, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
 		ownerFirms: [],
 		ownerFirmsBanks: { copy: [], data: [] },
 		paymentSources: { copy: [], data: [] },
-		paymentTypes: [],
 	});
 
 	const [loading, setLoading] = useState({
@@ -33,9 +32,8 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 		entryAt: new Date(),
 		ownerFirm: { id: "", name: "" },
 		ownerFirmBank: { id: "", list: [], name: "" },
-		particulars: "",
 		paymentSource: { id: "", name: "" },
-		paymentType: "",
+		purpose: "",
 		remarks: "",
 	});
 
@@ -47,6 +45,8 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 		},
 		isBoxMoved: false,
 	});
+
+	const thisView = `${MyConstants.Modules.Base.CashFlow} => ${entity.module.name} => ${entity.name} => New Head`;
 
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -60,30 +60,29 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 			entityId: entity.id,
 			entryAt: main.entryAt,
 			moduleId: entity.module.id,
-			ownerFirmsId: main.ownerFirm.id,
-			ownerFirmsBankId: main.ownerFirmBank.id,
-			particulars: main.particulars,
+			ownerFirmId: main.ownerFirm.id,
+			ownerFirmBankId: main.ownerFirmBank.id,
 			paymentSource: main.paymentSource.id,
-			paymentType: main.paymentType,
+			purpose: main.purpose,
 			remarks: main.remarks,
 			userId: MyGlobal.GetUserId(),
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.AddTransaction, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.AddHead, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload("reload-root-statistics");
 				resetFields();
 				getSupportData();
 
-				MyGlobal.AddActivity(`Added transaction in <b>${entity.id}</b>.`, MyConstants.Modules.Base.CashFlow);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionAdded);
+				MyGlobal.AddActivity(`Added head for <b>${entity.name}</b> in <b>${entity.module.name}</b>.`, MyConstants.Modules.Base.CashFlow);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.CardAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "Cash Flow => Affiliates => Single Affiliate => New Transaction");
+			MyGlobal.HandleErrors(error, thisView);
 		} finally {
 			setLoading((s) => ({ ...s, adding: false }));
 		}
@@ -91,6 +90,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 
 	function getAddButtonStyle() {
 		const disableAddButton = loading.adding || !isAddEligible() ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+
 		return `primary-button-condensed ${disableAddButton}`;
 	}
 
@@ -144,7 +144,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
+			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.GetNewHeadSupportData, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
 				const basicPaymentSourceList = MyGlobal.GetBasicPaymentSourceList();
@@ -159,20 +159,19 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 						copy: basicPaymentSourceList,
 						data: basicPaymentSourceList,
 					},
-					paymentTypes: JSON.parse(response.data.settings.at(0).value),
 				});
 
 				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${entity.name} => New Transaction`);
+			MyGlobal.HandleErrors(error, `${thisView} => Get Support Data`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
 	}
 
 	function isAddEligible() {
-		if (!main.amount || !main.particulars || !main.paymentType || !main.remarks) {
+		if (!main.amount || !main.purpose || !main.remarks) {
 			return false;
 		}
 
@@ -193,9 +192,8 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 			entryAt: new Date(),
 			ownerFirm: { id: "", name: "" },
 			ownerFirmBank: { id: "", list: [], name: "" },
-			particulars: "",
 			paymentSource: { id: "", name: "" },
-			paymentType: "",
+			purpose: "",
 			remarks: "",
 		});
 	}
@@ -244,7 +242,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 
 			setOther((s) => ({ ...s, find: { ownerFirm: "", ownerFirmBank: "", paymentSource: "" } }));
 		} else {
-			if (!["ownerFirm", "ownerFirmBank", "paymentSource"].includes(key)) {
+			if (["amount", "entryAt", "purpose", "remarks"].includes(key)) {
 				setMain((s) => ({ ...s, [key]: value }));
 			}
 		}
@@ -267,7 +265,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 		return (
 			<TextInput
 				icon={faIndianRupee}
-				id="amount"
+				id="Amount"
 				label="Amount"
 				onChange={(e) => setInputs("amount", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
@@ -289,8 +287,12 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 			return (
 				<div className="flex flex-col w-full pt-2 pb-4 justify-between items-center">
 					<div className="flex flex-col w-full h-full px-5 space-y-2 justify-center items-center">
-						<div className="flex w-full space-x-5 justify-between items-center">
+						<div className="flex w-full space-x-6 justify-center items-center">
 							{uiEntryAt()}
+							<div className="w-full" />
+						</div>
+						<div className="flex w-full space-x-5 justify-between items-center">
+							{uiPurpose()}
 							{uiAmount()}
 						</div>
 						<div className="flex w-full space-x-5 justify-between items-center">
@@ -298,11 +300,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 							{uiOwnerFirmsBanks()}
 						</div>
 						<div className="flex w-full space-x-5 justify-between items-center">
-							{uiPaymentType()}
 							{uiPaymentSource()}
-						</div>
-						<div className="flex w-full space-x-5 justify-center items-start">
-							{uiParticulars()}
 							{uiRemarks()}
 						</div>
 					</div>
@@ -318,7 +316,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 	function uiFooter() {
 		return (
 			<footer className="w-full dialog-footer">
-				<button className={getAddButtonStyle()} onClick={() => doAddition()} tabIndex="10">
+				<button className={getAddButtonStyle()} onClick={() => doAddition()} tabIndex="8">
 					{uiAdd()}
 				</button>
 			</footer>
@@ -342,7 +340,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				onInputChange={(e) => setFind("ownerFirm", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
 				searchedItem={other.find.ownerFirm}
-				tabIndex="3"
+				tabIndex="4"
 				value={main.ownerFirm.name}
 				width="w-full"
 			/>
@@ -366,23 +364,8 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				onInputChange={(e) => setFind("ownerFirmBank", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
 				searchedItem={other.find.ownerFirmBank}
-				tabIndex="4"
+				tabIndex="5"
 				value={main.ownerFirmBank.name}
-				width="w-full"
-			/>
-		);
-	}
-
-	function uiParticulars() {
-		return (
-			<TextInput
-				icon={faInfoCircle}
-				id="particulars"
-				label="Particulars"
-				onChange={(e) => setInputs("particulars", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="7"
-				value={main.particulars}
 				width="w-full"
 			/>
 		);
@@ -398,6 +381,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				filteredData={getPaymentSources}
 				hasDataObject
 				icon={faBank}
+				isMenuInverted
 				isReadOnly={false}
 				label="Payment Source"
 				onChange={(e) => setInputs("paymentSource", e)}
@@ -412,20 +396,16 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 		);
 	}
 
-	function uiPaymentType() {
+	function uiPurpose() {
 		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={api.paymentTypes}
-				icon={faFile}
-				label="Payment Type"
-				onChange={(e) => setInputs("paymentType", e)}
-				onClick={() => {}}
+			<TextInput
+				icon={faClipboardQuestion}
+				id="purpose"
+				label="Purpose"
+				onChange={(e) => setInputs("purpose", e.target.value)}
 				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="5"
-				value={main.paymentType}
+				tabIndex="2"
+				value={main.purpose}
 				width="w-full"
 			/>
 		);
@@ -439,7 +419,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				label="Remarks"
 				onChange={(e) => setInputs("remarks", e.target.value)}
 				onKeyPress={() => {}}
-				tabIndex="8"
+				tabIndex="7"
 				value={main.remarks}
 				width="w-full"
 			/>
@@ -449,7 +429,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 	function uiTitleBar() {
 		return (
 			<DialogTitle as="h2" className={titleBarStyle}>
-				<span className="flex w-full justify-start items-center">New Transaction</span>
+				<span className="flex w-full justify-start items-center">New Head</span>
 				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount()} />
 			</DialogTitle>
 		);

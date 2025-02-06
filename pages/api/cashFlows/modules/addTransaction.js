@@ -13,20 +13,11 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { amount, entryAt, module, ownerFirmsId, ownerFirmsBankId, particulars, paymentSource, paymentType, remarks, userId } = req.body;
-
-		let amountPaid = 0;
-		let amountReceived = 0;
-
-		if (["Office Expense", "Other Expense", "Petty Cash"].includes(module)) {
-			amountPaid = amount;
-		} else {
-			amountReceived = amount;
-		}
+		const { amount, entityId, entryAt, moduleId, ownerFirmsId, ownerFirmsBankId, particulars, paymentSource, paymentType, remarks, userId } = req.body;
 
 		const result = await query(
-			"INSERT INTO cash_flows (owner_firms_id, owner_firms_banks_id, amount_paid, amount_received, module, particulars, payment_source, payment_type, remarks, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-			[ownerFirmsId, ownerFirmsBankId, amountPaid, amountReceived, module, particulars, paymentSource, paymentType, remarks, entryAt, userId],
+			"INSERT INTO cash_flows_transactions (entity_id, module_id, owner_firm_id, owner_firm_bank_id, amount, particulars, payment_source, payment_type, remarks, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			[entityId, moduleId, ownerFirmsId, ownerFirmsBankId, amount, particulars, paymentSource, paymentType, remarks, entryAt, userId],
 		);
 
 		if (result.affectedRows == 0) {

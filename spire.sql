@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 05, 2025 at 07:13 PM
+-- Generation Time: Feb 06, 2025 at 08:49 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -540,7 +540,26 @@ INSERT INTO `activities` (`id`, `entry_by_id`, `module`, `activity`, `ip_address
 (457, 'A3', 'Tasks', 'Edited Task from <b>Task #56</b> to <b>Task #567</b> of <b>TK000013</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 23:08:23', ''),
 (458, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-05 23:10:53', ''),
 (459, 'A3', 'Tasks', 'Added <b>TK000020</b> in <b>PJ000006</b>', 'Localhost', '2025-02-05 23:39:47', ''),
-(460, 'A3', 'General', 'Logged out.', '', '2025-02-05 23:43:21', '');
+(460, 'A3', 'General', 'Logged out.', '', '2025-02-05 23:43:21', ''),
+(461, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-06 18:32:34', ''),
+(462, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-06 18:33:29', ''),
+(463, 'A3', 'Tasks', 'Added a particular and remark in <b>undefined</b> in <b>PJ000001</b>.', 'Localhost', '2025-02-06 18:33:37', ''),
+(464, 'A3', 'Tasks', 'Disabled <b>TK000013</b> in <b>PJ000001</b> due to <b>mko</b>', 'Localhost', '2025-02-06 18:35:25', ''),
+(465, 'A3', 'Tasks', 'Enabled <b>TK000013</b> in <b>PJ000001</b> due to <b>bjhbj</b>', 'Localhost', '2025-02-06 18:35:57', ''),
+(466, 'A3', 'Cash Flow', 'Added card for <b>Office Expense</b>.', 'Localhost', '2025-02-06 19:12:41', ''),
+(467, 'A3', 'Cash Flow', 'Added card for <b>Office Expense</b>.', 'Localhost', '2025-02-06 19:23:08', ''),
+(468, 'A3', 'Cash Flow', 'Added card for <b>2</b> in <b>Canteen</b> in <b>OFEX</b>.', 'Localhost', '2025-02-06 19:35:36', ''),
+(469, 'A3', 'Vendors', 'Added vendor(s).', 'Localhost', '2025-02-06 19:44:32', ''),
+(470, 'A3', 'Cash Flow', 'Added entity for <b>Petty Cash</b>.', 'Localhost', '2025-02-06 19:59:38', ''),
+(471, 'A3', 'Cash Flow', 'Added card for <b>3</b> in <b>pos</b> in <b>PECA</b>.', 'Localhost', '2025-02-06 20:00:03', ''),
+(472, 'A3', 'Cash Flow', 'Added card for <b>3</b> in <b>pos</b> in <b>PECA</b>.', 'Localhost', '2025-02-06 20:00:23', ''),
+(473, 'A3', 'General', 'Logged out.', '', '2025-02-06 20:52:07', ''),
+(474, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-06 20:55:44', ''),
+(475, 'A3', 'Cash Flow', 'Added entity in <b>Office Expense</b>.', 'Localhost', '2025-02-06 22:04:09', ''),
+(476, 'A3', 'Cash Flow', 'Added entity in <b>Office Expense</b>.', 'Localhost', '2025-02-06 22:05:21', ''),
+(477, 'A3', 'Cash Flow', 'Added head for <b>Tea Stall</b> in <b>Office Expense</b>.', 'Localhost', '2025-02-06 23:21:38', ''),
+(478, 'A3', 'Cash Flow', 'Added transaction in <b>1</b>.', 'Localhost', '2025-02-07 00:54:57', ''),
+(479, 'A3', 'General', 'Logged out.', '', '2025-02-07 01:19:11', '');
 
 -- --------------------------------------------------------
 
@@ -730,12 +749,10 @@ INSERT INTO `cash_flows` (`id`, `affiliate_id`, `owner_firms_id`, `owner_firms_b
 CREATE TABLE `cash_flows_entities` (
   `id` int(11) UNSIGNED NOT NULL,
   `module_id` char(4) NOT NULL,
-  `owner_firm_id` char(8) NOT NULL,
   `owner_firm_bank_id` char(8) NOT NULL,
   `name` varchar(500) NOT NULL,
   `email_address` varchar(200) DEFAULT NULL,
   `phone_number` bigint(12) DEFAULT NULL,
-  `amount` decimal(10,2) NOT NULL,
   `payment_source` varchar(500) NOT NULL,
   `purpose` varchar(500) NOT NULL,
   `upi_id` varchar(200) DEFAULT NULL,
@@ -747,9 +764,44 @@ CREATE TABLE `cash_flows_entities` (
 -- Dumping data for table `cash_flows_entities`
 --
 
-INSERT INTO `cash_flows_entities` (`id`, `module_id`, `owner_firm_id`, `owner_firm_bank_id`, `name`, `email_address`, `phone_number`, `amount`, `payment_source`, `purpose`, `upi_id`, `entry_at`, `entry_by_id`) VALUES
-(1, 'OFEX', 'AC03', 'BK03', 'Tea Stall', 'ramesh.parmar@gmail.com', 8000721554, 5000.00, 'INSTAMOJO', 'For monthly tea/coffee', 'parmar.ramesh@axl', '2025-02-04 11:55:20', 'A3'),
-(2, 'OFEX', 'AC02', 'BK02', 'Canteen', NULL, NULL, 8000.00, 'CC', 'Snacks for Clients', NULL, '2025-02-04 13:12:41', 'A3');
+INSERT INTO `cash_flows_entities` (`id`, `module_id`, `owner_firm_bank_id`, `name`, `email_address`, `phone_number`, `payment_source`, `purpose`, `upi_id`, `entry_at`, `entry_by_id`) VALUES
+(1, 'OFEX', 'BK03', 'Tea Stall', 'ramesh.parmar@gmail.com', 8000721554, 'INSTAMOJO', 'For monthly tea/coffee', 'parmar.ramesh@axl', '2025-02-04 11:55:20', 'A3'),
+(2, 'OFEX', 'BK02', 'Canteen', NULL, NULL, 'CC', 'Snacks for Clients', NULL, '2025-02-04 13:12:41', 'A3'),
+(3, 'PECA', 'BK02', 'pos', NULL, NULL, 'CC', 'dsdfsd', NULL, '2025-02-06 08:59:08', 'A3'),
+(4, 'OFEX', 'BK02', 'anuj shah', '', NULL, 'INSTAMOJO', 'snacks of dskr', '', '2025-02-10 11:03:02', 'A3'),
+(5, 'OFEX', 'BK01', 'mitesh patel', 'mitesh.patel@gmail.com', 9978075347, 'CHEQUE', 'new employee induction expense', '', '2025-02-06 11:04:39', 'A3');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cash_flows_heads`
+--
+
+CREATE TABLE `cash_flows_heads` (
+  `id` int(11) UNSIGNED NOT NULL,
+  `entity_id` int(11) NOT NULL,
+  `module_id` char(4) NOT NULL,
+  `owner_firm_id` char(8) NOT NULL,
+  `owner_firm_bank_id` char(8) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `payment_source` varchar(500) NOT NULL,
+  `purpose` varchar(500) NOT NULL,
+  `remarks` varchar(500) DEFAULT NULL,
+  `entry_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `entry_by_id` char(8) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cash_flows_heads`
+--
+
+INSERT INTO `cash_flows_heads` (`id`, `entity_id`, `module_id`, `owner_firm_id`, `owner_firm_bank_id`, `amount`, `payment_source`, `purpose`, `remarks`, `entry_at`, `entry_by_id`) VALUES
+(3, 1, 'OFEX', 'AC03', 'BK03', 5000.00, 'CHEQUE', 'kjaksdjasdk', 'sdadsajsd', '2025-02-06 08:11:41', 'A3'),
+(4, 1, 'OFEX', 'AC02', 'BK02', 565165.00, 'CHEQUE', 'kjsdakjdbjabsd', 'sdadasdasd', '2025-02-06 08:22:53', 'A3'),
+(5, 2, 'OFEX', 'AC03', 'BK03', 120.00, 'CC', 'dadasd', '500', '2025-02-25 08:32:40', 'A3'),
+(6, 3, 'PECA', 'AC03', 'BK03', 5555.00, 'CC', 'sdfsdfsdf', 'sdadadsasd', '2025-02-06 08:59:52', 'A3'),
+(7, 3, 'PECA', 'AC04', 'BK04', 111.00, 'CHEQUE', 'aaaaa', 'dfsdfsdfsdfs', '2025-02-06 09:00:10', 'A3'),
+(8, 1, 'OFEX', 'AC04', 'BK04', 5000.00, 'CC', 'snacks for bf', 'no remarks here.', '2025-02-19 13:00:00', 'A3');
 
 -- --------------------------------------------------------
 
@@ -794,6 +846,34 @@ CREATE TABLE `cash_flows_settings` (
 INSERT INTO `cash_flows_settings` (`id`, `key`, `value`) VALUES
 (1, 'income_bifurcation', '{\"categories\":{\"A1\":10,\"A2\":10,\"Provision\":80},\"effect_date\":\"2024-11-27T00:00:00.000Z\"}'),
 (2, 'payment_types', '[\"Professional Fees\", \"Reimbursement Voucher\"]');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cash_flows_transactions`
+--
+
+CREATE TABLE `cash_flows_transactions` (
+  `id` int(11) NOT NULL,
+  `entity_id` int(11) NOT NULL,
+  `module_id` char(4) NOT NULL,
+  `owner_firm_id` char(4) NOT NULL,
+  `owner_firm_bank_id` char(8) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `particulars` varchar(500) NOT NULL,
+  `payment_source` varchar(500) NOT NULL,
+  `payment_type` varchar(50) NOT NULL,
+  `remarks` varchar(500) NOT NULL,
+  `entry_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `entry_by_id` char(8) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cash_flows_transactions`
+--
+
+INSERT INTO `cash_flows_transactions` (`id`, `entity_id`, `module_id`, `owner_firm_id`, `owner_firm_bank_id`, `amount`, `particulars`, `payment_source`, `payment_type`, `remarks`, `entry_at`, `entry_by_id`) VALUES
+(15, 1, 'OFEX', 'AC03', 'BK03', 500.00, 'dbsjdhb', 'DC', 'Professional Fees', 'jdshbjsdf', '2025-02-06 19:23:35', 'A3');
 
 -- --------------------------------------------------------
 
@@ -1441,7 +1521,7 @@ CREATE TABLE `pma__recent` (
 --
 
 INSERT INTO `pma__recent` (`username`, `tables`) VALUES
-('spire', '[{\"db\":\"spire\",\"table\":\"invoices_payment_history\"},{\"db\":\"spire\",\"table\":\"owner_firms_banks\"},{\"db\":\"spire\",\"table\":\"tasks_settings\"},{\"db\":\"spire\",\"table\":\"cash_flows_settings\"},{\"db\":\"spire\",\"table\":\"projects_settings\"},{\"db\":\"spire\",\"table\":\"owner_firms\"},{\"db\":\"spire\",\"table\":\"projects\"},{\"db\":\"spire\",\"table\":\"invoices\"},{\"db\":\"spire\",\"table\":\"tasks_particulars_remarks\"},{\"db\":\"spire\",\"table\":\"tasks\"}]');
+('spire', '[{\"db\":\"spire\",\"table\":\"cash_flows_entities\"},{\"db\":\"spire\",\"table\":\"invoices_payment_history\"},{\"db\":\"spire\",\"table\":\"owner_firms_banks\"},{\"db\":\"spire\",\"table\":\"tasks_settings\"},{\"db\":\"spire\",\"table\":\"cash_flows_settings\"},{\"db\":\"spire\",\"table\":\"projects_settings\"},{\"db\":\"spire\",\"table\":\"owner_firms\"},{\"db\":\"spire\",\"table\":\"projects\"},{\"db\":\"spire\",\"table\":\"invoices\"},{\"db\":\"spire\",\"table\":\"tasks_particulars_remarks\"}]');
 
 -- --------------------------------------------------------
 
@@ -1556,7 +1636,7 @@ CREATE TABLE `pma__userconfig` (
 --
 
 INSERT INTO `pma__userconfig` (`username`, `timevalue`, `config_data`) VALUES
-('spire', '2025-01-28 13:37:12', '{\"Console\\/Mode\":\"collapse\"}');
+('spire', '2025-02-06 15:21:30', '{\"Console\\/Mode\":\"collapse\"}');
 
 -- --------------------------------------------------------
 
@@ -1824,7 +1904,7 @@ INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `expense
 ('TK000009', 'CN000012', 'PJ000004', 'pop', '2024-12-08', 4545.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
 ('TK000011', 'CN000011', 'PJ000007', 'zzz', '2025-02-08', 0.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
 ('TK000012', 'CN000001', 'PJ000001', 'Task #4', '2025-02-08', 158.00, 'bbnju', 1, 0, NULL, '2025-02-05 22:14:55', 'A3'),
-('TK000013', 'CN000001', 'PJ000001', 'Task #567', '2025-02-12', 0.00, 'mlp', 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
+('TK000013', 'CN000001', 'PJ000001', 'Task #567', '2025-02-12', 0.00, 'bjhbj', 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
 ('TK000014', 'CN000001', 'PJ000001', 'Task #6', '2025-02-12', 0.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
 ('TK000015', 'CN000001', 'PJ000001', 'Task #7', '2025-02-12', 0.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
 ('TK000016', 'CN000001', 'PJ000001', 'Task #8', '2025-02-12', 0.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
@@ -1877,7 +1957,9 @@ INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particu
 (27, 'TK000011', 'PJ000007', 'v', 'g', 0, NULL, 'A3', '2025-02-01 16:29:29'),
 (29, 'TK000012', 'PJ000001', 'lol', 'pl;s', 1, 'By Administrator', 'A3', '2025-02-05 20:13:33'),
 (30, 'TK000012', 'PJ000001', 'vbcb', 'sdadasdasd', 1, 'By Administrator', 'A3', '2025-02-05 22:21:07'),
-(31, 'TK000013', 'PJ000001', 'mop', 'mlp', 0, NULL, 'A3', '2025-02-05 23:10:53');
+(31, 'TK000013', 'PJ000001', 'mop', 'mlp', 0, NULL, 'A3', '2025-02-05 23:10:53'),
+(32, 'TK000013', 'PJ000001', 'abc', 'bcd', 0, NULL, 'A3', '2025-02-06 18:33:29'),
+(33, 'TK000013', 'PJ000001', 'pol', 'mkop', 0, NULL, 'A3', '2025-02-06 18:33:37');
 
 -- --------------------------------------------------------
 
@@ -1963,6 +2045,13 @@ CREATE TABLE `vendors` (
   `entry_at` timestamp NULL DEFAULT current_timestamp(),
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `vendors`
+--
+
+INSERT INTO `vendors` (`id`, `name`, `email_address`, `phone_number`, `upi_id`, `joined_on`, `status`, `entry_at`, `entry_by_id`) VALUES
+('VD000001', 'Anuj', 'anuj@gandhi.com', '9978075347', 'anuj.gandhi@oksbi', '2025-02-06 14:14:32', 'Active', '2025-02-06 14:14:32', 'A3');
 
 -- --------------------------------------------------------
 
@@ -2056,6 +2145,14 @@ ALTER TABLE `cash_flows`
 ALTER TABLE `cash_flows_entities`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_cfe_owner_firm_bank_id` (`owner_firm_bank_id`),
+  ADD KEY `fk_cfe_module_id` (`module_id`);
+
+--
+-- Indexes for table `cash_flows_heads`
+--
+ALTER TABLE `cash_flows_heads`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_cfe_owner_firm_bank_id` (`owner_firm_bank_id`),
   ADD KEY `fk_cfe_owner_firm_id` (`owner_firm_id`),
   ADD KEY `fk_cfe_module_id` (`module_id`);
 
@@ -2070,6 +2167,15 @@ ALTER TABLE `cash_flows_modules`
 --
 ALTER TABLE `cash_flows_settings`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `cash_flows_transactions`
+--
+ALTER TABLE `cash_flows_transactions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_aph_owner_firms_bank_id` (`owner_firm_bank_id`),
+  ADD KEY `fk_aph_owner_firms_id` (`owner_firm_id`),
+  ADD KEY `fk_cft_module_id` (`module_id`);
 
 --
 -- Indexes for table `clients`
@@ -2398,7 +2504,7 @@ ALTER TABLE `vendors_transactions`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=461;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=480;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
@@ -2422,13 +2528,25 @@ ALTER TABLE `cash_flows`
 -- AUTO_INCREMENT for table `cash_flows_entities`
 --
 ALTER TABLE `cash_flows_entities`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `cash_flows_heads`
+--
+ALTER TABLE `cash_flows_heads`
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `cash_flows_settings`
 --
 ALTER TABLE `cash_flows_settings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `cash_flows_transactions`
+--
+ALTER TABLE `cash_flows_transactions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -2524,7 +2642,7 @@ ALTER TABLE `statuses`
 -- AUTO_INCREMENT for table `tasks_particulars_remarks`
 --
 ALTER TABLE `tasks_particulars_remarks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `tasks_settings`
@@ -2570,8 +2688,13 @@ ALTER TABLE `affiliates_transactions`
 --
 ALTER TABLE `cash_flows_entities`
   ADD CONSTRAINT `fk_cfe_module_id` FOREIGN KEY (`module_id`) REFERENCES `cash_flows_modules` (`custom_id`),
-  ADD CONSTRAINT `fk_cfe_owner_firm_bank_id` FOREIGN KEY (`owner_firm_bank_id`) REFERENCES `owner_firms_banks` (`id`),
-  ADD CONSTRAINT `fk_cfe_owner_firm_id` FOREIGN KEY (`owner_firm_id`) REFERENCES `owner_firms` (`id`);
+  ADD CONSTRAINT `fk_cfe_owner_firm_bank_id` FOREIGN KEY (`owner_firm_bank_id`) REFERENCES `owner_firms_banks` (`id`);
+
+--
+-- Constraints for table `cash_flows_transactions`
+--
+ALTER TABLE `cash_flows_transactions`
+  ADD CONSTRAINT `fk_cft_module_id` FOREIGN KEY (`module_id`) REFERENCES `cash_flows_modules` (`custom_id`);
 
 --
 -- Constraints for table `companies`

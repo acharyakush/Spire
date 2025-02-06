@@ -13,13 +13,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGooglePay } from "@fortawesome/free-brands-svg-icons";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ComboBox2, DatePicker, EmailAddress, TextInput } from "@/components/Inputs";
-import { faBank, faBuilding, faCalendar, faClipboardQuestion, faFont, faIndianRupee, faPhone, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faBank, faCalendar, faClipboardQuestion, faFont, faPhone, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export default function NewEntity({ module, mount, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
-		ownerFirms: [],
-		ownerFirmsBanks: { copy: [], data: [] },
+		ownerFirmBanks: { copy: [], data: [] },
 		paymentSources: { copy: [], data: [] },
 	});
 
@@ -29,11 +28,10 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 	});
 
 	const [main, setMain] = useState({
-		amount: "",
 		emailAddress: "",
 		entryAt: new Date(),
 		name: "",
-		ownerFirm: { banks: [], id: "", name: "", selectedBank: { id: "", name: "" } },
+		ownerFirmBank: { id: "", name: "" },
 		paymentSource: { id: "", name: "" },
 		phoneNumber: "",
 		purpose: "",
@@ -42,96 +40,67 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 
 	const [other, setOther] = useState({
 		find: {
-			ownerFirms: "",
-			ownerFirmsBank: "",
+			ownerFirmBank: "",
 			paymentSource: "",
 		},
 		isBoxMoved: false,
 	});
 
+	const thisView = MyConstants.Modules.Base.CashFlow;
+
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
-	function areAllDetailsFilled() {
-		if (!main.amount || !main.entryAt || !main.name || !main.purpose) {
-			return false;
-		}
-
-		if (!main.paymentSource.id || !main.paymentSource.name) {
-			return false;
-		}
-
-		if (!main.ownerFirm.id || !main.ownerFirm.name || !main.ownerFirm.selectedBank.id || !main.ownerFirm.selectedBank.name) {
-			return false;
-		}
-
-		return true;
-	}
 
 	async function doAddition() {
 		setLoading((s) => ({ ...s, adding: true }));
 
 		const body = {
-			amount: Number(main.amount),
 			emailAddress: main.emailAddress,
 			entryAt: main.entryAt,
 			moduleId: module.id,
 			name: main.name,
-			ownerFirmsId: main.ownerFirm.id,
-			ownerFirmsBankId: main.ownerFirm.selectedBank.id,
+			ownerFirmBankId: main.ownerFirmBank.id,
 			paymentSource: main.paymentSource.id,
 			phoneNumber: main.phoneNumber,
 			purpose: main.purpose,
+			upiId: main.upiId,
 			userId: MyGlobal.GetUserId(),
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.CashFlowsModules.AddEntity, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.AddEntity, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload("reload-root-statistics");
 				resetFields();
 				getSupportData();
 
-				MyGlobal.AddActivity(`Added entity for <b>${module.name}</b>.`, MyConstants.Modules.Base.CashFlow);
-
+				MyGlobal.AddActivity(`Added entity <b>${name}</b> in <b>${module.name}</b>.`, thisView);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.EntityAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `Cash Flow => ${module.name} => New Entity`);
+			MyGlobal.HandleErrors(error, `${thisView} => ${module.name} => New Entity`);
 		} finally {
 			setLoading((s) => ({ ...s, adding: false }));
 		}
 	}
 
 	function getAddButtonStyle() {
-		const disableAddButton = loading.adding || !areAllDetailsFilled() ? "pointer-events-none" : "pointer-events-auto";
+		const disableAddButton = loading.adding || !isAddEligible() ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 
 		return `primary-button-condensed ${disableAddButton}`;
 	}
 
-	function getFilteredOwnerFirms() {
-		let list = api.ownerFirms;
-		const term = String(other.find.ownerFirms);
+	function getFilteredOwnerFirmBanks() {
+		let list = api.ownerFirmBanks.copy;
+		const term = String(other.find.ownerFirmBank);
 
 		if (term !== "undefined") {
-			list = api.ownerFirms.filter((f) => {
-				return String(f.name).toLowerCase().includes(term.toLowerCase());
-			});
-		}
-
-		return list;
-	}
-
-	function getFilteredOwnerFirmsBanks() {
-		let list = api.ownerFirmsBanks.copy;
-		const term = String(other.find.ownerFirmsBank);
-
-		if (term !== "undefined") {
-			list = api.ownerFirmsBanks.copy.filter((f) => {
+			list = api.ownerFirmBanks.copy.filter((f) => {
 				return String(f.name).toLowerCase().includes(term.toLowerCase());
 			});
 		}
@@ -159,16 +128,15 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
+			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.GetNewEntitySupportData, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
 				const basicPaymentSourceList = MyGlobal.GetBasicPaymentSourceList();
 
 				setApi({
-					ownerFirms: response.data.ownerFirms,
-					ownerFirmsBanks: {
-						copy: response.data.ownerFirmsBanks,
-						data: response.data.ownerFirmsBanks,
+					ownerFirmBanks: {
+						copy: response.data,
+						data: response.data,
 					},
 					paymentSources: {
 						copy: basicPaymentSourceList,
@@ -179,20 +147,38 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${module.name} => New Entity`);
+			MyGlobal.HandleErrors(error, `${thisView} => ${module.name} => New Entity => Get Support Data`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
 	}
 
+	function isAddEligible() {
+		if (!main.entryAt || !main.name || !main.purpose) {
+			return false;
+		}
+
+		if (!main.paymentSource.id || !main.paymentSource.name) {
+			return false;
+		}
+
+		if (!main.ownerFirmBank.id || !main.ownerFirmBank.name) {
+			return false;
+		}
+
+		return true;
+	}
+
 	function resetFields() {
 		setMain({
-			amount: "",
+			emailAddress: "",
 			entryAt: new Date(),
 			name: "",
-			ownerFirm: { banks: [], id: "", name: "", selectedBank: { id: "", name: "" } },
+			ownerFirmBank: { id: "", name: "" },
 			paymentSource: { id: "", name: "" },
+			phoneNumber: "",
 			purpose: "",
+			upiId: "",
 		});
 	}
 
@@ -200,51 +186,32 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 		setOther((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
 	}
 
+	function setFind(key, value) {
+		setOther((s) => ({ ...s, find: { ...s.find, [key]: value } }));
+	}
+
 	function setInputs(key, value) {
-		if (typeof value === "object") {
-			if (key == "ownerFirms") {
-				const banks = api.ownerFirmsBanks.copy.filter((f) => f.owner_firm_id == value.id);
+		if (value) {
+			if (typeof value === "object") {
+				if (key === "ownerFirmBank") {
+					setMain((s) => ({
+						...s,
+						ownerFirmBank: { ...s.ownerFirmBank, id: value.id, name: value.name },
+					}));
 
-				const revisedPaymentSources = MyGlobal.GetRevisedPaymentSourceList([banks.at(0)]);
-
-				setApi((s) => ({
-					...s,
-					paymentSources: {
-						copy: revisedPaymentSources,
-						data: revisedPaymentSources,
-					},
-				}));
-
-				setMain((s) => ({
-					...s,
-					ownerFirm: {
-						banks,
-						id: value.id,
-						name: value.name,
-						selectedBank: { id: banks.at(0).id, name: banks.at(0).name },
-					},
-				}));
-			} else if (key == "ownerFirmsBank") {
-				setMain((s) => ({
-					...s,
-					ownerFirm: {
-						...s.ownerFirm,
-						selectedBank: { id: value.id, name: value.name },
-					},
-				}));
+					setOther((s) => ({ ...s, find: { ...s.find, [key]: "" } }));
+				} else if (key === "entryAt") {
+					setMain((s) => ({ ...s, entryAt: value }));
+				} else if (key === "paymentSource") {
+					setMain((s) => ({ ...s, paymentSource: { id: value.id, name: value.name } }));
+				}
 			} else {
-				setMain((s) => ({
-					...s,
-					paymentSource: {
-						id: value.id,
-						name: value.name,
-					},
-				}));
+				setMain((s) => ({ ...s, [key]: value }));
 			}
-
-			setOther((s) => ({ ...s, find: { ...s.find, ownerFirms: "", ownerFirmsBank: "" } }));
 		} else {
-			setMain((s) => ({ ...s, [key]: value }));
+			if (!["ownerFirmBank", "paymentSource"].includes(key)) {
+				setMain((s) => ({ ...s, [key]: value }));
+			}
 		}
 	}
 
@@ -261,25 +228,10 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 		}
 	}
 
-	function uiAmount() {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				id="Amount"
-				label="Amount"
-				onChange={(e) => setInputs("amount", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex="6"
-				value={main.amount}
-				width="w-full"
-			/>
-		);
-	}
-
 	function uiBody() {
 		if (loading.supportData) {
 			return (
-				<div className="flex w-full h-[436px] justify-center items-center">
+				<div className="flex w-full h-[352px] justify-center items-center">
 					<SpinnerBig />
 				</div>
 			);
@@ -296,15 +248,11 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 							{uiPhoneNumber()}
 						</div>
 						<div className="flex w-full space-x-5 justify-between items-center">
-							{uiPurpose()}
-							{uiAmount()}
-						</div>
-						<div className="flex w-full space-x-5 justify-between items-center">
-							{uiOwnerFirms()}
 							{uiOwnerFirmsBanks()}
+							{uiPaymentSource()}
 						</div>
 						<div className="flex w-full space-x-5 justify-between items-center">
-							{uiPaymentSource()}
+							{uiPurpose()}
 							{uiUpiId()}
 						</div>
 					</div>
@@ -333,7 +281,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 	function uiFooter() {
 		return (
 			<footer className="w-full dialog-footer">
-				<button className={getAddButtonStyle()} onClick={() => doAddition()} tabIndex="8">
+				<button className={getAddButtonStyle()} onClick={() => doAddition()} tabIndex="9">
 					{uiAdd()}
 				</button>
 			</footer>
@@ -355,49 +303,25 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 		);
 	}
 
-	function uiOwnerFirms() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.ownerFirm.name}
-				displayValue="name"
-				filteredData={getFilteredOwnerFirms}
-				hasDataObject
-				icon={faBuilding}
-				isReadOnly={false}
-				label="Firm"
-				onChange={(e) => setInputs("ownerFirms", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("ownerFirms", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
-				searchedItem={other.find.ownerFirms}
-				tabIndex="7"
-				value={main.ownerFirm.name}
-				width="w-full"
-			/>
-		);
-	}
-
 	function uiOwnerFirmsBanks() {
 		return (
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={main.ownerFirm.selectedBank.name}
+				comparingValue2={main.ownerFirmBank.name}
 				displayValue="name"
-				filteredData={!main.ownerFirm.banks.length ? getFilteredOwnerFirmsBanks : main.ownerFirm.banks}
+				filteredData={getFilteredOwnerFirmBanks}
 				hasDataObject
 				icon={faBank}
 				isReadOnly={false}
 				label="Banks"
-				onChange={(e) => setInputs("ownerFirmsBank", e)}
+				onChange={(e) => setInputs("ownerFirmBank", e)}
 				onClick={() => {}}
-				onInputChange={(e) => setFind("ownerFirmsBank", e.target.value)}
+				onInputChange={(e) => setFind("ownerFirmBank", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
-				searchedItem={other.find.ownerFirmsBank}
-				tabIndex="8"
-				value={main.ownerFirm.selectedBank.name}
+				searchedItem={other.find.ownerFirmBank}
+				tabIndex="5"
+				value={main.ownerFirmBank.name}
 				width="w-full"
 			/>
 		);
@@ -413,7 +337,6 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 				filteredData={getPaymentSources}
 				hasDataObject
 				icon={faBank}
-				isMenuInverted
 				isReadOnly={false}
 				label="Payment Source"
 				onChange={(e) => setInputs("paymentSource", e)}
@@ -421,7 +344,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 				onInputChange={(e) => setFind("paymentSource", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
 				searchedItem={other.find.paymentSource}
-				tabIndex="9"
+				tabIndex="6"
 				value={main.paymentSource.name}
 				width="w-full"
 			/>
@@ -451,7 +374,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 				label="Purpose"
 				onChange={(e) => setInputs("purpose", e.target.value)}
 				onKeyPress={() => {}}
-				tabIndex="5"
+				tabIndex="7"
 				value={main.purpose}
 				width="w-full"
 			/>
@@ -475,7 +398,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 				label="UPI ID (Optional)"
 				onChange={(e) => setInputs("upiId", e.target.value)}
 				onKeyPress={() => {}}
-				tabIndex="10"
+				tabIndex="8"
 				value={main.upiId}
 				width="w-full"
 			/>

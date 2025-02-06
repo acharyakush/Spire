@@ -496,7 +496,7 @@ export default function Home() {
 	return (
 		<main className="flex flex-col min-w-[1024px] h-screen overflow-y-hidden">
 			<div className="flex w-full h-11 px-5 justify-between items-center relative shadow contrast-background">
-				<div className="flex w-full justify-start items-center">
+				<div className="flex w-full justify-start items-center cursor-pointer" onClick={() => setModule(0, { name: baseModules.Dashboard })}>
 					<span className="uppercase dashboard-heading">{applicationName}</span>
 				</div>
 				<div className="flex w-full justify-center items-center">
