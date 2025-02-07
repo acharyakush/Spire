@@ -14,7 +14,7 @@ import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ComboBox, ComboBox2, DatePicker, TextInput } from "@/components/Inputs";
 import { faBank, faBuilding, faCalendar, faFile, faIndianRupee, faInfoCircle, faList, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewTransaction({ entity, mount, reload, unmount }) {
+export default function NewTransaction({ mount, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
 		ownerFirms: [],
@@ -29,7 +29,8 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 	});
 
 	const [main, setMain] = useState({
-		amount: "",
+		amountPaid: "",
+		amountReceived: "",
 		entryAt: new Date(),
 		ownerFirm: { id: "", name: "" },
 		ownerFirmBank: { id: "", list: [], name: "" },
@@ -56,11 +57,9 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 		setLoading((s) => ({ ...s, adding: true }));
 
 		const body = {
-			amount: Number(main.amount),
-			entityId: entity.id,
+			amountPaid: Number(main.amountPaid),
+			amountReceived: Number(main.amountReceived),
 			entryAt: main.entryAt,
-			headId: entity.head.id,
-			moduleId: entity.module.id,
 			ownerFirmsId: main.ownerFirm.id,
 			ownerFirmsBankId: main.ownerFirmBank.id,
 			particulars: main.particulars,
@@ -71,14 +70,14 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.AddTransaction, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.PettyCash.AddTransaction, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload("reload-root-statistics");
 				resetFields();
 
 				MyGlobal.AddActivity(
-					`Added transaction in <b>${entity.module.name}</b> in <b>${entity.name}</b> in <b>${entity.purpose}</b>.`,
+					`Added transaction in <b>${MyConstants.Modules.Other.CashFlowModules.PettyCash.name}</b>.`,
 					MyConstants.Modules.Base.CashFlow,
 				);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionAdded);
@@ -86,7 +85,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `Cash Flow => ${entity.module.name} => ${entity.name} => ${entity.purpose} => New Transaction`);
+			MyGlobal.HandleErrors(error, `Cash Flow => ${MyConstants.Modules.Other.CashFlowModules.PettyCash.name} => New Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, adding: false }));
 			unmount();
@@ -169,14 +168,17 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${entity.name} => New Transaction`);
+			MyGlobal.HandleErrors(
+				error,
+				`${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Other.CashFlowModules.PettyCash.name} => New Transaction`,
+			);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
 	}
 
 	function isAddEligible() {
-		if (!main.amount || !main.particulars || !main.paymentType || !main.remarks) {
+		if (!main.particulars || !main.paymentType || !main.remarks) {
 			return false;
 		}
 
@@ -193,7 +195,8 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 
 	function resetFields() {
 		setMain({
-			amount: "",
+			amountPaid: "",
+			amountReceived: "",
 			entryAt: new Date(),
 			ownerFirm: { id: "", name: "" },
 			ownerFirmBank: { id: "", list: [], name: "" },
@@ -267,16 +270,33 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 		}
 	}
 
-	function uiAmount() {
+	function uiAmountPaid() {
 		return (
 			<TextInput
 				icon={faIndianRupee}
-				id="amount"
-				label="Amount"
-				onChange={(e) => setInputs("amount", e.target.value)}
+				id="amountPaid"
+				isReadOnly={main.amountReceived.length}
+				label="Amount Paid"
+				onChange={(e) => setInputs("amountPaid", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex="2"
-				value={main.amount}
+				value={main.amountPaid}
+				width="w-full"
+			/>
+		);
+	}
+
+	function uiAmountReceived() {
+		return (
+			<TextInput
+				icon={faIndianRupee}
+				id="amountReceived"
+				isReadOnly={main.amountPaid.length}
+				label="Amount Received"
+				onChange={(e) => setInputs("amountReceived", e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
+				tabIndex="3"
+				value={main.amountReceived}
 				width="w-full"
 			/>
 		);
@@ -285,7 +305,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 	function uiBody() {
 		if (loading.supportData) {
 			return (
-				<div className="flex w-full h-[352px] justify-center items-center">
+				<div className="flex w-full h-[436px] justify-center items-center">
 					<SpinnerBig />
 				</div>
 			);
@@ -293,9 +313,13 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 			return (
 				<div className="flex flex-col w-full pt-2 pb-4 justify-between items-center">
 					<div className="flex flex-col w-full h-full px-5 space-y-2 justify-center items-center">
-						<div className="flex w-full space-x-5 justify-between items-center">
+						<div className="flex w-full space-x-6 justify-between items-center">
 							{uiEntryAt()}
-							{uiAmount()}
+							<div className="w-full" />
+						</div>
+						<div className="flex w-full space-x-5 justify-between items-center">
+							{uiAmountPaid()}
+							{uiAmountReceived()}
 						</div>
 						<div className="flex w-full space-x-5 justify-between items-center">
 							{uiOwnerFirms()}
@@ -346,7 +370,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				onInputChange={(e) => setFind("ownerFirm", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
 				searchedItem={other.find.ownerFirm}
-				tabIndex="3"
+				tabIndex="4"
 				value={main.ownerFirm.name}
 				width="w-full"
 			/>
@@ -370,7 +394,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				onInputChange={(e) => setFind("ownerFirmBank", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
 				searchedItem={other.find.ownerFirmBank}
-				tabIndex="4"
+				tabIndex="5"
 				value={main.ownerFirmBank.name}
 				width="w-full"
 			/>
@@ -385,7 +409,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				label="Particulars"
 				onChange={(e) => setInputs("particulars", e.target.value)}
 				onKeyPress={() => {}}
-				tabIndex="7"
+				tabIndex="8"
 				value={main.particulars}
 				width="w-full"
 			/>
@@ -409,7 +433,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				onInputChange={(e) => setFind("paymentSource", e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
 				searchedItem={other.find.paymentSource}
-				tabIndex="6"
+				tabIndex="7"
 				value={main.paymentSource.name}
 				width="w-full"
 			/>
@@ -428,7 +452,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				onClick={() => {}}
 				onKeyPress={() => {}}
 				searchedItem=""
-				tabIndex="5"
+				tabIndex="6"
 				value={main.paymentType}
 				width="w-full"
 			/>
@@ -443,7 +467,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				label="Remarks"
 				onChange={(e) => setInputs("remarks", e.target.value)}
 				onKeyPress={() => {}}
-				tabIndex="8"
+				tabIndex="9"
 				value={main.remarks}
 				width="w-full"
 			/>

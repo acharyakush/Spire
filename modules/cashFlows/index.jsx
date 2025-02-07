@@ -8,6 +8,7 @@ import Others from "./others";
 import Vendors from "./vendors";
 import Affiliates from "./affiliates";
 import MyConstants from "@/utilities/constants";
+import Transactions from "./pettyCash/Transactions";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -20,6 +21,7 @@ export default function CashFlows({ setModuleProps }) {
 	// Business Logic
 	const baseModules = MyConstants.Modules.Base;
 	const categories = MyConstants.Modules.Other.CashFlow;
+	const modules = MyConstants.Modules.Other.CashFlowModules;
 
 	const thisView = baseModules.CashFlow;
 	const affiliatesView = baseModules.Affiliates;
@@ -54,7 +56,7 @@ export default function CashFlows({ setModuleProps }) {
 		},
 		otherIncome: {
 			pending: { amount: 0, label: "PENDING" },
-			paid: { amount: 0, label: "PAID" },
+			received: { amount: 0, label: "RECEIVED" },
 			total: { amount: 0, label: "TOTAL" },
 		},
 		otherExpense: {
@@ -85,26 +87,52 @@ export default function CashFlows({ setModuleProps }) {
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
 	// Functions
-	function clearData(module) {
-		if (module == affiliatesView) {
-			setMain((s) => ({
-				...s,
-				affiliates: {
-					pending: { amount: 0, count: 0, label: "PENDING" },
-					paid: { amount: 0, count: 0, label: "PAID" },
-					total: { amount: 0, count: 0, label: "TOTAL" },
-				},
-			}));
-		} else if (module == "Other Income" || module == "Office Expense" || module == "Other Expense") {
-			setMain((s) => ({
-				...s,
-				[module]: {
-					pending: { amount: 0, label: "PENDING" },
-					paid: { amount: 0, label: "PAID" },
-					total: { amount: 0, label: "TOTAL" },
-				},
-			}));
-		}
+	function clearData() {
+		setMain((s) => ({
+			...s,
+			affiliates: {
+				pending: { amount: 0, count: 0, label: "PENDING" },
+				paid: { amount: 0, count: 0, label: "PAID" },
+				total: { amount: 0, count: 0, label: "TOTAL" },
+			},
+			invoices: {
+				due: { amount: 0, count: 0, label: "DUE" },
+				generated: { amount: 0, count: 0, label: "GENERATED" },
+				notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
+			},
+			officeExpense: {
+				pending: { amount: 0, label: "PENDING" },
+				paid: { amount: 0, label: "PAID" },
+				total: { amount: 0, label: "TOTAL" },
+			},
+			otherIncome: {
+				pending: { amount: 0, label: "PENDING" },
+				received: { amount: 0, label: "PAID" },
+				total: { amount: 0, label: "TOTAL" },
+			},
+			otherExpense: {
+				pending: { amount: 0, label: "PENDING" },
+				paid: { amount: 0, label: "PAID" },
+				total: { amount: 0, label: "TOTAL" },
+			},
+			pettyCash: {
+				paid: { amount: 0, label: "PAID" },
+				received: { amount: 0, label: "RECEIVED" },
+				balance: { amount: 0, label: "BALANCE" },
+			},
+			rv: {
+				due: { amount: 0, count: 0, label: "DUE" },
+				generated: { amount: 0, count: 0, label: "GENERATED" },
+				notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
+			},
+			totalInvoicesAmount: 0,
+			totalRvAmount: 0,
+			vendors: {
+				pending: { amount: 0, count: 0, label: "PENDING" },
+				paid: { amount: 0, count: 0, label: "PAID" },
+				total: { amount: 0, count: 0, label: "TOTAL" },
+			},
+		}));
 	}
 
 	function getAesthetics(id) {
@@ -166,7 +194,6 @@ export default function CashFlows({ setModuleProps }) {
 				});
 
 				_affiliates.pending.amount = _affiliates.total.amount - _affiliates.paid.amount;
-
 				_affiliates.pending.count = _affiliates.total.count - _affiliates.paid.count;
 
 				// ======== //
@@ -188,7 +215,6 @@ export default function CashFlows({ setModuleProps }) {
 				});
 
 				const invoiceProjectIds = new Set(response.data.invoices.map((m) => m.project_id));
-
 				const notGeneratedInvoices = response.data.projects.filter((f) => !invoiceProjectIds.has(f.id));
 
 				notGeneratedInvoices.forEach((fe, i) => {
@@ -197,7 +223,6 @@ export default function CashFlows({ setModuleProps }) {
 				});
 
 				const allInvoicesAmount = response.data.invoices.reduce((pv, cv) => pv + Number(cv.amount), 0);
-
 				const totalInvoicesAmount = allInvoicesAmount + _invoices.notGenerated.amount;
 
 				// ================= //
@@ -219,7 +244,6 @@ export default function CashFlows({ setModuleProps }) {
 				});
 
 				const rvProjectIds = new Set(response.data.reimburseVouchers.map((m) => m.project_id));
-
 				const notGeneratedRvs = response.data.projects.filter((f) => !rvProjectIds.has(f.id));
 
 				notGeneratedRvs.forEach((fe, i) => {
@@ -238,7 +262,7 @@ export default function CashFlows({ setModuleProps }) {
 
 				const otherIncome = {
 					pending: { amount: 0, label: "PENDING" },
-					paid: { amount: 0, label: "PAID" },
+					received: { amount: 0, label: "RECEIVED" },
 					total: { amount: 0, label: "TOTAL" },
 				};
 
@@ -260,20 +284,35 @@ export default function CashFlows({ setModuleProps }) {
 					balance: { amount: 0, label: "BALANCE" },
 				};
 
-				response.data.cashFlows.forEach((fe) => {
-					if (fe.module === "Other Income") {
-						otherIncome.total.amount += Number(fe.amount_received);
-					} else if (fe.module === "Office Expense") {
-						officeExpense.paid.amount += Number(fe.amount_paid);
-					} else if (fe.module === "Other Expense") {
-						otherExpense.paid.amount += Number(fe.amount_paid);
-						otherExpense.total.amount += Number(fe.total_amount);
-					} else if (fe.module === "Petty Cash") {
-						pettyCash.paid.amount += Number(fe.amount_paid);
+				response.data.cashFlowsHeads.forEach((fe) => {
+					if (fe.module_id === modules.OfficeExpense.id) {
+						officeExpense.total.amount += Number(fe.amount);
+					} else if (fe.module_id === modules.OtherExpense.id) {
+						otherExpense.total.amount += Number(fe.amount);
+					} else if (fe.module_id === modules.OtherIncome.id) {
+						otherIncome.total.amount += Number(fe.amount);
 					}
 				});
 
+				response.data.cashFlowsTransactions.forEach((fe) => {
+					if (fe.module_id === modules.OfficeExpense.id) {
+						officeExpense.paid.amount += Number(fe.amount);
+					} else if (fe.module_id === modules.OtherExpense.id) {
+						otherExpense.paid.amount += Number(fe.amount);
+					} else if (fe.module_id === modules.OtherIncome.id) {
+						otherIncome.received.amount += Number(fe.amount);
+					}
+				});
+
+				response.data.pettyCashTransactions.forEach((fe) => {
+					pettyCash.paid.amount += Number(fe.amount_paid);
+					pettyCash.received.amount += Number(fe.amount_received);
+				});
+
+				otherIncome.pending.amount = otherIncome.total.amount - otherIncome.received.amount;
+				officeExpense.pending.amount = officeExpense.total.amount - officeExpense.paid.amount;
 				otherExpense.pending.amount = otherExpense.total.amount - otherExpense.paid.amount;
+				pettyCash.balance.amount = pettyCash.paid.amount - pettyCash.received.amount;
 
 				setMain((s) => ({
 					...s,
@@ -302,13 +341,10 @@ export default function CashFlows({ setModuleProps }) {
 	function toggleModule(module) {
 		if (module) {
 			setMain((s) => ({ ...s, module }));
-			clearData(affiliatesView);
+			clearData();
 		} else {
 			setMain((s) => ({ ...s, module: "" }));
-
-			if (module == affiliatesView) {
-				getSupportData();
-			}
+			getSupportData();
 		}
 	}
 
@@ -433,7 +469,7 @@ export default function CashFlows({ setModuleProps }) {
 	function uiOtherIncome() {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
-				<div className="flex w-full justify-start items-center">{uiHeading(MyConstants.Modules.Other.CashFlowModules.OtherIncome)}</div>
+				<div className="flex w-full justify-start items-center">{uiHeading(modules.OtherIncome)}</div>
 				<div className="flex w-full space-x-32 justify-between items-center">{uiOtherIncomeBlock()}</div>
 			</div>
 		);
@@ -513,6 +549,8 @@ export default function CashFlows({ setModuleProps }) {
 						<Vendors reload={getSupportData} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
+			} else if (main.module?.id === modules.PettyCash.id) {
+				return <Transactions reload={getSupportData} unmount={toggleModule} />;
 			} else {
 				return (
 					<ErrorBoundary
@@ -551,7 +589,7 @@ export default function CashFlows({ setModuleProps }) {
 	function uiOfficeExpense() {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
-				<div className="flex w-full justify-start items-center">{uiHeading(MyConstants.Modules.Other.CashFlowModules.OfficeExpense)}</div>
+				<div className="flex w-full justify-start items-center">{uiHeading(modules.OfficeExpense)}</div>
 				<div className="flex w-full space-x-32 justify-between items-center">{uiOfficeExpenseBlock()}</div>
 			</div>
 		);
@@ -575,7 +613,7 @@ export default function CashFlows({ setModuleProps }) {
 	function uiOtherExpense() {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
-				<div className="flex w-full justify-start items-center">{uiHeading(MyConstants.Modules.Other.CashFlowModules.OtherExpense)}</div>
+				<div className="flex w-full justify-start items-center">{uiHeading(modules.OtherExpense)}</div>
 				<div className="flex w-full space-x-32 justify-between items-center">{uiOtherExpenseBlock()}</div>
 			</div>
 		);
@@ -599,7 +637,7 @@ export default function CashFlows({ setModuleProps }) {
 	function uiPettyCash() {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
-				<div className="flex w-full justify-start items-center">{uiHeading(MyConstants.Modules.Other.CashFlowModules.PettyCash)}</div>
+				<div className="flex w-full justify-start items-center">{uiHeading(modules.PettyCash)}</div>
 				<div className="flex w-full space-x-32 justify-between items-center">{uiPettyCashBlock()}</div>
 			</div>
 		);

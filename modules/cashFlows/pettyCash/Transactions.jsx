@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
-import NewTransaction from "@/modals/cashFlows/NewTransaction";
+import NewTransaction from "@/modals/cashFlows/pettyCash/NewTransaction";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -26,9 +26,11 @@ import {
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function Transactions({ entity, reload, unmount }) {
+export default function Transactions({ reload, unmount }) {
 	// Business Logic
-	const headers = MyConstants.TableHeaders.Transactions.General;
+	const headers = MyConstants.TableHeaders.Transactions.PettyCash;
+	const modules = MyConstants.Modules.Other.CashFlowModules;
+	const thisView = MyConstants.Modules.Base.CashFlow;
 
 	const [api, setApi] = useState({
 		transactions: { copy: [], data: [] },
@@ -45,7 +47,7 @@ export default function Transactions({ entity, reload, unmount }) {
 			transaction: "",
 		},
 		hasMounted: false,
-		isNewTransactionsOpen: false,
+		isNewTransactionOpen: false,
 		sort: { column: "", isAscending: false },
 	});
 
@@ -68,7 +70,8 @@ export default function Transactions({ entity, reload, unmount }) {
 			} else {
 				const findTerm = other.find.transaction.toLowerCase();
 
-				const amount = String(f.amount);
+				const amountPaid = String(f.amount_received);
+				const amountReceived = String(f.amount_received);
 				const entryByName = String(f.entry_by_name).toLowerCase();
 				const ownerFirmsName = String(f.owner_firm_name).toLowerCase();
 				const ownerFirmsBanksName = String(f.owner_firm_bank_name).toLowerCase();
@@ -78,7 +81,8 @@ export default function Transactions({ entity, reload, unmount }) {
 				const remarks = String(f.remarks).toLowerCase();
 
 				return (
-					amount.includes(findTerm) ||
+					amountPaid.includes(findTerm) ||
+					amountReceived.includes(findTerm) ||
 					entryByName.includes(findTerm) ||
 					ownerFirmsName.includes(findTerm) ||
 					ownerFirmsBanksName.includes(findTerm) ||
@@ -113,10 +117,14 @@ export default function Transactions({ entity, reload, unmount }) {
 					return a.owner_firm_bank_name.localeCompare(b.owner_firm_bank_name);
 				} else if (column == headers.Bank && !isAscending) {
 					return b.owner_firm_bank_name.localeCompare(a.owner_firm_bank_name);
-				} else if (column == headers.Amount && isAscending) {
-					return a.amount - b.amount;
-				} else if (column == headers.Amount && !isAscending) {
-					return b.amount - a.amount;
+				} else if (column == headers.AmountPaid && isAscending) {
+					return a.amount_paid - b.amount_paid;
+				} else if (column == headers.AmountPaid && !isAscending) {
+					return b.amount_paid - a.amount_paid;
+				} else if (column == headers.AmountReceived && isAscending) {
+					return a.amount_received - b.amount_received;
+				} else if (column == headers.AmountReceived && !isAscending) {
+					return b.amount_received - a.amount_received;
 				} else if (column == headers.Particulars && isAscending) {
 					return a.particulars.localeCompare(b.particulars);
 				} else if (column == headers.Particulars && !isAscending) {
@@ -158,14 +166,7 @@ export default function Transactions({ entity, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(
-				MyConstants.ApiEndpoints.CashFlows.Modules.GetTransactions,
-				MyGlobal.GetHeaders({
-					entityId: entity.id,
-					headId: entity.head.id,
-					moduleId: entity.module.id,
-				}),
-			);
+			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.PettyCash.GetTransactions, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
 				const transactions = response.data.transactions.map((m) => {
@@ -200,11 +201,9 @@ export default function Transactions({ entity, reload, unmount }) {
 						data: transactions,
 					},
 				});
-
-				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${entity.module.name} => Transactions => Get Support Data`);
+			MyGlobal.HandleErrors(error, `${thisView} => ${modules.PettyCash.name} => Transactions => Get Support Data`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -225,7 +224,7 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function toggleNewTransaction() {
-		setOther((s) => ({ ...s, isNewTransactionsOpen: !s.isNewTransactionsOpen }));
+		setOther((s) => ({ ...s, isNewTransactionOpen: !s.isNewTransactionOpen }));
 	}
 
 	// UI Components
@@ -252,6 +251,34 @@ export default function Transactions({ entity, reload, unmount }) {
 				value={other.find.transaction}
 				width="w-36"
 			/>
+		);
+	}
+
+	function uiFooter() {
+		let totalAmountPaid = 0;
+		let totalAmountReceived = 0;
+
+		api.transactions.data.forEach((fe) => {
+			totalAmountPaid += Number(fe.amount_paid);
+			totalAmountReceived += Number(fe.amount_received);
+		});
+
+		const totalBalance = MyGlobal.ThousandSeparator(totalAmountPaid - totalAmountReceived);
+
+		return (
+			<span className="w-full space-x-5 text-center text-white font-regular-10">
+				<span>
+					Paid <b className="font-bold-10">{MyGlobal.ThousandSeparator(totalAmountPaid)}</b>
+				</span>
+				<span />
+				<span>
+					Received <b className="font-bold-10">{MyGlobal.ThousandSeparator(totalAmountReceived)}</b>
+				</span>
+				<span />
+				<span>
+					Balance <b className="font-bold-10">{totalBalance}</b>
+				</span>
+			</span>
 		);
 	}
 
@@ -284,7 +311,7 @@ export default function Transactions({ entity, reload, unmount }) {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
-				<span className="flex w-[11.11%] justify-center items-center cursor-pointer font-medium-10" key={i}>
+				<span className="flex w-[10%] justify-center items-center cursor-pointer font-medium-10" key={i}>
 					<div className="flex w-full space-x-2 justify-center items-center text-center text-white" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
@@ -310,9 +337,10 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function uiRows(row, i) {
-		const style = "flex flex-wrap w-[11.11%] min-h-9 justify-center items-center text-center";
+		const style = "flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center";
 
-		const amount = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.amount), other.find.transaction);
+		const amountPaid = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.amount_paid), other.find.transaction);
+		const amountReceived = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.amount_received), other.find.transaction);
 		const entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.transaction);
 		const ownerFirmsName = MyGlobal.HighlightText(row.owner_firm_name, other.find.transaction);
 		const ownerFirmsBanksName = MyGlobal.HighlightText(row.owner_firm_bank_name, other.find.transaction);
@@ -327,7 +355,8 @@ export default function Transactions({ entity, reload, unmount }) {
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: ownerFirmsName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: ownerFirmsBanksName }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: amountPaid }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: paymentSource }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: paymentType }} />
@@ -372,17 +401,18 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function uiTransactions() {
-		if (loading.supportData) {
-			return (
-				<div className={wrapper}>
-					<SpinnerBig />
-				</div>
-			);
-		} else if (!api.transactions.copy.length) {
+		if (!api.transactions.copy.length && !api.transactions.data.length) {
 			return (
 				<div className={wrapper}>
 					<FontAwesomeIcon className="text-yellow-500" icon={faExclamationTriangle} size="7x" />
 					<span className="font-regular-12 gray-text">No transactions found.</span>
+				</div>
+			);
+		} else if (api.transactions.copy.length && !api.transactions.data.length) {
+			return (
+				<div className={wrapper}>
+					<FontAwesomeIcon className="text-yellow-500" icon={faExclamationTriangle} size="7x" />
+					<span className="font-regular-12 gray-text">No transactions found. Try using different search term.</span>
 				</div>
 			);
 		} else {
@@ -395,34 +425,10 @@ export default function Transactions({ entity, reload, unmount }) {
 						itemContent={(i, row) => uiRows(row, i)}
 						totalCount={api.transactions.copy.length}
 					/>
-					<div className="flex w-full h-9 justify-center items-center primary-border primary-background">{uiTransactionsFooter()}</div>
+					<div className="flex w-full h-9 justify-center items-center primary-border primary-background">{uiFooter()}</div>
 				</div>
 			);
 		}
-	}
-
-	function uiTransactionsFooter() {
-		const totalAmount = Number(entity.head.amount);
-		const totalPaidAmount = api.transactions.data.reduce((pv, cv) => {
-			return pv + Number(cv.amount);
-		}, 0);
-		const totalPending = MyGlobal.ThousandSeparator(totalAmount - totalPaidAmount);
-
-		return (
-			<span className="w-full space-x-5 text-center text-white font-regular-10">
-				<span>
-					Pending <b className="font-bold-10">{totalPending}</b>
-				</span>
-				<span />
-				<span>
-					Paid <b className="font-bold-10">{MyGlobal.ThousandSeparator(totalPaidAmount)}</b>
-				</span>
-				<span />
-				<span>
-					Total <b className="font-bold-10">{MyGlobal.ThousandSeparator(totalAmount)}</b>
-				</span>
-			</span>
-		);
 	}
 
 	useEffect(() => {
@@ -440,22 +446,18 @@ export default function Transactions({ entity, reload, unmount }) {
 	}, [other.find.date]);
 
 	// Main UI
-	if (!other.hasMounted) {
-		return;
-	}
-
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<div className="flex w-full px-5 py-2.5 justify-between items-center">
 				<div className="flex w-1/2 space-x-2 justify-start items-center">
 					<div className="flex w-full space-x-2 justify-start items-center">
-						<span className="view-heading">{MyConstants.Modules.Base.CashFlow}</span>
-						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-						<span className="cursor-pointer hover:underline hover:underline-offset-8 view-heading" onClick={() => unmount()}>
-							{entity.module.name}
+						<span
+							className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
+							onClick={() => unmount()}>
+							{thisView}
 						</span>
 						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-						<span className="view-heading">{entity.name}'s Transactions</span>
+						<span className="view-heading">{modules.PettyCash.name}'s Transactions</span>
 						{api.transactions.copy.length > 0 && <Badge value={getRowsCount()} />}
 					</div>
 				</div>
@@ -469,9 +471,7 @@ export default function Transactions({ entity, reload, unmount }) {
 				</div>
 			</div>
 			<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiMain()}</div>
-			{other.isNewTransactionsOpen && (
-				<NewTransaction entity={entity} mount={other.isNewTransactionsOpen} reload={reload} unmount={toggleNewTransaction} />
-			)}
+			{other.isNewTransactionOpen && <NewTransaction mount={other.isNewTransactionOpen} reload={reload} unmount={toggleNewTransaction} />}
 		</div>
 	);
 }

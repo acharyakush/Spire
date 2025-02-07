@@ -19,8 +19,8 @@ export default function Others({ module, reload, unmount }) {
 	// Business Logic
 
 	const [api, setApi] = useState({
+		heads: [],
 		list: [],
-		cards: [],
 	});
 
 	const [loading, setLoading] = useState({
@@ -35,6 +35,7 @@ export default function Others({ module, reload, unmount }) {
 			emailAddress: "",
 			entryAt: "",
 			entryBy: { id: "", name: "" },
+			head: {},
 			id: "",
 			module: { id: "", name: "" },
 			name: "",
@@ -106,7 +107,7 @@ export default function Others({ module, reload, unmount }) {
 			},
 		}));
 
-		getSelectedEntityCard(object.id);
+		getSelectedEntityHeads(object.id, object.module.id);
 	}
 
 	async function getSupportData(action) {
@@ -162,18 +163,32 @@ export default function Others({ module, reload, unmount }) {
 		}
 	}
 
-	async function getSelectedEntityCard(entityId) {
+	async function getSelectedEntityHeads(entityId, moduleId) {
 		setLoading((s) => ({ ...s, entities: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ entityId, type: "get-cash-flows-heads" }));
+			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.GetHeads, MyGlobal.GetHeaders({ entityId, moduleId }));
 
-			const list = [];
+			const heads = [];
 
-			if (Array.isArray(response.data) && response.data.length) {
-				response.data.forEach((fe) => {
-					list.push({
+			if (response.data.heads.length) {
+				response.data.heads.forEach((fe) => {
+					let amountPaid = 0;
+
+					const transaction = response.data.transactions.filter(
+						(f) => f.entity_id === fe.entity_id && f.head_id === fe.id && f.module_id === fe.module_id,
+					);
+
+					if (Array.isArray(transaction) && transaction.length) {
+						transaction.forEach((_fe) => {
+							amountPaid += Number(_fe.amount);
+						});
+					}
+
+					heads.push({
 						amount: fe.amount,
+						amountPaid,
+						amountPending: Number(fe.amount) - amountPaid,
 						entryAt: fe.entry_at,
 						entryBy: {
 							id: fe.entry_by_id,
@@ -196,7 +211,7 @@ export default function Others({ module, reload, unmount }) {
 				});
 			}
 
-			setApi((s) => ({ ...s, cards: list }));
+			setApi((s) => ({ ...s, heads }));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${module.name} => Get Support Data`);
 		} finally {
@@ -213,8 +228,9 @@ export default function Others({ module, reload, unmount }) {
 	}
 
 	function toggleTransactions(object) {
-		console.log({ ...main.selectedEntity, ...object });
-		setMain((s) => ({ ...s, selectedEntity: { ...s.selectedEntity, ...object } ?? {} }));
+		const _object = { ...main.selectedEntity, head: object ?? {} };
+
+		setMain((s) => ({ ...s, selectedEntity: _object }));
 		setMounted((s) => ({ ...s, transactions: object ? true : false }));
 	}
 
@@ -228,8 +244,24 @@ export default function Others({ module, reload, unmount }) {
 		);
 	}
 
-	function uiCards() {
-		return api.cards.map((m) => {
+	function uiEntities() {
+		return api.list.map((m, i) => {
+			const selectedStyle =
+				m.id == main.selectedEntity.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+
+			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedStyle} font-regular-10 hovered-rows`;
+
+			return (
+				<button className={wrapper} key={i} onClick={() => setEntity(m)}>
+					{m.name}
+				</button>
+			);
+		});
+	}
+
+	function uiHeads() {
+		return api.heads.map((m) => {
+			const totalPaidOrReceived = module.name === MyConstants.Modules.Other.CashFlowModules.OtherIncome.name ? "Total Received" : "Total Paid";
 			return (
 				<div
 					className="flex flex-col w-1/3 p-4 space-y-3 justify-center items-center relative rounded shadow primary-border primary-background-transparent-01"
@@ -238,12 +270,12 @@ export default function Others({ module, reload, unmount }) {
 					<div className="flex flex-col w-full p-4 space-y-2 rounded shadow contrast-background">
 						<div className="flex w-full justify-between items-center">
 							<span className="font-regular-12">Total Pending</span>
-							<span className="font-medium-12 red-text">{MyGlobal.ThousandSeparator(m.amount)}</span>
+							<span className="font-medium-12 red-text">{MyGlobal.ThousandSeparator(m.amountPending)}</span>
 						</div>
 						<div className="full-border" />
 						<div className="flex w-full justify-between items-center">
-							<span className="font-regular-12">Total Paid</span>
-							<span className="font-medium-12 green-text">{MyGlobal.ThousandSeparator(m.paid_fees)}</span>
+							<span className="font-regular-12">{totalPaidOrReceived}</span>
+							<span className="font-medium-12 green-text">{MyGlobal.ThousandSeparator(m.amountPaid)}</span>
 						</div>
 						<div className="full-border" />
 						<div className="flex w-full justify-between items-center">
@@ -258,21 +290,6 @@ export default function Others({ module, reload, unmount }) {
 						</span>
 					</div>
 				</div>
-			);
-		});
-	}
-
-	function uiEntities() {
-		return api.list.map((m, i) => {
-			const selectedStyle =
-				m.id == main.selectedEntity.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
-
-			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedStyle} font-regular-10 hovered-rows`;
-
-			return (
-				<button className={wrapper} key={i} onClick={() => setEntity(m)}>
-					{m.name}
-				</button>
 			);
 		});
 	}
@@ -296,13 +313,13 @@ export default function Others({ module, reload, unmount }) {
 		}
 	}
 
-	function uiNew() {
+	function uiNewEntity() {
 		if (api.list.length) {
 			return <FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleNewEntity()} size="xl" />;
 		}
 	}
 
-	function uiNewCard() {
+	function uiNewHead() {
 		if (main.selectedEntity.id) {
 			return <FontAwesomeIcon className="ml-2.5 cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleNewHead()} />;
 		}
@@ -333,7 +350,7 @@ export default function Others({ module, reload, unmount }) {
 						<div className="flex flex-col w-1/2 justify-center items-start">
 							<span className="view-heading">
 								{main.selectedEntity.name}
-								{uiNewCard()}
+								{uiNewHead()}
 							</span>
 							<span className="font-regular-11 gray-text">Purpose {main.selectedEntity.purpose}</span>
 							<span className="font-regular-11 gray-text">Registered on {dayjs(main.selectedEntity.entryAt).format("DD MMM, YYYY")}</span>
@@ -363,7 +380,7 @@ export default function Others({ module, reload, unmount }) {
 							)}
 						</div>
 					</div>
-					<div className="flex w-full space-x-2.5 justify-start items-center">{uiCards()}</div>
+					<div className="flex w-full space-x-2.5 justify-start items-center">{uiHeads()}</div>
 				</div>
 			);
 		}
@@ -389,14 +406,16 @@ export default function Others({ module, reload, unmount }) {
 			<div className="flex flex-col w-full h-full justify-start items-center">
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-full space-x-2 justify-start items-center">
-						<span className="cursor-pointer view-heading" onClick={() => unmount()}>
+						<span
+							className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
+							onClick={() => unmount()}>
 							{MyConstants.Modules.Base.CashFlow}
 						</span>
 						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
 						<span className="view-heading">{module.name}</span>
 						{getIconOrBadge()}
 					</div>
-					<div className="flex w-1/2 space-x-2 justify-end items-center">{uiNew()}</div>
+					<div className="flex w-1/2 space-x-2 justify-end items-center">{uiNewEntity()}</div>
 				</div>
 				{uiMain()}
 

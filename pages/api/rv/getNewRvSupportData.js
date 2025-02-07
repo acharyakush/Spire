@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 			query("SELECT * FROM invoices", []),
 			query("SELECT * FROM invoices_payment_history WHERE project_id=?", [req.query.projectId]),
 			query("SELECT * FROM reimburse_voucher", []),
-			query("SELECT * FROM reimburse_voucher_payment_history WHERE project_id=?", [req.query.projectId]),
+			query("SELECT * FROM reimburse_voucher_transactions WHERE project_id=?", [req.query.projectId]),
 			query("SELECT * FROM owner_firms", []),
 			query("SELECT * FROM owner_firms_banks", []),
 		]);

@@ -89,11 +89,7 @@ export default function Affiliates({ reload, unmount }) {
 		}));
 	}
 
-	async function setSupportData(action) {
-		if (action) {
-			reload();
-		}
-
+	async function setSupportData() {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {

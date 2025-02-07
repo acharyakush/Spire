@@ -17,7 +17,11 @@ export default async function handler(req, res) {
 			query("SELECT * FROM owner_firms", []), // Queries
 			query("SELECT * FROM owner_firms_banks", []),
 			query("SELECT * FROM cash_flows_settings WHERE `key`='payment_types'", []),
-			query("SELECT * FROM cash_flows_transactions WHERE entity_id=? AND module_id=?", [req.query.entityId, req.query.moduleId]), // Queries
+			query("SELECT * FROM cash_flows_transactions WHERE entity_id=? AND head_id=? AND module_id=?", [
+				req.query.entityId,
+				req.query.headId,
+				req.query.moduleId,
+			]),
 		]);
 
 		return res.status(200).json({ ownerFirms, ownerFirmsBanks, settings, transactions });
