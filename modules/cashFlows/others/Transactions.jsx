@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 import NewTransaction from "@/modals/cashFlows/NewTransaction";
+import EditTransaction from "@/modals/cashFlows/EditTransaction";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -45,9 +46,19 @@ export default function Transactions({ entity, reload, unmount }) {
 			transaction: "",
 		},
 		hasMounted: false,
-		isNewTransactionsOpen: false,
+		selectedTransaction: {},
 		sort: { column: "", isAscending: false },
 	});
+
+	const [mounted, setMounted] = useState({
+		editTransaction: false,
+		newTransaction: false,
+	});
+
+	const isUserAdministrator = MyGlobal.IsUserAdministrator();
+
+	const isOfficeExpense = entity.module.id !== MyConstants.Modules.Other.CashFlowModules.OfficeExpense.id;
+	const columnWidth = isOfficeExpense ? "w-[11.11%]" : "w-[12.50%]";
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
 
@@ -73,7 +84,7 @@ export default function Transactions({ entity, reload, unmount }) {
 				const ownerFirmsName = String(f.owner_firm_name).toLowerCase();
 				const ownerFirmsBanksName = String(f.owner_firm_bank_name).toLowerCase();
 				const particulars = String(f.particulars).toLowerCase();
-				const paymentSource = String(f.payment_source).toLowerCase();
+				const paymentSource = String(f.payment_source_name).toLowerCase();
 				const paymentType = String(f.payment_type).toLowerCase();
 				const remarks = String(f.remarks).toLowerCase();
 
@@ -122,9 +133,9 @@ export default function Transactions({ entity, reload, unmount }) {
 				} else if (column == headers.Particulars && !isAscending) {
 					return b.particulars.localeCompare(a.particulars);
 				} else if (column == headers.PaymentSource && isAscending) {
-					return a.payment_source.localeCompare(b.payment_source);
+					return a.payment_source_name.localeCompare(b.payment_source_name);
 				} else if (column == headers.PaymentSource && !isAscending) {
-					return b.payment_source.localeCompare(a.payment_source);
+					return b.payment_source_name.localeCompare(a.payment_source_name);
 				} else if (column == headers.PaymentType && isAscending) {
 					return a.payment_type.localeCompare(b.payment_type);
 				} else if (column == headers.PaymentType && !isAscending) {
@@ -171,6 +182,7 @@ export default function Transactions({ entity, reload, unmount }) {
 				const transactions = response.data.transactions.map((m) => {
 					let ownerFirmsName = "";
 					let ownerFirmsBanksName = "";
+					let paymentSourceName = "";
 
 					const ownerFirmsObj = response.data.ownerFirms.find((f) => f.id === m.owner_firm_id);
 
@@ -184,6 +196,12 @@ export default function Transactions({ entity, reload, unmount }) {
 						ownerFirmsBanksName = ownerFirmsBanksObj.name;
 					}
 
+					const paymentSourceObj = MyGlobal.GetBasicPaymentSourceList().find((f) => f.id === m.payment_source);
+
+					if (typeof paymentSourceObj === "object") {
+						paymentSourceName = paymentSourceObj.name;
+					}
+
 					return {
 						...m,
 						amount: Number(m.amount),
@@ -191,6 +209,7 @@ export default function Transactions({ entity, reload, unmount }) {
 						entry_by_name: MyGlobal.GetAnyDataFromId(m.entry_by_id, "full_name"),
 						owner_firm_name: ownerFirmsName,
 						owner_firm_bank_name: ownerFirmsBanksName,
+						payment_source_name: paymentSourceName,
 					};
 				});
 
@@ -210,6 +229,11 @@ export default function Transactions({ entity, reload, unmount }) {
 		}
 	}
 
+	function reloadRootAndUnmount() {
+		reload();
+		unmount();
+	}
+
 	function setFind(key, value) {
 		if (key == "from" || key == "to") {
 			setOther((s) => ({ ...s, find: { ...s.find, date: { ...s.find.date, [key]: value } } }));
@@ -225,7 +249,14 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function toggleNewTransaction() {
-		setOther((s) => ({ ...s, isNewTransactionsOpen: !s.isNewTransactionsOpen }));
+		setMounted((s) => ({ ...s, newTransaction: !s.newTransaction }));
+	}
+
+	function toggleEditTransaction(object) {
+		if (isUserAdministrator) {
+			setOther((s) => ({ ...s, selectedTransaction: object ?? {} }));
+			setMounted((s) => ({ ...s, editTransaction: object ? true : false }));
+		}
 	}
 
 	// UI Components
@@ -280,18 +311,26 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(headers).map((m, i) => {
-			const showSortArrow = m == other.sort.column ? "block" : "hidden";
+		return Object.values(headers)
+			.filter((f) => {
+				if (!isOfficeExpense) {
+					return f !== headers.PaymentType;
+				}
+				return f;
+			})
+			.map((m, i) => {
+				const showSortArrow = m == other.sort.column ? "block" : "hidden";
+				const wrapper = `flex ${columnWidth} justify-center items-center cursor-pointer font-medium-10`;
 
-			return (
-				<span className="flex w-[11.11%] justify-center items-center cursor-pointer font-medium-10" key={i}>
-					<div className="flex w-full space-x-2 justify-center items-center text-center text-white" onClick={() => setSort(m)}>
-						<span>{m}</span>
-						<span className={showSortArrow}>{uiSortArrows(m)}</span>
-					</div>
-				</span>
-			);
-		});
+				return (
+					<span className={wrapper} key={i}>
+						<div className="flex w-full space-x-2 justify-center items-center text-center text-white" onClick={() => setSort(m)}>
+							<span>{m}</span>
+							<span className={showSortArrow}>{uiSortArrows(m)}</span>
+						</div>
+					</span>
+				);
+			});
 	}
 
 	function uiMain() {
@@ -310,19 +349,23 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function uiRows(row, i) {
-		const style = "flex flex-wrap w-[11.11%] min-h-9 justify-center items-center text-center";
+		const colour = isUserAdministrator && "cursor-pointer";
+		const style = `flex flex-wrap ${columnWidth} min-h-9 justify-center items-center text-center ${colour}`;
+
+		const background = isUserAdministrator ? "hovered-rows-2" : "contrast-background";
+		const wrapper = `flex w-full justify-center items-center ${background} bottom-border font-regular-10 black-text`;
 
 		const amount = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.amount), other.find.transaction);
 		const entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.transaction);
 		const ownerFirmsName = MyGlobal.HighlightText(row.owner_firm_name, other.find.transaction);
 		const ownerFirmsBanksName = MyGlobal.HighlightText(row.owner_firm_bank_name, other.find.transaction);
 		const particulars = MyGlobal.HighlightText(row.particulars, other.find.transaction);
-		const paymentSource = MyGlobal.HighlightText(row.payment_source, other.find.transaction);
+		const paymentSource = MyGlobal.HighlightText(row.payment_source_name, other.find.transaction);
 		const paymentType = MyGlobal.HighlightText(row.payment_type, other.find.transaction);
 		const remarks = MyGlobal.HighlightText(row.remarks, other.find.transaction);
 
 		return (
-			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
+			<div className={wrapper} key={i} onClick={() => toggleEditTransaction(row)}>
 				<span className={style}>{dayjs(row.entry_at).format("DD-MM-YYYY")}</span>
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: ownerFirmsName }} />
@@ -330,7 +373,7 @@ export default function Transactions({ entity, reload, unmount }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: paymentSource }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: paymentType }} />
+				{isOfficeExpense && <span className={style} dangerouslySetInnerHTML={{ __html: paymentType }} />}
 				<span className={style} dangerouslySetInnerHTML={{ __html: remarks }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: entryByName }} />
 			</div>
@@ -402,10 +445,18 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function uiTransactionsFooter() {
-		const totalAmount = Number(entity.head.amount);
+		let totalAmount = 0;
+
+		if ("head" in entity) {
+			if ("amount" in entity.head) {
+				totalAmount = Number(entity.head.amount);
+			}
+		}
+
 		const totalPaidAmount = api.transactions.data.reduce((pv, cv) => {
 			return pv + Number(cv.amount);
 		}, 0);
+
 		const totalPending = MyGlobal.ThousandSeparator(totalAmount - totalPaidAmount);
 
 		return (
@@ -469,8 +520,19 @@ export default function Transactions({ entity, reload, unmount }) {
 				</div>
 			</div>
 			<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiMain()}</div>
-			{other.isNewTransactionsOpen && (
-				<NewTransaction entity={entity} mount={other.isNewTransactionsOpen} reload={reload} unmount={toggleNewTransaction} />
+
+			{mounted.editTransaction && (
+				<EditTransaction
+					entity={entity}
+					mount={mounted.editTransaction}
+					reload={reloadRootAndUnmount}
+					transaction={other.selectedTransaction}
+					unmount={toggleEditTransaction}
+				/>
+			)}
+
+			{mounted.newTransaction && (
+				<NewTransaction entity={entity} mount={mounted.newTransaction} reload={reloadRootAndUnmount} unmount={toggleNewTransaction} />
 			)}
 		</div>
 	);

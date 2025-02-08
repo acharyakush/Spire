@@ -48,6 +48,8 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 		isBoxMoved: false,
 	});
 
+	const isOfficeExpense = entity.module.id === MyConstants.Modules.Other.CashFlowModules.OfficeExpense.id;
+
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
@@ -74,8 +76,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.AddTransaction, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				reload("reload-root-statistics");
-				resetFields();
+				reload();
 
 				MyGlobal.AddActivity(
 					`Added transaction in <b>${entity.module.name}</b> in <b>${entity.name}</b> in <b>${entity.purpose}</b>.`,
@@ -176,8 +177,14 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 	}
 
 	function isAddEligible() {
-		if (!main.amount || !main.particulars || !main.paymentType || !main.remarks) {
-			return false;
+		if (isOfficeExpense) {
+			if (!main.amount || !main.particulars || !main.remarks) {
+				return false;
+			}
+		} else {
+			if (!main.amount || !main.particulars || !main.paymentType || !main.remarks) {
+				return false;
+			}
 		}
 
 		if (!main.paymentSource.id || !main.paymentSource.name) {
@@ -189,19 +196,6 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 		}
 
 		return true;
-	}
-
-	function resetFields() {
-		setMain({
-			amount: "",
-			entryAt: new Date(),
-			ownerFirm: { id: "", name: "" },
-			ownerFirmBank: { id: "", list: [], name: "" },
-			particulars: "",
-			paymentSource: { id: "", name: "" },
-			paymentType: "",
-			remarks: "",
-		});
 	}
 
 	function setBoxDrag() {
@@ -423,6 +417,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				comparisonValue=""
 				filteredData={api.paymentTypes}
 				icon={faFile}
+				isReadOnly={isOfficeExpense}
 				label="Payment Type"
 				onChange={(e) => setInputs("paymentType", e)}
 				onClick={() => {}}

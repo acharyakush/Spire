@@ -85,21 +85,13 @@ export default function Tasks({ project }) {
 	});
 
 	const allowDeletingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteTask);
-
 	const allowDisablingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.DisableTask);
-
 	const allowEditingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditTask);
-
 	const allowEnablingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.EnableTask);
-
 	const allowMarkingTaskCompleted = MyGlobal.HasPermission(MyConstants.Modules.Derived.MarkTaskCompleted);
-
 	const allowNewTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewTask);
-
 	const allowDeletingParticularRemark = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteParticularRemark);
-
 	const allowEditingParticularRemark = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditParticularRemark);
-
 	const allowMarkingSubTaskCompleted = MyGlobal.HasPermission(MyConstants.Modules.Derived.MarkSubTaskCompleted);
 
 	// Functions
@@ -684,7 +676,7 @@ export default function Tasks({ project }) {
 
 	function uiTaskList() {
 		return api.tasks.data.map((m, i) => {
-			const totalTaskDetails = api.remarks.data.filter((f) => f.task_id == m.id).length;
+			const totalSubTasks = api.remarks.data.filter((f) => f.task_id == m.id).length;
 
 			const taskName = String(m.task);
 			const trimTaskName = taskName.length > 8;
@@ -708,13 +700,13 @@ export default function Tasks({ project }) {
 
 			return (
 				<Tippy animation="shift-away" className="font-regular-11" content={taskName} disabled={!trimTaskName} placement="right">
-					<div className="flex w-full space-x-3 justify-start items-center">
+					<div className="flex w-full space-x-3 justify-start items-center relative">
+						<span className="absolute -left-5">{icon}</span>
 						<button className={wrapper} key={i} onClick={() => setTask(m)}>
-							<div className="flex w-4/5 justify-start items-center relative">
-								<span className="absolute right-[83px]">{icon}</span>
+							<div className="flex w-4/5 justify-start items-center">
 								<span>{_taskName}</span>
 							</div>
-							{totalTaskDetails > 0 && <span className="flex w-1/5 justify-end items-center font-regular-10 gray-text">{totalTaskDetails}</span>}
+							{totalSubTasks > 0 && <span className="flex w-1/5 justify-end items-center font-regular-10 gray-text">{totalSubTasks}</span>}
 						</button>
 					</div>
 				</Tippy>

@@ -14,7 +14,7 @@ import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { SpinnerBig, TooltipList } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { EditQuote, ManageGovernmentId, MapAffiliates } from "@/modals/singleProject/project";
+import { EditQuote, ManageGovernmentId, ManageAffiliates } from "@/modals/singleProject/project";
 import {
 	faBars,
 	faBriefcase,
@@ -52,7 +52,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 		generateInvoice: false,
 		governmentId: false,
 		mainComponent: false,
-		mapAffiliates: false,
+		manageAffiliates: false,
 		updateQuote: false,
 	});
 
@@ -86,16 +86,14 @@ export default function SingleProject({ client, project, reload, source, unmount
 								const affiliate = response.data.affiliates.find((f) => f.id == m);
 
 								if (typeof affiliate === "object") {
-									const affiliateProject = response.data.affiliatesProjects.find(
+									const affiliateProject = response.data.affiliatesProjects.filter(
 										(f) => f.affiliate_id == affiliate.id && f.project_id == project.id,
 									);
 
-									if (typeof affiliateProject === "object") {
-										const paidFees = Number(affiliateProject.paid_fees);
-										const totalFees = Number(affiliateProject.total_fees);
-										const pendingFees = totalFees - paidFees;
+									if (Array.isArray(affiliateProject) && affiliateProject.length) {
+										const totalFees = affiliateProject.reduce((pv, cv) => pv + Number(cv.total_fees), 0);
 
-										return `${affiliate.name}\nPaid ${paidFees} | Pending ${pendingFees} | Total ${totalFees}`;
+										return `${affiliate.name} (${totalFees})`;
 									}
 								} else {
 									return "";
@@ -116,15 +114,15 @@ export default function SingleProject({ client, project, reload, source, unmount
 		}
 	}
 
-	function toggleGovernmentIdBox() {
+	function toggleGovernmentId() {
 		setMounted((s) => ({ ...s, governmentId: !s.governmentId }));
 	}
 
-	function toggleMapAffiliatesBox() {
-		setMounted((s) => ({ ...s, mapAffiliates: !s.mapAffiliates }));
+	function toggleManageAffiliates() {
+		setMounted((s) => ({ ...s, manageAffiliates: !s.manageAffiliates }));
 	}
 
-	function toggleUpdateQuoteBox() {
+	function toggleUpdateQuote() {
 		setMounted((s) => ({ ...s, updateQuote: !s.updateQuote }));
 	}
 
@@ -179,17 +177,17 @@ export default function SingleProject({ client, project, reload, source, unmount
 						<span>Export to Excel</span>
 					</MenuItem>
 
-					<MenuItem as="div" className={style} onClick={() => toggleGovernmentIdBox()}>
+					<MenuItem as="div" className={style} onClick={() => toggleGovernmentId()}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={faIdCardClip} />
 						<span>Manage Government ID</span>
 					</MenuItem>
 
-					<MenuItem as="div" className={style} onClick={() => toggleMapAffiliatesBox()}>
+					<MenuItem as="div" className={style} onClick={() => toggleManageAffiliates()}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={faUserGroup} />
-						<span>Map Affiliates</span>
+						<span>Manage Affiliates</span>
 					</MenuItem>
 
-					<MenuItem as="div" className={style} onClick={() => toggleUpdateQuoteBox()}>
+					<MenuItem as="div" className={style} onClick={() => toggleUpdateQuote()}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={faIndianRupeeSign} />
 						<span>Update Quote</span>
 					</MenuItem>
@@ -310,11 +308,13 @@ export default function SingleProject({ client, project, reload, source, unmount
 					<Tasks client={client} project={project} source={source} />
 				</div>
 
-				{mounted.governmentId && <ManageGovernmentId mount={mounted.governmentId} project={project} reload={reload} unmount={toggleGovernmentIdBox} />}
+				{mounted.governmentId && <ManageGovernmentId mount={mounted.governmentId} project={project} reload={reload} unmount={toggleGovernmentId} />}
 
-				{mounted.mapAffiliates && <MapAffiliates mount={mounted.mapAffiliates} project={project} reload={reload} unmount={toggleMapAffiliatesBox} />}
+				{mounted.manageAffiliates && (
+					<ManageAffiliates mount={mounted.manageAffiliates} project={project} reload={reload} unmount={toggleManageAffiliates} />
+				)}
 
-				{mounted.updateQuote && <EditQuote mount={mounted.updateQuote} project={project} reload={reload} unmount={toggleUpdateQuoteBox} />}
+				{mounted.updateQuote && <EditQuote mount={mounted.updateQuote} project={project} reload={reload} unmount={toggleUpdateQuote} />}
 			</>
 		);
 	}

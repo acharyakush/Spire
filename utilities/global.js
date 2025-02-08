@@ -105,9 +105,18 @@ export const MyGlobal = Object.freeze({
 		const payloadArray = String(payload).split(",");
 
 		initials = payloadArray
-			.map((m) => {
+			.map((m, i) => {
 				const object = source.find((f) => f.id == m);
-				return object ? MyGlobal.GetInitials(object.name) : "";
+
+				if (object) {
+					if (i != payloadArray.length - 1) {
+						return `${MyGlobal.GetInitials(object.name)}, `;
+					} else {
+						return MyGlobal.GetInitials(object.name);
+					}
+				} else {
+					return "";
+				}
 			})
 			.filter(Boolean);
 

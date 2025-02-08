@@ -18,11 +18,21 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, Spinner, Tooltip } from "@/components/Elements";
-import { Transactions } from "@/modals/invoices/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendar, faCoins, faFileDownload, faFileExcel, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import {
+	faCalendar,
+	faChevronRight,
+	faCoins,
+	faFileDownload,
+	faFileExcel,
+	faMultiply,
+	faSearch,
+	faSortAmountAsc,
+	faSortAmountDesc,
+} from "@fortawesome/free-solid-svg-icons";
+import { Transactions } from "./Transactions";
 
-export default function Invoices({ status }) {
+export default function Invoices({ unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.Invoices;
 	const thisView = MyConstants.Modules.Base.Invoices;
@@ -415,9 +425,9 @@ export default function Invoices({ status }) {
 		return Object.values(headers).map((m, i) => {
 			return (
 				<span className="w-[11.11%] space-x-1 text-center text-white font-medium-10" key={i}>
-					<span>{i == 5 && totals.amount}</span>
-					<span>{i == 6 && totals.received}</span>
-					<span>{i == 7 && totals.pending}</span>
+					<span>{i == 5 && MyGlobal.ThousandSeparator(totals.amount)}</span>
+					<span>{i == 6 && MyGlobal.ThousandSeparator(totals.received)}</span>
+					<span>{i == 7 && MyGlobal.ThousandSeparator(totals.pending)}</span>
 				</span>
 			);
 		});
@@ -471,7 +481,13 @@ export default function Invoices({ status }) {
 				<div className="flex flex-col w-full h-full justify-center items-center">
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
 						<div className="flex w-1/5 space-x-2 justify-start items-center">
-							<span className="view-heading">{thisView}</span>
+							<span
+								className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
+								onClick={() => unmount()}>
+								{MyConstants.Modules.Base.CashFlow}
+							</span>
+							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
+							<span className="view-heading">{MyConstants.Modules.Base.Invoices}</span>
 							{getIconOrBadge()}
 						</div>
 						<div className="flex w-4/5 space-x-2 justify-end items-center">
@@ -506,14 +522,10 @@ export default function Invoices({ status }) {
 		const _invoiceId = !invoiceId ? "Generate" : invoiceId;
 
 		const companyName = MyGlobal.HighlightText(row.company_name, main.filter.find);
-
 		const mainProjectName = MyGlobal.HighlightText(row.main_project_name, main.filter.find);
-
 		const subProjectName = MyGlobal.HighlightText(row.sub_project_name, main.filter.find);
-
 		const amount = MyGlobal.HighlightText(row.amount, main.filter.find);
 		const amountPending = MyGlobal.HighlightText(row.amount_pending, main.filter.find);
-
 		const amountReceived = MyGlobal.HighlightText(row.amount_received, main.filter.find);
 
 		let generateInvoiceTooltip = "";

@@ -73,11 +73,11 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.AddEntity, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				reload("reload-root-statistics");
+				reload();
 				resetFields();
 				getSupportData();
 
-				MyGlobal.AddActivity(`Added entity <b>${name}</b> in <b>${module.name}</b>.`, thisView);
+				MyGlobal.AddActivity(`Added entity <b>${main.name}</b> in <b>${module.name}</b>.`, thisView);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.EntityAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);

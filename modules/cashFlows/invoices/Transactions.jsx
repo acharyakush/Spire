@@ -32,11 +32,11 @@ import {
 
 export function Transactions({ mount, project, reload, unmount }) {
 	// Business Logic
-	const headers = MyConstants.TableHeaders.Transactions.General;
+	const headers = MyConstants.TableHeaders.Transactions.Invoice;
 
 	const [api, setApi] = useState({
-		history: { copy: [], data: [] },
 		ownerFirmsBanks: { copy: [], data: [] },
+		transactions: { copy: [], data: [] },
 	});
 
 	const [loading, setLoading] = useState({
@@ -119,7 +119,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function doFiltering(type) {
-		const filteredData = api.history.data.filter((f) => {
+		const filteredData = api.transactions.data.filter((f) => {
 			if (type == "entryAt") {
 				const startDate = main.filter.from;
 				const endDate = main.filter.to;
@@ -136,12 +136,12 @@ export function Transactions({ mount, project, reload, unmount }) {
 			}
 		});
 
-		setApi((s) => ({ ...s, history: { ...s.history, data: filteredData } }));
+		setApi((s) => ({ ...s, transactions: { ...s.transactions, data: filteredData } }));
 	}
 
 	function doSorting() {
 		if (other.sort.column != "") {
-			return api.history.data.sort((a, b) => {
+			return api.transactions.data.sort((a, b) => {
 				const { column, isAscending } = other.sort;
 
 				if (column == headers.Particulars && isAscending) {
@@ -159,7 +159,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				}
 			});
 		} else {
-			return api.history.data;
+			return api.transactions.data;
 		}
 	}
 
@@ -218,7 +218,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 						copy: ownerFirmsBanks,
 						data: ownerFirmsBanks,
 					},
-					history: {
+					transactions: {
 						copy: history,
 						data: history,
 					},
@@ -234,7 +234,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	function getTotalAmount() {
 		let total = 0;
 
-		for (const i of api.history.copy) {
+		for (const i of api.transactions.copy) {
 			total += i.amount;
 		}
 
@@ -291,12 +291,52 @@ export function Transactions({ mount, project, reload, unmount }) {
 		);
 	}
 
+	function uiBody() {
+		if (loading.supportData) {
+			return (
+				<div className={wrapper}>
+					<SpinnerBig />
+				</div>
+			);
+		} else if (!api.transactions.copy.length) {
+			return (
+				<div className={wrapper}>
+					<FontAwesomeIcon className="text-yellow-500" icon={faExclamationTriangle} size="7x" />
+					<span className="font-regular-12 gray-text">No transactions found.</span>
+				</div>
+			);
+		} else {
+			return (
+				<div className="flex flex-col w-full h-full justify-center items-start">
+					<div className="flex w-full pb-2 space-x-2 justify-end items-center">
+						{uiFromDate()}
+						{uiToDate()}
+						{uiFind()}
+						{uiExport()}
+					</div>
+					<div className="flex w-full h-9 justify-center items-center rounded-tl rounded-tr primary-background-transparent-01 primary-border">
+						{uiHeaders()}
+					</div>
+					<Virtuoso
+						className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background"
+						data={doSorting()}
+						itemContent={(i, row) => uiRows(row, i)}
+						totalCount={api.transactions.copy.length}
+					/>
+					<div className="flex w-full h-9 justify-center items-center rounded-bl rounded-br primary-border primary-background-transparent-01">
+						{uiFooter()}
+					</div>
+				</div>
+			);
+		}
+	}
+
 	function uiDate() {
 		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryAt", e)} tabIndex="1" value={main.entryAt} width="w-full" />;
 	}
 
 	function uiExport() {
-		if (api.history.data.length && api.history.copy.length) {
+		if (api.transactions.data.length && api.transactions.copy.length) {
 			return (
 				<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
@@ -319,6 +359,19 @@ export function Transactions({ mount, project, reload, unmount }) {
 				width="w-36"
 			/>
 		);
+	}
+
+	function uiFooter() {
+		return Object.values(headers).map((m, i) => {
+			const showTotalAmount = i == 2 ? "visible" : "invisible";
+			const wrapper = `w-1/4 space-x-1 text-center primary-text font-medium-10 ${showTotalAmount}`;
+
+			return (
+				<span className={wrapper} key={i}>
+					<span>{getTotalAmount()}</span>
+				</span>
+			);
+		});
 	}
 
 	function uiFromDate() {
@@ -345,19 +398,6 @@ export function Transactions({ mount, project, reload, unmount }) {
 		);
 	}
 
-	function uiHistoryFooter() {
-		return Object.values(headers).map((m, i) => {
-			const showTotalAmount = i == 2 ? "visible" : "invisible";
-			const wrapper = `w-1/4 space-x-1 text-center primary-text font-medium-10 ${showTotalAmount}`;
-
-			return (
-				<span className={wrapper} key={i}>
-					<span>{getTotalAmount()}</span>
-				</span>
-			);
-		});
-	}
-
 	function uiHeaders() {
 		return Object.values(headers).map((m, i) => {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
@@ -371,46 +411,6 @@ export function Transactions({ mount, project, reload, unmount }) {
 				</span>
 			);
 		});
-	}
-
-	function uiHistory() {
-		if (loading.supportData) {
-			return (
-				<div className={wrapper}>
-					<SpinnerBig />
-				</div>
-			);
-		} else if (!api.history.copy.length) {
-			return (
-				<div className={wrapper}>
-					<FontAwesomeIcon className="text-yellow-500" icon={faExclamationTriangle} size="7x" />
-					<span className="font-regular-12 gray-text">No transactions found.</span>
-				</div>
-			);
-		} else {
-			return (
-				<div className="flex flex-col w-full h-full justify-center items-start">
-					<div className="flex w-full pb-2 space-x-2 justify-end items-center">
-						{uiFromDate()}
-						{uiToDate()}
-						{uiFind()}
-						{uiExport()}
-					</div>
-					<div className="flex w-full h-9 justify-center items-center rounded-tl rounded-tr primary-background-transparent-01 primary-border">
-						{uiHeaders()}
-					</div>
-					<Virtuoso
-						className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background"
-						data={doSorting()}
-						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.history.copy.length}
-					/>
-					<div className="flex w-full h-9 justify-center items-center rounded-bl rounded-br primary-border primary-background-transparent-01">
-						{uiHistoryFooter()}
-					</div>
-				</div>
-			);
-		}
 	}
 
 	function uiParticulars() {
@@ -543,7 +543,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 					<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex w-full h-[calc(100%-45px)] p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter primary-light-background">
-							<div className="flex w-3/4 h-full justify-center items-start">{uiHistory()}</div>
+							<div className="flex w-3/4 h-full justify-center items-start">{uiBody()}</div>
 							<div className="flex flex-col w-1/4 h-full justify-center items-start">
 								{uiDate()}
 								{uiPaymentSource()}

@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { affiliates, ids, project } = req.body;
+		const { affiliates, clientId, companyId, ids, projectId } = req.body;
 
 		let affiliateUpdated = false;
 		let clientUpdated = false;
@@ -28,8 +28,8 @@ export default async function handler(req, res) {
 
 			const response = await query("INSERT INTO affiliates_projects (affiliate_id, client_id, project_id, total_fees) VALUES (?, ?, ?, ?)", [
 				a.id,
-				project.client_id,
-				project.id,
+				clientId,
+				projectId,
 				a.fees,
 			]);
 
@@ -42,23 +42,19 @@ export default async function handler(req, res) {
 			affiliateUpdated = true;
 		}
 
-		const updateClientQuery = await query("UPDATE clients SET affiliate_ids=?, company_id=? WHERE id=?", [ids, project.company_id, project.client_id]);
+		const updateClientQuery = await query("UPDATE clients SET affiliate_ids=?, company_id=? WHERE id=?", [ids, companyId, clientId]);
 
 		if (updateClientQuery.affectedRows > 0) {
 			clientUpdated = true;
 		}
 
-		const updateCompanyQuery = await query("UPDATE companies SET total_affiliate_fees=? WHERE id=? AND client_id=?", [
-			totalFees,
-			project.company_id,
-			project.client_id,
-		]);
+		const updateCompanyQuery = await query("UPDATE companies SET total_affiliate_fees=? WHERE id=? AND client_id=?", [totalFees, companyId, clientId]);
 
 		if (updateCompanyQuery.affectedRows > 0) {
 			companyUpdated = true;
 		}
 
-		const updateProjectQuery = await query("UPDATE projects SET affiliate_ids=?, total_affiliate_fees=? WHERE id=?", [ids, totalFees, project.id]);
+		const updateProjectQuery = await query("UPDATE projects SET affiliate_ids=?, total_affiliate_fees=? WHERE id=?", [ids, totalFees, projectId]);
 
 		if (updateProjectQuery.affectedRows > 0) {
 			projectUpdated = true;

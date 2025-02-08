@@ -15,7 +15,7 @@ import { Badge, Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBank, faChevronRight, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 
-export default function Others({ module, reload, unmount }) {
+export default function Others({ module, unmount }) {
 	// Business Logic
 
 	const [api, setApi] = useState({
@@ -84,37 +84,7 @@ export default function Others({ module, reload, unmount }) {
 		globalThis.window.open(`https://wa.me/1${main.selectedEntity.phoneNumber}`, "_blank");
 	}
 
-	function setEntity(object) {
-		setMain((s) => ({
-			...s,
-			selectedEntity: {
-				emailAddress: object.emailAddress,
-				entryAt: object.entryAt,
-				entryBy: {
-					id: object.entryBy.id,
-					name: object.entryBy.name,
-				},
-				id: object.id,
-				module: {
-					id: object.module.id,
-					name: object.module.name,
-				},
-				name: object.name,
-				paymentSource: object.paymentSource,
-				phoneNumber: object.phoneNumber,
-				purpose: object.purpose,
-				upiId: object.upiId,
-			},
-		}));
-
-		getSelectedEntityHeads(object.id, object.module.id);
-	}
-
-	async function getSupportData(action) {
-		if (action) {
-			reload();
-		}
-
+	async function getSupportData() {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
@@ -217,6 +187,32 @@ export default function Others({ module, reload, unmount }) {
 		} finally {
 			setLoading((s) => ({ ...s, entities: false }));
 		}
+	}
+
+	function setEntity(object) {
+		setMain((s) => ({
+			...s,
+			selectedEntity: {
+				emailAddress: object.emailAddress,
+				entryAt: object.entryAt,
+				entryBy: {
+					id: object.entryBy.id,
+					name: object.entryBy.name,
+				},
+				id: object.id,
+				module: {
+					id: object.module.id,
+					name: object.module.name,
+				},
+				name: object.name,
+				paymentSource: object.paymentSource,
+				phoneNumber: object.phoneNumber,
+				purpose: object.purpose,
+				upiId: object.upiId,
+			},
+		}));
+
+		getSelectedEntityHeads(object.id, object.module.id);
 	}
 
 	function toggleNewEntity() {
@@ -344,6 +340,12 @@ export default function Others({ module, reload, unmount }) {
 			const showPhoneNumber = main.selectedEntity.phoneNumber && String(main.selectedEntity.phoneNumber).length > 0;
 			const showUpiId = main.selectedEntity.upiId && main.selectedEntity.upiId.length > 0;
 
+			const wrapper = "flex h-[22px] space-x-2.5 justify-center items-center primary-text";
+
+			const emailAddressWrapper = showEmailAddress ? `${wrapper} visible` : "h-[22px] invisible";
+			const phoneNumberWrapper = showPhoneNumber ? `${wrapper} visible` : "h-[22px] invisible";
+			const upiIdWrapper = showUpiId ? `${wrapper} visible` : "h-[22px] invisible";
+
 			return (
 				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">
 					<div className="flex w-full justify-between items-center">
@@ -356,28 +358,24 @@ export default function Others({ module, reload, unmount }) {
 							<span className="font-regular-11 gray-text">Registered on {dayjs(main.selectedEntity.entryAt).format("DD MMM, YYYY")}</span>
 						</div>
 						<div className="flex flex-col w-1/2 space-y-2 justify-center items-end">
-							{showPhoneNumber && (
-								<div className="flex space-x-2.5 justify-center items-center">
-									<FontAwesomeIcon className="primary-text" icon={faPhone} />
-									<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openWhatsAppWeb()}>
-										{main.selectedEntity.phoneNumber}
-									</span>
-								</div>
-							)}
-							{showEmailAddress && (
-								<div className="flex space-x-2.5 justify-center items-center">
-									<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
-									<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openEmailClient()}>
-										{main.selectedEntity.emailAddress}
-									</span>
-								</div>
-							)}
-							{showUpiId && (
-								<div className="flex space-x-2.5 justify-center items-center primary-text">
-									<FontAwesomeIcon icon={faBank} />
-									<span className="font-regular-11">{main.selectedEntity.upiId}</span>
-								</div>
-							)}
+							<div className={emailAddressWrapper}>
+								<FontAwesomeIcon className="primary-text" icon={faPhone} />
+								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openWhatsAppWeb()}>
+									{main.selectedEntity.phoneNumber}
+								</span>
+							</div>
+
+							<div className={phoneNumberWrapper}>
+								<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
+								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openEmailClient()}>
+									{main.selectedEntity.emailAddress}
+								</span>
+							</div>
+
+							<div className={upiIdWrapper}>
+								<FontAwesomeIcon icon={faBank} />
+								<span className="font-regular-11">{main.selectedEntity.upiId}</span>
+							</div>
 						</div>
 					</div>
 					<div className="flex w-full space-x-2.5 justify-start items-center">{uiHeads()}</div>
@@ -419,7 +417,7 @@ export default function Others({ module, reload, unmount }) {
 				</div>
 				{uiMain()}
 
-				{mounted.newHead && <NewHead entity={main.selectedEntity} mount={mounted.newHead} reload={getSupportData} unmount={toggleNewHead} />}
+				{mounted.newHead && <NewHead entity={main.selectedEntity} mount={mounted.newHead} reload={getSelectedEntityHeads} unmount={toggleNewHead} />}
 
 				{mounted.newEntity && <NewEntity module={module} mount={mounted.newEntity} reload={getSupportData} unmount={toggleNewEntity} />}
 			</div>

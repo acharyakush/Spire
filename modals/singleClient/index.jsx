@@ -392,7 +392,6 @@ export function EditCompany({ company, mount, reload, unmount }) {
 				/>
 				<TextArea
 					icon={faHome}
-					key={4}
 					label="Address"
 					onChange={(e) => setInputs("address", e.target.value)}
 					onKeyDown={() => {}}

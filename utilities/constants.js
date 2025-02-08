@@ -7,6 +7,7 @@ const MyConstants = Object.freeze({
 			AddAffiliate: "api/affiliates/addAffiliates",
 			AddTransaction: "api/affiliates/addTransaction",
 			GetAffiliates: "api/affiliates/getAffiliates",
+			GetMappedAffiliates: "api/affiliates/getMappedAffiliates",
 			GetNewTransactionSupportData: "api/affiliates/getNewTransactionSupportData",
 			GetTransactionsSupportData: "api/affiliates/getTransactionsSupportData",
 		}),
@@ -22,6 +23,7 @@ const MyConstants = Object.freeze({
 					GetNewHeadSupportData: "api/cashFlows/modules/entities/getNewHeadSupportData",
 				}),
 				AddTransaction: "api/cashFlows/modules/addTransaction",
+				EditTransaction: "api/cashFlows/modules/editTransaction",
 				GetNewTransactionSupportData: "api/cashFlows/modules/getNewTransactionSupportData",
 				PettyCash: Object.freeze({
 					AddTransaction: "api/cashFlows/modules/pettyCash/addTransaction",
@@ -90,6 +92,7 @@ const MyConstants = Object.freeze({
 	Messages: Object.freeze({
 		AccessRevoked: "Your access has been revoked.",
 		AffiliateAdded: "Affiliate(s) added.",
+		AffiliateUnmapped: "Affiliate unmapped.",
 		AllSubTasksMarkedCompleted: "All sub tasks marked completed.",
 		ApiCallForbidden: "Invalid API method.",
 		BadRequest: "Incompatible request sent.",
@@ -143,6 +146,7 @@ const MyConstants = Object.freeze({
 		TaskParticularRemarkDeleted: "Task Particular/Remark deleted.",
 		TaskParticularRemarkEdited: "Task Particular/Remark edited.",
 		TransactionAdded: "Transaction added.",
+		TransactionEdited: "Transaction edited.",
 		UnauthorizedAccess: "Unauthorized access.",
 		VendorAdded: "Vendor(s) added.",
 	}),
@@ -279,6 +283,12 @@ const MyConstants = Object.freeze({
 			InvoiceId: "Invoice ID",
 			Actions: "Actions",
 		}),
+		MappedAffiliates: Object.freeze({
+			Name: "Name",
+			Paid: "Paid",
+			Fees: "Fees",
+			Action: "Action",
+		}),
 		Notes: Object.freeze({
 			date: "Date",
 			note: "Note",
@@ -356,6 +366,7 @@ const MyConstants = Object.freeze({
 				Bank: "Bank",
 				AmountPaid: "Amount Paid",
 				AmountReceived: "Amount Received",
+				Balance: "Balance",
 				Particulars: "Particulars",
 				PaymentSource: "Payment Source",
 				PaymentType: "Payment Type",

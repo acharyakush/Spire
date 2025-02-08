@@ -7,12 +7,22 @@ import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
-import { allowedKeysForOnKeyPressEvent, MyGlobal } from "@/utilities/global";
-import { Spinner, SpinnerBig } from "@/components/Elements";
+import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Badge, Spinner, SpinnerBig } from "@/components/Elements";
 import { ComboBox2, TextArea, TextInput } from "@/components/Inputs";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { faCircleCheck, faIdCardClip, faIndianRupee, faIndianRupeeSign, faNoteSticky, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+	faCirclePlus,
+	faIdCardClip,
+	faIndianRupee,
+	faIndianRupeeSign,
+	faLinkSlash,
+	faNoteSticky,
+	faStickyNote,
+	faUserGroup,
+	faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
 export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 	// Business Logic
@@ -388,10 +398,11 @@ export function ManageGovernmentId({ mount, project, reload, unmount }) {
 	);
 }
 
-export function MapAffiliates({ mount, project, reload, unmount }) {
+export function ManageAffiliates({ mount, project, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
 		affiliates: { copy: [], data: [] },
+		mapped: [],
 	});
 
 	const [main, setMain] = useState({
@@ -400,7 +411,16 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 		isLoading: false,
 		isMapping: false,
 		selected: [{ fees: "", id: 0, name: "" }],
+		selectedAffiliate: {},
 	});
+
+	const [mounted, setMounted] = useState({
+		unmapAffiliate: false,
+	});
+
+	const disableManageButton = main.selected.length > 1 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-50";
+
+	const manageButtonStyle = `primary-button-condensed ${disableManageButton}`;
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -410,11 +430,13 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 		const copy = [...main.selected];
 		copy.push(main.affiliate);
 
-		setMain((s) => ({
-			...s,
-			affiliate: { fees: 0, id: "", name: "" },
-			selected: copy,
-		}));
+		if (main.affiliate.fees && main.affiliate.name) {
+			setMain((s) => ({
+				...s,
+				affiliate: { fees: "", id: "", name: "" },
+				selected: copy,
+			}));
+		}
 	}
 
 	function deleteAffiliate(object) {
@@ -428,15 +450,53 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-affiliates" }));
+			const response = await axios.get(MyConstants.ApiEndpoints.Affiliates.GetMappedAffiliates, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
+				const mapped = [];
+				const _affiliates = [];
+
+				const affiliateIds = String(project.affiliate_ids);
+				let _affiliateIds = [project.affiliate_ids];
+
+				if (affiliateIds.includes(",")) {
+					_affiliateIds = affiliateIds.split(",");
+				}
+
+				_affiliateIds.forEach((fe) => {
+					const object = response.data.affiliates.find((f) => f.id === fe);
+
+					let totalFees = 0;
+					let totalPaid = 0;
+
+					response.data.projects
+						.filter((f) => f.affiliate_id === fe && f.client_id === project.client_id && f.project_id === project.id)
+						.forEach((_fe) => (totalFees += Number(_fe.total_fees)));
+
+					response.data.transactions
+						.filter((f) => f.affiliate_id === fe && f.project_id === project.id)
+						.forEach((_fe) => (totalPaid += Number(_fe.amount)));
+
+					mapped.push({
+						...object,
+						fees: MyGlobal.ThousandSeparator(totalFees),
+						paid: MyGlobal.ThousandSeparator(totalPaid),
+					});
+				});
+
+				response.data.affiliates.forEach((fe) => {
+					if (!_affiliateIds.includes(fe.id)) {
+						_affiliates.push(fe);
+					}
+				});
+
 				setApi((s) => ({
 					...s,
 					affiliates: {
-						copy: response.data,
-						data: response.data,
+						copy: _affiliates,
+						data: _affiliates,
 					},
+					mapped,
 				}));
 			}
 		} catch (error) {
@@ -447,7 +507,12 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 	}
 
 	function getFilteredList() {
-		let list = !api.affiliates.copy.length ? [] : api.affiliates.copy;
+		let list = !api.affiliates.copy.length
+			? []
+			: api.affiliates.copy.filter((f) => {
+					const isSelected = main.selected.some((_f) => _f.id === f.id);
+					return !isSelected;
+			  });
 
 		if (list.length) {
 			const value = String(main.affiliate.name);
@@ -466,8 +531,15 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 		setMain((s) => ({ ...s, isMapping: true }));
 
 		const affiliates = main.selected.filter((f) => f.id !== 0);
-		const ids = affiliates.map((m) => m.id).join(",");
-		const body = { affiliates, ids, project };
+		const ids = `${project.affiliate_ids},${affiliates.map((m) => m.id).join(",")}`;
+
+		const body = {
+			affiliates,
+			clientId: project.client_id,
+			companyId: project.company_id,
+			ids,
+			projectId: project.id,
+		};
 
 		try {
 			const response = await axios.post(MyConstants.ApiEndpoints.SingleProject.MapAffiliate, body, MyGlobal.GetHeaders());
@@ -477,9 +549,7 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 
 				MyGlobal.AddActivity(`Mapped <b>(${ids})</b> to <b>${project.id}</b>.`, MyConstants.Modules.Base.Projects);
 
-				MyGlobal.ShowSuccessToast(successMessage);
-
-				unmount();
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.AffiliateAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
@@ -487,6 +557,7 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 			MyGlobal.HandleErrors(error, "Single Project => Map Affiliates");
 		} finally {
 			setMain((s) => ({ ...s, isMapping: false }));
+			unmount();
 		}
 	}
 
@@ -506,6 +577,11 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 		if (value) {
 			setMain((s) => ({ ...s, [key]: value }));
 		}
+	}
+
+	function toggleUnmapAffiliate(object) {
+		setMain((s) => ({ ...s, selectedAffiliate: object ?? {} }));
+		setMounted((s) => ({ ...s, unmapAffiliate: object ? true : false }));
 	}
 
 	// UI Components
@@ -547,35 +623,80 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 		);
 	}
 
+	function uiHeaders() {
+		return Object.values(MyConstants.TableHeaders.MappedAffiliates).map((m, i) => {
+			const wrapper = `flex w-1/3 h-9 space-x-1.5 justify-center items-center text-center text-white font-medium-11`;
+
+			return (
+				<span className={wrapper} key={i}>
+					<span>{m}</span>
+				</span>
+			);
+		});
+	}
+
+	function uiRows(row, i) {
+		const style = `flex w-1/3 justify-center items-center whitespace-pre-wrap`;
+
+		return (
+			<div className="flex w-full px-4 py-2 justify-center items-center rounded bottom-shadow contrast-background bottom-border font-regular-11" key={i}>
+				<span className={style}>{row.name}</span>
+				<span className={style}>{row.paid}</span>
+				<span className={style}>{row.fees}</span>
+				<div
+					className={`${style} cursor-pointer red-text space-x-2.5 hover:underline hover:underline-offset-8 hover:decoration-[--red]`}
+					onClick={() => toggleUnmapAffiliate(row)}>
+					<FontAwesomeIcon icon={faLinkSlash} />
+					<span>Unmap</span>
+				</div>
+			</div>
+		);
+	}
+
 	function uiMain() {
 		if (main.isLoading) {
 			return (
-				<div className="flex w-full h-full justify-center items-center">
+				<div className="flex w-full h-[calc(100%-95px)] justify-center items-center">
 					<SpinnerBig />
 				</div>
 			);
 		} else {
 			return (
-				<div className="flex flex-col w-full h-full p-5 space-y-2.5 justify-between items-center">
-					<div className="flex w-full space-x-5 justify-between items-center">
-						{uiAffiliates()}
-						{uiFees()}
-						<FontAwesomeIcon
-							className="cursor-pointer relative top-2.5 green-text"
-							icon={faCircleCheck}
-							onClick={() => addAffiliate()}
-							size="2xl"
-						/>
+				<div className="flex w-full h-full p-5 space-x-10 justify-between items-center">
+					<div className="flex flex-col w-full h-full justify-between items-center">
+						<div className="flex w-full space-x-2.5 pb-8 justify-start items-center">
+							<span className="view-heading">Mapped</span>
+							<Badge value={api.mapped.length} />
+						</div>
+						<span className="flex w-full px-4 justify-center items-center rounded-tl rounded-tr primary-background">{uiHeaders()}</span>
+						<div className="flex flex-col w-full h-[calc(100%-100px)] p-2 space-y-2 rounded-bl rounded-br overflow-y-auto bottom-shadow full-border primary-background-transparent-01 scrollbar-gutter">
+							{api.mapped.map((m, i) => uiRows(m, i))}
+						</div>
 					</div>
-					<div className="flex w-full px-2.5 py-5 space-x-5 justify-start items-center rounded primary-border primary-background-transparent-01">
-						{uiSelected()}
+					<div className="flex flex-col w-full h-full justify-start items-center">
+						<span className="flex w-full justify-start items-center view-heading">New Mapping</span>
+						<div className="flex flex-col w-full h-full justify-between items-center">
+							<div className="flex w-full space-x-5 justify-center items-center">
+								{uiAffiliates()}
+								{uiFees()}
+								<FontAwesomeIcon
+									className="cursor-pointer relative top-2.5 primary-text"
+									icon={faCirclePlus}
+									onClick={() => addAffiliate()}
+									size="2xl"
+								/>
+							</div>
+							<div className="flex w-full px-2.5 py-5 space-x-5 justify-start items-center rounded bottom-shadow full-border primary-background-transparent-01">
+								{uiSelected()}
+							</div>
+						</div>
 					</div>
 				</div>
 			);
 		}
 	}
 
-	function uiMap() {
+	function uiManage() {
 		if (main.isMapping) {
 			return (
 				<span className="px-3.5">
@@ -583,7 +704,7 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 				</span>
 			);
 		} else {
-			return "Map";
+			return "Manage";
 		}
 	}
 
@@ -592,12 +713,13 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 			if (m.id != 0) {
 				return (
 					<div
-						className="flex w-fit px-2 py-1 space-x-2.5 justify-between items-center rounded shadow contrast-background font-medium-10 primary-border primary-text"
+						className="flex w-fit px-2 py-1 space-x-5 justify-between items-center rounded shadow contrast-background font-medium-12 primary-border primary-text"
 						key={i}>
-						<span>
-							{m.name} ({m.fees})
-						</span>
-						<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => deleteAffiliate(m)} />
+						<div className="flex w-full p-2.5 space-x-2.5 justify-between items-center">
+							<span>{m.name}</span>
+							<Badge value={MyGlobal.ThousandSeparator(m.fees)} />
+						</div>
+						<FontAwesomeIcon className="cursor-pointer gray-text" icon={faXmark} onClick={() => deleteAffiliate(m)} />
 					</div>
 				);
 			}
@@ -607,7 +729,7 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 	function uiTitleBar() {
 		return (
 			<DialogTitle as="h2" className={titleBarStyle}>
-				<span className="flex w-full justify-start items-center">Map Affiliates</span>
+				<span className="flex w-full justify-start items-center">Manage Affiliates</span>
 				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
@@ -624,16 +746,148 @@ export function MapAffiliates({ mount, project, reload, unmount }) {
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-1/2 h-4/5 transform overflow-hidden rounded contrast-background shadow">
+					<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
-						<div className="flex flex-col w-full h-[calc(100%-45px)] justify-between items-center">
-							{uiMain()}
-							<footer className="dialog-footer w-full">
-								<button className="primary-button-condensed" onClick={() => doMapping()}>
-									{uiMap()}
-								</button>
-							</footer>
+						<div className="flex flex-col w-full h-[calc(100%-95px)] justify-between items-center">{uiMain()}</div>
+						<footer className="dialog-footer w-full">
+							<button className={manageButtonStyle} onClick={() => doMapping()}>
+								{uiManage()}
+							</button>
+						</footer>
+						{mounted.unmapAffiliate && (
+							<UnmapAffiliate
+								mount={mounted.unmapAffiliate}
+								affiliate={main.selectedAffiliate}
+								project={project}
+								reload={reload}
+								unmount={toggleUnmapAffiliate}
+							/>
+						)}
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
+export function UnmapAffiliate({ mount, affiliate, project, reload, unmount }) {
+	// Business Logic
+	const [main, setMain] = useState({
+		isBoxMoved: false,
+		isLoading: false,
+		reason: "",
+	});
+
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
+
+	const disableUnmapButton = main.isLoading || !main.reason ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+
+	const unmapButtonStyle = `primary-button-condensed ${disableUnmapButton}`;
+
+	// Functions
+	async function doUnmapping() {
+		try {
+			setMain((s) => ({ ...s, isLoading: true }));
+
+			const affiliateIds = String(project.affiliate_ids);
+			let _affiliateIds = project.affiliate_ids;
+
+			if (affiliateIds.includes(",")) {
+				_affiliateIds = affiliateIds
+					.split(",")
+					.filter((f) => f !== affiliate.id)
+					.join(", ")
+					.trim();
+			}
+
+			const body = {
+				affiliateIds: _affiliateIds,
+				projectId: project.id,
+				type: "unmap-affiliate",
+				userId: MyGlobal.GetUserId(),
+			};
+
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reload(project.id);
+
+				MyGlobal.AddActivity(
+					`Unmapped affiliate <b>${affiliate.id}</b> from <b>${project.id}</b> due to <b>${main.reason}</b>.`,
+					MyConstants.Modules.Base.Affiliates,
+				);
+
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.AffiliateUnmapped);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Unmap Affiliate");
+		} finally {
+			setMain((s) => ({ ...s, isLoading: false, reason: "" }));
+			unmount();
+		}
+	}
+
+	function setBoxDrag() {
+		setMain((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
+	}
+
+	function setReason(reason) {
+		setMain((s) => ({ ...s, reason }));
+	}
+
+	// UI Components
+	function uiButton() {
+		if (main.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Unmap";
+		}
+	}
+
+	function uiTitleBar() {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Unmap {affiliate.name}</span>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+			</DialogTitle>
+		);
+	}
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded shadow contrast-background">
+						{uiTitleBar()}
+						<div className="flex flex-col w-full p-5 space-y-2 justify-center items-center">
+							<span className="block w-full pl-2.5 font-regular-11 black-text">
+								Are you sure you want to unmap this affiliate? You are required to write a reason below.
+							</span>
+							<TextArea
+								icon={faStickyNote}
+								label="Reason"
+								onChange={(e) => setReason(e.target.value)}
+								onKeyDown={() => {}}
+								rows="3"
+								tabIndex="1"
+								value={main.reason}
+								width="w-full"
+							/>
 						</div>
+						<footer className="dialog-footer">
+							<button className={unmapButtonStyle} onClick={() => doUnmapping()}>
+								{uiButton()}
+							</button>
+						</footer>
 					</DialogPanel>
 				</Draggable>
 			</div>

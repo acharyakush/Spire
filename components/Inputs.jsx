@@ -16,6 +16,7 @@ export const ComboBox = ({
 	comparisonValue,
 	filteredData,
 	icon,
+	isReadOnly = false,
 	label,
 	onChange,
 	onClick,
@@ -25,7 +26,12 @@ export const ComboBox = ({
 	value,
 	width,
 }) => {
-	const wrapper = `flex flex-col ${width} p-2 space-y-1`;
+	const aesthetics = isReadOnly ? "opacity-50" : " opacity-100";
+	const clickEvent = isReadOnly ? `pointer-events-none ${aesthetics}` : "pointer-events-auto";
+	const cursor = isReadOnly ? "cursor-not-allowed" : "cursor-default";
+
+	const mainWrapper = `flex flex-col ${width} p-2 space-y-1 ${aesthetics} ${cursor}`;
+	const childWrapper = `flex w-full justify-start items-center ${clickEvent}`;
 	const noItemFound = allowCreatingNewItem ? `Create ${searchedItem}` : "Nothing found.";
 	const noItemFoundClickAction = allowCreatingNewItem ? onClick : () => {};
 
@@ -39,9 +45,9 @@ export const ComboBox = ({
 
 	const uiBox = () => {
 		return (
-			<div className={wrapper}>
+			<div className={mainWrapper}>
 				<span className="font-regular-10 light-slate-gray-text">{label}</span>
-				<div className="flex w-full justify-start items-center">
+				<div className={childWrapper}>
 					<Combobox onChange={onChange} onKeyPress={onKeyPress} value={value}>
 						<div className="relative w-full">
 							<div className="flex w-full h-9 px-3 space-x-1 justify-center items-center relative overflow-hidden rounded primary-background-transparent-01 primary-bottom-border-transparent-05">

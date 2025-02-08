@@ -6,6 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Others from "./others";
 import Vendors from "./vendors";
+import Invoices from "./invoices";
 import Affiliates from "./affiliates";
 import MyConstants from "@/utilities/constants";
 import Transactions from "./pettyCash/Transactions";
@@ -32,6 +33,7 @@ export default function CashFlows({ setModuleProps }) {
 		affiliates: [],
 		cashFlows: [],
 		invoices: [],
+		projects: [],
 		reimburseVouchers: [],
 		vendors: [],
 	});
@@ -257,6 +259,7 @@ export default function CashFlows({ setModuleProps }) {
 				setApi((s) => ({
 					...s,
 					invoices: response.data.invoices,
+					projects: response.data.projects,
 					reimburseVouchers: response.data.reimburseVouchers,
 				}));
 
@@ -324,7 +327,7 @@ export default function CashFlows({ setModuleProps }) {
 					pettyCash,
 					rv: _rv,
 					totalInvoicesAmount: MyGlobal.ThousandSeparator(totalInvoicesAmount),
-					totalRvAmount,
+					totalRvAmount: MyGlobal.ThousandSeparator(totalRvAmount),
 				}));
 			}
 		} catch (error) {
@@ -439,7 +442,7 @@ export default function CashFlows({ setModuleProps }) {
 				<div className="flex w-full justify-between items-center">
 					<div className="flex w-fit space-x-2.5 justify-start items-center">
 						{uiHeading("Invoices")}
-						<Badge value={api.invoices.length} />
+						<Badge value={api.projects.length} />
 						<Badge value={`Total ${main.totalInvoicesAmount}`} />
 					</div>
 				</div>
@@ -490,39 +493,6 @@ export default function CashFlows({ setModuleProps }) {
 		});
 	}
 
-	function uiRVs() {
-		return (
-			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
-				<div className="flex w-full justify-between items-center">
-					<div className="flex w-fit space-x-2.5 justify-start items-center">
-						{uiHeading("RVs")}
-						<Badge value={api.reimburseVouchers.length} />
-						<Badge value={`Total ${main.totalRvAmount}`} />
-					</div>
-				</div>
-				<div className="flex w-full space-x-16 justify-between items-center">{uiRVsBlock()}</div>
-			</div>
-		);
-	}
-
-	function uiRVsBlock() {
-		return Object.values(main.rv).map((m, n) => {
-			const aesthetics = getAesthetics(n);
-
-			return (
-				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
-					<div className={`flex flex-col w-full p-5 space-y-2.5 justify-center items-center ${aesthetics.textColour}`}>
-						<div className="flex space-x-1 justify-center items-center">
-							<span className="font-medium-18">{m.count}</span>
-						</div>
-						<span className="font-bold-24">{MyGlobal.FormatCurrency(m.amount)}</span>
-					</div>
-					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
-				</div>
-			);
-		});
-	}
-
 	function uiMain() {
 		if (main.isLoading) {
 			return (
@@ -535,16 +505,25 @@ export default function CashFlows({ setModuleProps }) {
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${baseModules.Affiliates}`}
-						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Affiliates)}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Affiliates)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Affiliates reload={getSupportData} unmount={toggleModule} />
+					</ErrorBoundary>
+				);
+			} else if (main.module == baseModules.Invoices) {
+				return (
+					<ErrorBoundary
+						key={`ErrorBoundary_${baseModules.Invoices}`}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Invoices)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<Invoices reload={getSupportData} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
 			} else if (main.module == baseModules.Vendors) {
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${baseModules.Vendors}`}
-						onError={(error) => MyGlobal.LogErrors(error.message, baseModules.Vendors)}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Vendors)}
 						FallbackComponent={ErrorFallbackComponent}>
 						<Vendors reload={getSupportData} unmount={toggleModule} />
 					</ErrorBoundary>
@@ -555,9 +534,9 @@ export default function CashFlows({ setModuleProps }) {
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${module}`}
-						onError={(error) => MyGlobal.LogErrors(error.message, module)}
+						onError={(e) => MyGlobal.LogErrors(e.message, module)}
 						FallbackComponent={ErrorFallbackComponent}>
-						<Others module={main.module} reload={getSupportData} unmount={toggleModule} />
+						<Others module={main.module} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
 			}
@@ -650,6 +629,39 @@ export default function CashFlows({ setModuleProps }) {
 			return (
 				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
 					<div className={`flex flex-col w-full p-5 justify-center items-center ${aesthetics.textColour}`}>
+						<span className="font-bold-24">{MyGlobal.FormatCurrency(m.amount)}</span>
+					</div>
+					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
+				</div>
+			);
+		});
+	}
+
+	function uiRVs() {
+		return (
+			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
+				<div className="flex w-full justify-between items-center">
+					<div className="flex w-fit space-x-2.5 justify-start items-center">
+						{uiHeading("RVs")}
+						<Badge value={api.projects.length} />
+						<Badge value={`Total ${main.totalRvAmount}`} />
+					</div>
+				</div>
+				<div className="flex w-full space-x-16 justify-between items-center">{uiRVsBlock()}</div>
+			</div>
+		);
+	}
+
+	function uiRVsBlock() {
+		return Object.values(main.rv).map((m, n) => {
+			const aesthetics = getAesthetics(n);
+
+			return (
+				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
+					<div className={`flex flex-col w-full p-5 space-y-2.5 justify-center items-center ${aesthetics.textColour}`}>
+						<div className="flex space-x-1 justify-center items-center">
+							<span className="font-medium-18">{m.count}</span>
+						</div>
 						<span className="font-bold-24">{MyGlobal.FormatCurrency(m.amount)}</span>
 					</div>
 					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>

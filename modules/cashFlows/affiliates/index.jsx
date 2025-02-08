@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, BadgeSmall, Spinner } from "@/components/Elements";
-import { faBank, faChevronLeft, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faBank, faChevronLeft, faChevronRight, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 
 export default function Affiliates({ reload, unmount }) {
 	// Business Logic
@@ -323,8 +323,13 @@ export default function Affiliates({ reload, unmount }) {
 			<div className="flex flex-col w-full h-full justify-start items-center">
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-full space-x-2 justify-start items-center">
-						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
-						<span className="view-heading">{thisView}</span>
+						<span
+							className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
+							onClick={() => unmount()}>
+							{MyConstants.Modules.Base.CashFlow}
+						</span>
+						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
+						<span className="view-heading">{MyConstants.Modules.Base.Affiliates}</span>
 						{getIconOrBadge()}
 					</div>
 					<div className="flex w-1/2 space-x-2 justify-end items-center">{uiNew()}</div>

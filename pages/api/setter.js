@@ -100,6 +100,9 @@ export default async function handler(req, res) {
 			} else if (request.type == "mark-project-completed") {
 				queryString = "UPDATE projects SET status=?, completed_on=NOW() WHERE id=?";
 				queryParameters = ["Completed", request.projectId];
+			} else if (request.type == "unmap-affiliate") {
+				queryString = "UPDATE projects SET affiliate_ids=? WHERE id=?";
+				queryParameters = [request.affiliateIds, request.projectId];
 			}
 
 			const response = await query(queryString, queryParameters);

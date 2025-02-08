@@ -72,6 +72,7 @@ export default function Transactions({ reload, unmount }) {
 
 				const amountPaid = String(f.amount_received);
 				const amountReceived = String(f.amount_received);
+				const balance = String(f.balance);
 				const entryByName = String(f.entry_by_name).toLowerCase();
 				const ownerFirmsName = String(f.owner_firm_name).toLowerCase();
 				const ownerFirmsBanksName = String(f.owner_firm_bank_name).toLowerCase();
@@ -83,6 +84,7 @@ export default function Transactions({ reload, unmount }) {
 				return (
 					amountPaid.includes(findTerm) ||
 					amountReceived.includes(findTerm) ||
+					balance.includes(findTerm) ||
 					entryByName.includes(findTerm) ||
 					ownerFirmsName.includes(findTerm) ||
 					ownerFirmsBanksName.includes(findTerm) ||
@@ -125,6 +127,10 @@ export default function Transactions({ reload, unmount }) {
 					return a.amount_received - b.amount_received;
 				} else if (column == headers.AmountReceived && !isAscending) {
 					return b.amount_received - a.amount_received;
+				} else if (column == headers.Balance && isAscending) {
+					return a.balance - b.balance;
+				} else if (column == headers.Balance && !isAscending) {
+					return b.balance - a.balance;
 				} else if (column == headers.Particulars && isAscending) {
 					return a.particulars.localeCompare(b.particulars);
 				} else if (column == headers.Particulars && !isAscending) {
@@ -265,6 +271,8 @@ export default function Transactions({ reload, unmount }) {
 
 		const totalBalance = MyGlobal.ThousandSeparator(totalAmountPaid - totalAmountReceived);
 
+		const balanceStyle = `font-bold-10 ${totalAmountPaid - totalAmountReceived < 1000 ? "animate-ping orange-text" : "text-white"}`;
+
 		return (
 			<span className="w-full space-x-5 text-center text-white font-regular-10">
 				<span>
@@ -276,7 +284,7 @@ export default function Transactions({ reload, unmount }) {
 				</span>
 				<span />
 				<span>
-					Balance <b className="font-bold-10">{totalBalance}</b>
+					Balance <b className={balanceStyle}>{totalBalance}</b>
 				</span>
 			</span>
 		);
@@ -311,7 +319,7 @@ export default function Transactions({ reload, unmount }) {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
-				<span className="flex w-[10%] justify-center items-center cursor-pointer font-medium-10" key={i}>
+				<span className="flex w-[9.09%] justify-center items-center cursor-pointer font-medium-10" key={i}>
 					<div className="flex w-full space-x-2 justify-center items-center text-center text-white" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
@@ -337,10 +345,11 @@ export default function Transactions({ reload, unmount }) {
 	}
 
 	function uiRows(row, i) {
-		const style = "flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center";
+		const style = "flex flex-wrap w-[9.09%] min-h-9 justify-center items-center text-center";
 
 		const amountPaid = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.amount_paid), other.find.transaction);
 		const amountReceived = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.amount_received), other.find.transaction);
+		const balance = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.balance), other.find.transaction);
 		const entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.transaction);
 		const ownerFirmsName = MyGlobal.HighlightText(row.owner_firm_name, other.find.transaction);
 		const ownerFirmsBanksName = MyGlobal.HighlightText(row.owner_firm_bank_name, other.find.transaction);
@@ -357,6 +366,7 @@ export default function Transactions({ reload, unmount }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: ownerFirmsBanksName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountPaid }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: balance }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: paymentSource }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: paymentType }} />

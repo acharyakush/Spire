@@ -7,7 +7,6 @@ import RV from "@/modules/rv";
 import Dashboard from "./dashboard";
 import Clients from "@/modules/clients";
 import Projects from "@/modules/projects";
-import Invoices from "@/modules/invoices";
 import Inquiries from "@/modules/inquiries";
 import CashFlows from "@/modules/cashFlows";
 import Activities from "@/modules/activities";
