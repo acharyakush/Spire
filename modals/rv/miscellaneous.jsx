@@ -30,13 +30,15 @@ import {
 	faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
+export function History({ mount, reload, rv, unmount }) {}
+
 export function Transactions({ mount, project, reload, unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.Transactions.Invoice;
 
 	const [api, setApi] = useState({
-		history: { copy: [], data: [] },
 		ownerFirmsBanks: { copy: [], data: [] },
+		transactions: { copy: [], data: [] },
 	});
 
 	const [loading, setLoading] = useState({
@@ -45,7 +47,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	});
 
 	const [main, setMain] = useState({
-		amountReceived: 0,
+		amountReceived: "",
 		entryAt: new Date(),
 		particulars: "",
 		paymentSource: { id: "", name: "" },
@@ -57,22 +59,29 @@ export function Transactions({ mount, project, reload, unmount }) {
 			paymentSource: "",
 			transaction: "",
 		},
+		hasError: false,
 		isBoxMoved: false,
 		sort: { column: "", isAscending: false },
 	});
 
+	let amountForComparison = 0;
+
+	if (project.amount_received === 0) {
+		amountForComparison = project.amount;
+	} else {
+		amountForComparison = project.amount_pending;
+	}
+
+	console.log(project);
+
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
+	const errorStyle = other.hasError
+		? "flex w-full h-[58px] p-2 mt-5 space-x-2.5 justify-center items-center rounded font-regular-10 red-background-transparent-01 red-border red-text"
+		: "h-[58px] mt-5 invisible";
 
 	const showFromDateClearButton = other.find.entryAt.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearButton = other.find.entryAt.to ? "cursor-pointer primary-text" : "hidden";
 	const showFindClearButton = other.find.transaction ? "cursor-pointer primary-text" : "hidden";
-
-	const disableAddButton =
-		(!main.amountReceived && !main.entryAt && !main.particulars && !main.paymentSource.id) || loading.adding
-			? "pointer-events-none opacity-50"
-			: "pointer-events-auto opacity-100";
-
-	const addButtonStyle = `primary-button-condensed w-full mt-5 ${disableAddButton}`;
 
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -84,7 +93,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 			const body = {
 				amount: main.amountReceived,
-				customRvId: project.rv_id,
+				customId: project.rv_id,
 				entryAt: main.entryAt,
 				particulars: main.particulars,
 				projectId: project.id,
@@ -112,14 +121,14 @@ export function Transactions({ mount, project, reload, unmount }) {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.Rv} => Transaction History => Add Transaction`);
+			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.Rv} => Transactions => Add Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, adding: false }));
 		}
 	}
 
 	function doFiltering(type) {
-		const filteredData = api.history.data.filter((f) => {
+		const filteredData = api.transactions.data.filter((f) => {
 			if (type == "entryAt") {
 				const startDate = main.filter.from;
 				const endDate = main.filter.to;
@@ -136,12 +145,12 @@ export function Transactions({ mount, project, reload, unmount }) {
 			}
 		});
 
-		setApi((s) => ({ ...s, history: { ...s.history, data: filteredData } }));
+		setApi((s) => ({ ...s, transactions: { ...s.transactions, data: filteredData } }));
 	}
 
 	function doSorting() {
 		if (other.sort.column != "") {
-			return api.history.data.sort((a, b) => {
+			return api.transactions.data.sort((a, b) => {
 				const { column, isAscending } = other.sort;
 
 				if (column == headers.Particulars && isAscending) {
@@ -159,7 +168,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				}
 			});
 		} else {
-			return api.history.data;
+			return api.transactions.data;
 		}
 	}
 
@@ -190,7 +199,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 		try {
 			const response = await axios.get(
-				MyConstants.ApiEndpoints.Rv.GetHistorySupportData,
+				MyConstants.ApiEndpoints.Rv.GetNewTransactionSupportData,
 				MyGlobal.GetHeaders({
 					ownerFirmId: project.invoice_firm_id,
 					projectId: project.id,
@@ -200,7 +209,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 			if (response.status === 200) {
 				const ownerFirmsBanks = MyGlobal.GetRevisedPaymentSourceList(response.data.ownerFirmsBanks);
 
-				const history = response.data.history.map((m) => {
+				const _transactions = response.data.transactions.map((m) => {
 					let source = "";
 					const getSource = ownerFirmsBanks.find((f) => f.id === m.source);
 
@@ -221,9 +230,9 @@ export function Transactions({ mount, project, reload, unmount }) {
 						copy: ownerFirmsBanks,
 						data: ownerFirmsBanks,
 					},
-					history: {
-						copy: history,
-						data: history,
+					transactions: {
+						copy: _transactions,
+						data: _transactions,
 					},
 				});
 			}
@@ -237,11 +246,20 @@ export function Transactions({ mount, project, reload, unmount }) {
 	function getTotalAmount() {
 		let total = 0;
 
-		for (const i of api.history.copy) {
+		for (const i of api.transactions.copy) {
 			total += i.amount;
 		}
 
 		return MyGlobal.ThousandSeparator(total);
+	}
+
+	function isAddEligible() {
+		const clickEvent =
+			!main.amountReceived || !main.particulars || !main.paymentSource.id || other.hasError || loading.adding
+				? "pointer-events-none opacity-50"
+				: "pointer-events-auto opacity-100";
+
+		return `primary-button-condensed w-full mt-5 ${clickEvent}`;
 	}
 
 	function setBoxDrag() {
@@ -250,6 +268,15 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 	function setInputs(key, value) {
 		if (value) {
+			if (key === "amountReceived") {
+				const hasError = Number(value) > amountForComparison;
+
+				setOther((s) => ({ ...s, hasError }));
+				setMain((s) => ({ ...s, amountReceived: value }));
+			} else {
+				setMain((s) => ({ ...s, [key]: value }));
+			}
+		} else {
 			setMain((s) => ({ ...s, [key]: value }));
 		}
 	}
@@ -299,7 +326,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiExport() {
-		if (api.history.data.length && api.history.copy.length) {
+		if (api.transactions.data.length && api.transactions.copy.length) {
 			return (
 				<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
@@ -348,7 +375,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 		);
 	}
 
-	function uiHistoryFooter() {
+	function uiFooter() {
 		return Object.values(headers).map((m, i) => {
 			const showTotalAmount = i == 2 ? "visible" : "invisible";
 			const wrapper = `w-1/4 space-x-1 text-center primary-text font-medium-10 ${showTotalAmount}`;
@@ -376,14 +403,14 @@ export function Transactions({ mount, project, reload, unmount }) {
 		});
 	}
 
-	function uiHistory() {
+	function uiTransactions() {
 		if (loading.supportData) {
 			return (
 				<div className={wrapper}>
 					<SpinnerBig />
 				</div>
 			);
-		} else if (!api.history.copy.length) {
+		} else if (!api.transactions.copy.length) {
 			return (
 				<div className={wrapper}>
 					<FontAwesomeIcon className="text-yellow-500" icon={faExclamationTriangle} size="7x" />
@@ -406,10 +433,10 @@ export function Transactions({ mount, project, reload, unmount }) {
 						className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background"
 						data={doSorting()}
 						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.history.copy.length}
+						totalCount={api.transactions.copy.length}
 					/>
 					<div className="flex w-full h-9 justify-center items-center rounded-bl rounded-br primary-border primary-background-transparent-01">
-						{uiHistoryFooter()}
+						{uiFooter()}
 					</div>
 				</div>
 			);
@@ -546,15 +573,19 @@ export function Transactions({ mount, project, reload, unmount }) {
 					<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex w-full h-[calc(100%-45px)] p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter primary-light-background">
-							<div className="flex w-3/4 h-full justify-center items-start">{uiHistory()}</div>
+							<div className="flex w-3/4 h-full justify-center items-start">{uiTransactions()}</div>
 							<div className="flex flex-col w-1/4 h-full justify-center items-start">
 								{uiDate()}
 								{uiPaymentSource()}
 								{uiAmountReceived()}
 								{uiParticulars()}
-								<button className={addButtonStyle} onClick={() => doAddition()}>
+								<button className={isAddEligible()} onClick={() => doAddition()}>
 									{uiAdd()}
 								</button>
+								<div className={errorStyle}>
+									<span>Amount received cannot be more than the Amount pending</span>
+									<span className="font-bold-12">{MyGlobal.ThousandSeparator(amountForComparison)}</span>
+								</div>
 							</div>
 						</div>
 					</DialogPanel>

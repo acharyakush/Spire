@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 		const [cashFlows, companies, invoicesPaymentHistory, mainProjects, ownerFirms, projects, subProjects, tasks, reference] = await Promise.all([
 			query("SELECT * FROM cash_flows WHERE client_id=?", [clientId]), // Queries
 			query("SELECT * FROM companies WHERE client_id=?", [clientId]),
-			query("SELECT * FROM invoices_payment_history", []),
+			query("SELECT * FROM invoices_transactions", []),
 			query("SELECT * FROM main_projects", []),
 			query("SELECT * FROM owner_firms", []),
 			query("SELECT * FROM projects", []),

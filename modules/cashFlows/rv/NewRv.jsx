@@ -65,7 +65,6 @@ export default function NewRv({ project, reload, unmount }) {
 		rvDueDate: rvDueDate,
 		rvId: 0,
 		rvNumber: 0,
-		rvPaymentHistory: [],
 		ownersFirm: {
 			address: "",
 			id: "",
@@ -74,13 +73,15 @@ export default function NewRv({ project, reload, unmount }) {
 		},
 		particulars: [
 			{
-				amount: quote,
+				amount: "",
 				particulars: project.sub_project_name,
 				professionalService: project.main_project_name,
 				rowId: 0,
 			},
 		],
 		totalAmountReceived: 0,
+		totalExpenses: 0,
+		transactions: [],
 	});
 
 	const [mounted, setMounted] = useState({
@@ -88,15 +89,10 @@ export default function NewRv({ project, reload, unmount }) {
 		preview: false,
 	});
 
-	const totalParticularsAmount = main.particulars.reduce((pv, cv) => {
-		return pv + Number(cv.amount);
-	}, 0);
-
+	const totalParticularsAmount = main.particulars.reduce((pv, cv) => pv + Number(cv.amount), 0);
 	const totalAmount = Number(main.particulars.at(0).amount) == quote ? totalParticularsAmount : quote;
-
-	const totalPendingAmount = Math.abs(totalAmount - main.totalAmountReceived);
-
-	const finalPendingAmount = String.fromCharCode(8377) + ` ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
+	const totalPendingAmount = Math.abs(totalParticularsAmount - main.totalAmountReceived);
+	const finalPendingAmount = `${String.fromCharCode(8377)} ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
 
 	// Functions
 	async function addRv() {
@@ -105,10 +101,12 @@ export default function NewRv({ project, reload, unmount }) {
 
 			const body = {
 				amount: totalAmount,
+				amountPending: totalPendingAmount,
 				amountReceived: main.totalAmountReceived,
 				customId,
 				clientId: project.client_id,
-				id: project.id,
+				dueDate: main.rvDueDate,
+				projectId: project.id,
 				receiptDate: main.rvDate,
 			};
 
@@ -309,13 +307,15 @@ export default function NewRv({ project, reload, unmount }) {
 					ownersFirmsBank.name = getOwnersFirmsBank.name;
 				}
 
-				const getAmountReceived = response.data.rvPaymentHistory.filter((f) => f.project_id == project.id);
-
-				const totalAmountReceived = getAmountReceived.reduce((pv, cv) => {
-					return pv + Number(cv.amount);
+				const totalExpenses = response.data.tasks.reduce((pv, cv) => {
+					return pv + Number(cv.expense);
 				}, 0);
 
-				const rvPaymentHistory = response.data.rvPaymentHistory.map((m) => {
+				let totalAmountReceived = 0;
+
+				const transactions = response.data.transactions.map((m) => {
+					totalAmountReceived += Number(m.amount);
+
 					let source = "";
 
 					const getSource = MyGlobal.GetRevisedPaymentSourceList(response.data.ownerFirmsBanks).find((f) => f.id === m.source);
@@ -343,10 +343,19 @@ export default function NewRv({ project, reload, unmount }) {
 						id: ownersFirmsBank.id,
 						name: ownersFirmsBank.name,
 					},
-					rvId: MyGlobal.MakeNewInvoiceId(response.data.rv),
-					rvPaymentHistory: rvPaymentHistory,
 					ownersFirm,
+					particulars: [
+						{
+							amount: totalExpenses,
+							particulars: project.sub_project_name,
+							professionalService: project.main_project_name,
+							rowId: 0,
+						},
+					],
+					rvId: MyGlobal.MakeNewInvoiceId(response.data.rv),
 					totalAmountReceived,
+					totalExpenses,
+					transactions,
 				}));
 			}
 		} catch (error) {
@@ -484,15 +493,12 @@ export default function NewRv({ project, reload, unmount }) {
 			.sort((a, b) => a.rowId - b.rowId)
 			.map((m, i) => {
 				const showAddButton = i == main.particulars.length - 1 ? "visible" : "invisible";
-
 				const showDeleteButton = main.particulars.length > 1 ? "visible" : "invisible";
 
 				const addButtonWrapper = `flex w-fit h-[55px] justify-center items-center ${showAddButton}`;
-
 				const deleteButtonWrapper = `flex w-fit h-[55px] justify-center items-center ${showDeleteButton}`;
 
 				const reverseButtons = main.particulars.length > 1 ? "flex-row" : "flex-row-reverse";
-
 				const buttonsWrapper = `flex ${reverseButtons} w-fit space-x-3 justify-center items-end`;
 
 				return (
@@ -653,7 +659,7 @@ export default function NewRv({ project, reload, unmount }) {
 
 		return (
 			<div className="flex flex-col w-full space-y-1 justify-start items-center">
-				<span className="w-full text-left font-medium-16 logo-green-text">RV</span>
+				<span className="w-full text-left font-medium-16 logo-green-text">Reimbursement Voucher</span>
 				<div className="flex w-full justify-start items-center">
 					<span className="w-2/5 font-regular-10 gray-text">RV</span>
 					<div className="flex w-3/5 space-x-1 font-medium-10 black-text">
@@ -704,10 +710,12 @@ export default function NewRv({ project, reload, unmount }) {
 					</div>
 					{uiTotalAmount()}
 					<div className="flex w-full h-full justify-between items-end">{uiTermsAndConditions()}</div>
-					<div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
-						<div className="flex w-full h-full justify-between items-center bottom-border">{uiTransactionHistoryHeaders()}</div>
-						<div className="flex flex-col w-full h-full justify-between items-center">{uiTransactionHistory()}</div>
-					</div>
+					{main.transactions.length > 0 && (
+						<div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
+							<div className="flex w-full h-full justify-between items-center bottom-border">{uiTransactionHistoryHeaders()}</div>
+							<div className="flex flex-col w-full h-full justify-between items-center">{uiTransactionHistory()}</div>
+						</div>
+					)}
 				</div>
 			</div>
 		);
@@ -733,8 +741,8 @@ export default function NewRv({ project, reload, unmount }) {
 	}
 
 	function uiTransactionHistory() {
-		return main.rvPaymentHistory.map((m, i) => {
-			const bottomBorder = i == main.rvPaymentHistory.length - 1 ? "" : "bottom-border";
+		return main.transactions.map((m, i) => {
+			const bottomBorder = i == main.transactions.length - 1 ? "" : "bottom-border";
 			const wrapper = `flex w-full justify-center items-center ${bottomBorder} font-regular-11`;
 
 			return (
@@ -761,19 +769,19 @@ export default function NewRv({ project, reload, unmount }) {
 		return (
 			<div className="flex flex-col w-full justify-center items-center">
 				<div className="flex w-full pt-1 justify-between items-center font-medium-16">
-					<span className="w-1/2 text-left text-black">Professional Fees</span>
-					<span className="w-1/2 text-right black-text">{MyGlobal.ThousandSeparator(quote)}</span>
+					<span className="w-1/2 text-left text-black">RV Amount</span>
+					<span className="w-1/2 text-right black-text">{MyGlobal.ThousandSeparator(totalParticularsAmount)}</span>
 				</div>
 				<div className="flex w-full pt-1 justify-between items-center border-gray border-t-2 font-medium-12">
 					<span className="w-1/2 space-x-2.5 text-left text-black">
 						<FontAwesomeIcon icon={faCircleMinus} />
 						<span>Amount Received</span>
 					</span>
-					<span className="w-1/2 text-right black-text">{MyGlobal.ThousandSeparator(main.totalAmountReceived)}</span>
+					<span className="w-1/2 text-right text-black">{MyGlobal.ThousandSeparator(main.totalAmountReceived)}</span>
 				</div>
 				<div className="flex w-full pt-1 justify-between items-center border-gray border-y-2 font-medium-16">
-					<span className="w-1/2 text-left text-black">Total</span>
-					<span className="w-1/2 text-right logo-green-text">{finalPendingAmount}</span>
+					<span className="w-1/2 text-left red-text">Total</span>
+					<span className="w-1/2 text-right red-text">{finalPendingAmount}</span>
 				</div>
 			</div>
 		);

@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 			query("SELECT * FROM clients WHERE is_confirmed=1", []),
 			query("SELECT * FROM companies", []),
 			query("SELECT * FROM invoices", []),
-			query("SELECT * FROM invoices_payment_history WHERE project_id=?", [req.query.projectId]),
+			query("SELECT * FROM invoices_transactions WHERE project_id=?", [req.query.projectId]),
 			query("SELECT * FROM owner_firms", []),
 			query("SELECT * FROM owner_firms_banks", []),
 		]);

@@ -3,9 +3,9 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import RV from "@/modules/rv";
 import Dashboard from "./dashboard";
 import Clients from "@/modules/clients";
+import RV from "@/modules/cashFlows/rv";
 import Projects from "@/modules/projects";
 import Inquiries from "@/modules/inquiries";
 import CashFlows from "@/modules/cashFlows";

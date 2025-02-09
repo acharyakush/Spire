@@ -2,6 +2,7 @@
 
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
+import RV from "./rv";
 import axios from "axios";
 import dayjs from "dayjs";
 import Others from "./others";
@@ -530,6 +531,15 @@ export default function CashFlows({ setModuleProps }) {
 				);
 			} else if (main.module?.id === modules.PettyCash.id) {
 				return <Transactions reload={getSupportData} unmount={toggleModule} />;
+			} else if (main.module == baseModules.Rv) {
+				return (
+					<ErrorBoundary
+						key={`ErrorBoundary_${baseModules.Rv}`}
+						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Rv)}
+						FallbackComponent={ErrorFallbackComponent}>
+						<RV reload={getSupportData} unmount={toggleModule} />
+					</ErrorBoundary>
+				);
 			} else {
 				return (
 					<ErrorBoundary
@@ -642,7 +652,7 @@ export default function CashFlows({ setModuleProps }) {
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
 				<div className="flex w-full justify-between items-center">
 					<div className="flex w-fit space-x-2.5 justify-start items-center">
-						{uiHeading("RVs")}
+						{uiHeading(baseModules.Rv)}
 						<Badge value={api.projects.length} />
 						<Badge value={`Total ${main.totalRvAmount}`} />
 					</div>

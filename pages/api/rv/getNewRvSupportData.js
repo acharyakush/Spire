@@ -13,19 +13,17 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const [cashFlows, clients, companies, invoices, invoicesPaymentHistory, rv, rvPaymentHistory, ownerFirms, ownerFirmsBanks] = await Promise.all([
-			query("SELECT * FROM cash_flows WHERE is_deleted=0", []), // Queries
-			query("SELECT * FROM clients WHERE is_confirmed=1", []),
+		const [clients, companies, ownerFirms, ownerFirmsBanks, rv, tasks, transactions] = await Promise.all([
+			query("SELECT * FROM clients WHERE is_confirmed=1", []), // Queries
 			query("SELECT * FROM companies", []),
-			query("SELECT * FROM invoices", []),
-			query("SELECT * FROM invoices_payment_history WHERE project_id=?", [req.query.projectId]),
-			query("SELECT * FROM reimburse_voucher", []),
-			query("SELECT * FROM reimburse_voucher_transactions WHERE project_id=?", [req.query.projectId]),
 			query("SELECT * FROM owner_firms", []),
 			query("SELECT * FROM owner_firms_banks", []),
+			query("SELECT * FROM reimburse_voucher", []),
+			query("SELECT * FROM tasks WHERE project_id=?", [req.query.projectId]),
+			query("SELECT * FROM reimburse_voucher_transactions WHERE project_id=?", [req.query.projectId]),
 		]);
 
-		return res.status(200).json({ cashFlows, clients, companies, invoices, invoicesPaymentHistory, rv, rvPaymentHistory, ownerFirms, ownerFirmsBanks });
+		return res.status(200).json({ clients, companies, ownerFirms, ownerFirmsBanks, rv, tasks, transactions });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");

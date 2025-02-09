@@ -16,6 +16,7 @@ import MyConstants from "@/utilities/constants";
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
+import { Transactions } from "./Transactions";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, Spinner, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -30,7 +31,6 @@ import {
 	faSortAmountAsc,
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
-import { Transactions } from "./Transactions";
 
 export default function Invoices({ unmount }) {
 	// Business Logic

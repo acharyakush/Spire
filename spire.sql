@@ -1,105 +1,10 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Feb 08, 2025 at 07:54 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
-
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
---
--- Database: `spire`
---
-
-DELIMITER $$
---
--- Procedures
---
-CREATE DEFINER=`spire`@`%` PROCEDURE `generate_dynamic_id` (`prefix` CHAR(8), `table_name` VARCHAR(255), OUT `new_id` CHAR(8))   BEGIN
-    DECLARE current_max_id char(8) DEFAULT NULL;
-    DECLARE new_number INT DEFAULT 1;
-    DECLARE sql_query VARCHAR(255);
-    DECLARE lock_acquired BOOLEAN DEFAULT FALSE;
-    DECLARE id_exists INT DEFAULT 0;
-    DECLARE max_attempts INT DEFAULT 10;
-    DECLARE attempt INT DEFAULT 0;
-    DECLARE full_prefix char(8);
-
-    -- Retry loop to acquire lock
-    lock_retry: REPEAT
-        SELECT GET_LOCK('id_generation_lock', 5) INTO lock_acquired;
-
-        IF lock_acquired THEN
-            -- Lock acquired, proceed with ID generation
-            SET full_prefix = CONCAT(prefix, '%');
-
-            -- Select the current max ID
-            SET sql_query = CONCAT('SELECT MAX(id) INTO @current_max_id FROM ', table_name, ' WHERE id LIKE ?');
-            PREPARE stmt FROM sql_query;
-            EXECUTE stmt USING full_prefix;
-            DEALLOCATE PREPARE stmt;
-
-            SELECT @current_max_id INTO current_max_id;
-
-            -- Extract numeric part and generate new ID
-            IF current_max_id IS NOT NULL THEN
-                SET new_number = CAST(SUBSTRING(current_max_id, LENGTH(prefix) + 1) AS UNSIGNED) + 1;
-            END IF;
-
-            SET new_id = CONCAT(prefix, LPAD(new_number, 6, '0'));
-
-            -- Check if new ID already exists
-            SET sql_query = CONCAT('SELECT COUNT(*) INTO @id_exists FROM ', table_name, ' WHERE id = ?');
-            PREPARE stmt FROM sql_query;
-            EXECUTE stmt USING new_id;
-            DEALLOCATE PREPARE stmt;
-
-            SELECT @id_exists INTO id_exists;
-
-            -- Regenerate if ID exists
-            WHILE id_exists > 0 DO
-                SET new_number = new_number + 1;
-                SET new_id = CONCAT(prefix, LPAD(new_number, 6, '0'));
-
-                PREPARE stmt FROM sql_query;
-                EXECUTE stmt USING new_id;
-                DEALLOCATE PREPARE stmt;
-
-                SELECT @id_exists INTO id_exists;
-            END WHILE;
-
-            -- Release the lock
-            DO RELEASE_LOCK('id_generation_lock');
-            LEAVE lock_retry;
-
-        ELSE
-            -- Retry mechanism
-            SET attempt = attempt + 1;
-            IF attempt >= max_attempts THEN
-                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Could not acquire lock for ID generation after max retries';
-                LEAVE lock_retry;
-            END IF;
-        END IF;
-    UNTIL lock_acquired END REPEAT;
-END$$
-
-DELIMITER ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `activities`
---
 
 CREATE TABLE `activities` (
   `id` int(11) NOT NULL,
@@ -110,10 +15,6 @@ CREATE TABLE `activities` (
   `entry_at` datetime DEFAULT current_timestamp(),
   `details` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `activities`
---
 
 INSERT INTO `activities` (`id`, `entry_by_id`, `module`, `activity`, `ip_address`, `entry_at`, `details`) VALUES
 (1, 'A3', 'Inquiries', 'Added <b>IQ000001</b>.', 'Localhost', '2024-12-15 15:28:07', ''),
@@ -594,13 +495,25 @@ INSERT INTO `activities` (`id`, `entry_by_id`, `module`, `activity`, `ip_address
 (510, 'A3', 'Cash Flow', 'Edited transaction of <b>Office Expense</b> in <b>Tea Stall</b> in <b>For monthly tea/coffee</b>.', 'Localhost', '2025-02-09 00:21:00', ''),
 (511, 'A3', 'Cash Flow', 'Added transaction in <b>Office Expense</b> in <b>Tea Stall</b> in <b>For monthly tea/coffee</b>.', 'Localhost', '2025-02-09 00:21:21', ''),
 (512, 'A3', 'Cash Flow', 'Added transaction in <b>Office Expense</b> in <b>Canteen</b> in <b>Snacks for Clients</b>.', 'Localhost', '2025-02-09 00:22:20', ''),
-(513, 'A3', 'Cash Flow', 'Added transaction in <b>Office Expense</b> in <b>anuj shah</b> in <b>snacks of dskr</b>.', 'Localhost', '2025-02-09 00:23:09', '');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `administrators`
---
+(513, 'A3', 'Cash Flow', 'Added transaction in <b>Office Expense</b> in <b>anuj shah</b> in <b>snacks of dskr</b>.', 'Localhost', '2025-02-09 00:23:09', ''),
+(514, 'A3', 'General', 'Logged out.', '', '2025-02-09 00:24:59', ''),
+(515, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-09 12:17:10', ''),
+(516, 'A3', 'General', 'Logged in.', 'Localhost', '2025-02-09 12:42:08', ''),
+(517, 'A3', 'Cash Flow', 'Added transaction in <b>Petty Cash</b>.', 'Localhost', '2025-02-09 13:59:47', ''),
+(518, 'A3', 'Cash Flow', 'Added transaction in <b>Petty Cash</b>.', 'Localhost', '2025-02-09 14:11:16', ''),
+(519, 'A3', 'Cash Flow', 'Added transaction in <b>Petty Cash</b>.', 'Localhost', '2025-02-09 14:12:59', ''),
+(520, 'A3', 'Cash Flow', 'Added transaction in <b>Petty Cash</b>.', 'Localhost', '2025-02-09 14:13:49', ''),
+(521, 'A3', 'Cash Flow', 'Added transaction in <b>Petty Cash</b>.', 'Localhost', '2025-02-09 14:14:22', ''),
+(522, 'A3', 'Cash Flow', 'Added transaction in <b>Petty Cash</b>.', 'Localhost', '2025-02-09 14:15:45', ''),
+(523, 'A3', 'Cash Flow', 'Added transaction in <b>Petty Cash</b>.', 'Localhost', '2025-02-09 14:16:31', ''),
+(524, 'A3', 'Cash Flow', 'Added transaction in <b>Petty Cash</b>.', 'Localhost', '2025-02-09 14:16:58', ''),
+(525, 'A3', 'Cash Flow', 'Added transaction in <b>Petty Cash</b>.', 'Localhost', '2025-02-09 14:17:20', ''),
+(526, 'A3', 'Invoices', 'Added transaction in <b></b>.', 'Localhost', '2025-02-09 14:53:58', ''),
+(527, 'A3', 'Invoices', 'Added transaction in <b></b>.', 'Localhost', '2025-02-09 16:02:10', ''),
+(528, 'A3', 'Invoices', 'Added transaction in <b></b>.', 'Localhost', '2025-02-09 16:09:17', ''),
+(529, 'A3', 'Invoices', 'Added transaction in <b></b>.', 'Localhost', '2025-02-09 16:19:37', ''),
+(530, 'A3', 'New RV', 'Generated RV <b>SA/2024-25/00001</b> for <b>PJ000001</b>', 'Localhost', '2025-02-09 16:47:19', ''),
+(531, 'A3', 'General', 'Logged out.', '', '2025-02-09 23:06:45', '');
 
 CREATE TABLE `administrators` (
   `id` char(2) NOT NULL,
@@ -619,20 +532,10 @@ CREATE TABLE `administrators` (
   `permissions` mediumtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `administrators`
---
-
 INSERT INTO `administrators` (`id`, `first_name`, `last_name`, `full_name`, `username`, `email_address`, `password`, `address`, `birth_date`, `gender`, `phone_number`, `designation`, `role`, `permissions`) VALUES
 ('A1', 'Drashti', 'Sharma', 'Drashti Sharma', 'DrashtiSharma', 'drashti@admins.spire.com', 'F5LJjzb6a7sEeK6rx62/u5eC3aQVhJFPQa5Zh0WPLhE=', '', '1993-10-05', 'Female', '9998733006', 'Founder, CEO', 'Administrator', '-1'),
 ('A2', 'Abhishek', 'Gor', 'Abhishek Gor', 'AbhishekGor', 'abhishek@admins.spire.com', 'VUWKfX4Ro/NPJdv8QZHWfGBDB5iIL1GC1ZUGbeqWOUU=', '', '1993-07-13', 'Male', '8000721554', 'Founder, CEO', 'Administrator', '-1'),
 ('A3', 'Kush', 'Acharya', 'Kush Acharya', 'KushAcharya', 'kush@admins.spire.com', '7SJcdDe9kjBvjuYWsvP4LZJPqnz5HVVmqjj16/MtKLM=', 'AFF8, Aakansha Apartments, Jaymala Cross Roads, Isanpur, Ahmedabad, GJ - 380015', '1993-04-26', 'Male', '8780577704', 'Chief Technical Officer', 'Administrator', '-1');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `affiliates`
---
 
 CREATE TABLE `affiliates` (
   `id` char(8) NOT NULL,
@@ -646,19 +549,9 @@ CREATE TABLE `affiliates` (
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `affiliates`
---
-
 INSERT INTO `affiliates` (`id`, `name`, `email_address`, `phone_number`, `upi_id`, `joined_on`, `status`, `entry_at`, `entry_by_id`) VALUES
-('AF000001', 'Drashti Vyas', 'vyas.drashti@gmail.com', '9978075347', 'acharyakush2604@axl.com', '2025-01-02 12:51:53', 'Active', '2025-01-02 12:51:53', 'A3'),
-('AF000002', 'Ajay Shah', 'shah.ajay@gmail.com', '9978075347', 'ajayshah@okaxis.com', '2025-01-17 18:54:42', 'Active', '2025-01-17 18:54:42', 'A3');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `affiliates_projects`
---
+('AF000001', 'Drashti Vyas', 'vyas.drashti@gmail.com', '9978075347', 'acharyakush2604@axl.com', '2025-01-02 18:21:53', 'Active', '2025-01-02 18:21:53', 'A3'),
+('AF000002', 'Ajay Shah', 'shah.ajay@gmail.com', '9978075347', 'ajayshah@okaxis.com', '2025-01-18 00:24:42', 'Active', '2025-01-18 00:24:42', 'A3');
 
 CREATE TABLE `affiliates_projects` (
   `id` int(11) NOT NULL,
@@ -670,10 +563,6 @@ CREATE TABLE `affiliates_projects` (
   `total_fees` decimal(10,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `affiliates_projects`
---
-
 INSERT INTO `affiliates_projects` (`id`, `affiliate_id`, `client_id`, `project_id`, `adjusted_project_id`, `adjusted_fees`, `total_fees`) VALUES
 (1, 'AF000001', 'CN000001', 'PJ000001', NULL, 0.00, 5000.00),
 (2, 'AF000001', 'CN000001', 'PJ000001', NULL, 0.00, 5000.00),
@@ -684,12 +573,6 @@ INSERT INTO `affiliates_projects` (`id`, `affiliate_id`, `client_id`, `project_i
 (7, 'AF000002', 'CN000011', 'PJ000007', NULL, 0.00, 2000.00),
 (8, 'AF000001', 'CN000001', 'PJ000001', NULL, 0.00, 8550.00),
 (9, 'AF000002', 'CN000001', 'PJ000001', NULL, 0.00, 110.00);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `affiliates_transactions`
---
 
 CREATE TABLE `affiliates_transactions` (
   `id` int(11) NOT NULL,
@@ -705,10 +588,6 @@ CREATE TABLE `affiliates_transactions` (
   `entry_at` datetime NOT NULL DEFAULT current_timestamp(),
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `affiliates_transactions`
---
 
 INSERT INTO `affiliates_transactions` (`id`, `affiliate_id`, `project_id`, `owner_firms_id`, `owner_firms_banks_id`, `amount`, `particulars`, `payment_source`, `payment_type`, `remarks`, `entry_at`, `entry_by_id`) VALUES
 (1, 'AF000001', 'PJ000001', 'AC02', 'BK02', 55.00, 'pol', 'BK04', 'Professional Fees', '455 rto.', '2025-02-02 13:40:16', 'A3'),
@@ -726,12 +605,6 @@ INSERT INTO `affiliates_transactions` (`id`, `affiliate_id`, `project_id`, `owne
 (14, 'AF000001', 'PJ000001', 'AC02', 'BK02', 12.00, 'er', 'BK02', 'Professional Fees', 'tr', '2025-02-05 15:40:37', 'A3'),
 (15, 'AF000002', 'PJ000007', 'AC03', 'BK03', 1.00, 'zz', 'CASH', 'Professional Fees', 'aa', '2025-02-07 17:53:43', 'A3'),
 (16, 'AF000002', 'PJ000004', 'AC02', 'BK02', 3.00, 'qq', 'CASH', 'Reimbursement Voucher', 'dd', '2025-02-07 17:59:57', 'A3');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `cash_flows`
---
 
 CREATE TABLE `cash_flows` (
   `id` int(11) UNSIGNED NOT NULL,
@@ -751,39 +624,29 @@ CREATE TABLE `cash_flows` (
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `cash_flows`
---
-
 INSERT INTO `cash_flows` (`id`, `affiliate_id`, `owner_firms_id`, `owner_firms_banks_id`, `amount_paid`, `amount_received`, `total_amount`, `module`, `particulars`, `payment_source`, `payment_type`, `remarks`, `is_deleted`, `entry_at`, `entry_by_id`) VALUES
-(1, NULL, 'AC01', 'BK01', NULL, 500.00, 0.00, 'Office Expense', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 07:16:50', 'A3'),
-(2, NULL, 'AC02', 'BK02', NULL, 557.00, 0.00, 'Office Expense', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 07:16:50', 'A3'),
-(3, NULL, 'AC02', 'BK02', NULL, 557.00, 0.00, '', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 07:16:50', 'A3'),
-(4, '', 'AC01', 'BK01', 0.00, 2500.00, 15750.00, 'Other Income', 'Other Income Particular #1', 'Other Income Payment For #1', 'Professional Fees', 'Other Income Remarks #1', 0, '2025-01-30 07:08:21', 'A3'),
-(5, '', 'AC01', 'BK01', 0.00, 2500.00, 15750.00, 'Other Income', 'Other Income Particular #1', 'Other Income Payment For #1', 'Professional Fees', 'Other Income Remarks #1', 0, '2025-01-30 07:08:21', 'A3'),
-(6, 'AF000002', 'AC03', 'BK03', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-30 07:13:24', 'A3'),
-(7, 'AF000002', 'AC02', 'BK02', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-31 07:14:28', 'A3'),
-(8, 'AF000001', 'AC04', 'BK04', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-31 07:24:26', 'A3'),
-(9, 'AF000001', 'AC04', 'BK04', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-31 07:29:19', 'A3'),
-(10, '', 'AC01', 'BK01', 3500.00, 0.00, 15750.00, 'Other Expense', 'Other Expense Particulars #1', 'Other Expense Payment For #1', 'Professional Fees', 'Other Expense Remarks #1', 0, '2025-01-30 07:30:36', 'A3'),
-(11, '', 'AC03', 'BK03', 5525.00, 0.00, 0.00, 'Office Expense', 'Office Expense Particulars #1', 'Office Expense Payment For #1', 'Professional Fees', 'Office Expense Remarks #1', 0, '2025-01-30 07:31:32', 'A3'),
-(12, '', 'AC02', 'BK02', 11500.00, 0.00, 0.00, 'Petty Cash', 'Petty Cash Particulars #1', 'Petty Cash Payment For #1', 'Professional Fees', 'Petty Cash Remarks #1', 0, '2025-01-31 07:32:24', 'A3'),
-(13, 'AF000002', 'AC02', 'BK02', 500.00, 0.00, 0.00, 'Affiliates', 'pp', 'bb', 'Professional Fees', 'ppm', 0, '2025-02-01 04:27:35', 'A3'),
-(14, NULL, 'AC03', 'BK03', 75.00, 0.00, 0.00, 'Office Expense', 'polll', 'DC', 'Professional Fees', 'jhjhbjbj', 0, '2025-02-02 06:55:46', 'A3'),
-(15, NULL, 'AC03', 'BK03', 45.00, 0.00, 15750.00, 'Other Expense', 'p[]', 'CHEQUE', 'Reimbursement Voucher', 'l', 0, '2025-02-20 07:01:56', 'A3'),
-(16, NULL, 'AC04', 'BK04', 200.00, 0.00, 0.00, 'Petty Cash', 'popop', 'CC', 'Professional Fees', 'nbjbjbj', 0, '2025-02-02 07:02:30', 'A3'),
-(17, NULL, 'AC01', 'BK01', 0.00, 1500.00, 0.00, 'Other Income', 'mlp', 'CHEQUE', 'Professional Fees', 'mklp', 0, '2025-02-06 07:03:09', 'A3'),
-(18, NULL, 'AC01', 'BK01', 75.00, 0.00, 0.00, 'Office Expense', '323', 'CHEQUE', 'Professional Fees', '2232', 0, '2025-02-03 05:02:20', 'A3'),
-(19, NULL, 'AC01', 'BK01', 25.00, 0.00, 0.00, 'Office Expense', '889', 'BK01', 'Professional Fees', '6665', 0, '2025-02-03 05:02:50', 'A3'),
-(20, NULL, 'AC02', 'BK02', 885.00, 0.00, 0.00, 'Office Expense', 'zxc', 'NETBANKING', 'Professional Fees', 'zxc', 0, '2025-02-03 05:19:31', 'A3'),
-(21, NULL, 'AC02', 'BK02', 1.00, 0.00, 0.00, 'Office Expense', 'qwe', 'CHEQUE', 'Reimbursement Voucher', 'qwer', 0, '2025-02-03 05:23:09', 'A3'),
-(22, NULL, 'AC03', 'BK03', 14.00, 0.00, 0.00, 'Office Expense', 'geret', 'UPI', 'Reimbursement Voucher', '64564564', 0, '2025-02-03 05:26:33', 'A3');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `cash_flows_entities`
---
+(1, NULL, 'AC01', 'BK01', NULL, 500.00, 0.00, 'Office Expense', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 12:46:50', 'A3'),
+(2, NULL, 'AC02', 'BK02', NULL, 557.00, 0.00, 'Office Expense', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 12:46:50', 'A3'),
+(3, NULL, 'AC02', 'BK02', NULL, 557.00, 0.00, '', 'NA', 'Aaj Tak News Subscription.', NULL, '', 0, '2025-01-18 12:46:50', 'A3'),
+(4, '', 'AC01', 'BK01', 0.00, 2500.00, 15750.00, 'Other Income', 'Other Income Particular #1', 'Other Income Payment For #1', 'Professional Fees', 'Other Income Remarks #1', 0, '2025-01-30 12:38:21', 'A3'),
+(5, '', 'AC01', 'BK01', 0.00, 2500.00, 15750.00, 'Other Income', 'Other Income Particular #1', 'Other Income Payment For #1', 'Professional Fees', 'Other Income Remarks #1', 0, '2025-01-30 12:38:21', 'A3'),
+(6, 'AF000002', 'AC03', 'BK03', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-30 12:43:24', 'A3'),
+(7, 'AF000002', 'AC02', 'BK02', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-31 12:44:28', 'A3'),
+(8, 'AF000001', 'AC04', 'BK04', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-31 12:54:26', 'A3'),
+(9, 'AF000001', 'AC04', 'BK04', 7500.00, 0.00, 0.00, 'Affiliates', 'Affiliates Particulars #1', 'Affiliates Payment For #1', 'Professional Fees', 'Affiliates Remarks #1', 0, '2025-01-31 12:59:19', 'A3'),
+(10, '', 'AC01', 'BK01', 3500.00, 0.00, 15750.00, 'Other Expense', 'Other Expense Particulars #1', 'Other Expense Payment For #1', 'Professional Fees', 'Other Expense Remarks #1', 0, '2025-01-30 13:00:36', 'A3'),
+(11, '', 'AC03', 'BK03', 5525.00, 0.00, 0.00, 'Office Expense', 'Office Expense Particulars #1', 'Office Expense Payment For #1', 'Professional Fees', 'Office Expense Remarks #1', 0, '2025-01-30 13:01:32', 'A3'),
+(12, '', 'AC02', 'BK02', 11500.00, 0.00, 0.00, 'Petty Cash', 'Petty Cash Particulars #1', 'Petty Cash Payment For #1', 'Professional Fees', 'Petty Cash Remarks #1', 0, '2025-01-31 13:02:24', 'A3'),
+(13, 'AF000002', 'AC02', 'BK02', 500.00, 0.00, 0.00, 'Affiliates', 'pp', 'bb', 'Professional Fees', 'ppm', 0, '2025-02-01 09:57:35', 'A3'),
+(14, NULL, 'AC03', 'BK03', 75.00, 0.00, 0.00, 'Office Expense', 'polll', 'DC', 'Professional Fees', 'jhjhbjbj', 0, '2025-02-02 12:25:46', 'A3'),
+(15, NULL, 'AC03', 'BK03', 45.00, 0.00, 15750.00, 'Other Expense', 'p[]', 'CHEQUE', 'Reimbursement Voucher', 'l', 0, '2025-02-20 12:31:56', 'A3'),
+(16, NULL, 'AC04', 'BK04', 200.00, 0.00, 0.00, 'Petty Cash', 'popop', 'CC', 'Professional Fees', 'nbjbjbj', 0, '2025-02-02 12:32:30', 'A3'),
+(17, NULL, 'AC01', 'BK01', 0.00, 1500.00, 0.00, 'Other Income', 'mlp', 'CHEQUE', 'Professional Fees', 'mklp', 0, '2025-02-06 12:33:09', 'A3'),
+(18, NULL, 'AC01', 'BK01', 75.00, 0.00, 0.00, 'Office Expense', '323', 'CHEQUE', 'Professional Fees', '2232', 0, '2025-02-03 10:32:20', 'A3'),
+(19, NULL, 'AC01', 'BK01', 25.00, 0.00, 0.00, 'Office Expense', '889', 'BK01', 'Professional Fees', '6665', 0, '2025-02-03 10:32:50', 'A3'),
+(20, NULL, 'AC02', 'BK02', 885.00, 0.00, 0.00, 'Office Expense', 'zxc', 'NETBANKING', 'Professional Fees', 'zxc', 0, '2025-02-03 10:49:31', 'A3'),
+(21, NULL, 'AC02', 'BK02', 1.00, 0.00, 0.00, 'Office Expense', 'qwe', 'CHEQUE', 'Reimbursement Voucher', 'qwer', 0, '2025-02-03 10:53:09', 'A3'),
+(22, NULL, 'AC03', 'BK03', 14.00, 0.00, 0.00, 'Office Expense', 'geret', 'UPI', 'Reimbursement Voucher', '64564564', 0, '2025-02-03 10:56:33', 'A3');
 
 CREATE TABLE `cash_flows_entities` (
   `id` int(11) UNSIGNED NOT NULL,
@@ -799,23 +662,13 @@ CREATE TABLE `cash_flows_entities` (
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `cash_flows_entities`
---
-
 INSERT INTO `cash_flows_entities` (`id`, `module_id`, `owner_firm_bank_id`, `name`, `email_address`, `phone_number`, `payment_source`, `purpose`, `upi_id`, `entry_at`, `entry_by_id`) VALUES
-(1, 'OFEX', 'BK03', 'Tea Stall', 'ramesh.parmar@gmail.com', 8000721554, 'INSTAMOJO', 'For monthly tea/coffee', 'parmar.ramesh@axl', '2025-02-04 11:55:20', 'A3'),
-(2, 'OFEX', 'BK02', 'Canteen', NULL, NULL, 'CC', 'Snacks for Clients', NULL, '2025-02-04 13:12:41', 'A3'),
-(3, 'PECA', 'BK02', 'pos', NULL, NULL, 'CC', 'dsdfsd', NULL, '2025-02-06 08:59:08', 'A3'),
-(4, 'OFEX', 'BK02', 'anuj shah', '', NULL, 'INSTAMOJO', 'snacks of dskr', '', '2025-02-10 11:03:02', 'A3'),
-(5, 'OFEX', 'BK01', 'mitesh patel', 'mitesh.patel@gmail.com', 9978075347, 'CHEQUE', 'new employee induction expense', '', '2025-02-06 11:04:39', 'A3'),
-(6, 'OTIN', 'BK03', 'abc', '', 0, 'CASH', 'mm', 'kjdnkajsndkasd', '2025-02-07 12:30:58', 'A3');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `cash_flows_heads`
---
+(1, 'OFEX', 'BK03', 'Tea Stall', 'ramesh.parmar@gmail.com', 8000721554, 'INSTAMOJO', 'For monthly tea/coffee', 'parmar.ramesh@axl', '2025-02-04 17:25:20', 'A3'),
+(2, 'OFEX', 'BK02', 'Canteen', NULL, NULL, 'CC', 'Snacks for Clients', NULL, '2025-02-04 18:42:41', 'A3'),
+(3, 'PECA', 'BK02', 'pos', NULL, NULL, 'CC', 'dsdfsd', NULL, '2025-02-06 14:29:08', 'A3'),
+(4, 'OFEX', 'BK02', 'anuj shah', '', NULL, 'INSTAMOJO', 'snacks of dskr', '', '2025-02-10 16:33:02', 'A3'),
+(5, 'OFEX', 'BK01', 'mitesh patel', 'mitesh.patel@gmail.com', 9978075347, 'CHEQUE', 'new employee induction expense', '', '2025-02-06 16:34:39', 'A3'),
+(6, 'OTIN', 'BK03', 'abc', '', 0, 'CASH', 'mm', 'kjdnkajsndkasd', '2025-02-07 18:00:58', 'A3');
 
 CREATE TABLE `cash_flows_heads` (
   `id` int(11) UNSIGNED NOT NULL,
@@ -831,29 +684,19 @@ CREATE TABLE `cash_flows_heads` (
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `cash_flows_heads`
---
-
 INSERT INTO `cash_flows_heads` (`id`, `entity_id`, `module_id`, `owner_firm_id`, `owner_firm_bank_id`, `amount`, `payment_source`, `purpose`, `remarks`, `entry_at`, `entry_by_id`) VALUES
-(3, 1, 'OFEX', 'AC03', 'BK03', 5000.00, 'CHEQUE', 'kjaksdjasdk', 'sdadsajsd', '2025-02-06 08:11:41', 'A3'),
-(4, 1, 'OFEX', 'AC02', 'BK02', 565165.00, 'CHEQUE', 'kjsdakjdbjabsd', 'sdadasdasd', '2025-02-06 08:22:53', 'A3'),
-(5, 2, 'OFEX', 'AC03', 'BK03', 120.00, 'CC', 'dadasd', '500', '2025-02-25 08:32:40', 'A3'),
-(6, 3, 'PECA', 'AC03', 'BK03', 5555.00, 'CC', 'sdfsdfsdf', 'sdadadsasd', '2025-02-06 08:59:52', 'A3'),
-(7, 3, 'PECA', 'AC04', 'BK04', 111.00, 'CHEQUE', 'aaaaa', 'dfsdfsdfsdfs', '2025-02-06 09:00:10', 'A3'),
-(8, 1, 'OFEX', 'AC04', 'BK04', 5000.00, 'CC', 'snacks for bf', 'no remarks here.', '2025-02-19 13:00:00', 'A3'),
-(9, 6, 'OTIN', 'AC01', 'BK01', 1000.00, 'CHEQUE', 'march payment', 'pp', '2025-02-07 12:31:28', 'A3'),
-(10, 4, 'OFEX', 'AC01', 'BK01', 9900.00, 'BK01', 'aasd', 'qqwe', '2025-02-08 11:46:05', 'A3'),
-(11, 4, 'OFEX', 'AC02', 'BK02', 500.00, 'NETBANKING', 'cccds', 'xxxzxz', '2025-02-08 11:53:47', 'A3'),
-(12, 5, 'OFEX', 'AC02', 'BK02', 1000.00, 'CHEQUE', 'pols', '1123', '2025-02-08 11:55:26', 'A3'),
-(13, 5, 'OFEX', 'AC03', 'BK03', 1250.00, 'INSTAMOJO', 'lolp', 'ppol', '2025-02-08 12:01:03', 'A3'),
-(14, 5, 'OFEX', 'AC02', 'BK02', 1123.00, 'CC', 'zsxcf', 'eert', '2025-02-08 12:01:29', 'A3');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `cash_flows_modules`
---
+(3, 1, 'OFEX', 'AC03', 'BK03', 5000.00, 'CHEQUE', 'kjaksdjasdk', 'sdadsajsd', '2025-02-06 13:41:41', 'A3'),
+(4, 1, 'OFEX', 'AC02', 'BK02', 565165.00, 'CHEQUE', 'kjsdakjdbjabsd', 'sdadasdasd', '2025-02-06 13:52:53', 'A3'),
+(5, 2, 'OFEX', 'AC03', 'BK03', 120.00, 'CC', 'dadasd', '500', '2025-02-25 14:02:40', 'A3'),
+(6, 3, 'PECA', 'AC03', 'BK03', 5555.00, 'CC', 'sdfsdfsdf', 'sdadadsasd', '2025-02-06 14:29:52', 'A3'),
+(7, 3, 'PECA', 'AC04', 'BK04', 111.00, 'CHEQUE', 'aaaaa', 'dfsdfsdfsdfs', '2025-02-06 14:30:10', 'A3'),
+(8, 1, 'OFEX', 'AC04', 'BK04', 5000.00, 'CC', 'snacks for bf', 'no remarks here.', '2025-02-19 18:30:00', 'A3'),
+(9, 6, 'OTIN', 'AC01', 'BK01', 1000.00, 'CHEQUE', 'march payment', 'pp', '2025-02-07 18:01:28', 'A3'),
+(10, 4, 'OFEX', 'AC01', 'BK01', 9900.00, 'BK01', 'aasd', 'qqwe', '2025-02-08 17:16:05', 'A3'),
+(11, 4, 'OFEX', 'AC02', 'BK02', 500.00, 'NETBANKING', 'cccds', 'xxxzxz', '2025-02-08 17:23:47', 'A3'),
+(12, 5, 'OFEX', 'AC02', 'BK02', 1000.00, 'CHEQUE', 'pols', '1123', '2025-02-08 17:25:26', 'A3'),
+(13, 5, 'OFEX', 'AC03', 'BK03', 1250.00, 'INSTAMOJO', 'lolp', 'ppol', '2025-02-08 17:31:03', 'A3'),
+(14, 5, 'OFEX', 'AC02', 'BK02', 1123.00, 'CC', 'zsxcf', 'eert', '2025-02-08 17:31:29', 'A3');
 
 CREATE TABLE `cash_flows_modules` (
   `id` int(11) NOT NULL,
@@ -863,21 +706,11 @@ CREATE TABLE `cash_flows_modules` (
   `entry_by` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `cash_flows_modules`
---
-
 INSERT INTO `cash_flows_modules` (`id`, `custom_id`, `name`, `entry_at`, `entry_by`) VALUES
 (1, 'OFEX', 'Office Expense', '2025-02-04 19:20:29', 'A3'),
 (2, 'OTEX', 'Other Expense', '2025-02-04 19:20:29', 'A3'),
 (3, 'OTIN', 'Other Income', '2025-02-04 19:20:29', 'A3'),
 (4, 'PECA', 'Petty Cash', '2025-02-04 19:20:29', 'A3');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `cash_flows_settings`
---
 
 CREATE TABLE `cash_flows_settings` (
   `id` int(11) NOT NULL,
@@ -885,19 +718,9 @@ CREATE TABLE `cash_flows_settings` (
   `value` varchar(5000) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `cash_flows_settings`
---
-
 INSERT INTO `cash_flows_settings` (`id`, `key`, `value`) VALUES
 (1, 'income_bifurcation', '{\"categories\":{\"A1\":10,\"A2\":10,\"Provision\":80},\"effect_date\":\"2024-11-27T00:00:00.000Z\"}'),
 (2, 'payment_types', '[\"Professional Fees\", \"Reimbursement Voucher\"]');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `cash_flows_transactions`
---
 
 CREATE TABLE `cash_flows_transactions` (
   `id` int(11) NOT NULL,
@@ -915,10 +738,6 @@ CREATE TABLE `cash_flows_transactions` (
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `cash_flows_transactions`
---
-
 INSERT INTO `cash_flows_transactions` (`id`, `entity_id`, `head_id`, `module_id`, `owner_firm_id`, `owner_firm_bank_id`, `amount`, `particulars`, `payment_source`, `payment_type`, `remarks`, `entry_at`, `entry_by_id`) VALUES
 (15, 1, 3, 'OFEX', 'AC03', 'BK03', 500.00, 'dbsjdhb', 'DC', '', 'jdshbjsdf', '2025-02-06 19:23:35', 'A3'),
 (16, 1, 3, 'OFEX', 'AC01', 'BK01', 125.00, 'nnn0', 'NETBANKING', '', 'lllm', '2025-02-07 09:00:09', 'A3'),
@@ -930,12 +749,6 @@ INSERT INTO `cash_flows_transactions` (`id`, `entity_id`, `head_id`, `module_id`
 (22, 1, 8, 'OFEX', 'AC03', 'BK03', 114.00, 'njkl', 'CHEQUE', '', 'b', '2025-02-08 18:51:06', 'A3'),
 (23, 2, 5, 'OFEX', 'AC04', 'BK04', 55.00, 'd', 'CC', '', 'a', '2025-02-08 18:52:06', 'A3'),
 (24, 4, 11, 'OFEX', 'AC02', 'BK02', 1250.00, 'm', 'CHEQUE', '', 'b', '2025-02-08 18:52:55', 'A3');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `clients`
---
 
 CREATE TABLE `clients` (
   `id` char(8) NOT NULL,
@@ -955,10 +768,6 @@ CREATE TABLE `clients` (
   `entry_by_id` char(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `clients`
---
-
 INSERT INTO `clients` (`id`, `affiliate_ids`, `company_id`, `reference_id`, `name`, `address`, `phone_number`, `email_address`, `is_confirmed`, `is_deleted`, `joined_on`, `notes`, `rating`, `entry_at`, `entry_by_id`) VALUES
 ('CN000001', 'AF000001,AF000002', 'CP000001', 'RF000001', 'Kush Acharya', NULL, 8780577704, 'acharyakush2604@gmail.com', 1, 0, '2024-12-15 15:28:07', NULL, 0, '2024-12-15 15:28:07', NULL),
 ('CN000002', NULL, NULL, 'RF000002', 'Kevin Vyas', NULL, 8780577812, 'vyas.kevin@outlook.com', 0, 0, '2024-12-18 00:05:18', NULL, 0, '2024-12-18 00:05:18', NULL),
@@ -972,12 +781,6 @@ INSERT INTO `clients` (`id`, `affiliate_ids`, `company_id`, `reference_id`, `nam
 ('CN000010', NULL, NULL, 'RF000017', 'Sameer', NULL, 9099300543, 'sameer.patel@yahoo.com', 0, 0, '2025-02-01 13:37:22', NULL, 0, '2025-02-01 13:37:22', NULL),
 ('CN000011', 'AF000002', 'CP000008', 'RF000018', 'DS', NULL, 9099300543, 'sameer.patel@yahoo.com', 1, 0, '2025-02-01 13:39:02', NULL, 0, '2025-02-01 13:39:02', NULL),
 ('CN000012', 'AF000002', 'CP000004', 'RF000004', 'Gor Maharaj', NULL, 8000721554, 'abhishek@sal.com', 1, 0, '2025-02-01 13:41:07', NULL, 0, '2025-02-01 13:41:07', NULL);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `companies`
---
 
 CREATE TABLE `companies` (
   `id` char(8) NOT NULL,
@@ -995,10 +798,6 @@ CREATE TABLE `companies` (
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `companies`
---
-
 INSERT INTO `companies` (`id`, `client_id`, `name`, `phone_number`, `email_address`, `address`, `pan`, `gstin`, `reimbursement_voucher`, `invoice_fees`, `total_affiliate_fees`, `entry_at`, `entry_by_id`) VALUES
 ('CP000001', 'CN000001', 'Sun Pharma Pvt Ltd', '07925462408', 'support@sunpharma.com', NULL, 'BBXPA8126Q', NULL, NULL, 500.00, 110.00, '2024-12-17 23:48:41', 'A3'),
 ('CP000002', 'CN000005', 'Vivek Football League', NULL, NULL, NULL, NULL, NULL, NULL, 557.00, 1250.00, '2025-01-12 11:41:51', 'A3'),
@@ -1009,12 +808,6 @@ INSERT INTO `companies` (`id`, `client_id`, `name`, `phone_number`, `email_addre
 ('CP000007', 'CN000011', 'Babul', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-02-01 17:05:28', 'A3'),
 ('CP000008', 'CN000011', 'Babul', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2000.00, '2025-02-01 17:06:39', 'A3'),
 ('CP000009', 'CN000001', 'Moon Pharma Pvt Ltd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-02-03 22:56:42', 'A3');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `customers`
---
 
 CREATE TABLE `customers` (
   `id` int(11) NOT NULL,
@@ -1034,12 +827,6 @@ CREATE TABLE `customers` (
   `entry_at` datetime DEFAULT current_timestamp(),
   `notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `employees`
---
 
 CREATE TABLE `employees` (
   `id` char(8) NOT NULL,
@@ -1076,12 +863,6 @@ CREATE TABLE `employees` (
   `notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `inquiries`
---
-
 CREATE TABLE `inquiries` (
   `id` char(8) NOT NULL,
   `client_id` char(8) NOT NULL,
@@ -1102,10 +883,6 @@ CREATE TABLE `inquiries` (
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `inquiries`
---
-
 INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `sub_project_id`, `entry_date`, `phone_number`, `email_address`, `follow_ups`, `is_closed`, `is_edited`, `closure_reason`, `quote`, `status`, `tags`, `entry_at`, `entry_by_id`) VALUES
 ('IQ000001', 'CN000001', 'RF000001', 'MP000004', 'SP000003', '2024-12-15 09:39:42', 8780577704, 'acharyakush2604@gmail.com', 'A1,A2', 0, 0, '', 2500.00, 'Confirmed', NULL, '2024-12-15 15:28:07', 'A3'),
 ('IQ000002', 'CN000002', 'RF000002', 'MP000011', 'SP000004', '2024-12-18 12:00:00', 8780577812, 'vyas.kevin@outlook.com', 'A1,A3', 0, 0, '', 15080.00, 'Open', NULL, '2024-12-18 00:05:18', 'A3'),
@@ -1125,12 +902,6 @@ INSERT INTO `inquiries` (`id`, `client_id`, `reference_id`, `main_project_id`, `
 ('IQ000016', 'CN000001', 'RF000001', 'MP000001', 'SP000003', '2025-03-05 08:11:12', 8780577704, 'acharyakush2604@gmail.com', 'A2', 0, 0, '', 50075.00, 'Hold', NULL, '2025-02-01 13:42:18', 'A3'),
 ('IQ000017', 'CN000012', 'RF000004', 'MP000002', 'SP000002', '2025-02-01 12:00:00', 9999999999, 'abhishek@sal.com', 'A3', 0, 0, NULL, 10000.00, 'Open', NULL, '2025-02-01 13:59:08', 'A3');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `invoices`
---
-
 CREATE TABLE `invoices` (
   `id` int(11) NOT NULL,
   `custom_id` varchar(100) NOT NULL,
@@ -1143,21 +914,11 @@ CREATE TABLE `invoices` (
   `receipt_date` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `invoices`
---
-
 INSERT INTO `invoices` (`id`, `custom_id`, `client_id`, `project_id`, `amount`, `amount_received`, `due_date`, `created_at`, `receipt_date`) VALUES
 (1, 'SA/2025-26/00001', 'CN000001', 'PJ000001', 5750.00, 127.00, '2025-01-24 20:03:34', '2025-01-17 22:25:48', '2025-01-17 22:25:48'),
 (2, 'BF/2025-26/00002', 'CN000005', 'PJ000002', 2500.00, 557.00, '2025-01-24 20:03:34', '2025-01-17 22:26:51', '2025-01-17 22:26:51');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `invoices_payment_history`
---
-
-CREATE TABLE `invoices_payment_history` (
+CREATE TABLE `invoices_transactions` (
   `id` int(11) NOT NULL,
   `invoice_custom_id` varchar(100) NOT NULL,
   `project_id` char(8) NOT NULL,
@@ -1167,22 +928,12 @@ CREATE TABLE `invoices_payment_history` (
   `source` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `invoices_payment_history`
---
-
-INSERT INTO `invoices_payment_history` (`id`, `invoice_custom_id`, `project_id`, `entry_at`, `particulars`, `amount`, `source`) VALUES
+INSERT INTO `invoices_transactions` (`id`, `invoice_custom_id`, `project_id`, `entry_at`, `particulars`, `amount`, `source`) VALUES
 (1, 'SA/2025-26/00001', 'PJ000001', '2025-01-27 16:31:10', 'Jan-March Installments', 500.00, 'DC'),
 (2, 'SA/2025-26/00001', 'PJ000001', '2025-01-30 17:18:47', 'Happy New Year.', 155.00, 'CASH'),
 (3, 'SA/2025-26/00001', 'PJ000001', '2025-02-06 17:34:17', 'Good evening.', 855.00, 'BK01'),
 (4, '', 'PJ000004', '2025-02-01 15:02:16', 'Salman crushed one person on footpath. ', 15000.00, 'CHEQUE'),
 (5, '', 'PJ000004', '2025-02-01 15:02:34', 'Arbaz did the same too.', 2000.00, 'NETBANKING');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `licenses`
---
 
 CREATE TABLE `licenses` (
   `id` int(11) NOT NULL,
@@ -1195,12 +946,6 @@ CREATE TABLE `licenses` (
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `main_projects`
---
-
 CREATE TABLE `main_projects` (
   `id` char(8) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -1210,10 +955,6 @@ CREATE TABLE `main_projects` (
   `updated_by` char(8) DEFAULT NULL,
   `update_reason` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `main_projects`
---
 
 INSERT INTO `main_projects` (`id`, `name`, `entry_at`, `entry_by_id`, `updated_at`, `updated_by`, `update_reason`) VALUES
 ('MP000001', 'Accounting', '2024-11-08 21:35:04', 'A1', '2024-11-08 21:35:04', NULL, NULL),
@@ -1229,10 +970,6 @@ INSERT INTO `main_projects` (`id`, `name`, `entry_at`, `entry_by_id`, `updated_a
 ('MP000011', 'Registrations', '2024-11-08 21:35:04', 'A1', '2024-11-08 21:35:04', NULL, NULL),
 ('MP000012', 'Startup', '2024-11-08 21:35:04', 'A1', '2024-11-08 21:35:04', NULL, NULL),
 ('MP000013', 'Trademark', '2024-11-08 21:35:04', 'A1', '2024-11-08 21:35:04', NULL, NULL);
-
---
--- Triggers `main_projects`
---
 DELIMITER $$
 CREATE TRIGGER `generate_new_main_project_id` BEFORE INSERT ON `main_projects` FOR EACH ROW BEGIN
     DECLARE prefix VARCHAR(2) DEFAULT 'MP';  -- Prefix for sub_projects
@@ -1254,12 +991,6 @@ END
 $$
 DELIMITER ;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `notes`
---
-
 CREATE TABLE `notes` (
   `id` int(11) NOT NULL,
   `inquiry_id` char(8) DEFAULT NULL,
@@ -1271,10 +1002,6 @@ CREATE TABLE `notes` (
   `source` varchar(20) NOT NULL,
   `entry_date` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `notes`
---
 
 INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `task_id`, `original_entry_by_id`, `entry_by_id`, `content`, `source`, `entry_date`) VALUES
 (1, 'IQ000001', NULL, NULL, 'A3', 'A3', 'New client. Reference from CharteredWorks.', 'Inquiries', '2024-12-15 15:28:07'),
@@ -1308,12 +1035,6 @@ INSERT INTO `notes` (`id`, `inquiry_id`, `project_id`, `task_id`, `original_entr
 (35, 'IQ000014', 'PJ000007', NULL, 'A3', 'A3', 'NA', 'Projects', '2025-02-01 15:43:00'),
 (36, 'IQ000008', 'PJ000008', NULL, 'A3', 'A3', 'vbnm', 'Projects', '2025-02-03 22:56:42');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `owner_firms`
---
-
 CREATE TABLE `owner_firms` (
   `id` char(4) NOT NULL,
   `name` varchar(100) NOT NULL,
@@ -1327,21 +1048,11 @@ CREATE TABLE `owner_firms` (
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `owner_firms`
---
-
 INSERT INTO `owner_firms` (`id`, `name`, `address`, `phone_number`, `email_address`, `pan`, `gstin`, `terms_conditions`, `entry_at`, `entry_by_id`) VALUES
 ('AC01', 'Signiix Advisors', 'D-608, The First, Behind ITC Narmada, Vastrapur - 3800016', '9898110703', 'admin@signiixadvisors.com', 'BBXPA8126Q', '', '1. Payment is due within 30 days from the invoice date unless otherwise agreed in writing.\\n2. A late fee of 1.5% per month will be applied to overdue balances.\\n3. Any disputes regarding this invoice must be communicated within 15 days of receipts.\\n4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A1'),
 ('AC02', 'Branchitects Firm', 'AFF8, Aakansha Flats, Opp Jaymala Cross Roads, Isanpur, Ahmedabad - 3800008', '792265411259', 'support@branchitects.com', 'BBXPA8126A', '', '1. Payment is due within 15 days from the invoice date unless otherwise agreed in writing.\\n2. A late fee of 3.5% per month will be applied to overdue balances.\\n3. Any disputes regarding this invoice must be communicated within 30 days of receipt.\\n4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A1'),
 ('AC03', 'Pandya Sharma', 'D-608, The First, Behind ITC Narmada, Vastrapur - 3800016', '7925460175', 'support@pandya.sharma.com', 'BBXPA8126Q', '29GGGGG1314R9Z6', '1. Payment is due within 30 days from the invoice date unless otherwise agreed in writing.\\n2. A late fee of 1.5% per month will be applied to overdue balances.\\n3. Any disputes regarding this invoice must be communicated within 15 days of receipts.\\n4. All payments should be made via the methods specified on the invoice.', '2024-12-17 20:02:11', 'A3'),
 ('AC04', 'Abhishek Gor', '101, Shakti Flora, 9B Prankunj Society, Kankaria, Ahmedabad', '8000721554', 'abhishekgor@hotmail.com', 'BADGP9433M', 'NA', 'General', '2024-12-17 20:02:11', 'A3');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `owner_firms_banks`
---
 
 CREATE TABLE `owner_firms_banks` (
   `id` char(8) NOT NULL,
@@ -1350,25 +1061,16 @@ CREATE TABLE `owner_firms_banks` (
   `account_number` varchar(50) NOT NULL,
   `ifsc_code` varchar(20) NOT NULL,
   `branch_name` varchar(100) NOT NULL,
+  `upi_id` varchar(200) NOT NULL,
   `entry_at` datetime NOT NULL DEFAULT current_timestamp(),
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `owner_firms_banks`
---
-
-INSERT INTO `owner_firms_banks` (`id`, `owner_firm_id`, `name`, `account_number`, `ifsc_code`, `branch_name`, `entry_at`, `entry_by_id`) VALUES
-('BK01', 'AC01', 'HDFC Bank Limited', '50200093685321', 'HDFC0000383', 'Naranpura Branch', '2024-12-17 20:03:18', 'A1'),
-('BK02', 'AC02', 'Bandhan Bank', '10210010518171', 'BDBL0001474', 'Panchwati Branch', '2024-12-17 20:03:18', 'A1'),
-('BK03', 'AC03', 'HDFC Bank', '50200061991892', 'HDFC0005064', 'Motera Branch', '2024-12-17 20:03:18', 'A1'),
-('BK04', 'AC04', 'Bank Of Baroda', '18260100014353', 'BARB0BHAIRA', 'Bhairavnath Ahmedabad', '2024-12-17 20:03:18', 'A1');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `permissions`
---
+INSERT INTO `owner_firms_banks` (`id`, `owner_firm_id`, `name`, `account_number`, `ifsc_code`, `branch_name`, `upi_id`, `entry_at`, `entry_by_id`) VALUES
+('BK01', 'AC01', 'HDFC Bank Limited', '50200093685321', 'HDFC0000383', 'Naranpura Branch', 'acharyakush2604@axl', '2024-12-17 20:03:18', 'A1'),
+('BK02', 'AC02', 'Bandhan Bank', '10210010518171', 'BDBL0001474', 'Panchwati Branch', 'acharyakush2604@axl', '2024-12-17 20:03:18', 'A1'),
+('BK03', 'AC03', 'HDFC Bank', '50200061991892', 'HDFC0005064', 'Motera Branch', 'acharyakush2604@axl', '2024-12-17 20:03:18', 'A1'),
+('BK04', 'AC04', 'Bank Of Baroda', '18260100014353', 'BARB0BHAIRA', 'Bhairavnath Ahmedabad', 'acharyakush2604@axl', '2024-12-17 20:03:18', 'A1');
 
 CREATE TABLE `permissions` (
   `id` int(11) NOT NULL,
@@ -1377,10 +1079,6 @@ CREATE TABLE `permissions` (
   `type` enum('Base','Derived') DEFAULT NULL,
   `sequence` int(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `permissions`
---
 
 INSERT INTO `permissions` (`id`, `name`, `module`, `type`, `sequence`) VALUES
 (1, 'Affiliates', 'Affiliates', 'Base', 5),
@@ -1434,323 +1132,36 @@ INSERT INTO `permissions` (`id`, `name`, `module`, `type`, `sequence`) VALUES
 (49, 'Edit RV', 'RV', 'Derived', 0),
 (50, 'New RV', 'RV', 'Derived', 0);
 
--- --------------------------------------------------------
+CREATE TABLE `petty_cash` (
+  `id` int(11) NOT NULL,
+  `amount_received` decimal(10,2) NOT NULL,
+  `balance` decimal(10,2) NOT NULL,
+  `entry_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Table structure for table `petty_cash_transactions`
---
+INSERT INTO `petty_cash` (`id`, `amount_received`, `balance`, `entry_at`) VALUES
+(1, 1000.00, 1000.00, '2025-02-07 16:54:57');
 
 CREATE TABLE `petty_cash_transactions` (
   `id` int(11) NOT NULL,
-  `owner_firm_id` char(4) NOT NULL,
-  `owner_firm_bank_id` char(8) NOT NULL,
+  `owner_firm_id` char(4) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `amount_paid` decimal(10,2) DEFAULT NULL,
   `amount_received` decimal(10,2) DEFAULT NULL,
   `balance` decimal(10,2) NOT NULL,
   `particulars` varchar(500) NOT NULL,
-  `payment_source` varchar(500) NOT NULL,
   `payment_type` varchar(50) NOT NULL,
   `remarks` varchar(500) NOT NULL,
   `entry_at` datetime NOT NULL DEFAULT current_timestamp(),
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `petty_cash_transactions`
---
-
-INSERT INTO `petty_cash_transactions` (`id`, `owner_firm_id`, `owner_firm_bank_id`, `amount_paid`, `amount_received`, `balance`, `particulars`, `payment_source`, `payment_type`, `remarks`, `entry_at`, `entry_by_id`) VALUES
-(1, 'AC03', 'BK03', 8500.00, 0.00, 0.00, 'uio', 'NETBANKING', 'Professional Fees', 'bnm', '2025-02-07 16:54:57', 'A3'),
-(2, 'AC04', 'BK04', 0.00, 125.00, 0.00, 'mm', 'CHEQUE', 'Reimbursement Voucher', 'bb', '2025-02-07 17:00:18', 'A3');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__bookmark`
---
-
-CREATE TABLE `pma__bookmark` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `dbase` varchar(255) NOT NULL DEFAULT '',
-  `user` varchar(255) NOT NULL DEFAULT '',
-  `label` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  `query` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Bookmarks';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__central_columns`
---
-
-CREATE TABLE `pma__central_columns` (
-  `db_name` varchar(64) NOT NULL,
-  `col_name` varchar(64) NOT NULL,
-  `col_type` varchar(64) NOT NULL,
-  `col_length` text DEFAULT NULL,
-  `col_collation` varchar(64) NOT NULL,
-  `col_isNull` tinyint(1) NOT NULL,
-  `col_extra` varchar(255) DEFAULT '',
-  `col_default` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Central list of columns';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__column_info`
---
-
-CREATE TABLE `pma__column_info` (
-  `id` int(5) UNSIGNED NOT NULL,
-  `db_name` varchar(64) NOT NULL DEFAULT '',
-  `table_name` varchar(64) NOT NULL DEFAULT '',
-  `column_name` varchar(64) NOT NULL DEFAULT '',
-  `comment` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  `mimetype` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  `transformation` varchar(255) NOT NULL DEFAULT '',
-  `transformation_options` varchar(255) NOT NULL DEFAULT '',
-  `input_transformation` varchar(255) NOT NULL DEFAULT '',
-  `input_transformation_options` varchar(255) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Column information for phpMyAdmin';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__designer_settings`
---
-
-CREATE TABLE `pma__designer_settings` (
-  `username` varchar(64) NOT NULL,
-  `settings_data` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Settings related to Designer';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__export_templates`
---
-
-CREATE TABLE `pma__export_templates` (
-  `id` int(5) UNSIGNED NOT NULL,
-  `username` varchar(64) NOT NULL,
-  `export_type` varchar(10) NOT NULL,
-  `template_name` varchar(64) NOT NULL,
-  `template_data` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Saved export templates';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__favorite`
---
-
-CREATE TABLE `pma__favorite` (
-  `username` varchar(64) NOT NULL,
-  `tables` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Favorite tables';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__history`
---
-
-CREATE TABLE `pma__history` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `username` varchar(64) NOT NULL DEFAULT '',
-  `db` varchar(64) NOT NULL DEFAULT '',
-  `table` varchar(64) NOT NULL DEFAULT '',
-  `timevalue` timestamp NOT NULL DEFAULT current_timestamp(),
-  `sqlquery` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='SQL history for phpMyAdmin';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__navigationhiding`
---
-
-CREATE TABLE `pma__navigationhiding` (
-  `username` varchar(64) NOT NULL,
-  `item_name` varchar(64) NOT NULL,
-  `item_type` varchar(64) NOT NULL,
-  `db_name` varchar(64) NOT NULL,
-  `table_name` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Hidden items of navigation tree';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__pdf_pages`
---
-
-CREATE TABLE `pma__pdf_pages` (
-  `db_name` varchar(64) NOT NULL DEFAULT '',
-  `page_nr` int(10) UNSIGNED NOT NULL,
-  `page_descr` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='PDF relation pages for phpMyAdmin';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__recent`
---
-
-CREATE TABLE `pma__recent` (
-  `username` varchar(64) NOT NULL,
-  `tables` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Recently accessed tables';
-
---
--- Dumping data for table `pma__recent`
---
-
-INSERT INTO `pma__recent` (`username`, `tables`) VALUES
-('spire', '[{\"db\":\"spire\",\"table\":\"cash_flows_entities\"},{\"db\":\"spire\",\"table\":\"invoices_payment_history\"},{\"db\":\"spire\",\"table\":\"owner_firms_banks\"},{\"db\":\"spire\",\"table\":\"tasks_settings\"},{\"db\":\"spire\",\"table\":\"cash_flows_settings\"},{\"db\":\"spire\",\"table\":\"projects_settings\"},{\"db\":\"spire\",\"table\":\"owner_firms\"},{\"db\":\"spire\",\"table\":\"projects\"},{\"db\":\"spire\",\"table\":\"invoices\"},{\"db\":\"spire\",\"table\":\"tasks_particulars_remarks\"}]');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__relation`
---
-
-CREATE TABLE `pma__relation` (
-  `master_db` varchar(64) NOT NULL DEFAULT '',
-  `master_table` varchar(64) NOT NULL DEFAULT '',
-  `master_field` varchar(64) NOT NULL DEFAULT '',
-  `foreign_db` varchar(64) NOT NULL DEFAULT '',
-  `foreign_table` varchar(64) NOT NULL DEFAULT '',
-  `foreign_field` varchar(64) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Relation table';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__savedsearches`
---
-
-CREATE TABLE `pma__savedsearches` (
-  `id` int(5) UNSIGNED NOT NULL,
-  `username` varchar(64) NOT NULL DEFAULT '',
-  `db_name` varchar(64) NOT NULL DEFAULT '',
-  `search_name` varchar(64) NOT NULL DEFAULT '',
-  `search_data` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Saved searches';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__table_coords`
---
-
-CREATE TABLE `pma__table_coords` (
-  `db_name` varchar(64) NOT NULL DEFAULT '',
-  `table_name` varchar(64) NOT NULL DEFAULT '',
-  `pdf_page_number` int(11) NOT NULL DEFAULT 0,
-  `x` float UNSIGNED NOT NULL DEFAULT 0,
-  `y` float UNSIGNED NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Table coordinates for phpMyAdmin PDF output';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__table_info`
---
-
-CREATE TABLE `pma__table_info` (
-  `db_name` varchar(64) NOT NULL DEFAULT '',
-  `table_name` varchar(64) NOT NULL DEFAULT '',
-  `display_field` varchar(64) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Table information for phpMyAdmin';
-
---
--- Dumping data for table `pma__table_info`
---
-
-INSERT INTO `pma__table_info` (`db_name`, `table_name`, `display_field`) VALUES
-('spire', 'invoices', 'custom_id'),
-('spire', 'reimburse_vouchers', 'custom_id');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__table_uiprefs`
---
-
-CREATE TABLE `pma__table_uiprefs` (
-  `username` varchar(64) NOT NULL,
-  `db_name` varchar(64) NOT NULL,
-  `table_name` varchar(64) NOT NULL,
-  `prefs` text NOT NULL,
-  `last_update` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Tables'' UI preferences';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__tracking`
---
-
-CREATE TABLE `pma__tracking` (
-  `db_name` varchar(64) NOT NULL,
-  `table_name` varchar(64) NOT NULL,
-  `version` int(10) UNSIGNED NOT NULL,
-  `date_created` datetime NOT NULL,
-  `date_updated` datetime NOT NULL,
-  `schema_snapshot` text NOT NULL,
-  `schema_sql` text DEFAULT NULL,
-  `data_sql` longtext DEFAULT NULL,
-  `tracking` set('UPDATE','REPLACE','INSERT','DELETE','TRUNCATE','CREATE DATABASE','ALTER DATABASE','DROP DATABASE','CREATE TABLE','ALTER TABLE','RENAME TABLE','DROP TABLE','CREATE INDEX','DROP INDEX','CREATE VIEW','ALTER VIEW','DROP VIEW') DEFAULT NULL,
-  `tracking_active` int(1) UNSIGNED NOT NULL DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Database changes tracking for phpMyAdmin';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__userconfig`
---
-
-CREATE TABLE `pma__userconfig` (
-  `username` varchar(64) NOT NULL,
-  `timevalue` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `config_data` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='User preferences storage for phpMyAdmin';
-
---
--- Dumping data for table `pma__userconfig`
---
-
-INSERT INTO `pma__userconfig` (`username`, `timevalue`, `config_data`) VALUES
-('spire', '2025-02-06 15:21:30', '{\"Console\\/Mode\":\"collapse\"}');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__usergroups`
---
-
-CREATE TABLE `pma__usergroups` (
-  `usergroup` varchar(64) NOT NULL,
-  `tab` varchar(64) NOT NULL,
-  `allowed` enum('Y','N') NOT NULL DEFAULT 'N'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='User groups with configured menu items';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pma__users`
---
-
-CREATE TABLE `pma__users` (
-  `username` varchar(64) NOT NULL,
-  `usergroup` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Users and their assignments to user groups';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `projects`
---
+INSERT INTO `petty_cash_transactions` (`id`, `owner_firm_id`, `amount_paid`, `amount_received`, `balance`, `particulars`, `payment_type`, `remarks`, `entry_at`, `entry_by_id`) VALUES
+(2, 'AC04', 25.00, 0.00, 975.00, 'Hello', 'Withdrawn from Bank', 'Yellow', '2025-02-09 08:42:46', 'A3'),
+(3, 'AC01', 300.00, 0.00, 675.00, 'Nice', 'Office', 'Bye', '2025-02-09 08:43:35', 'A3'),
+(4, 'AC04', 75.00, 0.00, 600.00, 'Lol', 'Others', 'Pol', '2025-02-09 08:44:09', 'A3'),
+(6, 'AC01', 0.00, 55.00, 655.00, 'Hey', 'Others', 'Hi', '2025-02-09 08:46:17', 'A3'),
+(7, 'AC03', 0.00, 45.00, 700.00, 'Rice', 'Withdrawn from Bank', 'Water', '2025-02-09 08:46:39', 'A3'),
+(8, 'AC03', 30.00, 0.00, 670.00, 'Op', 'Office', 'Ops', '2025-02-09 08:47:02', 'A3');
 
 CREATE TABLE `projects` (
   `id` char(8) NOT NULL,
@@ -1778,10 +1189,6 @@ CREATE TABLE `projects` (
   `reason` varchar(1000) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `projects`
---
-
 INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inquiry_id`, `invoice_firm_id`, `government_id`, `main_project_id`, `sub_project_id`, `vendor_id`, `quote`, `due_on`, `total_affiliate_fees`, `invoice_fees`, `teams`, `started_on`, `status`, `is_deleted`, `is_edited`, `entry_at`, `entry_by_id`, `completed_on`, `reason`) VALUES
 ('PJ000001', 'CN000001', 'CP000001', 'AF000001,AF000002', 'IQ000001', 'AC01', 'PJ1/22/12/2024', 'MP000004', 'SP000003', NULL, 5750.00, '2024-12-15 04:09:42', 110.00, 575.00, 'A3,A2', '2024-12-17 23:48:41', 'Active', 0, 0, '2024-12-17 23:48:41', 'A3', '2025-02-01 16:22:15', ''),
 ('PJ000002', 'CN000005', 'CP000002', 'AF000001', 'IQ000007', 'AC02', NULL, 'MP000001', 'SP000010', NULL, 2500.00, '2025-01-30 21:23:36', 1250.00, 1500.00, 'A3', '2025-01-12 11:41:51', 'Completed', 0, 0, '2025-01-12 11:41:51', 'A3', '2025-01-30 00:51:35', NULL),
@@ -1792,51 +1199,32 @@ INSERT INTO `projects` (`id`, `client_id`, `company_id`, `affiliate_ids`, `inqui
 ('PJ000007', 'CN000011', 'CP000008', 'AF000002', 'IQ000014', 'AC01', NULL, 'MP000006', 'SP000039', NULL, 30002.00, '2025-02-19 13:00:00', 2000.00, 30000.00, 'A3', '2025-02-01 15:43:00', 'Active', 0, 0, '2025-02-01 15:43:00', 'A3', NULL, ''),
 ('PJ000008', 'CN000001', 'CP000009', NULL, 'IQ000008', 'AC03', NULL, 'MP000005', 'SP000014', NULL, 123345.00, '2025-01-11 18:30:00', NULL, 123345.00, 'A1,A3', '2025-02-03 22:56:42', 'Active', 0, 0, '2025-02-03 22:56:42', 'A3', NULL, NULL);
 
--- --------------------------------------------------------
-
---
--- Table structure for table `projects_settings`
---
-
 CREATE TABLE `projects_settings` (
   `id` int(11) NOT NULL,
   `key` varchar(200) NOT NULL,
   `value` varchar(5000) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `projects_settings`
---
-
 INSERT INTO `projects_settings` (`id`, `key`, `value`) VALUES
 (1, 'statuses', '[\"Active\", \"Cancelled\", \"Closed\", \"Completed\", \"Hold\"]');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `reimburse_voucher`
---
 
 CREATE TABLE `reimburse_voucher` (
   `id` int(11) NOT NULL,
   `custom_id` varchar(100) NOT NULL,
-  `invoice_custom_id` varchar(100) NOT NULL,
   `client_id` char(8) DEFAULT NULL,
   `project_id` char(8) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL CHECK (`amount` >= 0),
   `amount_received` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `amount_pending` decimal(10,2) NOT NULL,
   `due_date` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `receipt_date` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
+INSERT INTO `reimburse_voucher` (`id`, `custom_id`, `client_id`, `project_id`, `amount`, `amount_received`, `amount_pending`, `due_date`, `created_at`, `receipt_date`) VALUES
+(1, 'SA/2024-25/00001', 'CN000001', 'PJ000001', 5750.00, 1292.00, 11516.00, '2025-02-16 11:17:15', '2025-02-09 16:47:19', '2025-02-09 11:17:15');
 
---
--- Table structure for table `reimburse_voucher_payment_history`
---
-
-CREATE TABLE `reimburse_voucher_payment_history` (
+CREATE TABLE `reimburse_voucher_transactions` (
   `id` int(11) NOT NULL,
   `rv_custom_id` varchar(100) NOT NULL,
   `project_id` char(8) NOT NULL,
@@ -1846,11 +1234,9 @@ CREATE TABLE `reimburse_voucher_payment_history` (
   `source` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `statuses`
---
+INSERT INTO `reimburse_voucher_transactions` (`id`, `rv_custom_id`, `project_id`, `entry_at`, `particulars`, `amount`, `source`) VALUES
+(3, '', 'PJ000001', '2025-02-09 10:33:39', 'Received from client', 1222.00, 'BK01'),
+(4, '', 'PJ000001', '2025-02-09 10:49:27', 'lols', 70.00, 'CC');
 
 CREATE TABLE `statuses` (
   `id` int(11) NOT NULL,
@@ -1858,21 +1244,11 @@ CREATE TABLE `statuses` (
   `statuses` longtext NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `statuses`
---
-
 INSERT INTO `statuses` (`id`, `entity`, `statuses`) VALUES
 (1, 'Inquiries', '[\"Closed\", \"Confirmed\", \"Hold\", \"Open\"]'),
 (2, 'Projects', '[\"Active\", \"Cancelled\", \"Closed\", \"Completed\", \"Hold\", \"Inactive\"]'),
 (3, 'Licenses', '[\"Active\",\"Expired\",\"Revoked\"]'),
 (4, 'Employees', '[\"Active\", \"Ad-Hoc\", \"Inactive\", \"Intern\", \"On Contract\", \"On Leave\", \"Probation\", \"Resigned\", \"Terminated\"]');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `sub_projects`
---
 
 CREATE TABLE `sub_projects` (
   `id` char(8) NOT NULL,
@@ -1883,10 +1259,6 @@ CREATE TABLE `sub_projects` (
   `updated_by` char(8) DEFAULT NULL,
   `update_reason` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `sub_projects`
---
 
 INSERT INTO `sub_projects` (`id`, `name`, `entry_at`, `entry_by_id`, `updated_at`, `updated_by`, `update_reason`) VALUES
 ('SP000001', 'Accounting', '2024-11-08 22:10:44', 'A1', '2024-11-08 22:10:44', NULL, NULL),
@@ -1928,10 +1300,6 @@ INSERT INTO `sub_projects` (`id`, `name`, `entry_at`, `entry_by_id`, `updated_at
 ('SP000037', 'Halalaa Certificates', '2025-02-01 12:07:56', 'A3', '2025-02-01 12:07:56', NULL, NULL),
 ('SP000038', 'Yakhni Pulao', '2025-02-01 13:37:22', 'A3', '2025-02-01 13:37:22', NULL, NULL),
 ('SP000039', 'Yakhni Pulao', '2025-02-01 13:39:02', 'A3', '2025-02-01 13:39:02', NULL, NULL);
-
---
--- Triggers `sub_projects`
---
 DELIMITER $$
 CREATE TRIGGER `generate_new_sub_project_id` BEFORE INSERT ON `sub_projects` FOR EACH ROW BEGIN
     DECLARE prefix VARCHAR(2) DEFAULT 'SP';  -- Prefix for sub_projects
@@ -1953,12 +1321,6 @@ END
 $$
 DELIMITER ;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `tasks`
---
-
 CREATE TABLE `tasks` (
   `id` char(8) NOT NULL,
   `client_id` char(8) NOT NULL,
@@ -1973,10 +1335,6 @@ CREATE TABLE `tasks` (
   `entry_at` datetime NOT NULL DEFAULT current_timestamp(),
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `tasks`
---
 
 INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `expense`, `reason`, `is_completed`, `is_disabled`, `completed_on`, `entry_at`, `entry_by_id`) VALUES
 ('TK000001', 'CN000001', 'PJ000001', 'Task #1', '2025-01-21', 5100.00, 'Nice.', 1, 0, NULL, '2025-02-05 22:14:55', 'A3'),
@@ -1998,12 +1356,6 @@ INSERT INTO `tasks` (`id`, `client_id`, `project_id`, `task`, `due_on`, `expense
 ('TK000019', 'CN000001', 'PJ000001', 'Task #11', '2025-02-27', 5600.00, NULL, 0, 0, NULL, '2025-02-05 22:14:55', 'A3'),
 ('TK000020', 'CN000005', 'PJ000006', 'pol', '2025-02-12', 0.00, NULL, 0, 0, NULL, '2025-02-05 23:39:46', 'A3');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `tasks_particulars_remarks`
---
-
 CREATE TABLE `tasks_particulars_remarks` (
   `id` int(11) NOT NULL,
   `task_id` char(8) NOT NULL,
@@ -2015,10 +1367,6 @@ CREATE TABLE `tasks_particulars_remarks` (
   `entry_by_id` char(8) NOT NULL,
   `entry_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `tasks_particulars_remarks`
---
 
 INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particular`, `remark`, `is_completed`, `reason`, `entry_by_id`, `entry_at`) VALUES
 (1, 'TK000001', 'PJ000001', 'Accounts settlement', 'Send documents to CA', 1, 'By Administrator', 'A3', '2024-12-27 19:50:22'),
@@ -2046,30 +1394,14 @@ INSERT INTO `tasks_particulars_remarks` (`id`, `task_id`, `project_id`, `particu
 (32, 'TK000013', 'PJ000001', 'abc', 'bcd', 0, NULL, 'A3', '2025-02-06 18:33:29'),
 (33, 'TK000013', 'PJ000001', 'pol', 'mkop', 0, NULL, 'A3', '2025-02-06 18:33:37');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `tasks_settings`
---
-
 CREATE TABLE `tasks_settings` (
   `id` int(11) NOT NULL,
   `key` varchar(200) NOT NULL,
   `value` varchar(5000) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `tasks_settings`
---
-
 INSERT INTO `tasks_settings` (`id`, `key`, `value`) VALUES
 (1, 'due_date_days_from_today', '7');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `the_references`
---
 
 CREATE TABLE `the_references` (
   `id` char(8) NOT NULL,
@@ -2088,10 +1420,6 @@ CREATE TABLE `the_references` (
   `entry_at` datetime DEFAULT current_timestamp(),
   `entry_by_id` char(8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `the_references`
---
 
 INSERT INTO `the_references` (`id`, `client_id`, `name`, `address`, `phone_number`, `email_address`, `is_deleted`, `joined_on`, `notes`, `organization`, `rating`, `relationship`, `tags`, `entry_at`, `entry_by_id`) VALUES
 ('RF000001', 'CN000001', 'Yash Chopra', NULL, NULL, NULL, 0, '2024-12-15 15:28:07', NULL, NULL, 0, NULL, NULL, '2024-12-15 15:28:07', NULL),
@@ -2113,12 +1441,6 @@ INSERT INTO `the_references` (`id`, `client_id`, `name`, `address`, `phone_numbe
 ('RF000017', 'CN000010', 'Hameer', NULL, NULL, NULL, 0, '2025-02-01 13:37:21', NULL, NULL, 0, NULL, NULL, '2025-02-01 13:37:21', NULL),
 ('RF000018', 'CN000011', 'Hameer', NULL, NULL, NULL, 0, '2025-02-01 13:39:02', NULL, NULL, 0, NULL, NULL, '2025-02-01 13:39:02', NULL);
 
--- --------------------------------------------------------
-
---
--- Table structure for table `vendors`
---
-
 CREATE TABLE `vendors` (
   `id` char(8) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -2131,18 +1453,8 @@ CREATE TABLE `vendors` (
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `vendors`
---
-
 INSERT INTO `vendors` (`id`, `name`, `email_address`, `phone_number`, `upi_id`, `joined_on`, `status`, `entry_at`, `entry_by_id`) VALUES
-('VD000001', 'Anuj', 'anuj@gandhi.com', '9978075347', 'anuj.gandhi@oksbi', '2025-02-06 14:14:32', 'Active', '2025-02-06 14:14:32', 'A3');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `vendors_projects`
---
+('VD000001', 'Anuj', 'anuj@gandhi.com', '9978075347', 'anuj.gandhi@oksbi', '2025-02-06 19:44:32', 'Active', '2025-02-06 19:44:32', 'A3');
 
 CREATE TABLE `vendors_projects` (
   `id` int(11) NOT NULL,
@@ -2153,12 +1465,6 @@ CREATE TABLE `vendors_projects` (
   `adjusted_fees` decimal(10,2) DEFAULT 0.00,
   `total_fees` decimal(10,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `vendors_transactions`
---
 
 CREATE TABLE `vendors_transactions` (
   `id` int(11) NOT NULL,
@@ -2175,42 +1481,24 @@ CREATE TABLE `vendors_transactions` (
   `entry_by_id` char(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Indexes for dumped tables
---
 
---
--- Indexes for table `activities`
---
 ALTER TABLE `activities`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `administrators`
---
 ALTER TABLE `administrators`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `username` (`username`),
   ADD UNIQUE KEY `email_address` (`email_address`);
 
---
--- Indexes for table `affiliates`
---
 ALTER TABLE `affiliates`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `affiliates_projects`
---
 ALTER TABLE `affiliates_projects`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_affiliates_projects_affiliate_id` (`affiliate_id`),
   ADD KEY `fk_affiliates_projects_client_id` (`client_id`),
   ADD KEY `fk_affiliates_projects_project_id` (`project_id`);
 
---
--- Indexes for table `affiliates_transactions`
---
 ALTER TABLE `affiliates_transactions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_aph_affiliate_id` (`affiliate_id`),
@@ -2218,44 +1506,26 @@ ALTER TABLE `affiliates_transactions`
   ADD KEY `fk_aph_owner_firms_id` (`owner_firms_id`),
   ADD KEY `fk_aph_project_id` (`project_id`);
 
---
--- Indexes for table `cash_flows`
---
 ALTER TABLE `cash_flows`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `cash_flows_entities`
---
 ALTER TABLE `cash_flows_entities`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_cfe_owner_firm_bank_id` (`owner_firm_bank_id`),
   ADD KEY `fk_cfe_module_id` (`module_id`);
 
---
--- Indexes for table `cash_flows_heads`
---
 ALTER TABLE `cash_flows_heads`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_cfe_owner_firm_bank_id` (`owner_firm_bank_id`),
   ADD KEY `fk_cfe_owner_firm_id` (`owner_firm_id`),
   ADD KEY `fk_cfe_module_id` (`module_id`);
 
---
--- Indexes for table `cash_flows_modules`
---
 ALTER TABLE `cash_flows_modules`
   ADD PRIMARY KEY (`custom_id`);
 
---
--- Indexes for table `cash_flows_settings`
---
 ALTER TABLE `cash_flows_settings`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `cash_flows_transactions`
---
 ALTER TABLE `cash_flows_transactions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_aph_owner_firms_bank_id` (`owner_firm_bank_id`),
@@ -2263,15 +1533,9 @@ ALTER TABLE `cash_flows_transactions`
   ADD KEY `fk_cft_module_id` (`module_id`),
   ADD KEY `fk_cft_head_id` (`head_id`);
 
---
--- Indexes for table `clients`
---
 ALTER TABLE `clients`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `companies`
---
 ALTER TABLE `companies`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email_address` (`email_address`),
@@ -2280,25 +1544,16 @@ ALTER TABLE `companies`
   ADD KEY `idx_company_email` (`email_address`),
   ADD KEY `fk_company_client` (`client_id`);
 
---
--- Indexes for table `customers`
---
 ALTER TABLE `customers`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email_address` (`email_address`),
   ADD KEY `license_key` (`license_key`);
 
---
--- Indexes for table `employees`
---
 ALTER TABLE `employees`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email_address` (`email_address`),
   ADD KEY `administrator_id` (`administrator_id`);
 
---
--- Indexes for table `inquiries`
---
 ALTER TABLE `inquiries`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_inquiry_client_id` (`client_id`),
@@ -2306,194 +1561,45 @@ ALTER TABLE `inquiries`
   ADD KEY `fk_inquiry_main_project_id` (`main_project_id`),
   ADD KEY `fk_inquiry_sub_project_id` (`sub_project_id`);
 
---
--- Indexes for table `invoices`
---
 ALTER TABLE `invoices`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_invoice_client_id` (`client_id`),
   ADD KEY `fk_invoice_project_id` (`project_id`);
 
---
--- Indexes for table `invoices_payment_history`
---
-ALTER TABLE `invoices_payment_history`
+ALTER TABLE `invoices_transactions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `invoices_payment_history_project_id` (`project_id`);
 
---
--- Indexes for table `licenses`
---
 ALTER TABLE `licenses`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `license_key` (`license_key`),
   ADD KEY `customer_id` (`customer_id`);
 
---
--- Indexes for table `main_projects`
---
 ALTER TABLE `main_projects`
   ADD PRIMARY KEY (`id`),
   ADD KEY `name` (`name`);
 
---
--- Indexes for table `notes`
---
 ALTER TABLE `notes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_note_inquiry_id` (`inquiry_id`);
 
---
--- Indexes for table `owner_firms`
---
 ALTER TABLE `owner_firms`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email_address` (`email_address`);
 
---
--- Indexes for table `owner_firms_banks`
---
 ALTER TABLE `owner_firms_banks`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_ofb_owner_firms_id` (`owner_firm_id`);
 
---
--- Indexes for table `permissions`
---
 ALTER TABLE `permissions`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `petty_cash_transactions`
---
-ALTER TABLE `petty_cash_transactions`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_pct_owner_firm_id` (`owner_firm_id`),
-  ADD KEY `fk_pct_owner_firm_bank_id` (`owner_firm_bank_id`);
-
---
--- Indexes for table `pma__bookmark`
---
-ALTER TABLE `pma__bookmark`
+ALTER TABLE `petty_cash`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `pma__central_columns`
---
-ALTER TABLE `pma__central_columns`
-  ADD PRIMARY KEY (`db_name`,`col_name`);
+ALTER TABLE `petty_cash_transactions`
+  ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `pma__column_info`
---
-ALTER TABLE `pma__column_info`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `db_name` (`db_name`,`table_name`,`column_name`);
-
---
--- Indexes for table `pma__designer_settings`
---
-ALTER TABLE `pma__designer_settings`
-  ADD PRIMARY KEY (`username`);
-
---
--- Indexes for table `pma__export_templates`
---
-ALTER TABLE `pma__export_templates`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `u_user_type_template` (`username`,`export_type`,`template_name`);
-
---
--- Indexes for table `pma__favorite`
---
-ALTER TABLE `pma__favorite`
-  ADD PRIMARY KEY (`username`);
-
---
--- Indexes for table `pma__history`
---
-ALTER TABLE `pma__history`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `username` (`username`,`db`,`table`,`timevalue`);
-
---
--- Indexes for table `pma__navigationhiding`
---
-ALTER TABLE `pma__navigationhiding`
-  ADD PRIMARY KEY (`username`,`item_name`,`item_type`,`db_name`,`table_name`);
-
---
--- Indexes for table `pma__pdf_pages`
---
-ALTER TABLE `pma__pdf_pages`
-  ADD PRIMARY KEY (`page_nr`),
-  ADD KEY `db_name` (`db_name`);
-
---
--- Indexes for table `pma__recent`
---
-ALTER TABLE `pma__recent`
-  ADD PRIMARY KEY (`username`);
-
---
--- Indexes for table `pma__relation`
---
-ALTER TABLE `pma__relation`
-  ADD PRIMARY KEY (`master_db`,`master_table`,`master_field`),
-  ADD KEY `foreign_field` (`foreign_db`,`foreign_table`);
-
---
--- Indexes for table `pma__savedsearches`
---
-ALTER TABLE `pma__savedsearches`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `u_savedsearches_username_dbname` (`username`,`db_name`,`search_name`);
-
---
--- Indexes for table `pma__table_coords`
---
-ALTER TABLE `pma__table_coords`
-  ADD PRIMARY KEY (`db_name`,`table_name`,`pdf_page_number`);
-
---
--- Indexes for table `pma__table_info`
---
-ALTER TABLE `pma__table_info`
-  ADD PRIMARY KEY (`db_name`,`table_name`);
-
---
--- Indexes for table `pma__table_uiprefs`
---
-ALTER TABLE `pma__table_uiprefs`
-  ADD PRIMARY KEY (`username`,`db_name`,`table_name`);
-
---
--- Indexes for table `pma__tracking`
---
-ALTER TABLE `pma__tracking`
-  ADD PRIMARY KEY (`db_name`,`table_name`,`version`);
-
---
--- Indexes for table `pma__userconfig`
---
-ALTER TABLE `pma__userconfig`
-  ADD PRIMARY KEY (`username`);
-
---
--- Indexes for table `pma__usergroups`
---
-ALTER TABLE `pma__usergroups`
-  ADD PRIMARY KEY (`usergroup`,`tab`,`allowed`);
-
---
--- Indexes for table `pma__users`
---
-ALTER TABLE `pma__users`
-  ADD PRIMARY KEY (`username`,`usergroup`);
-
---
--- Indexes for table `projects`
---
 ALTER TABLE `projects`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_project_client_id` (`client_id`),
@@ -2503,86 +1609,50 @@ ALTER TABLE `projects`
   ADD KEY `fk_project_sub_project_id` (`sub_project_id`),
   ADD KEY `fk_project_invoice_firm_id` (`invoice_firm_id`);
 
---
--- Indexes for table `projects_settings`
---
 ALTER TABLE `projects_settings`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `reimburse_voucher`
---
 ALTER TABLE `reimburse_voucher`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_rv_client_id` (`client_id`),
   ADD KEY `fk_rv_project_id` (`project_id`);
 
---
--- Indexes for table `reimburse_voucher_payment_history`
---
-ALTER TABLE `reimburse_voucher_payment_history`
+ALTER TABLE `reimburse_voucher_transactions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `rv_payment_history_project_id` (`project_id`);
 
---
--- Indexes for table `statuses`
---
 ALTER TABLE `statuses`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `sub_projects`
---
 ALTER TABLE `sub_projects`
   ADD PRIMARY KEY (`id`),
   ADD KEY `name` (`name`);
 
---
--- Indexes for table `tasks`
---
 ALTER TABLE `tasks`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_task_client_id` (`client_id`),
   ADD KEY `fk_task_project_id` (`project_id`);
 
---
--- Indexes for table `tasks_particulars_remarks`
---
 ALTER TABLE `tasks_particulars_remarks`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_task_particulars_remarks_task_id` (`task_id`),
   ADD KEY `fk_task_particulars_remarks_project_id` (`project_id`);
 
---
--- Indexes for table `tasks_settings`
---
 ALTER TABLE `tasks_settings`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `the_references`
---
 ALTER TABLE `the_references`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `vendors`
---
 ALTER TABLE `vendors`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `vendors_projects`
---
 ALTER TABLE `vendors_projects`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_vp_vendor_id` (`vendor_id`),
   ADD KEY `fk_vp_client_id` (`client_id`),
   ADD KEY `fk_vp_project_id` (`project_id`);
 
---
--- Indexes for table `vendors_transactions`
---
 ALTER TABLE `vendors_transactions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_vt_vendor_id` (`vendor_id`),
@@ -2590,281 +1660,127 @@ ALTER TABLE `vendors_transactions`
   ADD KEY `fk_vt_owner_firms_id` (`owner_firms_id`),
   ADD KEY `fk_vt_project_id` (`project_id`);
 
---
--- AUTO_INCREMENT for dumped tables
---
 
---
--- AUTO_INCREMENT for table `activities`
---
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=514;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=532;
 
---
--- AUTO_INCREMENT for table `affiliates_projects`
---
 ALTER TABLE `affiliates_projects`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
---
--- AUTO_INCREMENT for table `affiliates_transactions`
---
 ALTER TABLE `affiliates_transactions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
---
--- AUTO_INCREMENT for table `cash_flows`
---
 ALTER TABLE `cash_flows`
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
---
--- AUTO_INCREMENT for table `cash_flows_entities`
---
 ALTER TABLE `cash_flows_entities`
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
---
--- AUTO_INCREMENT for table `cash_flows_heads`
---
 ALTER TABLE `cash_flows_heads`
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
---
--- AUTO_INCREMENT for table `cash_flows_settings`
---
 ALTER TABLE `cash_flows_settings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
---
--- AUTO_INCREMENT for table `cash_flows_transactions`
---
 ALTER TABLE `cash_flows_transactions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
---
--- AUTO_INCREMENT for table `customers`
---
 ALTER TABLE `customers`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `invoices`
---
 ALTER TABLE `invoices`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
---
--- AUTO_INCREMENT for table `invoices_payment_history`
---
-ALTER TABLE `invoices_payment_history`
+ALTER TABLE `invoices_transactions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
---
--- AUTO_INCREMENT for table `licenses`
---
 ALTER TABLE `licenses`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `notes`
---
 ALTER TABLE `notes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
---
--- AUTO_INCREMENT for table `petty_cash_transactions`
---
+ALTER TABLE `petty_cash`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
 ALTER TABLE `petty_cash_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
---
--- AUTO_INCREMENT for table `pma__bookmark`
---
-ALTER TABLE `pma__bookmark`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `pma__column_info`
---
-ALTER TABLE `pma__column_info`
-  MODIFY `id` int(5) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `pma__export_templates`
---
-ALTER TABLE `pma__export_templates`
-  MODIFY `id` int(5) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `pma__history`
---
-ALTER TABLE `pma__history`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `pma__pdf_pages`
---
-ALTER TABLE `pma__pdf_pages`
-  MODIFY `page_nr` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `pma__savedsearches`
---
-ALTER TABLE `pma__savedsearches`
-  MODIFY `id` int(5) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `projects_settings`
---
 ALTER TABLE `projects_settings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
---
--- AUTO_INCREMENT for table `reimburse_voucher`
---
 ALTER TABLE `reimburse_voucher`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `reimburse_voucher_payment_history`
---
-ALTER TABLE `reimburse_voucher_payment_history`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
---
--- AUTO_INCREMENT for table `statuses`
---
+ALTER TABLE `reimburse_voucher_transactions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
 ALTER TABLE `statuses`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
---
--- AUTO_INCREMENT for table `tasks_particulars_remarks`
---
 ALTER TABLE `tasks_particulars_remarks`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
---
--- AUTO_INCREMENT for table `tasks_settings`
---
 ALTER TABLE `tasks_settings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
---
--- AUTO_INCREMENT for table `vendors_projects`
---
 ALTER TABLE `vendors_projects`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `vendors_transactions`
---
 ALTER TABLE `vendors_transactions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- Constraints for dumped tables
---
 
---
--- Constraints for table `affiliates_projects`
---
 ALTER TABLE `affiliates_projects`
   ADD CONSTRAINT `fk_affiliates_projects_affiliate_id` FOREIGN KEY (`affiliate_id`) REFERENCES `affiliates` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_affiliates_projects_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
   ADD CONSTRAINT `fk_affiliates_projects_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
 
---
--- Constraints for table `affiliates_transactions`
---
 ALTER TABLE `affiliates_transactions`
   ADD CONSTRAINT `fk_aph_affiliate_id` FOREIGN KEY (`affiliate_id`) REFERENCES `affiliates` (`id`),
   ADD CONSTRAINT `fk_aph_owner_firms_bank_id` FOREIGN KEY (`owner_firms_banks_id`) REFERENCES `owner_firms_banks` (`id`),
   ADD CONSTRAINT `fk_aph_owner_firms_id` FOREIGN KEY (`owner_firms_id`) REFERENCES `owner_firms` (`id`),
   ADD CONSTRAINT `fk_aph_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
 
---
--- Constraints for table `cash_flows_entities`
---
 ALTER TABLE `cash_flows_entities`
   ADD CONSTRAINT `fk_cfe_module_id` FOREIGN KEY (`module_id`) REFERENCES `cash_flows_modules` (`custom_id`),
   ADD CONSTRAINT `fk_cfe_owner_firm_bank_id` FOREIGN KEY (`owner_firm_bank_id`) REFERENCES `owner_firms_banks` (`id`);
 
---
--- Constraints for table `cash_flows_transactions`
---
 ALTER TABLE `cash_flows_transactions`
   ADD CONSTRAINT `fk_cft_head_id` FOREIGN KEY (`head_id`) REFERENCES `cash_flows_heads` (`id`),
   ADD CONSTRAINT `fk_cft_module_id` FOREIGN KEY (`module_id`) REFERENCES `cash_flows_modules` (`custom_id`);
 
---
--- Constraints for table `companies`
---
 ALTER TABLE `companies`
   ADD CONSTRAINT `fk_company_client` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
--- Constraints for table `customers`
---
 ALTER TABLE `customers`
   ADD CONSTRAINT `fk_customer_license_key` FOREIGN KEY (`license_key`) REFERENCES `licenses` (`license_key`);
 
---
--- Constraints for table `employees`
---
 ALTER TABLE `employees`
   ADD CONSTRAINT `fk_employee_administrator_id` FOREIGN KEY (`administrator_id`) REFERENCES `administrators` (`id`);
 
---
--- Constraints for table `inquiries`
---
 ALTER TABLE `inquiries`
   ADD CONSTRAINT `fk_inquiry_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
   ADD CONSTRAINT `fk_inquiry_main_project_id` FOREIGN KEY (`main_project_id`) REFERENCES `main_projects` (`id`),
   ADD CONSTRAINT `fk_inquiry_reference_id` FOREIGN KEY (`reference_id`) REFERENCES `the_references` (`id`),
   ADD CONSTRAINT `fk_inquiry_sub_project_id` FOREIGN KEY (`sub_project_id`) REFERENCES `sub_projects` (`id`);
 
---
--- Constraints for table `invoices`
---
 ALTER TABLE `invoices`
   ADD CONSTRAINT `fk_invoice_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
   ADD CONSTRAINT `fk_invoice_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
 
---
--- Constraints for table `invoices_payment_history`
---
-ALTER TABLE `invoices_payment_history`
+ALTER TABLE `invoices_transactions`
   ADD CONSTRAINT `invoices_payment_history_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
 
---
--- Constraints for table `licenses`
---
 ALTER TABLE `licenses`
   ADD CONSTRAINT `fk_license_customer_id` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`);
 
---
--- Constraints for table `notes`
---
 ALTER TABLE `notes`
   ADD CONSTRAINT `fk_note_inquiry_id` FOREIGN KEY (`inquiry_id`) REFERENCES `inquiries` (`id`);
 
---
--- Constraints for table `owner_firms_banks`
---
 ALTER TABLE `owner_firms_banks`
   ADD CONSTRAINT `fk_ofb_owner_firms_id` FOREIGN KEY (`owner_firm_id`) REFERENCES `owner_firms` (`id`);
 
---
--- Constraints for table `petty_cash_transactions`
---
-ALTER TABLE `petty_cash_transactions`
-  ADD CONSTRAINT `fk_pct_owner_firm_bank_id` FOREIGN KEY (`owner_firm_bank_id`) REFERENCES `owner_firms_banks` (`id`),
-  ADD CONSTRAINT `fk_pct_owner_firm_id` FOREIGN KEY (`owner_firm_id`) REFERENCES `owner_firms` (`id`);
-
---
--- Constraints for table `projects`
---
 ALTER TABLE `projects`
   ADD CONSTRAINT `fk_p_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
   ADD CONSTRAINT `fk_p_company_id` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
@@ -2873,50 +1789,31 @@ ALTER TABLE `projects`
   ADD CONSTRAINT `fk_p_main_project_id` FOREIGN KEY (`main_project_id`) REFERENCES `main_projects` (`id`),
   ADD CONSTRAINT `fk_p_sub_project_id` FOREIGN KEY (`sub_project_id`) REFERENCES `sub_projects` (`id`);
 
---
--- Constraints for table `reimburse_voucher`
---
 ALTER TABLE `reimburse_voucher`
   ADD CONSTRAINT `fk_rv_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
   ADD CONSTRAINT `fk_rv_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
 
---
--- Constraints for table `reimburse_voucher_payment_history`
---
-ALTER TABLE `reimburse_voucher_payment_history`
+ALTER TABLE `reimburse_voucher_transactions`
   ADD CONSTRAINT `rv_payment_history_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
 
---
--- Constraints for table `tasks`
---
 ALTER TABLE `tasks`
   ADD CONSTRAINT `fk_task_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
   ADD CONSTRAINT `fk_task_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`);
 
---
--- Constraints for table `tasks_particulars_remarks`
---
 ALTER TABLE `tasks_particulars_remarks`
   ADD CONSTRAINT `fk_task_particulars_remarks_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`),
   ADD CONSTRAINT `fk_task_particulars_remarks_task_id` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`);
 
---
--- Constraints for table `vendors_projects`
---
 ALTER TABLE `vendors_projects`
   ADD CONSTRAINT `fk_vp_client_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
   ADD CONSTRAINT `fk_vp_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`),
   ADD CONSTRAINT `fk_vp_vendor_id` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`) ON DELETE CASCADE;
 
---
--- Constraints for table `vendors_transactions`
---
 ALTER TABLE `vendors_transactions`
   ADD CONSTRAINT `fk_vt_owner_firms_bank_id` FOREIGN KEY (`owner_firms_banks_id`) REFERENCES `owner_firms_banks` (`id`),
   ADD CONSTRAINT `fk_vt_owner_firms_id` FOREIGN KEY (`owner_firms_id`) REFERENCES `owner_firms` (`id`),
   ADD CONSTRAINT `fk_vt_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`),
   ADD CONSTRAINT `fk_vt_vendor_id` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`);
-COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

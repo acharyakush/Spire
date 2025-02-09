@@ -16,12 +16,23 @@ import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
-import { Badge, Spinner, Tooltip } from "@/components/Elements";
 import { Transactions } from "@/modals/rv/miscellaneous";
+import { Badge, Spinner, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendar, faCoins, faFileDownload, faFileExcel, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import {
+	faCalendar,
+	faChevronRight,
+	faCoins,
+	faFileDownload,
+	faFileExcel,
+	faMultiply,
+	faPlusCircle,
+	faSearch,
+	faSortAmountAsc,
+	faSortAmountDesc,
+} from "@fortawesome/free-solid-svg-icons";
 
-export default function RV({ status }) {
+export default function RV({ reload, unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.ReimburseVouchers;
 	const thisView = MyConstants.Modules.Base.Rv;
@@ -44,6 +55,7 @@ export default function RV({ status }) {
 
 	const [mounted, setMounted] = useState({
 		newRv: false,
+		history: false,
 		transactions: false,
 	});
 
@@ -269,19 +281,23 @@ export default function RV({ status }) {
 					let mainProjectName = "";
 					let subProjectName = "";
 
-					const transactionsHistory = response.data.transactionsHistory.filter((f) => f.project_id == m.id);
+					const transactions = response.data.rvTransactionsHistory.filter((f) => f.project_id == m.id);
 
-					if (Array.isArray(transactionsHistory) && transactionsHistory.length) {
-						amountReceived = transactionsHistory.reduce((pv, cv) => {
+					if (Array.isArray(transactions) && transactions.length) {
+						amountReceived = transactions.reduce((pv, cv) => {
 							return pv + Number(cv.amount);
 						}, 0);
 					}
 
-					const cashFlow = response.data.cashFlows.find((f) => f.client_id == m.client_id);
+					let amount = 0;
 
-					if (typeof cashFlow === "object") {
-						amountPending = Number(m.quote) - amountReceived;
-					}
+					response.data.tasks.filter((f) => {
+						if (f.project_id === m.id) {
+							amount += Number(f.expense);
+						}
+					});
+
+					amountPending = amount - amountReceived;
 
 					const company = response.data.companies.find((f) => f.id == m.company_id);
 
@@ -315,7 +331,7 @@ export default function RV({ status }) {
 
 					return {
 						...m,
-						amount: Number(m.quote),
+						amount,
 						amount_pending: amountPending,
 						amount_received: amountReceived,
 						company_name: companyName,
@@ -465,6 +481,12 @@ export default function RV({ status }) {
 				<div className="flex flex-col w-full h-full justify-center items-center">
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
 						<div className="flex w-1/5 space-x-2 justify-start items-center">
+							<span
+								className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
+								onClick={() => unmount()}>
+								{MyConstants.Modules.Base.CashFlow}
+							</span>
+							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
 							<span className="view-heading">{thisView}</span>
 							{getIconOrBadge()}
 						</div>
@@ -478,6 +500,10 @@ export default function RV({ status }) {
 						</div>
 					</div>
 					<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
+
+					{mounted.history && (
+						<Transactions mount={mounted.transactions} project={main.selectedProject} reload={setSupportData} unmount={toggleTransactions} />
+					)}
 
 					{mounted.transactions && (
 						<Transactions mount={mounted.transactions} project={main.selectedProject} reload={setSupportData} unmount={toggleTransactions} />
@@ -494,23 +520,20 @@ export default function RV({ status }) {
 
 		const id = MyGlobal.HighlightText(row.id, main.filter.find);
 
-		const invoiceId = MyGlobal.HighlightText(row.invoice_id, main.filter.find);
-		const _invoiceId = !invoiceId ? "Generate" : invoiceId;
+		const rvId = MyGlobal.HighlightText(row.rv_id, main.filter.find);
+		const _rvId = !row.rv_id ? "Generate" : rvId;
 
 		const companyName = MyGlobal.HighlightText(row.company_name, main.filter.find);
-
 		const mainProjectName = MyGlobal.HighlightText(row.main_project_name, main.filter.find);
-
 		const subProjectName = MyGlobal.HighlightText(row.sub_project_name, main.filter.find);
 
 		const amount = MyGlobal.HighlightText(row.amount, main.filter.find);
 		const amountPending = MyGlobal.HighlightText(row.amount_pending, main.filter.find);
-
 		const amountReceived = MyGlobal.HighlightText(row.amount_received, main.filter.find);
 
 		let generateRvTooltip = "";
 
-		if (_invoiceId != "Generate") {
+		if (_rvId != "Generate") {
 			generateRvTooltip = "Download this RV";
 		} else if (!allowNewRv) {
 			generateRvTooltip = "You do not have permission to generate RV";
@@ -519,7 +542,6 @@ export default function RV({ status }) {
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
 				<span className={style} dangerouslySetInnerHTML={{ __html: id }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: row.invoice_id }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: companyName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
@@ -534,11 +556,12 @@ export default function RV({ status }) {
 				<Tippy content={<Tooltip text={generateRvTooltip} />} disabled={!generateRvTooltip} placement="bottom">
 					<span
 						className={`${style} cursor-pointer primary-text`}
-						dangerouslySetInnerHTML={{ __html: _invoiceId }}
+						dangerouslySetInnerHTML={{ __html: _rvId }}
 						onClick={() => allowNewRv && toggleNewRV(row)}
 					/>
 				</Tippy>
 				<span className={`${style} space-x-5`}>
+					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} size="lg" />
 					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faFileDownload} size="lg" />
 					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faCoins} onClick={() => toggleTransactions(row)} size="lg" />
 				</span>

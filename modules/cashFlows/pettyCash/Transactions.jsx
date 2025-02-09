@@ -6,7 +6,6 @@ import axios from "axios";
 import dayjs from "dayjs";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
-import NewTransaction from "@/modals/cashFlows/pettyCash/NewTransaction";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -14,6 +13,7 @@ import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { NewTransaction } from "@/modals/cashFlows/pettyCash/miscellaneous";
 import {
 	faCalendar,
 	faChevronRight,
@@ -47,8 +47,11 @@ export default function Transactions({ reload, unmount }) {
 			transaction: "",
 		},
 		hasMounted: false,
-		isNewTransactionOpen: false,
 		sort: { column: "", isAscending: false },
+	});
+
+	const [mounted, setMounted] = useState({
+		newTransaction: false,
 	});
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
@@ -175,13 +178,15 @@ export default function Transactions({ reload, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.PettyCash.GetTransactions, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
-				const transactions = response.data.transactions.map((m) => {
+				let transactions = [];
+
+				response.data.transactions.forEach((fe) => {
 					let ownerFirmsName = "";
 					let ownerFirmsBanksName = "";
 
-					const ownerFirmsObj = response.data.ownerFirms.find((f) => f.id === m.owner_firm_id);
+					const ownerFirmsObj = response.data.ownerFirms.find((f) => f.id === fe.owner_firm_id);
 
-					const ownerFirmsBanksObj = response.data.ownerFirmsBanks.find((f) => f.id === m.owner_firm_bank_id);
+					const ownerFirmsBanksObj = response.data.ownerFirmsBanks.find((f) => f.id === fe.owner_firm_bank_id);
 
 					if (typeof ownerFirmsObj === "object") {
 						ownerFirmsName = ownerFirmsObj.name;
@@ -191,15 +196,17 @@ export default function Transactions({ reload, unmount }) {
 						ownerFirmsBanksName = ownerFirmsBanksObj.name;
 					}
 
-					return {
-						...m,
-						amount: Number(m.amount),
-						entry_at: new Date(m.entry_at),
-						entry_by_name: MyGlobal.GetAnyDataFromId(m.entry_by_id, "full_name"),
+					transactions.push({
+						...fe,
+						amount: Number(fe.amount),
+						entry_at: new Date(fe.entry_at),
+						entry_by_name: MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name"),
 						owner_firm_name: ownerFirmsName,
 						owner_firm_bank_name: ownerFirmsBanksName,
-					};
+					});
 				});
+
+				transactions.unshift(response.data.openingBalance.at(0));
 
 				setApi({
 					transactions: {
@@ -230,7 +237,7 @@ export default function Transactions({ reload, unmount }) {
 	}
 
 	function toggleNewTransaction() {
-		setOther((s) => ({ ...s, isNewTransactionOpen: !s.isNewTransactionOpen }));
+		setMounted((s) => ({ ...s, newTransaction: !s.newTransaction }));
 	}
 
 	// UI Components
@@ -264,14 +271,15 @@ export default function Transactions({ reload, unmount }) {
 		let totalAmountPaid = 0;
 		let totalAmountReceived = 0;
 
+		const totalBalance = Number(api.transactions.copy.at(-1)?.balance);
+		const _totalBalance = MyGlobal.ThousandSeparator(totalBalance);
+
 		api.transactions.data.forEach((fe) => {
-			totalAmountPaid += Number(fe.amount_paid);
+			if ("amount_paid" in fe) {
+				totalAmountPaid += Number(fe.amount_paid);
+			}
 			totalAmountReceived += Number(fe.amount_received);
 		});
-
-		const totalBalance = MyGlobal.ThousandSeparator(totalAmountPaid - totalAmountReceived);
-
-		const balanceStyle = `font-bold-10 ${totalAmountPaid - totalAmountReceived < 1000 ? "animate-ping orange-text" : "text-white"}`;
 
 		return (
 			<span className="w-full space-x-5 text-center text-white font-regular-10">
@@ -284,7 +292,7 @@ export default function Transactions({ reload, unmount }) {
 				</span>
 				<span />
 				<span>
-					Balance <b className={balanceStyle}>{totalBalance}</b>
+					Balance <b className="font-bold-10">{_totalBalance}</b>
 				</span>
 			</span>
 		);
@@ -319,7 +327,7 @@ export default function Transactions({ reload, unmount }) {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
-				<span className="flex w-[9.09%] justify-center items-center cursor-pointer font-medium-10" key={i}>
+				<span className="flex w-[12.50%] justify-center items-center cursor-pointer font-medium-10" key={i}>
 					<div className="flex w-full space-x-2 justify-center items-center text-center text-white" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
@@ -344,33 +352,46 @@ export default function Transactions({ reload, unmount }) {
 		}
 	}
 
+	function uiNewStartingBalance() {
+		return <FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleNewStartingBalance()} />;
+	}
+
 	function uiRows(row, i) {
-		const style = "flex flex-wrap w-[9.09%] min-h-9 justify-center items-center text-center";
+		const style = "flex flex-wrap w-[12.50%] min-h-9 justify-center items-center text-center";
+
+		const colour = Number(row.balance) < 1000 ? "orange-text font-bold-10" : "black-text";
+
+		const ownerFirmsName = MyGlobal.HighlightText(row.owner_firm_name, other.find.transaction);
+		const paymentType = MyGlobal.HighlightText(row.payment_type, other.find.transaction);
+
+		const remarks = MyGlobal.HighlightText(row.remarks, other.find.transaction);
 
 		const amountPaid = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.amount_paid), other.find.transaction);
 		const amountReceived = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.amount_received), other.find.transaction);
+
 		const balance = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.balance), other.find.transaction);
-		const entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.transaction);
-		const ownerFirmsName = MyGlobal.HighlightText(row.owner_firm_name, other.find.transaction);
-		const ownerFirmsBanksName = MyGlobal.HighlightText(row.owner_firm_bank_name, other.find.transaction);
-		const particulars = MyGlobal.HighlightText(row.particulars, other.find.transaction);
-		const paymentSource = MyGlobal.HighlightText(row.payment_source, other.find.transaction);
-		const paymentType = MyGlobal.HighlightText(row.payment_type, other.find.transaction);
-		const remarks = MyGlobal.HighlightText(row.remarks, other.find.transaction);
+
+		let particulars = "";
+		let entryByName = "";
+
+		if (i === 0) {
+			entryByName = "Signiix Advisors";
+			particulars = "SHREE GANESHAY NAMAH";
+		} else {
+			entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.transaction);
+			particulars = MyGlobal.HighlightText(row.particulars, other.find.transaction);
+		}
 
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
 				<span className={style}>{dayjs(row.entry_at).format("DD-MM-YYYY")}</span>
-
 				<span className={style} dangerouslySetInnerHTML={{ __html: ownerFirmsName }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: ownerFirmsBanksName }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: amountPaid }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: balance }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: paymentSource }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: paymentType }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: remarks }} />
+				<span className={`${style} red-text`} dangerouslySetInnerHTML={{ __html: amountPaid }} />
+				<span className={`${style} green-text`} dangerouslySetInnerHTML={{ __html: amountReceived }} />
+				<span className={`${style} ${colour}`} dangerouslySetInnerHTML={{ __html: balance }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: entryByName }} />
 			</div>
 		);
@@ -473,6 +494,7 @@ export default function Transactions({ reload, unmount }) {
 				</div>
 				<div className="flex w-1/2 space-x-2 justify-end items-center">
 					<div className="flex w-full space-x-2 justify-end items-center">
+						{uiNewStartingBalance()}
 						{uiFromDate()}
 						{uiToDate()}
 					</div>
@@ -481,7 +503,9 @@ export default function Transactions({ reload, unmount }) {
 				</div>
 			</div>
 			<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiMain()}</div>
-			{other.isNewTransactionOpen && <NewTransaction mount={other.isNewTransactionOpen} reload={reload} unmount={toggleNewTransaction} />}
+			{mounted.newTransaction && (
+				<NewTransaction lastTransaction={api.transactions.copy.at(-1)} mount={mounted.newTransaction} reload={reload} unmount={toggleNewTransaction} />
+			)}
 		</div>
 	);
 }

@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 			query("SELECT * FROM cash_flows WHERE is_deleted=0", []), // Queries
 			query("SELECT * FROM companies", []),
 			query("SELECT * FROM invoices", []),
-			query("SELECT * FROM invoices_payment_history", []),
+			query("SELECT * FROM invoices_transactions", []),
 			query("SELECT * FROM main_projects", []),
 			query("SELECT * FROM projects WHERE is_deleted=0", []),
 			query("SELECT * FROM sub_projects", []),
