@@ -32,7 +32,7 @@ import {
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function Invoices({ unmount }) {
+export default function Invoices({ presetStatus, unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.Invoices;
 	const thisView = MyConstants.Modules.Base.Invoices;
@@ -59,6 +59,7 @@ export default function Invoices({ unmount }) {
 		transactions: false,
 	});
 
+	const today = dayjs();
 	const allowNewInvoice = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInvoice);
 
 	const showFromDateClearIcon = main.filter.from ? "cursor-pointer primary-text" : "hidden";
@@ -154,7 +155,9 @@ export default function Invoices({ unmount }) {
 
 	function doFiltering(query) {
 		const filteredData = api.projectsCopy.filter((f) => {
-			if (query == "createdAt") {
+			const findText = main.filter.find.toLowerCase();
+
+			if (query === "createdAt") {
 				const createdAt = new Date(f.entry_date);
 				const startDate = main.filter.date.from;
 				const endDate = main.filter.date.to;
@@ -162,9 +165,13 @@ export default function Invoices({ unmount }) {
 				if (createdAt >= startDate && createdAt <= endDate) {
 					return f;
 				}
+			} else if (query === "DUE") {
+				return dayjs(f.invoice_due_date).isAfter(today, "date");
+			} else if (query === "GENERATED") {
+				return f.invoice_id && f.created_at;
+			} else if (query === "NOT GENERATED") {
+				return !f.invoice_id;
 			} else {
-				const findText = main.filter.find.toLowerCase();
-
 				return (
 					String(f.id).toLowerCase().includes(findText) ||
 					String(f.company_name).toLowerCase().includes(findText) ||
@@ -173,7 +180,9 @@ export default function Invoices({ unmount }) {
 					String(f.amount).includes(findText) ||
 					String(f.amount_received).includes(findText) ||
 					String(f.amount_pending).includes(findText) ||
-					String(f.custom_id).includes(findText)
+					String(f.invoice_id || "Generate")
+						.toLowerCase()
+						.includes(findText)
 				);
 			}
 		});
@@ -306,11 +315,13 @@ export default function Invoices({ unmount }) {
 					let invoiceId = "";
 					let invoiceCreatedAt = "";
 					let invoiceCreatedAtTime = "";
+					let invoiceDueDate = "";
 
 					if (typeof invoice === "object") {
 						invoiceId = invoice.custom_id;
 						invoiceCreatedAt = dayjs(invoice.created_at).format("DD/MM/YYYY");
 						invoiceCreatedAtTime = dayjs(invoice.created_at).format("hh:mm:ss a");
+						invoiceDueDate = invoice.due_date;
 					}
 
 					const mainProject = response.data.mainProjects.find((f) => f.id == m.main_project_id);
@@ -334,6 +345,7 @@ export default function Invoices({ unmount }) {
 						created_at: invoiceCreatedAt,
 						created_at_time: invoiceCreatedAtTime,
 						invoice_id: invoiceId,
+						invoice_due_date: invoiceDueDate,
 						main_project_name: mainProjectName,
 						sub_project_name: subProjectName,
 					};
@@ -518,8 +530,8 @@ export default function Invoices({ unmount }) {
 
 		const id = MyGlobal.HighlightText(row.id, main.filter.find);
 
-		const invoiceId = MyGlobal.HighlightText(row.invoice_id, main.filter.find);
-		const _invoiceId = !invoiceId ? "Generate" : invoiceId;
+		const label = !row.invoice_id ? "Generate" : row.invoice_id;
+		const invoiceId = MyGlobal.HighlightText(label, main.filter.find);
 
 		const companyName = MyGlobal.HighlightText(row.company_name, main.filter.find);
 		const mainProjectName = MyGlobal.HighlightText(row.main_project_name, main.filter.find);
@@ -532,7 +544,7 @@ export default function Invoices({ unmount }) {
 
 		if (!allowNewInvoice) {
 			generateInvoiceTooltip = "You do not have permission to generate invoice";
-		} else if (_invoiceId != "Generate") {
+		} else if (invoiceId != "Generate") {
 			generateInvoiceTooltip = "Edit this invoice";
 		}
 		return (
@@ -552,7 +564,7 @@ export default function Invoices({ unmount }) {
 				<Tippy content={<Tooltip text={generateInvoiceTooltip} />} disabled={!generateInvoiceTooltip} placement="bottom">
 					<span
 						className={`${style} cursor-pointer primary-text`}
-						dangerouslySetInnerHTML={{ __html: _invoiceId }}
+						dangerouslySetInnerHTML={{ __html: invoiceId }}
 						onClick={() => allowNewInvoice && toggleNewInvoice(row)}
 					/>
 				</Tippy>
@@ -607,6 +619,14 @@ export default function Invoices({ unmount }) {
 		globalThis.addEventListener("keydown", detectKeystrokes);
 		return () => globalThis.removeEventListener("keydown", detectKeystrokes);
 	}, []);
+
+	useEffect(() => {
+		if (api.projectsCopy.length) {
+			if ("find" in presetStatus) {
+				doFiltering(presetStatus.find);
+			}
+		}
+	}, [api.projectsCopy.length]);
 
 	useEffect(() => {
 		if (main.filter.date.from && main.filter.date.to) {

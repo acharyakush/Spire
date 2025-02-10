@@ -283,11 +283,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 				response.data.forEach((fe) => {
 					const clientName = MyGlobal.GetNameFromId(fe.client_id, supportData.clients);
-
 					const referenceName = MyGlobal.GetNameFromId(fe.reference_id, supportData.references);
-
 					const followUps = MyGlobal.GetAnyDataFromId(fe.follow_ups, "full_name");
-
 					const entryBy = MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name");
 
 					let phoneNumber = fe.phone_number;
@@ -897,11 +894,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	// Hooks
 	useEffect(() => {
 		setSupportData();
-
 		globalThis.addEventListener("keydown", detectKeystrokes);
 
 		return () => {
-			setModuleProps(thisView, null);
+			setModuleProps(thisView, "");
 			globalThis.removeEventListener("keydown", detectKeystrokes);
 		};
 	}, []);

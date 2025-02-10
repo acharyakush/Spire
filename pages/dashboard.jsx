@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
-import { Badge } from "@/components/Elements";
+import { Badge, BadgeLarge } from "@/components/Elements";
 import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -34,6 +34,12 @@ export default function Dashboard({ setModuleProps }) {
 		},
 		isLoading: false,
 		projects: { active: 0, closed: 0, completed: 0, hold: 0, total: 0 },
+		rv: {
+			due: { amount: 0, count: 0, label: "DUE" },
+			generated: { amount: 0, count: 0, label: "GENERATED" },
+			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
+			total: 0,
+		},
 		tasks: { overdue: 0, today: 0, tomorrow: 0, total: 0, upcoming: 0 },
 	});
 
@@ -93,6 +99,10 @@ export default function Dashboard({ setModuleProps }) {
 			if (response.status == 200) {
 				const inquiriesCount = { closed: 0, confirmed: 0, hold: 0, open: 0, total: response.data.inquiries.length };
 
+				const projectsCount = { active: 0, closed: 0, completed: 0, hold: 0, total: response.data.projects.length };
+
+				const tasksCount = { overdue: 0, today: 0, tomorrow: 0, total: response.data.tasks.length, upcoming: 0 };
+
 				for (const inquiry of response.data.inquiries) {
 					if (inquiry.status == inquiriesStatus.Closed) {
 						inquiriesCount.closed++;
@@ -105,64 +115,88 @@ export default function Dashboard({ setModuleProps }) {
 					}
 				}
 
-				const projectsCount = { active: 0, closed: 0, completed: 0, hold: 0, total: response.data.projects.length };
-
-				for (const project of response.data.projects) {
-					if (project.status == projectsStatus.Active) {
+				for (const p of response.data.projects) {
+					if (p.status == projectsStatus.Active) {
 						projectsCount.active++;
-					} else if (project.status == projectsStatus.Closed) {
+					} else if (p.status == projectsStatus.Closed) {
 						projectsCount.closed++;
-					} else if (project.status == projectsStatus.Completed) {
+					} else if (p.status == projectsStatus.Completed) {
 						projectsCount.completed++;
-					} else if (project.status == projectsStatus.Hold) {
+					} else if (p.status == projectsStatus.Hold) {
 						projectsCount.hold++;
 					}
 				}
 
-				const tasksCount = { overdue: 0, today: 0, tomorrow: 0, total: response.data.tasks.length, upcoming: 0 };
+				for (const t of response.data.tasks) {
+					const dueDate = dayjs(t.due_on);
 
-				for (const task of response.data.tasks) {
-					if (dayjs(task.due_on).isBefore(today)) {
+					if (dueDate.isBefore(today, "date")) {
 						tasksCount.overdue++;
-					} else if (dayjs(task.due_on).isSame(today)) {
+					} else if (dueDate.isSame(today, "date")) {
 						tasksCount.today++;
-					} else if (dayjs(task.due_on).isSame(today.add(1, "day"), "day")) {
+					} else if (dueDate.isSame(today.add(1, "day"), "date")) {
 						tasksCount.tomorrow++;
-					} else if (dayjs(task.due_on).isAfter(today.add(1, "day"), "day")) {
+					} else if (dueDate.isAfter(today.add(1, "day"), "date")) {
 						tasksCount.upcoming++;
 					}
 				}
 
-				const invoicesData = Object.assign({}, main.invoices);
+				// Invoices
+				const invoicesObj = Object.assign({}, main.invoices);
 
 				response.data.invoices.forEach((fe) => {
 					if (dayjs(fe.due_date).isBefore(today)) {
-						invoicesData.due.amount += Number(fe.amount);
-						invoicesData.due.count += 1;
+						invoicesObj.due.amount += Number(fe.amount);
+						invoicesObj.due.count += 1;
 					}
 
 					if (fe.custom_id) {
-						invoicesData.generated.amount += Number(fe.amount);
-						invoicesData.generated.count += 1;
+						invoicesObj.generated.amount += Number(fe.amount);
+						invoicesObj.generated.count += 1;
 					}
 				});
 
 				const invoiceProjectIds = new Set(response.data.invoices.map((m) => m.project_id));
-
 				const isNotGenerated = response.data.projects.filter((f) => !invoiceProjectIds.has(f.id));
 
 				isNotGenerated.forEach((fe, i) => {
-					invoicesData.notGenerated.amount += Number(fe.quote);
-					invoicesData.notGenerated.count = i + 1;
+					invoicesObj.notGenerated.amount += Number(fe.quote);
+					invoicesObj.notGenerated.count = i + 1;
 				});
 
-				invoicesData.total = response.data.invoices.length;
+				invoicesObj.total = response.data.invoices.length;
+
+				// Reimbursement Voucher
+				const rvObj = Object.assign({}, main.rv);
+
+				response.data.rv.forEach((fe) => {
+					if (dayjs(fe.due_date).isBefore(today)) {
+						rvObj.due.amount += Number(fe.amount);
+						rvObj.due.count += 1;
+					}
+
+					if (fe.custom_id) {
+						rvObj.generated.amount += Number(fe.amount);
+						rvObj.generated.count += 1;
+					}
+				});
+
+				const rvProjectIds = new Set(response.data.rv.map((m) => m.project_id));
+				const notGeneratedRv = response.data.projects.filter((f) => !rvProjectIds.has(f.id));
+
+				notGeneratedRv.forEach((fe, i) => {
+					rvObj.notGenerated.amount += Number(fe.quote);
+					rvObj.notGenerated.count = i + 1;
+				});
+
+				rvObj.total = response.data.rv.length;
 
 				setMain((s) => ({
 					...s,
-					invoices: invoicesData,
+					invoices: invoicesObj,
 					inquiries: inquiriesCount,
 					projects: projectsCount,
+					rv: rvObj,
 					tasks: tasksCount,
 				}));
 			}
@@ -189,7 +223,7 @@ export default function Dashboard({ setModuleProps }) {
 				</div>
 				<div className="flex flex-col pt-2 justify-center items-center">
 					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-20">{value}</span>
+					<span className="font-bold-24">{value}</span>
 				</div>
 			</div>
 		);
@@ -211,7 +245,7 @@ export default function Dashboard({ setModuleProps }) {
 				<div className="py-2.5 px-8 rounded-b-full shadow-2xl font-semibold-24 text-white gray-background-transparent-01">{count}</div>
 				<div className="flex flex-col pt-2 justify-center items-center">
 					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-20">{MyGlobal.FormatCurrency(amount)}</span>
+					<span className="font-bold-24">{MyGlobal.FormatCurrency(amount)}</span>
 				</div>
 			</div>
 		);
@@ -220,24 +254,24 @@ export default function Dashboard({ setModuleProps }) {
 	function uiProjectsAndTasks() {
 		return (
 			<div className="flex w-full p-5 space-x-10 justify-between items-center">
-				<div className="flex flex-col w-1/2 space-y-2.5 justify-between items-center">
-					<div className="flex w-full space-x-2.5 justify-start items-center font-semibold-30 primary-text">
+				<div className="flex flex-col w-1/2 justify-between items-start">
+					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text">
 						<span>{baseModules.Projects}</span>
-						<Badge value={main.projects.total} />
+						<BadgeLarge value={main.projects.total} />
 					</div>
-					<div className="w-full space-y-10 columns-2 gap-x-10">
+					<div className="w-4/5 pt-2.5 space-y-5 columns-2 gap-x-5">
 						{uiProjects(projectsStatus.Active)}
 						{uiProjects(projectsStatus.Closed)}
 						{uiProjects(projectsStatus.Completed)}
 						{uiProjects(projectsStatus.Hold)}
 					</div>
 				</div>
-				<div className="flex flex-col w-1/2 space-y-2.5 justify-between items-center">
-					<div className="flex w-full space-x-2.5 justify-start items-center font-semibold-30 primary-text">
+				<div className="flex flex-col w-1/2 justify-between items-end">
+					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text">
 						<span>{baseModules.Tasks}</span>
-						<Badge value={main.projects.total} />
+						<BadgeLarge value={main.tasks.total} />
 					</div>
-					<div className="w-full space-y-10 columns-2 gap-x-10">
+					<div className="w-4/5 pt-2.5 space-y-5 columns-2 gap-x-5">
 						{uiTasks("Overdue")}
 						{uiTasks("Today")}
 						{uiTasks("Tomorrow")}
@@ -257,13 +291,35 @@ export default function Dashboard({ setModuleProps }) {
 		const wrapper = `flex flex-col w-full px-6 pb-4 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
 
 		return (
-			<div className={wrapper} onClick={() => setModuleProps(baseModules.Projects, key)}>
+			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
 				<div className="py-4 px-8 rounded-b-full shadow-2xl gray-background-transparent-01">
 					<FontAwesomeIcon className="text-2xl text-white" icon={aesthetics.icon} />
 				</div>
 				<div className="flex flex-col pt-2 justify-center items-center">
 					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-20">{value}</span>
+					<span className="font-bold-24">{value}</span>
+				</div>
+			</div>
+		);
+	}
+
+	function uiRv(key) {
+		const aesthetics = getBackgroundAndIcon(key);
+
+		const _key = MyGlobal.TrimInnerSpace(key).toLowerCase();
+
+		const amount = key == main.invoices.notGenerated.label ? main.invoices.notGenerated.amount : main.invoices[_key]?.amount;
+
+		const count = key == main.invoices.notGenerated.label ? main.invoices.notGenerated.count : main.invoices[_key]?.count;
+
+		const wrapper = `flex flex-col w-full px-6 pb-4 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+
+		return (
+			<div className={wrapper} onClick={() => setModuleProps(baseModules.Rv, key)}>
+				<div className="py-2.5 px-8 rounded-b-full shadow-2xl font-semibold-24 text-white gray-background-transparent-01">{count}</div>
+				<div className="flex flex-col pt-2 justify-center items-center">
+					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
+					<span className="font-bold-24">{MyGlobal.FormatCurrency(amount)}</span>
 				</div>
 			</div>
 		);
@@ -278,13 +334,13 @@ export default function Dashboard({ setModuleProps }) {
 		const wrapper = `flex flex-col w-full px-6 pb-4 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
 
 		return (
-			<div className={wrapper} onClick={() => setModuleProps(baseModules.Tasks, key)}>
+			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
 				<div className="py-4 px-8 rounded-b-full shadow-2xl gray-background-transparent-01">
 					<FontAwesomeIcon className="text-2xl text-white" icon={aesthetics.icon} />
 				</div>
 				<div className="flex flex-col pt-2 justify-center items-center">
 					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-20">{value}</span>
+					<span className="font-bold-24">{value}</span>
 				</div>
 			</div>
 		);
@@ -296,13 +352,13 @@ export default function Dashboard({ setModuleProps }) {
 	}, []);
 
 	return (
-		<div className="w-full h-full p-5 space-y-5 overflow-y-auto">
+		<div className="w-full h-full p-5 space-y-1 overflow-y-auto">
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-semibold-30 primary-text">
+				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
 					<span>{baseModules.Inquiries}</span>
-					<Badge value={main.inquiries.total} />
+					<BadgeLarge value={main.inquiries.total} />
 				</div>
-				<div className="flex w-full space-x-10 justify-between items-center">
+				<div className="flex w-full space-x-28 justify-between items-center">
 					{uiInquiries(inquiriesStatus.Open)}
 					{uiInquiries(inquiriesStatus.Closed)}
 					{uiInquiries(inquiriesStatus.Confirmed)}
@@ -311,14 +367,25 @@ export default function Dashboard({ setModuleProps }) {
 			</div>
 			{uiProjectsAndTasks()}
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-semibold-30 primary-text">
+				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
 					<span>{baseModules.Invoices}</span>
-					<Badge value={main.invoices.total} />
+					<BadgeLarge value={main.projects.total} />
 				</div>
-				<div className="flex w-full space-x-10 justify-between items-center">
+				<div className="flex w-full space-x-48 justify-between items-center">
 					{uiInvoices(main.invoices.due.label)}
 					{uiInvoices(main.invoices.generated.label)}
 					{uiInvoices(main.invoices.notGenerated.label)}
+				</div>
+			</div>
+			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
+				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
+					<span>{baseModules.Rv}</span>
+					<BadgeLarge value={main.projects.total} />
+				</div>
+				<div className="flex w-full space-x-48 justify-between items-center">
+					{uiRv(main.rv.due.label)}
+					{uiRv(main.rv.generated.label)}
+					{uiRv(main.rv.notGenerated.label)}
 				</div>
 			</div>
 		</div>

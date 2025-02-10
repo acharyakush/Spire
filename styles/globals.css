@@ -558,6 +558,11 @@ html {
 	font-family: var(--semibold);
 }
 
+.font-semibold-20 {
+	@apply text-[20px] font-semibold;
+	font-family: var(--semibold);
+}
+
 .font-semibold-24 {
 	@apply text-[24px] font-semibold;
 	font-family: var(--semibold);

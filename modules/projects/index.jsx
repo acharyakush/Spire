@@ -20,7 +20,7 @@ import { Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
 import { faCheck, faChevronDown, faFileExcel, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
 
-export default function Projects() {
+export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
 	const [api, setApi] = useState({
 		notes: [],
@@ -30,7 +30,7 @@ export default function Projects() {
 	const [main, setMain] = useState({
 		activeModule: { items: [], name: "All" },
 		dueDate: { from: "", to: "" },
-		findText: "",
+		findText: presetStatus ?? "",
 		isLoading: { selectedProject: false, supportData: false },
 		selectedClient: {},
 		selectedProject: {},
@@ -47,13 +47,13 @@ export default function Projects() {
 		singleProject: false,
 	});
 
+	const today = dayjs();
 	const statuses = MyConstants.Statuses.Projects;
 	const thisView = MyConstants.Modules.Base.Projects;
 	const tableHeaders = MyConstants.TableHeaders.Projects;
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const allowDeletingProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteProject);
-
 	const allowEditingProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditProject);
 
 	const showFindBoxClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
@@ -70,7 +70,7 @@ export default function Projects() {
 	}
 
 	function doFiltering() {
-		const filteredData = getSelectedProjectData().filter((f) => {
+		const filtered = getSelectedProjectData().filter((f) => {
 			const findText = main.findText.toLowerCase();
 
 			const projectId = String(f.id).toLowerCase();
@@ -103,7 +103,7 @@ export default function Projects() {
 			);
 		});
 
-		setApi((s) => ({ ...s, projects: { ...s.projects, data: filteredData } }));
+		setApi((s) => ({ ...s, projects: { ...s.projects, data: filtered } }));
 	}
 
 	function doSorting() {
@@ -284,7 +284,26 @@ export default function Projects() {
 	}
 
 	function getRowsCount() {
-		const apiCount = api.projects.data.length;
+		const apiCount = api.projects.data.filter((f) => {
+			if (main.findText.length) {
+				if (Object.values(statuses).includes(main.findText)) {
+					return f.status.includes(main.findText);
+				} else {
+					if (main.findText === "Overdue") {
+						return f.has_tasks_overdue;
+					} else if (main.findText === "Today") {
+						return f.has_tasks_due_today;
+					} else if (main.findText === "Tomorrow") {
+						return f.has_tasks_due_tomorrow;
+					} else if (main.findText === "Upcoming") {
+						return f.has_tasks_upcoming;
+					}
+				}
+			}
+
+			return f;
+		}).length;
+
 		const apiCopyCount = api.projects.copy.length;
 
 		if (apiCount != apiCopyCount) {
@@ -299,7 +318,25 @@ export default function Projects() {
 
 		if (api.projects.copy.length > 0) {
 			if (main.activeModule.name == "All") {
-				source = api.projects.copy;
+				source = api.projects.copy.filter((f) => {
+					if (main.findText.length) {
+						if (Object.values(statuses).includes(main.findText)) {
+							return f.status.includes(main.findText);
+						} else {
+							if (main.findText === "Overdue") {
+								return f.has_tasks_overdue;
+							} else if (main.findText === "Today") {
+								return f.has_tasks_due_today;
+							} else if (main.findText === "Tomorrow") {
+								return f.has_tasks_due_tomorrow;
+							} else if (main.findText === "Upcoming") {
+								return f.has_tasks_upcoming;
+							}
+						}
+					}
+
+					return f;
+				});
 			} else {
 				const items = getAggregatedProjects().find((f) => f.key == main.activeModule.name).items;
 
@@ -345,25 +382,53 @@ export default function Projects() {
 			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetProjects, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				const revisedProjects = [];
+				let revised = [];
 
 				response.data.projects.forEach((fe) => {
 					const clientName = MyGlobal.GetNameFromId(fe.client_id, response.data.clients);
-
 					const companyName = MyGlobal.GetNameFromId(fe.company_id, response.data.companies);
-
 					const mainProjectName = MyGlobal.GetNameFromId(fe.main_project_id, response.data.mainProjects);
-
-					const reimburseVoucher = response.data.tasks.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.expense), 0);
-
 					const subProjectName = MyGlobal.GetNameFromId(fe.sub_project_id, response.data.subProjects);
-
 					const teamNames = MyGlobal.GetAnyDataFromId(fe.teams, "full_name");
 
-					revisedProjects.push({
+					let hasTasksOverdue = false;
+					let hasTasksDueTomorrow = false;
+					let hasTasksDueToday = false;
+					let hasTasksUpcoming = false;
+					let reimburseVoucher = 0;
+
+					response.data.tasks.forEach((_fe) => {
+						if (_fe.project_id === fe.id) {
+							reimburseVoucher += Number(_fe.expense);
+
+							const tasksDueDate = dayjs(_fe.due_on);
+
+							if (tasksDueDate.isBefore(today, "date")) {
+								hasTasksOverdue = true;
+							}
+
+							if (tasksDueDate.isSame(today, "date")) {
+								hasTasksDueToday = true;
+							}
+
+							if (tasksDueDate.isSame(today.add(1, "day"), "date")) {
+								hasTasksDueTomorrow = true;
+							}
+
+							if (tasksDueDate.isAfter(today.add(1, "day"), "date")) {
+								hasTasksUpcoming = true;
+							}
+						}
+					});
+
+					revised.push({
 						...fe,
 						client_name: clientName,
 						company_name: companyName,
+						has_tasks_overdue: hasTasksOverdue,
+						has_tasks_due_today: hasTasksDueToday,
+						has_tasks_due_tomorrow: hasTasksDueTomorrow,
+						has_tasks_upcoming: hasTasksUpcoming,
 						main_project_name: mainProjectName,
 						reimburse_voucher: reimburseVoucher,
 						sub_project_name: subProjectName,
@@ -376,14 +441,13 @@ export default function Projects() {
 				setApi({
 					notes: response.data.notes,
 					projects: {
-						copy: revisedProjects,
-						data: revisedProjects,
+						copy: revised,
+						data: revised,
 					},
 				});
 
 				if (projectId) {
-					const updateSelectedProject = revisedProjects.find((f) => f.id == projectId);
-
+					const updateSelectedProject = revised.find((f) => f.id == projectId);
 					setMain((s) => ({ ...s, selectedProject: updateSelectedProject }));
 				}
 
@@ -720,7 +784,11 @@ export default function Projects() {
 		setSupportData();
 
 		globalThis.addEventListener("keydown", autoFocusFindBox);
-		return () => globalThis.removeEventListener("keydown", autoFocusFindBox);
+
+		return () => {
+			setModuleProps("projectsOrTasks", "");
+			globalThis.removeEventListener("keydown", autoFocusFindBox);
+		};
 	}, []);
 
 	useEffect(() => {

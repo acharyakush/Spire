@@ -5,7 +5,6 @@
 import axios from "axios";
 import Dashboard from "./dashboard";
 import Clients from "@/modules/clients";
-import RV from "@/modules/cashFlows/rv";
 import Projects from "@/modules/projects";
 import Inquiries from "@/modules/inquiries";
 import CashFlows from "@/modules/cashFlows";
@@ -25,6 +24,7 @@ import { faCheck, faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock
 export default function Home() {
 	// Business Logic
 	const router = useRouter();
+
 	const tabRefs = useRef([]);
 	const gliderRef = useRef(null);
 	const tabsContainerRef = useRef(null);
@@ -40,10 +40,21 @@ export default function Home() {
 	const [main, setMain] = useState({
 		isDarkModeEnabled: false,
 		mode: null,
-		selectedModule: { index: 0, name: baseModules.Dashboard },
+		selectedModule: {
+			index: 0,
+			name: baseModules.Dashboard,
+		},
 		singleProjectObject: {},
-		status: { cashFlow: "", inquiries: "", invoices: "", projects: "", rv: "", tasks: "" },
-		user: { fullName: "", designation: "", role: "" },
+		status: {
+			inquiries: "",
+			invoicesOrRv: { find: "", module: "" },
+			projectsOrTasks: "",
+		},
+		user: {
+			fullName: "",
+			designation: "",
+			role: "",
+		},
 	});
 
 	const [mounted, setMounted] = useState({
@@ -203,7 +214,14 @@ export default function Home() {
 
 	function setModuleProps(key, value) {
 		const _key = String(key).toLowerCase();
-		setMain((s) => ({ ...s, status: { ...s.status, [_key]: value } }));
+
+		if (key === baseModules.Invoices || key === baseModules.Rv) {
+			setMain((s) => ({ ...s, status: { ...s.status, invoicesOrRv: { find: value, module: value ? key : null } } }));
+		} else if (key === "projectsOrTasks") {
+			setMain((s) => ({ ...s, status: { ...s.status, projectsOrTasks: value } }));
+		} else {
+			setMain((s) => ({ ...s, status: { ...s.status, [_key]: value } }));
+		}
 	}
 
 	function toggleActivitiesView() {
@@ -324,7 +342,7 @@ export default function Home() {
 						key={`ErrorBoundary_${baseModules.CashFlow}`}
 						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.CashFlow)}
 						FallbackComponent={ErrorFallbackComponent}>
-						<CashFlows setModuleProps={setModuleProps} />
+						<CashFlows presetStatus={main.status.invoicesOrRv} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Clients:
@@ -354,31 +372,13 @@ export default function Home() {
 						<Inquiries presetStatus={main.status.inquiries} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
-			case baseModules.Invoices:
-				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Invoices}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Invoices)}
-						FallbackComponent={ErrorFallbackComponent}>
-						<Invoices status={main.status.invoices} />
-					</ErrorBoundary>
-				);
 			case baseModules.Projects:
 				return (
 					<ErrorBoundary
 						key={`ErrorBoundary_${baseModules.Projects}`}
 						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Projects)}
 						FallbackComponent={ErrorFallbackComponent}>
-						<Projects />
-					</ErrorBoundary>
-				);
-			case baseModules.Rv:
-				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Rv}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Rv)}
-						FallbackComponent={ErrorFallbackComponent}>
-						<RV status={main.status.rv} />
+						<Projects presetStatus={main.status.projectsOrTasks} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 		}
@@ -477,13 +477,11 @@ export default function Home() {
 
 	useEffect(() => {
 		if (main.status.inquiries) {
-			setModule({ name: baseModules.Inquiries }, MyGlobal.GetModuleSequence(baseModules.Inquiries));
-		} else if (main.status.invoices) {
-			setModule({ name: baseModules.Invoices }, MyGlobal.GetModuleSequence(baseModules.Invoices));
-		} else if (main.status.projects) {
-			setModule({ name: baseModules.Projects }, MyGlobal.GetModuleSequence(baseModules.Projects));
-		} else if (main.status.tasks) {
-			setModule({ name: baseModules.Tasks }, MyGlobal.GetModuleSequence(baseModules.Tasks));
+			setModule(1, { name: baseModules.Inquiries });
+		} else if (main.status.invoicesOrRv.find && main.status.invoicesOrRv.module) {
+			setModule(4, { name: baseModules.CashFlow });
+		} else if (main.status.projectsOrTasks) {
+			setModule(2, { name: baseModules.Projects });
 		}
 	}, [main.status]);
 
@@ -495,8 +493,10 @@ export default function Home() {
 	return (
 		<main className="flex flex-col min-w-[1024px] h-screen overflow-y-hidden">
 			<div className="flex w-full h-11 px-5 justify-between items-center relative shadow contrast-background">
-				<div className="flex w-full justify-start items-center cursor-pointer" onClick={() => setModule(0, { name: baseModules.Dashboard })}>
-					<span className="uppercase dashboard-heading">{applicationName}</span>
+				<div className="flex w-full justify-start items-center">
+					<span className="cursor-pointer uppercase dashboard-heading" onClick={() => setModule(0, { name: baseModules.Dashboard })}>
+						{applicationName}
+					</span>
 				</div>
 				<div className="flex w-full justify-center items-center">
 					<div className="flex justify-center items-center relative">

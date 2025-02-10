@@ -19,7 +19,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, ErrorFallbackComponent, SpinnerBig } from "@/components/Elements";
 import { faArrowUpRightFromSquare, faStar, faTurnDown, faTurnUp } from "@fortawesome/free-solid-svg-icons";
 
-export default function CashFlows({ setModuleProps }) {
+export default function CashFlows({ presetStatus, setModuleProps }) {
 	// Business Logic
 	const baseModules = MyConstants.Modules.Base;
 	const categories = MyConstants.Modules.Other.CashFlow;
@@ -29,6 +29,12 @@ export default function CashFlows({ setModuleProps }) {
 	const affiliatesView = baseModules.Affiliates;
 	const vendorsView = baseModules.Vendors;
 	const invoicesView = baseModules.Invoices;
+
+	let module = "";
+
+	if ("find" in presetStatus && "module" in presetStatus) {
+		module = presetStatus.module;
+	}
 
 	const [api, setApi] = useState({
 		affiliates: [],
@@ -51,7 +57,7 @@ export default function CashFlows({ setModuleProps }) {
 			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
 		},
 		isLoading: false,
-		module: "",
+		module,
 		officeExpense: {
 			pending: { amount: 0, label: "PENDING" },
 			paid: { amount: 0, label: "PAID" },
@@ -348,6 +354,10 @@ export default function CashFlows({ setModuleProps }) {
 			clearData();
 		} else {
 			setMain((s) => ({ ...s, module: "" }));
+
+			setModuleProps(baseModules.Invoices, "");
+			setModuleProps(baseModules.Rv, "");
+
 			getSupportData();
 		}
 	}
@@ -517,7 +527,7 @@ export default function CashFlows({ setModuleProps }) {
 						key={`ErrorBoundary_${baseModules.Invoices}`}
 						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Invoices)}
 						FallbackComponent={ErrorFallbackComponent}>
-						<Invoices reload={getSupportData} unmount={toggleModule} />
+						<Invoices presetStatus={presetStatus} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
 			} else if (main.module == baseModules.Vendors) {
