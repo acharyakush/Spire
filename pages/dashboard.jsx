@@ -214,16 +214,16 @@ export default function Dashboard({ setModuleProps }) {
 		const _key = String(key).toLowerCase();
 		const value = main.inquiries[_key];
 
-		const wrapper = `flex flex-col w-full px-6 pb-4 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Inquiries, key)}>
-				<div className="py-4 px-8 rounded-b-full shadow-2xl gray-background-transparent-01">
-					<FontAwesomeIcon className="text-2xl text-white" icon={aesthetics.icon} />
+				<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
+					<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
 				</div>
-				<div className="flex flex-col pt-2 justify-center items-center">
+				<div className="flex flex-col px-8 justify-center items-center">
 					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-24">{value}</span>
+					<span className="font-bold-28">{value}</span>
 				</div>
 			</div>
 		);
@@ -238,14 +238,14 @@ export default function Dashboard({ setModuleProps }) {
 
 		const count = key == main.invoices.notGenerated.label ? main.invoices.notGenerated.count : main.invoices[_key]?.count;
 
-		const wrapper = `flex flex-col w-full px-6 pb-4 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Invoices, key)}>
-				<div className="py-2.5 px-8 rounded-b-full shadow-2xl font-semibold-24 text-white gray-background-transparent-01">{count}</div>
-				<div className="flex flex-col pt-2 justify-center items-center">
+				<div className="py-4 px-8 rounded-r-full shadow-2xl font-semibold-24 text-white gray-background-transparent-02">{count}</div>
+				<div className="flex flex-col px-8 justify-center items-center">
 					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-24">{MyGlobal.FormatCurrency(amount)}</span>
+					<span className="font-bold-28">{MyGlobal.FormatCurrency(amount)}</span>
 				</div>
 			</div>
 		);
@@ -288,16 +288,16 @@ export default function Dashboard({ setModuleProps }) {
 		const _key = String(key).toLowerCase();
 		const value = main.projects[_key];
 
-		const wrapper = `flex flex-col w-full px-6 pb-4 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
-				<div className="py-4 px-8 rounded-b-full shadow-2xl gray-background-transparent-01">
-					<FontAwesomeIcon className="text-2xl text-white" icon={aesthetics.icon} />
+				<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
+					<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
 				</div>
-				<div className="flex flex-col pt-2 justify-center items-center">
+				<div className="flex flex-col px-8 justify-center items-center">
 					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-24">{value}</span>
+					<span className="font-bold-28">{value}</span>
 				</div>
 			</div>
 		);
@@ -312,14 +312,14 @@ export default function Dashboard({ setModuleProps }) {
 
 		const count = key == main.invoices.notGenerated.label ? main.invoices.notGenerated.count : main.invoices[_key]?.count;
 
-		const wrapper = `flex flex-col w-full px-6 pb-4 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Rv, key)}>
-				<div className="py-2.5 px-8 rounded-b-full shadow-2xl font-semibold-24 text-white gray-background-transparent-01">{count}</div>
-				<div className="flex flex-col pt-2 justify-center items-center">
+				<div className="py-4 px-8 rounded-r-full shadow-2xl font-semibold-24 text-white gray-background-transparent-02">{count}</div>
+				<div className="flex flex-col px-8 justify-center items-center">
 					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-24">{MyGlobal.FormatCurrency(amount)}</span>
+					<span className="font-bold-28">{MyGlobal.FormatCurrency(amount)}</span>
 				</div>
 			</div>
 		);
@@ -331,16 +331,16 @@ export default function Dashboard({ setModuleProps }) {
 		const _key = String(key).toLowerCase();
 		const value = main.tasks[_key];
 
-		const wrapper = `flex flex-col w-full px-6 pb-4 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
-				<div className="py-4 px-8 rounded-b-full shadow-2xl gray-background-transparent-01">
-					<FontAwesomeIcon className="text-2xl text-white" icon={aesthetics.icon} />
+				<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
+					<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
 				</div>
-				<div className="flex flex-col pt-2 justify-center items-center">
+				<div className="flex flex-col px-8 justify-center items-center">
 					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-24">{value}</span>
+					<span className="font-bold-28">{value}</span>
 				</div>
 			</div>
 		);

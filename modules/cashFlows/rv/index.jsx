@@ -349,6 +349,9 @@ export default function RV({ reload, unmount }) {
 					projects: revised,
 					projectsCopy: revised,
 				}));
+
+				const selectedProject = revised.filter((f) => f.id === main.selectedProject?.id)?.at(0);
+				setMain((s) => ({ ...s, selectedProject }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Get Support Data`);
@@ -500,10 +503,6 @@ export default function RV({ reload, unmount }) {
 						</div>
 					</div>
 					<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
-
-					{mounted.history && (
-						<Transactions mount={mounted.transactions} project={main.selectedProject} reload={setSupportData} unmount={toggleTransactions} />
-					)}
 
 					{mounted.transactions && (
 						<Transactions mount={mounted.transactions} project={main.selectedProject} reload={setSupportData} unmount={toggleTransactions} />

@@ -82,11 +82,13 @@ const MyConstants = Object.freeze({
 			AddTask: "api/tasks/addTask",
 		}),
 		Vendors: Object.freeze({
+			AddHead: "api/vendors/addHead",
 			AddVendor: "api/vendors/addVendors",
 			AddTransaction: "api/vendors/addTransaction",
-			GetVendors: "api/vendors/getVendors",
+			GetHeads: "api/vendors/getHeads",
 			GetNewTransactionSupportData: "api/vendors/getNewTransactionSupportData",
 			GetTransactionsSupportData: "api/vendors/getTransactionsSupportData",
+			GetVendors: "api/vendors/getVendors",
 		}),
 	}),
 	Messages: Object.freeze({

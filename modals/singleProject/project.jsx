@@ -420,6 +420,9 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 
 	const disableManageButton = main.selected.length > 1 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-50";
 
+	const width = !project.affiliate_ids ? "w-1/2" : "w-4/5";
+	const mainWrapper = `${width} h-[90%] transform overflow-hidden rounded contrast-background shadow`;
+
 	const manageButtonStyle = `primary-button-condensed ${disableManageButton}`;
 
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
@@ -507,31 +510,23 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 	}
 
 	function getFilteredList() {
-		let list = !api.affiliates.copy.length
+		return !api.affiliates.copy.length
 			? []
 			: api.affiliates.copy.filter((f) => {
 					const isSelected = main.selected.some((_f) => _f.id === f.id);
 					return !isSelected;
 			  });
-
-		if (list.length) {
-			const value = String(main.affiliate.name);
-
-			if (value !== "undefined") {
-				list = api.affiliates.copy.filter((f) => {
-					return String(f.name).toLowerCase().includes(value.toLowerCase());
-				});
-			}
-		}
-
-		return list;
 	}
 
 	async function doMapping() {
 		setMain((s) => ({ ...s, isMapping: true }));
 
-		const affiliates = main.selected.filter((f) => f.id !== 0);
-		const ids = `${project.affiliate_ids},${affiliates.map((m) => m.id).join(",")}`;
+		const affiliates = main.selected.filter((f) => f.id);
+		let ids = affiliates.map((m) => m.id).join(",");
+
+		if (project.affiliate_ids) {
+			ids = `${project.affiliate_ids},${ids}`;
+		}
 
 		const body = {
 			affiliates,
@@ -562,7 +557,13 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 	}
 
 	function setAffiliate(object) {
-		setMain((s) => ({ ...s, affiliate: { ...s.affiliate, id: object.id, name: object.name } }));
+		if (object && typeof object === "object") {
+			if ("id" in object && "name" in object) {
+				setMain((s) => ({ ...s, affiliate: { ...s.affiliate, id: object.id, name: object.name } }));
+			}
+		} else {
+			setMain((s) => ({ ...s, affiliate: { ...s.affiliate, id: "", name: "" } }));
+		}
 	}
 
 	function setBoxDrag() {
@@ -600,7 +601,7 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 				onChange={(e) => setAffiliate(e)}
 				onClick={() => {}}
 				onInputChange={(e) => setInputs("find", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={main.affiliate.name}
 				tabIndex={1}
 				value={main.affiliate.name}
@@ -663,18 +664,20 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 		} else {
 			return (
 				<div className="flex w-full h-full p-5 space-x-10 justify-between items-center">
-					<div className="flex flex-col w-full h-full justify-between items-center">
-						<div className="flex w-full space-x-2.5 pb-8 justify-start items-center">
-							<span className="view-heading">Mapped</span>
-							<Badge value={api.mapped.length} />
+					{project.affiliate_ids && (
+						<div className="flex flex-col w-full h-full justify-between items-center">
+							<div className="flex w-full space-x-2.5 pb-8 justify-start items-center">
+								<span className="view-heading">Mapped</span>
+								<Badge value={api.mapped.length} />
+							</div>
+							<span className="flex w-full px-4 justify-center items-center rounded-tl rounded-tr primary-background">{uiHeaders()}</span>
+							<div className="flex flex-col w-full h-[calc(100%-100px)] p-2 space-y-2 rounded-bl rounded-br overflow-y-auto bottom-shadow full-border primary-background-transparent-01 scrollbar-gutter">
+								{api.mapped.map((m, i) => uiRows(m, i))}
+							</div>
 						</div>
-						<span className="flex w-full px-4 justify-center items-center rounded-tl rounded-tr primary-background">{uiHeaders()}</span>
-						<div className="flex flex-col w-full h-[calc(100%-100px)] p-2 space-y-2 rounded-bl rounded-br overflow-y-auto bottom-shadow full-border primary-background-transparent-01 scrollbar-gutter">
-							{api.mapped.map((m, i) => uiRows(m, i))}
-						</div>
-					</div>
+					)}
 					<div className="flex flex-col w-full h-full justify-start items-center">
-						<span className="flex w-full justify-start items-center view-heading">New Mapping</span>
+						{project.affiliate_ids && <span className="flex w-full justify-start items-center view-heading">New Mapping</span>}
 						<div className="flex flex-col w-full h-full justify-between items-center">
 							<div className="flex w-full space-x-5 justify-center items-center">
 								{uiAffiliates()}
@@ -746,7 +749,7 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
+					<DialogPanel className={mainWrapper}>
 						{uiTitleBar()}
 						<div className="flex flex-col w-full h-[calc(100%-95px)] justify-between items-center">{uiMain()}</div>
 						<footer className="dialog-footer w-full">

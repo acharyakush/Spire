@@ -11,8 +11,8 @@ import MyConstants from "@/utilities/constants";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Badge, BadgeSmall, Spinner } from "@/components/Elements";
-import { faBank, faChevronLeft, faChevronRight, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { Badge, BadgeGreenLarge, BadgeSmall, Spinner } from "@/components/Elements";
+import { faBank, faChevronRight, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 
 export default function Affiliates({ reload, unmount }) {
 	// Business Logic
@@ -98,58 +98,61 @@ export default function Affiliates({ reload, unmount }) {
 			if (response.status === 200) {
 				const affiliates = [];
 
-				response.data.affiliates.forEach((fe) => {
-					const projects = [];
+				if (response.data.affiliates.length) {
+					response.data.affiliates.forEach((fe) => {
+						const projects = [];
 
-					response.data.affiliatesProjects
-						.filter((f) => f.affiliate_id == fe.id)
-						.forEach((_fe) => {
-							let companyName = "";
-							let mainProjectName = "";
+						response.data.affiliatesProjects
+							.filter((f) => f.affiliate_id == fe.id)
+							.forEach((_fe) => {
+								let companyName = "";
+								let mainProjectName = "";
 
-							const company = response.data.companies.find((f) => f.client_id == _fe.client_id);
+								const company = response.data.companies.find((f) => f.client_id == _fe.client_id);
 
-							if (typeof company === "object") {
-								companyName = company.name;
-							}
-
-							const project = response.data.projects.find((f) => f.client_id == _fe.client_id && f.id == _fe.project_id);
-
-							if (typeof project === "object") {
-								const mainProject = response.data.mainProjects.find((f) => f.id == project.main_project_id);
-
-								if (typeof mainProject === "object") {
-									mainProjectName = mainProject.name;
+								if (typeof company === "object") {
+									companyName = company.name;
 								}
-							}
 
-							let paidFees = 0;
+								const project = response.data.projects.find((f) => f.client_id == _fe.client_id && f.id == _fe.project_id);
 
-							response.data.transactions.forEach((__fe) => {
-								if (__fe.project_id == _fe.project_id) {
-									paidFees += Number(__fe.amount);
+								if (typeof project === "object") {
+									const mainProject = response.data.mainProjects.find((f) => f.id == project.main_project_id);
+
+									if (typeof mainProject === "object") {
+										mainProjectName = mainProject.name;
+									}
 								}
+
+								let paidFees = 0;
+
+								response.data.transactions.forEach((__fe) => {
+									if (__fe.project_id == _fe.project_id) {
+										paidFees += Number(__fe.amount);
+									}
+								});
+
+								const totalFees = Number(_fe.total_fees);
+								const pendingFees = MyGlobal.ThousandSeparator(totalFees - paidFees);
+
+								projects.push({
+									..._fe,
+									company_name: companyName,
+									main_project_name: mainProjectName,
+									paid_fees: paidFees,
+									pending_fees: pendingFees,
+									total_fees: totalFees,
+								});
 							});
 
-							const totalFees = Number(_fe.total_fees);
-							const pendingFees = MyGlobal.ThousandSeparator(totalFees - paidFees);
+						affiliates.push({ ...fe, projects });
+					});
 
-							projects.push({
-								..._fe,
-								company_name: companyName,
-								main_project_name: mainProjectName,
-								paid_fees: paidFees,
-								pending_fees: pendingFees,
-								total_fees: totalFees,
-							});
-						});
+					setApi({ affiliates });
+					setSelectedAffiliate(affiliates.at(0));
+				}
 
-					affiliates.push({ ...fe, projects });
-				});
-
-				setApi({ affiliates });
 				setMounted((s) => ({ ...s, mainComponent: true }));
-				setSelectedAffiliate(affiliates.at(0));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Get All Affiliates`);
@@ -172,17 +175,22 @@ export default function Affiliates({ reload, unmount }) {
 		return (
 			<div className="flex w-full h-full justify-center items-start">
 				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiModules()}</div>
-				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center rounded shadow contrast-background">{uiSelectedAffiliate()}</div>
+				<div className="flex flex-col w-[90%] h-[calc(100vh-100px)] mr-5 justify-start items-center rounded shadow contrast-background">
+					{uiSelectedAffiliate()}
+				</div>
 			</div>
 		);
 	}
 
 	function uiCards() {
-		return main.selectedAffiliate.projects.map((m) => {
+		return main.selectedAffiliate.projects.map((m, i) => {
 			return (
 				<div
-					className="flex flex-col w-1/3 p-4 space-y-3 justify-center items-center relative rounded shadow primary-border primary-background-transparent-01"
+					className="flex flex-col w-full p-4 space-y-3 justify-center items-center relative rounded shadow full-border primary-background-transparent-01"
 					key={m.id}>
+					<span className="absolute -left-5 -top-2.5">
+						<BadgeGreenLarge value={i + 1} />
+					</span>
 					<span className="font-medium-16 black-text">{m.company_name}</span>
 					<div className="flex space-x-2.5 justify-center items-center font-regular-14 black-text">
 						<span>{m.main_project_name}</span>
@@ -204,10 +212,12 @@ export default function Affiliates({ reload, unmount }) {
 							<span className="font-medium-14 black-text">{MyGlobal.ThousandSeparator(m.total_fees)}</span>
 						</div>
 					</div>
-					<div className="absolute -bottom-5 cursor-pointer" onClick={() => toggleTransactions(m)}>
-						<span className="flex w-fit px-4 py-2 space-x-2.5 justify-center items-center rounded-full text-white font-medium-11 primary-background primary-border">
+					<div className="absolute -bottom-5 cursor-pointer group" onClick={() => toggleTransactions(m)}>
+						<span className="flex w-fit px-4 py-2 justify-center items-center rounded-full text-white font-medium-11 primary-background primary-border transition-all duration-500 ease-in-out">
 							<FontAwesomeIcon icon={faCoins} />
-							<span>Transactions</span>
+							<span className="flex justify-center items-center max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-in-out whitespace-nowrap">
+								Transactions
+							</span>
 						</span>
 					</div>
 				</div>
@@ -271,7 +281,10 @@ export default function Affiliates({ reload, unmount }) {
 				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">
 					<div className="flex w-full justify-between items-center">
 						<div className="flex flex-col w-1/2 justify-center items-start">
-							<span className="view-heading">{main.selectedAffiliate.details.name}</span>
+							<div className="flex w-fit space-x-2.5 justify-center items-center">
+								<span className="view-heading">{main.selectedAffiliate.details.name}</span>
+								<Badge value={main.selectedAffiliate.projects.length} />
+							</div>
 							<span className="font-regular-11 gray-text">
 								Associated since {dayjs(main.selectedAffiliate.details.joined_on).format("DD MMM, YYYY")}
 							</span>
@@ -295,7 +308,9 @@ export default function Affiliates({ reload, unmount }) {
 							</div>
 						</div>
 					</div>
-					<div className="flex w-full space-x-2.5 justify-start items-center">{uiCards()}</div>
+					<div className="w-full h-[calc(100%-105px)] p-5 overflow-y-auto scrollbar-gutter">
+						<div className="w-full grid grid-cols-3 gap-x-20 gap-y-16 justify-items-start items-center">{uiCards()}</div>
+					</div>
 				</div>
 			);
 		}

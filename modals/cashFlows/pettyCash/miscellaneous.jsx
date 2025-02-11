@@ -5,7 +5,6 @@
 import "tippy.js/animations/shift-away.css";
 
 import axios from "axios";
-import Tippy from "@tippyjs/react";
 import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
@@ -176,7 +175,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 				}
 			} else {
 				if (key === "amountPaid") {
-					if (Number(value) > api.openingBalance) {
+					if (Number(value) > Number(lastTransaction.balance)) {
 						setOther((s) => ({ ...s, hasError: true }));
 					} else {
 						setOther((s) => ({ ...s, hasError: false }));
@@ -280,7 +279,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 							{uiAmountPaid()}
 							{uiAmountReceived()}
 						</div>
-						<span className={errorStyle}>Amount paid cannot be more than the current balance: {api.openingBalance}</span>
+						<span className={errorStyle}>Amount paid cannot be more than the current balance: {lastTransaction.balance}</span>
 					</div>
 				</div>
 			);
@@ -316,7 +315,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 				onChange={(e) => setInputs("ownerFirm", e)}
 				onClick={() => {}}
 				onInputChange={(e) => setFind("ownerFirm", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.ownerFirm}
 				tabIndex="2"
 				value={main.ownerFirm.name}

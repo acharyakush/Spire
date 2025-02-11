@@ -30,8 +30,6 @@ import {
 	faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
-export function History({ mount, reload, rv, unmount }) {}
-
 export function Transactions({ mount, project, reload, unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.Transactions.Invoice;
@@ -72,8 +70,6 @@ export function Transactions({ mount, project, reload, unmount }) {
 		amountForComparison = project.amount_pending;
 	}
 
-	console.log(project);
-
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
 	const errorStyle = other.hasError
 		? "flex w-full h-[58px] p-2 mt-5 space-x-2.5 justify-center items-center rounded font-regular-10 red-background-transparent-01 red-border red-text"
@@ -106,7 +102,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				reload();
 
 				setMain({
-					amountReceived: 0,
+					amountReceived: "",
 					entryAt: new Date(),
 					particulars: "",
 					paymentSource: { id: "", name: "" },
@@ -473,7 +469,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				onChange={(e) => setInputs("paymentSource", e)}
 				onClick={() => {}}
 				onInputChange={(e) => findPaymentSource(e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.paymentSource}
 				tabIndex="2"
 				value={main.paymentSource.name}

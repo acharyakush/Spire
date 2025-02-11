@@ -330,7 +330,7 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 				onChange={(e) => setInputs("ownerFirms", e)}
 				onClick={() => {}}
 				onInputChange={(e) => setFind("ownerFirms", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.ownerFirms}
 				tabIndex="3"
 				value={main.ownerFirm.name}
@@ -354,7 +354,7 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 				onChange={(e) => setInputs("ownerFirmsBank", e)}
 				onClick={() => {}}
 				onInputChange={(e) => setFind("ownerFirmsBank", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.ownerFirmsBank}
 				tabIndex="4"
 				value={main.ownerFirm.selectedBank.name}
@@ -393,7 +393,7 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 				onChange={(e) => setInputs("paymentSource", e)}
 				onClick={() => {}}
 				onInputChange={(e) => setFind("paymentSource", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.paymentSource}
 				tabIndex="2"
 				value={main.paymentSource.name}

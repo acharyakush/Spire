@@ -10,6 +10,16 @@ export const Badge = ({ value }) => {
 	);
 };
 
+export const BadgeGreenLarge = ({ value }) => {
+	return (
+		<div className="relative inline-block">
+			<span className="flex min-w-11 w-max px-2.5 justify-center items-center rounded-full shadow text-white font-semibold-30 green-background">
+				{value}
+			</span>
+		</div>
+	);
+};
+
 export const BadgeLarge = ({ value }) => {
 	return (
 		<div className="relative inline-block">

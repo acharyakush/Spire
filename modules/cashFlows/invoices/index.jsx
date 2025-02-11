@@ -166,7 +166,7 @@ export default function Invoices({ presetStatus, unmount }) {
 					return f;
 				}
 			} else if (query === "DUE") {
-				return dayjs(f.invoice_due_date).isAfter(today, "date");
+				return dayjs(f.invoice_due_date).isBefore(today, "date");
 			} else if (query === "GENERATED") {
 				return f.invoice_id && f.created_at;
 			} else if (query === "NOT GENERATED") {

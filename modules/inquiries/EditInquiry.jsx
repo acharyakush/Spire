@@ -413,7 +413,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 				onChange={(e) => setInputs("client", e)}
 				onClick={() => addNewClient(other.find.client.name)}
 				onInputChange={(e) => setFind("client", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.client.name}
 				tabIndex={1}
 				value={getClientName()}
@@ -474,7 +474,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 				onChange={(e) => setInputs("mainProject", e)}
 				onClick={() => {}}
 				onInputChange={(e) => setFind("mainProject", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.mainProject.name}
 				tabIndex={4}
 				value={main.mainProject.name}
@@ -540,7 +540,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 				onChange={(e) => setInputs("reference", e)}
 				onClick={() => addNewReference(other.find.reference.name)}
 				onInputChange={(e) => setFind("reference", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.reference.name}
 				tabIndex={6}
 				value={getReferenceName()}
@@ -564,7 +564,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 				onChange={(e) => setInputs("subProject", e)}
 				onClick={() => addNewSubProject(other.find.subProject.name)}
 				onInputChange={(e) => setFind("subProject", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.subProject.name}
 				tabIndex={5}
 				value={main.subProject.name}

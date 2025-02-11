@@ -338,7 +338,7 @@ export default function EditProject({ project, reload, unmount }) {
 				onChange={(e) => setInputs("company", e)}
 				onClick={() => addNewCompany(other.find.company.name)}
 				onInputChange={(e) => setFind("company", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.company.name}
 				tabIndex={2}
 				value={main.company.name}
@@ -405,7 +405,7 @@ export default function EditProject({ project, reload, unmount }) {
 				onChange={(e) => setInputs("mainProject", e)}
 				onClick={() => {}}
 				onInputChange={(e) => setFind("mainProject", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.mainProject.name}
 				tabIndex={4}
 				value={main.mainProject.name}
@@ -486,7 +486,7 @@ export default function EditProject({ project, reload, unmount }) {
 				onChange={(e) => setInputs("subProject", e)}
 				onClick={() => addNewSubProject(other.find.subProject.name)}
 				onInputChange={(e) => setFind("subProject", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.subProject.name}
 				tabIndex={5}
 				value={main.subProject.name}

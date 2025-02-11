@@ -105,6 +105,8 @@
 
 	--gray: #a8a8a8;
 	--gray-transparent-01: rgba(168, 168, 168, 0.1);
+	--gray-transparent-02: rgba(168, 168, 168, 0.2);
+	--gray-transparent-05: rgba(168, 168, 168, 0.5);
 
 	--green: #3a985e;
 	--green-transparent-01: rgba(58, 152, 94, 0.1);
@@ -178,6 +180,14 @@ html {
 
 .gray-background-transparent-01 {
 	@apply bg-[var(--gray-transparent-01)];
+}
+
+.gray-background-transparent-02 {
+	@apply bg-[var(--gray-transparent-02)];
+}
+
+.gray-background-transparent-05 {
+	@apply bg-[var(--gray-transparent-05)];
 }
 
 .green-background {
@@ -418,6 +428,11 @@ html {
 	font-family: var(--bold);
 }
 
+.font-bold-28 {
+	@apply text-[28pt] font-bold;
+	font-family: var(--bold);
+}
+
 .font-general-11 {
 	@apply text-[11pt];
 	font-family: var(--regular);
@@ -655,7 +670,7 @@ html {
 .primary-button-transparent-background:active,
 .primary-button-wide:active {
 	border: 1px solid rgba(0, 0, 0, 0.7);
-	box-shadow: inset -1px -1px 1px 1px rgba(255, 255, 255, 0.3);
+	box-shadow: inset -1px -1px 1px 1px rgba(35, 255, 255, 0.3);
 	text-decoration: none;
 }
 

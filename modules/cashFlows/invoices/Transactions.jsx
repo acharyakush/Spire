@@ -45,7 +45,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	});
 
 	const [main, setMain] = useState({
-		amountReceived: 0,
+		amountReceived: "",
 		entryAt: new Date(),
 		particulars: "",
 		paymentSource: { id: "", name: "" },
@@ -57,22 +57,27 @@ export function Transactions({ mount, project, reload, unmount }) {
 			paymentSource: "",
 			transaction: "",
 		},
+		hasError: false,
 		isBoxMoved: false,
 		sort: { column: "", isAscending: false },
 	});
 
+	let amountForComparison = 0;
+
+	if (project.amount_received === 0) {
+		amountForComparison = project.amount;
+	} else {
+		amountForComparison = project.amount_pending;
+	}
+
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
+	const errorStyle = other.hasError
+		? "flex w-full h-[58px] p-2 mt-5 space-x-2.5 justify-center items-center rounded font-regular-10 red-background-transparent-01 red-border red-text"
+		: "h-[58px] mt-5 invisible";
 
 	const showFromDateClearButton = other.find.entryAt.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearButton = other.find.entryAt.to ? "cursor-pointer primary-text" : "hidden";
 	const showFindClearButton = other.find.transaction ? "cursor-pointer primary-text" : "hidden";
-
-	const disableAddButton =
-		(!main.amountReceived && !main.entryAt && !main.particulars && !main.paymentSource.id) || loading.adding
-			? "pointer-events-none opacity-50"
-			: "pointer-events-auto opacity-100";
-
-	const addButtonStyle = `primary-button-condensed w-full mt-5 ${disableAddButton}`;
 
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -97,7 +102,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				reload();
 
 				setMain({
-					amountReceived: 0,
+					amountReceived: "",
 					entryAt: new Date(),
 					particulars: "",
 					paymentSource: { id: "", name: "" },
@@ -241,12 +246,34 @@ export function Transactions({ mount, project, reload, unmount }) {
 		return MyGlobal.ThousandSeparator(total);
 	}
 
+	function isAddEligible() {
+		const clickEvent =
+			!main.amountReceived || !main.particulars || !main.paymentSource.id || other.hasError || loading.adding
+				? "pointer-events-none opacity-50"
+				: "pointer-events-auto opacity-100";
+
+		return `primary-button-condensed w-full mt-5 ${clickEvent}`;
+	}
+
 	function setBoxDrag() {
 		setOther((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
 	}
 
 	function setInputs(key, value) {
-		if (value) {
+		if (key === "paymentSource") {
+			if (value && typeof value === "object") {
+				if ("id" in value && "name" in value) {
+					setMain((s) => ({ ...s, paymentSource: value }));
+				}
+			} else {
+				setMain((s) => ({ ...s, paymentSource: { id: "", name: "" } }));
+			}
+		} else if (key === "amountReceived") {
+			const hasError = Number(value) > amountForComparison;
+
+			setOther((s) => ({ ...s, hasError }));
+			setMain((s) => ({ ...s, amountReceived: value }));
+		} else {
 			setMain((s) => ({ ...s, [key]: value }));
 		}
 	}
@@ -443,7 +470,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				onChange={(e) => setInputs("paymentSource", e)}
 				onClick={() => {}}
 				onInputChange={(e) => findPaymentSource(e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasAlphabets(e.key) && e.preventDefault()}
+				onKeyPress={() => {}}
 				searchedItem={other.find.paymentSource}
 				tabIndex="2"
 				value={main.paymentSource.name}
@@ -549,9 +576,13 @@ export function Transactions({ mount, project, reload, unmount }) {
 								{uiPaymentSource()}
 								{uiAmountReceived()}
 								{uiParticulars()}
-								<button className={addButtonStyle} onClick={() => doAddition()}>
+								<button className={isAddEligible()} onClick={() => doAddition()}>
 									{uiAdd()}
 								</button>
+								<div className={errorStyle}>
+									<span>Amount received cannot be more than the Amount pending</span>
+									<span className="font-bold-12">{MyGlobal.ThousandSeparator(amountForComparison)}</span>
+								</div>
 							</div>
 						</div>
 					</DialogPanel>
