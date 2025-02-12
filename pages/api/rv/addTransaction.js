@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 		const { amount, customId, projectId, entryAt, particulars, source } = req.body;
 
 		const response = await query(
-			"INSERT INTO reimburse_voucher_transactions (rv_custom_id, project_id, entry_at, particulars, amount, source) VALUES (?, ?, ?, ?, ?, ?)",
+			"INSERT INTO rv_transactions (rv_custom_id, project_id, entry_at, particulars, amount, source) VALUES (?, ?, ?, ?, ?, ?)",
 			[customId, projectId, entryAt, particulars, amount, source],
 		);
 

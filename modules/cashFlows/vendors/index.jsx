@@ -40,8 +40,7 @@ export default function Vendors({ unmount }) {
 				upi_id: "",
 			},
 			id: 0,
-			projects: [],
-			selectedProject: {},
+			selectedHead: {},
 		},
 	});
 
@@ -66,7 +65,7 @@ export default function Vendors({ unmount }) {
 	}
 
 	function getIconOrBadge() {
-		if (main.isLoading) {
+		if (loading.supportData) {
 			return (
 				<span className="pl-5 relative">
 					<Spinner />
@@ -90,13 +89,15 @@ export default function Vendors({ unmount }) {
 					let amountPaid = 0;
 
 					if (response.data.transactions.length) {
-						response.data.transactions.forEach((_fe) => {
-							amountPaid += Number(_fe.amount);
-						});
+						response.data.transactions
+							.filter((f) => f.head_id === fe.id)
+							.forEach((_fe) => {
+								amountPaid += Number(_fe.amount);
+							});
 					}
 
 					heads.push({
-						amount: fe.amount,
+						amount: Number(fe.amount),
 						amountPaid,
 						amountPending: Number(fe.amount) - amountPaid,
 						entryAt: fe.entry_at,
@@ -104,8 +105,6 @@ export default function Vendors({ unmount }) {
 							id: fe.entry_by_id,
 							name: MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name"),
 						},
-						id: fe.id,
-						moduleId: fe.module_id,
 						ownerFirm: {
 							id: fe.owner_firm_id,
 							name: "",
@@ -117,6 +116,7 @@ export default function Vendors({ unmount }) {
 						paymentSource: fe.payment_source,
 						purpose: fe.purpose,
 						remark: fe.remarks,
+						vendorId: fe.vendor_id,
 					});
 				});
 			}
@@ -129,30 +129,8 @@ export default function Vendors({ unmount }) {
 		}
 	}
 
-	function openEmailClient() {
-		globalThis.window.open(`mailto:${main.selectedVendor.details.email_address}`, "_blank");
-	}
-
-	function openWhatsAppWeb() {
-		globalThis.window.open(`https://wa.me/1${main.selectedVendor.details.phone_number}`, "_blank");
-	}
-
-	function setVendor(object) {
-		setMain((s) => ({
-			...s,
-			selectedVendor: {
-				...s.selectedVendor,
-				details: object,
-				id: object.id,
-				projects: object.projects,
-			},
-		}));
-
-		getSelectedVendorHeads(object.id);
-	}
-
-	async function setSupportData() {
-		setMain((s) => ({ ...s, isLoading: true }));
+	async function getSupportData() {
+		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Vendors.GetVendors, MyGlobal.GetHeaders());
@@ -164,7 +142,7 @@ export default function Vendors({ unmount }) {
 					response.data.vendors.forEach((fe) => {
 						const projects = [];
 
-						response.data.vendorsProjects
+						response.data.transactions
 							.filter((f) => f.vendor_id == fe.id)
 							.forEach((_fe) => {
 								let companyName = "";
@@ -210,7 +188,7 @@ export default function Vendors({ unmount }) {
 						vendors.push({ ...fe, projects });
 					});
 
-					setApi({ vendors });
+					setApi((s) => ({ ...s, vendors }));
 					setVendor(vendors.at(0));
 				}
 
@@ -219,8 +197,29 @@ export default function Vendors({ unmount }) {
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Get All Vendors`);
 		} finally {
-			setMain((s) => ({ ...s, isLoading: false }));
+			setLoading((s) => ({ ...s, supportData: false }));
 		}
+	}
+
+	function openEmailClient() {
+		globalThis.window.open(`mailto:${main.selectedVendor.details.email_address}`, "_blank");
+	}
+
+	function openWhatsAppWeb() {
+		globalThis.window.open(`https://wa.me/1${main.selectedVendor.details.phone_number}`, "_blank");
+	}
+
+	function setVendor(object) {
+		setMain((s) => ({
+			...s,
+			selectedVendor: {
+				...s.selectedVendor,
+				details: object,
+				id: object.id,
+			},
+		}));
+
+		getSelectedVendorHeads(object.id);
 	}
 
 	function toggleNewHead() {
@@ -232,7 +231,7 @@ export default function Vendors({ unmount }) {
 	}
 
 	function toggleTransactions(object) {
-		setMain((s) => ({ ...s, selectedVendor: { ...s.selectedVendor, selectedProject: object ?? {} } }));
+		setMain((s) => ({ ...s, selectedVendor: { ...s.selectedVendor, selectedHead: object ?? {} } }));
 		setMounted((s) => ({ ...s, transactions: object ? true : false }));
 	}
 
@@ -248,7 +247,7 @@ export default function Vendors({ unmount }) {
 		);
 	}
 
-	function uiCards() {
+	function uiHeads() {
 		return api.heads.map((m, i) => {
 			return (
 				<div
@@ -294,7 +293,7 @@ export default function Vendors({ unmount }) {
 	}
 
 	function uiMain() {
-		if (main.isLoading) {
+		if (loading.supportData) {
 			return (
 				<div className={blankDataWrapper}>
 					<span className="font-regular-12 gray-text">Loading...</span>
@@ -375,7 +374,7 @@ export default function Vendors({ unmount }) {
 						</div>
 					</div>
 					<div className="w-full h-[calc(100%-105px)] p-5 overflow-y-auto scrollbar-gutter">
-						<div className="w-full grid grid-cols-3 gap-x-20 gap-y-16 justify-items-start items-center">{uiCards()}</div>
+						<div className="w-full grid grid-cols-3 gap-x-20 gap-y-16 justify-items-start items-center">{uiHeads()}</div>
 					</div>
 				</div>
 			);
@@ -384,7 +383,7 @@ export default function Vendors({ unmount }) {
 
 	// Hooks
 	useEffect(() => {
-		setSupportData();
+		getSupportData();
 
 		globalThis.addEventListener("keydown", detectKeystrokes);
 		return () => globalThis.removeEventListener("keydown", detectKeystrokes);
@@ -396,9 +395,9 @@ export default function Vendors({ unmount }) {
 	}
 
 	if (mounted.newVendor) {
-		return <NewVendor reload={setSupportData} unmount={toggleNewVendor} />;
+		return <NewVendor reload={getSupportData} unmount={toggleNewVendor} />;
 	} else if (mounted.transactions) {
-		return <Transactions project={main.selectedVendor.selectedProject} reload={setSupportData} unmount={toggleTransactions} />;
+		return <Transactions head={main.selectedVendor.selectedHead} reload={getSupportData} unmount={toggleTransactions} />;
 	} else {
 		return (
 			<div className="flex flex-col w-full h-full justify-start items-center">

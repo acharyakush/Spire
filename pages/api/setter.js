@@ -73,17 +73,16 @@ export default async function handler(req, res) {
 				queryString = "UPDATE tasks SET is_completed=?, is_disabled=?, reason=? WHERE id=?";
 				queryParameters = [request.isCompleted, request.isDisabled, request.reason, request.taskId];
 			} else if (request.type == "add-tasks-particular-remark") {
-				queryString =
-					"INSERT INTO tasks_particulars_remarks (task_id, project_id, particular, remark, is_completed, entry_by_id) VALUES (?, ?, ?, ?, ?, ?)";
+				queryString = "INSERT INTO sub_tasks (task_id, project_id, particular, remark, is_completed, entry_by_id) VALUES (?, ?, ?, ?, ?, ?)";
 				queryParameters = [request.taskId, request.projectId, request.particular, request.remark, 0, request.createdBy];
 			} else if (request.type == "edit-tasks-particular-remark") {
-				queryString = "UPDATE tasks_particulars_remarks SET particular=?, remark=? WHERE id=? AND task_id=? AND project_id=?";
+				queryString = "UPDATE sub_tasks SET particular=?, remark=? WHERE id=? AND task_id=? AND project_id=?";
 				queryParameters = [request.particular, request.remark, request.rowId, request.taskId, request.projectId];
 			} else if (request.type == "delete-task") {
 				queryString = "DELETE FROM tasks WHERE id=?";
 				queryParameters = [request.taskId];
 			} else if (request.type == "delete-tasks-particular-remark") {
-				queryString = "DELETE FROM tasks_particulars_remarks WHERE id=? AND task_id=? AND project_id=?";
+				queryString = "DELETE FROM sub_tasks WHERE id=? AND task_id=? AND project_id=?";
 				queryParameters = [request.rowId, request.taskId, request.projectId];
 			} else if (request.type == "edit-client") {
 				queryString = "UPDATE clients SET name=?, address=?, phone_number=?, email_address=?, notes=? WHERE id=?";
@@ -92,10 +91,10 @@ export default async function handler(req, res) {
 				queryString = "UPDATE companies SET name=?, phone_number=?, email_address=?, address=?, pan=?, gstin=? WHERE id=?";
 				queryParameters = [request.name, request.phoneNumber, request.emailAddress, request.address, request.pan, request.gstin, request.id];
 			} else if (request.type == "mark-sub-task-completed") {
-				queryString = "UPDATE tasks_particulars_remarks SET is_completed=?, reason=? WHERE id=? AND task_id=? AND project_id=?";
+				queryString = "UPDATE sub_tasks SET is_completed=?, reason=? WHERE id=? AND task_id=? AND project_id=?";
 				queryParameters = [1, request.reason, request.taskRowId, request.taskId, request.projectId];
 			} else if (request.type == "mark-all-sub-tasks-completed") {
-				queryString = "UPDATE tasks_particulars_remarks SET is_completed=?, reason=? WHERE task_id=? AND project_id=?";
+				queryString = "UPDATE sub_tasks SET is_completed=?, reason=? WHERE task_id=? AND project_id=?";
 				queryParameters = [1, "By Administrator", request.taskId, request.projectId];
 			} else if (request.type == "mark-project-completed") {
 				queryString = "UPDATE projects SET status=?, completed_on=NOW() WHERE id=?";

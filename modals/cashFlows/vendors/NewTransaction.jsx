@@ -14,7 +14,7 @@ import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ComboBox, ComboBox2, DatePicker, TextInput } from "@/components/Inputs";
 import { faBank, faBuilding, faCalendar, faFile, faIndianRupee, faInfoCircle, faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewTransaction({ mount, project, reload, unmount }) {
+export default function NewTransaction({ head, mount, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
 		ownerFirms: [],
@@ -44,44 +44,42 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 			ownerFirmsBank: "",
 			paymentSource: "",
 		},
+		hasError: false,
 		isBoxMoved: false,
 	});
+
+	let totalHeadAmount = 0;
+
+	if (head.amount === 0) {
+		totalHeadAmount = head.amount;
+	} else {
+		totalHeadAmount = head.amountPending;
+	}
+
+	const errorStyle = other.hasError
+		? "flex w-full h-[58px] px-2 mt-5 space-x-1.5 justify-center items-center rounded font-regular-12 red-background-transparent-01 red-border red-text"
+		: "h-[58px] mt-5 invisible";
 
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
-	function areAllDetailsFilled() {
-		if (!main.amount || !main.particulars || !main.paymentType || !main.remarks) {
-			return false;
-		}
-
-		if (!main.paymentSource.id || !main.paymentSource.name) {
-			return false;
-		}
-
-		if (!main.ownerFirm.id || !main.ownerFirm.name || !main.ownerFirm.selectedBank.id || !main.ownerFirm.selectedBank.name) {
-			return false;
-		}
-
-		return true;
-	}
-
 	async function doAddition() {
 		setLoading((s) => ({ ...s, adding: true }));
 
 		const body = {
 			amount: Number(main.amount),
 			entryAt: main.entryAt,
+			headId: head.id,
 			ownerFirmsId: main.ownerFirm.id,
 			ownerFirmsBankId: main.ownerFirm.selectedBank.id,
 			particulars: main.particulars,
 			paymentSource: main.paymentSource.id,
 			paymentType: main.paymentType,
-			projectId: project.project_id,
+			projectId: head.project_id,
 			remarks: main.remarks,
 			userId: MyGlobal.GetUserId(),
-			vendorId: project.vendor_id,
+			vendorId: head.vendorId,
 		};
 
 		try {
@@ -92,7 +90,7 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 				resetFields();
 				getSupportData();
 
-				MyGlobal.AddActivity(`Added transaction for <b>${project.vendor_id}</b>.`, MyConstants.Modules.Base.Vendors);
+				MyGlobal.AddActivity(`Added transaction for <b>${head.vendor_id}</b>.`, MyConstants.Modules.Base.Vendors);
 
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionAdded);
 			} else {
@@ -106,8 +104,7 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 	}
 
 	function getAddButtonStyle() {
-		const disableAddButton = loading.adding || !areAllDetailsFilled() ? "pointer-events-none" : "pointer-events-auto";
-
+		const disableAddButton = !isAddEligible() ? "pointer-events-none" : "pointer-events-auto";
 		return `primary-button-condensed ${disableAddButton}`;
 	}
 
@@ -184,6 +181,25 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 		}
 	}
 
+	function isAddEligible() {
+		const clickEvent =
+			!main.amount ||
+			!main.particulars ||
+			!main.paymentType ||
+			!main.remarks ||
+			!main.paymentSource.id ||
+			!main.ownerFirm.id ||
+			!main.ownerFirm.name ||
+			!main.ownerFirm.selectedBank.id ||
+			!main.ownerFirm.selectedBank.name ||
+			other.hasError ||
+			loading.adding
+				? "pointer-events-none opacity-50"
+				: "pointer-events-auto opacity-100";
+
+		return `primary-button-condensed w-full mt-5 ${clickEvent}`;
+	}
+
 	function resetFields() {
 		setMain({
 			amount: "",
@@ -204,7 +220,6 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 		if (value) {
 			if (key == "ownerFirms") {
 				const banks = api.ownerFirmsBanks.copy.filter((f) => f.owner_firm_id == value.id);
-
 				const revisedPaymentSources = MyGlobal.GetRevisedPaymentSourceList([banks.at(0)]);
 
 				setApi((s) => ({
@@ -232,11 +247,17 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 						selectedBank: { id: value.id, name: value.name },
 					},
 				}));
+			} else if (key === "amount") {
+				const hasError = Number(value) > totalHeadAmount;
+				setOther((s) => ({ ...s, hasError }));
+				setMain((s) => ({ ...s, amount: value }));
 			} else {
 				setMain((s) => ({ ...s, [key]: value }));
 			}
 
 			setOther((s) => ({ ...s, find: { ...s.find, ownerFirms: "", ownerFirmsBank: "" } }));
+		} else {
+			setMain((s) => ({ ...s, [key]: value }));
 		}
 	}
 
@@ -271,29 +292,33 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 	function uiBody() {
 		if (loading.supportData) {
 			return (
-				<div className="flex w-full h-[352px] justify-center items-center">
+				<div className="flex w-full h-[374px] justify-center items-center">
 					<SpinnerBig />
 				</div>
 			);
 		} else {
 			return (
-				<div className="flex flex-col w-full pt-2 pb-4 justify-between items-center">
-					<div className="flex flex-col w-full h-full px-5 space-y-2 justify-center items-center">
-						<div className="flex w-full space-x-5 justify-between items-center">
+				<div className="flex flex-col w-full p-5 justify-between items-center">
+					<div className="flex flex-col w-full h-full px-5 space-y-2.5 justify-center items-center">
+						<div className="flex w-full space-x-10 justify-between items-center">
 							{uiEntryAt()}
 							{uiAmount()}
 						</div>
-						<div className="flex w-full space-x-5 justify-between items-center">
+						<div className="flex w-full space-x-10 justify-between items-center">
 							{uiOwnerFirms()}
 							{uiOwnerFirmsBanks()}
 						</div>
-						<div className="flex w-full space-x-5 justify-between items-center">
+						<div className="flex w-full space-x-10 justify-between items-center">
 							{uiPaymentType()}
 							{uiPaymentSource()}
 						</div>
-						<div className="flex w-full space-x-5 justify-center items-start">
+						<div className="flex w-full space-x-10 justify-center items-start">
 							{uiParticulars()}
 							{uiRemarks()}
+						</div>
+						<div className={errorStyle}>
+							<span>Amount cannot be more than the total pending amount</span>
+							<span className="font-bold-12">{MyGlobal.ThousandSeparator(totalHeadAmount)}</span>
 						</div>
 					</div>
 				</div>

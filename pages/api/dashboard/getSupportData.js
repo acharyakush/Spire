@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 			query("SELECT * FROM inquiries", []), // Queries
 			query("SELECT * FROM invoices", []),
 			query("SELECT * FROM projects", []),
-			query("SELECT * FROM reimburse_voucher", []),
+			query("SELECT * FROM rv", []),
 			query("SELECT * FROM tasks", []),
 		]);
 

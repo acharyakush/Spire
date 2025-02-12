@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 			queryString = "SELECT * FROM tasks WHERE project_id=?";
 			queryParameters = [request.projectId];
 		} else if (request.type === "get-tasks-particulars-remarks") {
-			queryString = "SELECT * FROM tasks_particulars_remarks WHERE project_id=?";
+			queryString = "SELECT * FROM sub_tasks WHERE project_id=?";
 			queryParameters = [request.projectId];
 		} else if (request.type === "get-tasks-notes") {
 			queryString = "SELECT * FROM notes WHERE project_id=? AND source='Projects'";

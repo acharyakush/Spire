@@ -32,7 +32,7 @@ import {
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function RV({ reload, unmount }) {
+export default function RV({ unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.ReimburseVouchers;
 	const thisView = MyConstants.Modules.Base.Rv;

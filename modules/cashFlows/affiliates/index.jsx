@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, BadgeGreenLarge, BadgeSmall, Spinner } from "@/components/Elements";
 import { faBank, faChevronRight, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 
-export default function Affiliates({ reload, unmount }) {
+export default function Affiliates({ unmount }) {
 	// Business Logic
 
 	const [api, setApi] = useState({

@@ -14,9 +14,9 @@ export default async function handler(req, res) {
 
 	try {
 		const [ownerFirms, ownerFirmsBanks, transactions] = await Promise.all([
-			query("SELECT * FROM owner_firms", []),
+			query("SELECT * FROM owner_firms", []), // Queries
 			query("SELECT * FROM owner_firms_banks", []),
-			query("SELECT * FROM vendors_transactions WHERE project_id=?", [req.query.projectId]), // Queries
+			query("SELECT * FROM vendors_transactions WHERE vendor_id=?", [req.query.vendorId]),
 		]);
 
 		return res.status(200).json({

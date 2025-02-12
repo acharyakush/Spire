@@ -7,12 +7,9 @@ Invoices
 2. The download icon in the "Actions" column should download the invoice.
 3. Store a copy of the generated invoice on the server when generated first time by user.
 
-Reimbursement Voucher
-1. Thorough testing
-2. Edit Reimbursement Voucher
-
 Modules
 1. Employees, Profile, Settings
 
-Clients
-1. Add "Rating" field in "Edit Client" window
+
+Cash Flows => New Entity
+1. Enter bank details of party - ifsc, bank account number, bank account holder name

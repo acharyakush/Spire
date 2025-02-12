@@ -18,9 +18,9 @@ export default async function handler(req, res) {
 			query("SELECT * FROM companies", []),
 			query("SELECT * FROM owner_firms", []),
 			query("SELECT * FROM owner_firms_banks", []),
-			query("SELECT * FROM reimburse_voucher", []),
+			query("SELECT * FROM rv", []),
 			query("SELECT * FROM tasks WHERE project_id=?", [req.query.projectId]),
-			query("SELECT * FROM reimburse_voucher_transactions WHERE project_id=?", [req.query.projectId]),
+			query("SELECT * FROM rv_transactions WHERE project_id=?", [req.query.projectId]),
 		]);
 
 		return res.status(200).json({ clients, companies, ownerFirms, ownerFirmsBanks, rv, tasks, transactions });

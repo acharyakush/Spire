@@ -356,6 +356,9 @@ export default function Invoices({ presetStatus, unmount }) {
 					projects: revised,
 					projectsCopy: revised,
 				}));
+
+				const selectedProject = revised.filter((f) => f.id === main.selectedProject?.id)?.at(0);
+				setMain((s) => ({ ...s, selectedProject }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Get Support Data`);

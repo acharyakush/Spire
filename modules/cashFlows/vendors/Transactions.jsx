@@ -26,9 +26,10 @@ import {
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function Transactions({ project, reload, unmount }) {
+export default function Transactions({ head, reload, unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.Transactions.General;
+	console.log(head);
 
 	const [api, setApi] = useState({
 		transactions: { copy: [], data: [] },
@@ -39,21 +40,23 @@ export default function Transactions({ project, reload, unmount }) {
 		supportData: false,
 	});
 
+	const [mounted, setMounted] = useState({
+		newTransaction: false,
+	});
+
 	const [other, setOther] = useState({
 		find: {
 			date: { from: "", to: "" },
 			transaction: "",
 		},
-		hasMounted: false,
-		isNewTransactionsOpen: false,
 		sort: { column: "", isAscending: false },
 	});
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
 
-	const showFromDateClearButton = other.find.date.from ? "cursor-pointer primary-text" : "hidden";
-	const showToDateClearButton = other.find.date.to ? "cursor-pointer primary-text" : "hidden";
-	const showFindClearButton = other.find.transaction ? "cursor-pointer primary-text" : "hidden";
+	const fromDateClearButtonStyle = other.find.date.from ? "cursor-pointer primary-text" : "hidden";
+	const toDateClearButtonStyle = other.find.date.to ? "cursor-pointer primary-text" : "hidden";
+	const findClearButtonStyle = other.find.transaction ? "cursor-pointer primary-text" : "hidden";
 
 	// Functions
 	function doFiltering(type) {
@@ -154,24 +157,11 @@ export default function Transactions({ project, reload, unmount }) {
 		}
 	}
 
-	function getTotalAmount() {
-		let total = 0;
-
-		for (const i of api.transactions.copy) {
-			total += i.amount;
-		}
-
-		return MyGlobal.ThousandSeparator(total);
-	}
-
 	async function getSupportData() {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(
-				MyConstants.ApiEndpoints.Vendors.GetTransactionsSupportData,
-				MyGlobal.GetHeaders({ projectId: project.project_id }),
-			);
+			const response = await axios.get(MyConstants.ApiEndpoints.Vendors.GetTransactionsSupportData, MyGlobal.GetHeaders({ vendorId: head.vendorId }));
 
 			if (response.status === 200) {
 				const transactions = response.data.transactions.map((m) => {
@@ -206,8 +196,6 @@ export default function Transactions({ project, reload, unmount }) {
 						data: transactions,
 					},
 				});
-
-				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(
@@ -217,6 +205,16 @@ export default function Transactions({ project, reload, unmount }) {
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
+	}
+
+	function getTotalAmount() {
+		let total = 0;
+
+		for (const i of api.transactions.copy) {
+			total += i.amount;
+		}
+
+		return MyGlobal.ThousandSeparator(total);
 	}
 
 	function setFind(key, value) {
@@ -234,10 +232,25 @@ export default function Transactions({ project, reload, unmount }) {
 	}
 
 	function toggleNewTransaction() {
-		setOther((s) => ({ ...s, isNewTransactionsOpen: !s.isNewTransactionsOpen }));
+		setMounted((s) => ({ ...s, newTransaction: !s.newTransaction }));
 	}
 
 	// UI Components
+	function uiBody() {
+		if (loading.supportData) {
+			return <SpinnerBig />;
+		} else {
+			return (
+				<div className="flex w-full h-full space-y-2 justify-center items-center relative">
+					{uiTransactions()}
+					<div className="absolute right-5 bottom-10 cursor-pointer" onClick={() => toggleNewTransaction()}>
+						<FontAwesomeIcon className="primary-text" icon={faPlusCircle} size="3x" />
+					</div>
+				</div>
+			);
+		}
+	}
+
 	function uiExport() {
 		if (api.transactions.data.length && api.transactions.copy.length) {
 			return (
@@ -256,12 +269,25 @@ export default function Transactions({ project, reload, unmount }) {
 				onChange={(e) => setFind("transaction", e.target.value)}
 				onClearButtonClick={() => setFind("transaction", "")}
 				placeholder="Find"
-				showClearButton={showFindClearButton}
+				showClearButton={findClearButtonStyle}
 				tabIndex="3"
 				value={other.find.transaction}
 				width="w-36"
 			/>
 		);
+	}
+
+	function uiFooter() {
+		return Object.values(headers).map((m, i) => {
+			const showTotalAmount = i == 3 ? "visible" : "invisible";
+			const wrapper = `w-[11.11%] space-x-1 text-center text-white font-medium-10 ${showTotalAmount}`;
+
+			return (
+				<span className={wrapper} key={i}>
+					<span>{getTotalAmount()}</span>
+				</span>
+			);
+		});
 	}
 
 	function uiFromDate() {
@@ -283,7 +309,7 @@ export default function Transactions({ project, reload, unmount }) {
 					showYearDropdown
 					tabIndex="1"
 				/>
-				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setFind("from", "")} icon={faMultiply} />
+				<FontAwesomeIcon className={fromDateClearButtonStyle} onClick={() => setFind("from", "")} icon={faMultiply} />
 			</div>
 		);
 	}
@@ -304,18 +330,33 @@ export default function Transactions({ project, reload, unmount }) {
 	}
 
 	function uiMain() {
-		if (loading.supportData) {
-			return <SpinnerBig />;
-		} else {
-			return (
-				<div className="flex w-full h-full space-y-2 justify-center items-center relative">
-					{uiTransactions()}
-					<div className="absolute right-5 bottom-10 cursor-pointer" onClick={() => toggleNewTransaction()}>
-						<FontAwesomeIcon className="primary-text" icon={faPlusCircle} size="3x" />
+		return (
+			<div className="flex flex-col w-full h-full justify-start items-center">
+				<div className="flex w-full px-5 py-2.5 justify-between items-center">
+					<div className="flex w-1/5 space-x-2 justify-start items-center">
+						<div className="flex w-full space-x-2.5 justify-start items-center">
+							<span
+								className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
+								onClick={() => unmount()}>
+								{MyConstants.Modules.Base.Vendors}
+							</span>
+							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
+							<span className="view-heading">Transactions</span>
+							{api.transactions.copy.length > 0 && <Badge value={getRowsCount()} />}
+						</div>
+					</div>
+					<div className="flex w-4/5 space-x-2 justify-end items-center">
+						<div className="flex w-1/2 space-x-2 justify-end items-center">
+							{uiFromDate()}
+							{uiToDate()}
+						</div>
+						{uiFind()}
+						{uiExport()}
 					</div>
 				</div>
-			);
-		}
+				<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiBody()}</div>
+			</div>
+		);
 	}
 
 	function uiRows(row, i) {
@@ -375,7 +416,7 @@ export default function Transactions({ project, reload, unmount }) {
 					showYearDropdown
 					tabIndex="2"
 				/>
-				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setFind("to", "")} icon={faMultiply} />
+				<FontAwesomeIcon className={toDateClearButtonStyle} onClick={() => setFind("to", "")} icon={faMultiply} />
 			</div>
 		);
 	}
@@ -404,26 +445,10 @@ export default function Transactions({ project, reload, unmount }) {
 						itemContent={(i, row) => uiRows(row, i)}
 						totalCount={api.transactions.copy.length}
 					/>
-					<div className="flex w-full h-9 justify-center items-center primary-border primary-background">{uiTransactionsFooter()}</div>
-					{other.isNewTransactionsOpen && (
-						<NewTransaction mount={other.isNewTransactionsOpen} project={project} reload={reload} unmount={toggleNewTransaction} />
-					)}
+					<div className="flex w-full h-9 justify-center items-center primary-border primary-background">{uiFooter()}</div>
 				</div>
 			);
 		}
-	}
-
-	function uiTransactionsFooter() {
-		return Object.values(headers).map((m, i) => {
-			const showTotalAmount = i == 3 ? "visible" : "invisible";
-			const wrapper = `w-[11.11%] space-x-1 text-center text-white font-medium-10 ${showTotalAmount}`;
-
-			return (
-				<span className={wrapper} key={i}>
-					<span>{getTotalAmount()}</span>
-				</span>
-			);
-		});
 	}
 
 	useEffect(() => {
@@ -431,43 +456,19 @@ export default function Transactions({ project, reload, unmount }) {
 	}, []);
 
 	useEffect(() => {
-		doFiltering("");
-	}, [other.find.transaction]);
-
-	useEffect(() => {
 		if (other.find.date.from && other.find.date.to) {
 			doFiltering("entryAt");
 		}
 	}, [other.find.date]);
 
-	// Main UI
-	if (!other.hasMounted) {
-		return;
-	}
+	useEffect(() => {
+		doFiltering("");
+	}, [other.find.transaction]);
 
 	return (
-		<div className="flex flex-col w-full h-full justify-start items-center">
-			<div className="flex w-full px-5 py-2.5 justify-between items-center">
-				<div className="flex w-1/5 space-x-2 justify-start items-center">
-					<div className="flex w-full space-x-2 justify-start items-center">
-						<span className="cursor-pointer view-heading" onClick={() => unmount()}>
-							{MyConstants.Modules.Base.Vendors}
-						</span>
-						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-						<span className="view-heading">Transactions</span>
-						{api.transactions.copy.length > 0 && <Badge value={getRowsCount()} />}
-					</div>
-				</div>
-				<div className="flex w-4/5 space-x-2 justify-end items-center">
-					<div className="flex w-1/2 space-x-2 justify-end items-center">
-						{uiFromDate()}
-						{uiToDate()}
-					</div>
-					{uiFind()}
-					{uiExport()}
-				</div>
-			</div>
-			<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiMain()}</div>
-		</div>
+		<>
+			{uiMain()}
+			{mounted.newTransaction && <NewTransaction head={head} mount={mounted.newTransaction} reload={reload} unmount={toggleNewTransaction} />}
+		</>
 	);
 }

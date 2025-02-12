@@ -15,9 +15,12 @@ export default async function handler(req, res) {
 	try {
 		const { amount, vendorId, entryAt, ownerFirmId, ownerFirmBankId, paymentSource, purpose, remarks, userId } = req.body;
 
+		await query("CALL generate_dynamic_id('VH', 'vendors_heads', @new_head_id)", []);
+		const [response] = await query("SELECT @new_head_id AS new_id;", []);
+
 		const result = await query(
-			"INSERT INTO vendors_heads (vendor_id, owner_firm_id, owner_firm_bank_id, amount, payment_source, purpose, remarks, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-			[vendorId, ownerFirmId, ownerFirmBankId, amount, paymentSource, purpose, remarks, entryAt, userId],
+			"INSERT INTO vendors_heads (id, vendor_id, owner_firm_id, owner_firm_bank_id, amount, payment_source, purpose, remarks, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			[response.new_id, vendorId, ownerFirmId, ownerFirmBankId, amount, paymentSource, purpose, remarks, entryAt, userId],
 		);
 
 		if (result.affectedRows == 0) {
