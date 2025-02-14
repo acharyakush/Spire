@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 	try {
 		const { amount, vendorId, entryAt, firmId, bankId, paymentSource, purpose, remarks, userId } = req.body;
 
-		await query("CALL generate_ids('VH', 'vendors_heads', @new_head_id)", []);
+		await query("CALL generate_id('VH', 'vendors_heads', @new_head_id)", []);
 		const [response] = await query("SELECT @new_head_id AS new_id;", []);
 
 		const result = await query(
