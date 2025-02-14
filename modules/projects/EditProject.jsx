@@ -21,7 +21,7 @@ export default function EditProject({ project, reload, unmount }) {
 		clients: [],
 		clientsCompanies: { copy: [], data: [] },
 		mainProjects: { copy: [], data: [] },
-		ownerFirms: [],
+		firms: [],
 		subProjects: { copy: [], data: [] },
 	});
 
@@ -194,11 +194,10 @@ export default function EditProject({ project, reload, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const ownerFirms = response.data.ownerFirms;
+				const firms = response.data.firms;
 
 				const inquiry = response.data.inquiries.find((f) => f.id == project.inquiry_id);
-
-				const invoiceFirm = ownerFirms.find((f) => f.id == project.invoice_firm_id);
+				const invoiceFirm = firms.find((f) => f.id == project.firm_id);
 
 				const object = {
 					client: {
@@ -238,7 +237,7 @@ export default function EditProject({ project, reload, unmount }) {
 						copy: response.data.mainProjects,
 						data: response.data.mainProjects,
 					},
-					ownerFirms: ownerFirms,
+					firms,
 					subProjects: {
 						copy: response.data.subProjects,
 						data: response.data.subProjects,
@@ -373,7 +372,7 @@ export default function EditProject({ project, reload, unmount }) {
 				comparingValue1="name"
 				comparingValue2={main.invoiceFirm.name}
 				displayValue="name"
-				filteredData={api.ownerFirms}
+				filteredData={api.firms}
 				hasDataObject
 				icon={faBriefcase}
 				isReadOnly={false}

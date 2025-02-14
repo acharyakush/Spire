@@ -18,7 +18,7 @@ import { faBank, faCalendar, faClipboardQuestion, faFont, faPhone, faXmark } fro
 export default function NewEntity({ module, mount, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
-		ownerFirmBanks: { copy: [], data: [] },
+		banks: { copy: [], data: [] },
 		paymentSources: { copy: [], data: [] },
 	});
 
@@ -31,7 +31,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 		emailAddress: "",
 		entryAt: new Date(),
 		name: "",
-		ownerFirmBank: { id: "", name: "" },
+		bank: { id: "", name: "" },
 		paymentSource: { id: "", name: "" },
 		phoneNumber: "",
 		purpose: "",
@@ -40,7 +40,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 
 	const [other, setOther] = useState({
 		find: {
-			ownerFirmBank: "",
+			bank: "",
 			paymentSource: "",
 		},
 		isBoxMoved: false,
@@ -61,7 +61,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 			entryAt: main.entryAt,
 			moduleId: module.id,
 			name: main.name,
-			ownerFirmBankId: main.ownerFirmBank.id,
+			bankId: main.bank.id,
 			paymentSource: main.paymentSource.id,
 			phoneNumber: main.phoneNumber,
 			purpose: main.purpose,
@@ -95,12 +95,12 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 		return `primary-button-condensed ${disableAddButton}`;
 	}
 
-	function getFilteredOwnerFirmBanks() {
-		let list = api.ownerFirmBanks.copy;
-		const term = String(other.find.ownerFirmBank);
+	function getFilteredBanks() {
+		let list = api.banks.copy;
+		const term = String(other.find.bank);
 
 		if (term !== "undefined") {
-			list = api.ownerFirmBanks.copy.filter((f) => {
+			list = api.banks.copy.filter((f) => {
 				return String(f.name).toLowerCase().includes(term.toLowerCase());
 			});
 		}
@@ -134,7 +134,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 				const basicPaymentSourceList = MyGlobal.GetBasicPaymentSourceList();
 
 				setApi({
-					ownerFirmBanks: {
+					banks: {
 						copy: response.data,
 						data: response.data,
 					},
@@ -162,7 +162,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 			return false;
 		}
 
-		if (!main.ownerFirmBank.id || !main.ownerFirmBank.name) {
+		if (!main.bank.id || !main.bank.name) {
 			return false;
 		}
 
@@ -174,7 +174,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 			emailAddress: "",
 			entryAt: new Date(),
 			name: "",
-			ownerFirmBank: { id: "", name: "" },
+			bank: { id: "", name: "" },
 			paymentSource: { id: "", name: "" },
 			phoneNumber: "",
 			purpose: "",
@@ -193,10 +193,10 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 	function setInputs(key, value) {
 		if (value) {
 			if (typeof value === "object") {
-				if (key === "ownerFirmBank") {
+				if (key === "bank") {
 					setMain((s) => ({
 						...s,
-						ownerFirmBank: { ...s.ownerFirmBank, id: value.id, name: value.name },
+						bank: { ...s.bank, id: value.id, name: value.name },
 					}));
 
 					setOther((s) => ({ ...s, find: { ...s.find, [key]: "" } }));
@@ -209,7 +209,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 				setMain((s) => ({ ...s, [key]: value }));
 			}
 		} else {
-			if (!["ownerFirmBank", "paymentSource"].includes(key)) {
+			if (!["bank", "paymentSource"].includes(key)) {
 				setMain((s) => ({ ...s, [key]: value }));
 			}
 		}
@@ -248,7 +248,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 							{uiPhoneNumber()}
 						</div>
 						<div className="flex w-full space-x-5 justify-between items-center">
-							{uiOwnerFirmsBanks()}
+							{uiBanks()}
 							{uiPaymentSource()}
 						</div>
 						<div className="flex w-full space-x-5 justify-between items-center">
@@ -303,25 +303,25 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 		);
 	}
 
-	function uiOwnerFirmsBanks() {
+	function uiBanks() {
 		return (
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={main.ownerFirmBank.name}
+				comparingValue2={main.bank.name}
 				displayValue="name"
-				filteredData={getFilteredOwnerFirmBanks}
+				filteredData={getFilteredBanks}
 				hasDataObject
 				icon={faBank}
 				isReadOnly={false}
 				label="Banks"
-				onChange={(e) => setInputs("ownerFirmBank", e)}
+				onChange={(e) => setInputs("bank", e)}
 				onClick={() => {}}
-				onInputChange={(e) => setFind("ownerFirmBank", e.target.value)}
+				onInputChange={(e) => setFind("bank", e.target.value)}
 				onKeyPress={() => {}}
-				searchedItem={other.find.ownerFirmBank}
+				searchedItem={other.find.bank}
 				tabIndex="5"
-				value={main.ownerFirmBank.name}
+				value={main.bank.name}
 				width="w-full"
 			/>
 		);

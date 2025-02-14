@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 		for (let object of group) {
 			const { emailAddress, name, phoneNumber, upiId } = object;
 
-			await query("CALL generate_dynamic_id('VD', 'vendors', @new_vendor_id)", []);
+			await query("CALL generate_ids('VD', 'vendors', @new_vendor_id)", []);
 			const [response] = await query("SELECT @new_vendor_id AS new_id;");
 
 			const result = await query(`INSERT INTO vendors (id, name, email_address, phone_number, upi_id, entry_by_id) VALUES (?, ?, ?, ?, ?, ?)`, [

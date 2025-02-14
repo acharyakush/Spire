@@ -13,15 +13,15 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const [ownerFirms, ownerFirmsBanks, transactions] = await Promise.all([
-			query("SELECT * FROM owner_firms", []), // Queries
-			query("SELECT * FROM owner_firms_banks", []),
+		const [firms, banks, transactions] = await Promise.all([
+			query("SELECT * FROM firms", []), // Queries
+			query("SELECT * FROM banks", []),
 			query("SELECT * FROM vendors_transactions WHERE vendor_id=?", [req.query.vendorId]),
 		]);
 
 		return res.status(200).json({
-			ownerFirms,
-			ownerFirmsBanks,
+			firms,
+			banks,
 			transactions,
 		});
 	} catch (error) {

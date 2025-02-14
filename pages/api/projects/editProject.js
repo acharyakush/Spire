@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 		let newClientId = client.id;
 
 		if (client.id == 0) {
-			await query("CALL generate_dynamic_id('CN', 'clients', @new_client_id)", []);
+			await query("CALL generate_ids('CN', 'clients', @new_client_id)", []);
 			const [storedProcedureResult] = await query("SELECT @new_client_id AS new_id;", []);
 
 			newClientId = storedProcedureResult.new_id;
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
 		let newCompanyId = company.id;
 
 		if (company.id == 0) {
-			await query("CALL generate_dynamic_id('CP', 'companies', @new_company_id)", []);
+			await query("CALL generate_ids('CP', 'companies', @new_company_id)", []);
 			const [storedProcedureResult] = await query("SELECT @new_company_id AS new_id;", []);
 
 			newCompanyId = storedProcedureResult.new_id;
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
 		let newSubProjectId = subProject.id;
 
 		if (subProject.id == 0) {
-			await query("CALL generate_dynamic_id('SP', 'sub_projects', @new_sub_project_id)", []);
+			await query("CALL generate_ids('SP', 'sub_projects', @new_sub_project_id)", []);
 			const [storedProcedureResult] = await query("SELECT @new_sub_project_id AS new_id;", []);
 
 			newSubProjectId = storedProcedureResult.new_id;
@@ -70,7 +70,7 @@ export default async function handler(req, res) {
 		}
 
 		const projectQueryResult = await query(
-			"UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, quote=?, due_on=?, invoice_fees=?, invoice_firm_id=?, teams=? WHERE id=?",
+			"UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, quote=?, due_on=?, invoice_fees=?, firm_id=?, teams=? WHERE id=?",
 			[newClientId, newCompanyId, mainProjectId, newSubProjectId, quote, dueOn, invoiceFees, invoiceFirmId, teams, id],
 		);
 

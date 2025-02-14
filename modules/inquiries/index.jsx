@@ -74,9 +74,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		: "hidden";
 
 	const showFromDateClearButton = main.filter.from ? "cursor-pointer primary-text" : "hidden";
-
 	const showToDateClearButton = main.filter.to ? "cursor-pointer primary-text" : "hidden";
-
 	const showFindClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
 
 	const blankDataWrapper = "flex w-full h-full justify-center items-center font-regular-12 gray-text contrast-background full-border";

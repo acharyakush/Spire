@@ -21,7 +21,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 		clients: [],
 		clientsCompanies: { copy: [], data: [] },
 		mainProjects: { copy: [], data: [] },
-		ownerFirms: [],
+		firms: [],
 		subProjects: { copy: [], data: [] },
 	});
 
@@ -220,7 +220,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const ownerFirms = response.data.ownerFirms;
+				const firms = response.data.firms;
 
 				const companiesByClient = response.data.companies.filter((f) => f.client_id == inquiry.client_id);
 
@@ -234,7 +234,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 						copy: response.data.mainProjects,
 						data: response.data.mainProjects,
 					},
-					ownerFirms,
+					firms,
 					subProjects: {
 						copy: response.data.subProjects,
 						data: response.data.subProjects,
@@ -245,8 +245,8 @@ export default function NewProject({ inquiry, reload, unmount }) {
 					...s,
 					dueOn: new Date(inquiry.entry_date),
 					invoiceFirm: {
-						id: ownerFirms.at(0).id,
-						name: ownerFirms.at(0).name,
+						id: firms.at(0).id,
+						name: firms.at(0).name,
 					},
 					mainProject: {
 						id: inquiry.main_project_id,
@@ -361,7 +361,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 				comparingValue1="name"
 				comparingValue2={main.invoiceFirm.name}
 				displayValue="name"
-				filteredData={api.ownerFirms}
+				filteredData={api.firms}
 				hasDataObject
 				icon={faBriefcase}
 				isMenuInverted

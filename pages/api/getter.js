@@ -51,6 +51,9 @@ export default async function handler(req, res) {
 		} else if (request.type === "get-cash-flows-heads") {
 			queryString = "SELECT * FROM cash_flows_heads WHERE entity_id=?";
 			queryParameters = [request.entityId];
+		} else if (request.type === "get-rv-list") {
+			queryString = "SELECT * FROM rv WHERE project_id=?";
+			queryParameters = [request.projectId];
 		} else {
 			return res.status(400).send({ error: "Invalid request type" });
 		}

@@ -209,7 +209,15 @@ export default function Home() {
 	}
 
 	function setModule(index, module) {
-		setMain((s) => ({ ...s, selectedModule: { index, name: module.name } }));
+		if (index === main.selectedModule.index && module.name === main.selectedModule.name) {
+			setMain((s) => ({ ...s, selectedModule: { index: "", name: "" } }));
+
+			setTimeout(() => {
+				setMain((s) => ({ ...s, selectedModule: { index, name: module.name } }));
+			}, 0);
+		} else {
+			setMain((s) => ({ ...s, selectedModule: { index, name: module.name } }));
+		}
 	}
 
 	function setModuleProps(key, value) {
@@ -272,7 +280,7 @@ export default function Home() {
 
 	function uiModules() {
 		return api.modules
-			.filter((f) => f.name != baseModules.Affiliates && f.name != baseModules.Invoices && f.name != baseModules.Owners)
+			.filter((f) => f.name != baseModules.Affiliates && f.name != baseModules.Invoices && f.name != baseModules.Firms)
 			.filter((f) => f.sequence <= 8)
 			.map((m, i) => {
 				const isSelected = i == main.selectedModule.index;

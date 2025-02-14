@@ -16,7 +16,7 @@ import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
-import { Transactions } from "@/modals/rv/miscellaneous";
+import { RvList, Transactions } from "@/modals/rv/miscellaneous";
 import { Badge, Spinner, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -54,8 +54,9 @@ export default function RV({ unmount }) {
 	});
 
 	const [mounted, setMounted] = useState({
-		newRv: false,
 		history: false,
+		newRv: false,
+		rvList: false,
 		transactions: false,
 	});
 
@@ -365,6 +366,20 @@ export default function RV({ unmount }) {
 		setMounted((s) => ({ ...s, newRv: object ? true : false }));
 	}
 
+	function toggleRvList(object) {
+		if (typeof object === "object") {
+			if ("open_new_rv" in object) {
+				setMounted((s) => ({ ...s, newRv: true, rvList: false }));
+			} else {
+				setMain((s) => ({ ...s, selectedProject: object }));
+				setMounted((s) => ({ ...s, rvList: true }));
+			}
+		} else {
+			setMain((s) => ({ ...s, selectedProject: {} }));
+			setMounted((s) => ({ ...s, rvList: false }));
+		}
+	}
+
 	function toggleTransactions(object) {
 		setMain((s) => ({ ...s, selectedProject: object }));
 		setMounted((s) => ({ ...s, transactions: object ? true : false }));
@@ -504,6 +519,8 @@ export default function RV({ unmount }) {
 					</div>
 					<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
 
+					{mounted.rvList && <RvList mount={mounted.rvList} project={main.selectedProject} unmount={toggleRvList} />}
+
 					{mounted.transactions && (
 						<Transactions mount={mounted.transactions} project={main.selectedProject} reload={setSupportData} unmount={toggleTransactions} />
 					)}
@@ -538,6 +555,8 @@ export default function RV({ unmount }) {
 			generateRvTooltip = "You do not have permission to generate RV";
 		}
 
+		const showPlusButton = row.rv_id ? "cursor-pointer visible primary-text" : "invisible";
+
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
 				<span className={style} dangerouslySetInnerHTML={{ __html: id }} />
@@ -560,7 +579,7 @@ export default function RV({ unmount }) {
 					/>
 				</Tippy>
 				<span className={`${style} space-x-5`}>
-					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} size="lg" />
+					<FontAwesomeIcon className={showPlusButton} icon={faPlusCircle} onClick={() => toggleRvList(row)} size="lg" />
 					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faFileDownload} size="lg" />
 					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faCoins} onClick={() => toggleTransactions(row)} size="lg" />
 				</span>

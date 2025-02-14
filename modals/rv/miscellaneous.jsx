@@ -11,7 +11,7 @@ import MyConstants from "@/utilities/constants";
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Spinner, SpinnerBig } from "@/components/Elements";
+import { Badge, Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ComboBox2, DatePicker, TextArea, TextInput, TextInputNative } from "@/components/Inputs";
@@ -24,6 +24,7 @@ import {
 	faIndianRupee,
 	faMultiply,
 	faNoteSticky,
+	faPlusCircle,
 	faSearch,
 	faSortAmountAsc,
 	faSortAmountDesc,
@@ -33,9 +34,10 @@ import {
 export function Transactions({ mount, project, reload, unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.Transactions.Invoice;
+	const thisView = MyConstants.Modules.Base.Rv;
 
 	const [api, setApi] = useState({
-		ownerFirmsBanks: { copy: [], data: [] },
+		banks: { copy: [], data: [] },
 		transactions: { copy: [], data: [] },
 	});
 
@@ -62,12 +64,12 @@ export function Transactions({ mount, project, reload, unmount }) {
 		sort: { column: "", isAscending: false },
 	});
 
-	let amountForComparison = 0;
+	let totalAmountPending = 0;
 
 	if (project.amount_received === 0) {
-		amountForComparison = project.amount;
+		totalAmountPending = project.amount;
 	} else {
-		amountForComparison = project.amount_pending;
+		totalAmountPending = project.amount_pending;
 	}
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
@@ -117,7 +119,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.Rv} => Transactions => Add Transaction`);
+			MyGlobal.HandleErrors(error, `${thisView} => Transactions => Add Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, adding: false }));
 		}
@@ -175,13 +177,13 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function getPaymentSources() {
-		let list = !api.ownerFirmsBanks.copy.length ? [] : api.ownerFirmsBanks.copy;
+		let list = !api.banks.copy.length ? [] : api.banks.copy;
 
 		if (list.length) {
 			const value = String(other.find.paymentSource);
 
 			if (value !== "undefined") {
-				list = api.ownerFirmsBanks.copy.filter((f) => {
+				list = api.banks.copy.filter((f) => {
 					return String(f.name).toLowerCase().includes(value.toLowerCase());
 				});
 			}
@@ -197,17 +199,17 @@ export function Transactions({ mount, project, reload, unmount }) {
 			const response = await axios.get(
 				MyConstants.ApiEndpoints.Rv.GetNewTransactionSupportData,
 				MyGlobal.GetHeaders({
-					ownerFirmId: project.invoice_firm_id,
+					firmId: project.firm_id,
 					projectId: project.id,
 				}),
 			);
 
 			if (response.status === 200) {
-				const ownerFirmsBanks = MyGlobal.GetRevisedPaymentSourceList(response.data.ownerFirmsBanks);
+				const banks = MyGlobal.GetRevisedPaymentSourceList(response.data.banks);
 
 				const _transactions = response.data.transactions.map((m) => {
 					let source = "";
-					const getSource = ownerFirmsBanks.find((f) => f.id === m.source);
+					const getSource = banks.find((f) => f.id === m.source);
 
 					if (typeof getSource === "object") {
 						source = getSource.name;
@@ -222,9 +224,9 @@ export function Transactions({ mount, project, reload, unmount }) {
 				});
 
 				setApi({
-					ownerFirmsBanks: {
-						copy: ownerFirmsBanks,
-						data: ownerFirmsBanks,
+					banks: {
+						copy: banks,
+						data: banks,
 					},
 					transactions: {
 						copy: _transactions,
@@ -233,7 +235,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				});
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.Rv} => Payment Received => Get Support Data`);
+			MyGlobal.HandleErrors(error, `${thisView} => Payment Received => Get Support Data`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -265,7 +267,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	function setInputs(key, value) {
 		if (value) {
 			if (key === "amountReceived") {
-				const hasError = Number(value) > amountForComparison;
+				const hasError = Number(value) > totalAmountPending;
 
 				setOther((s) => ({ ...s, hasError }));
 				setMain((s) => ({ ...s, amountReceived: value }));
@@ -416,6 +418,13 @@ export function Transactions({ mount, project, reload, unmount }) {
 		} else {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start">
+					<div className="flex w-full pb-4 space-x-2 justify-start items-center font-medium-16 primary-text">
+						<span>{project.company_name}</span>
+						<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
+						<span>{project.main_project_name}</span>
+						<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
+						<span>{project.sub_project_name}</span>
+					</div>
 					<div className="flex w-full pb-2 space-x-2 justify-end items-center">
 						{uiFromDate()}
 						{uiToDate()}
@@ -510,11 +519,9 @@ export function Transactions({ mount, project, reload, unmount }) {
 		return (
 			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full space-x-3 justify-start items-center">
-					<span>{project.company_name}</span>
+					<span>{thisView}</span>
 					<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
-					<span>{project.main_project_name}</span>
-					<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
-					<span>{project.sub_project_name}</span>
+					<span>Amount Received</span>
 				</span>
 				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
@@ -580,8 +587,366 @@ export function Transactions({ mount, project, reload, unmount }) {
 								</button>
 								<div className={errorStyle}>
 									<span>Amount received cannot be more than the Amount pending</span>
-									<span className="font-bold-12">{MyGlobal.ThousandSeparator(amountForComparison)}</span>
+									<span className="font-bold-12">{MyGlobal.ThousandSeparator(totalAmountPending)}</span>
 								</div>
+							</div>
+						</div>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
+export function RvList({ mount, project, unmount }) {
+	// Business Logic
+	const headers = MyConstants.TableHeaders.Transactions.RvList;
+	const thisView = MyConstants.Modules.Base.Rv;
+
+	const [api, setApi] = useState({
+		list: { copy: [], data: [] },
+	});
+
+	const [loading, setLoading] = useState({
+		adding: false,
+		supportData: false,
+	});
+
+	const [other, setOther] = useState({
+		find: {
+			createdAt: { from: "", to: "" },
+			term: "",
+		},
+		isBoxMoved: false,
+		sort: { column: "", isAscending: false },
+	});
+
+	const wrapper = "flex flex-col w-full h-full justify-center items-center";
+
+	const showFromDateClearButton = other.find.createdAt.from ? "cursor-pointer primary-text" : "hidden";
+	const showToDateClearButton = other.find.createdAt.to ? "cursor-pointer primary-text" : "hidden";
+	const showFindClearButton = other.find.term ? "cursor-pointer primary-text" : "hidden";
+
+	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
+
+	// Functions
+	function doFiltering(type) {
+		const filteredData = api.list.copy.filter((f) => {
+			if (type == "createdAt") {
+				const startDate = other.find.createdAt.from;
+				const endDate = other.find.createdAt.to;
+
+				if (f.created_at >= startDate && f.created_at <= endDate) {
+					return f;
+				}
+			} else {
+				const findTerm = other.find.term.toLowerCase();
+				const id = String(f.custom_id).toLowerCase();
+				const amount = String(f.amount).toLowerCase();
+
+				return id.includes(findTerm) || amount.includes(findTerm);
+			}
+		});
+
+		setApi((s) => ({ ...s, list: { ...s.list, data: filteredData } }));
+	}
+
+	function doSorting() {
+		if (other.sort.column != "") {
+			return api.list.data.sort((a, b) => {
+				const aCreatedAt = new Date(a.created_at);
+				const bCreatedAt = new Date(b.created_at);
+
+				const { column, isAscending } = other.sort;
+
+				if (column == headers.Date && isAscending) {
+					return aCreatedAt - bCreatedAt;
+				} else if (column == headers.Date && !isAscending) {
+					return bCreatedAt - aCreatedAt;
+				} else if (column == headers.Id && isAscending) {
+					return a.custom_id.localeCompare(b.custom_id);
+				} else if (column == headers.Id && !isAscending) {
+					return b.custom_id.localeCompare(a.custom_id);
+				} else if (column == headers.amount && isAscending) {
+					return a.amount - b.amount;
+				} else if (column == headers.amount && !isAscending) {
+					return b.amount - a.amount;
+				}
+			});
+		} else {
+			return api.list.data;
+		}
+	}
+
+	function getDataCount() {
+		if (api.list.data.length != api.list.copy.length) {
+			return `${api.list.data.length} / ${api.list.copy.length}`;
+		} else {
+			return api.list.data.length;
+		}
+	}
+
+	async function getSupportData() {
+		setLoading((s) => ({ ...s, supportData: true }));
+
+		try {
+			const response = await axios.get(
+				MyConstants.ApiEndpoints.Getter,
+				MyGlobal.GetHeaders({
+					projectId: project.id,
+					type: "get-rv-list",
+				}),
+			);
+
+			if (response.status === 200) {
+				setApi({
+					list: {
+						copy: response.data,
+						data: response.data,
+					},
+				});
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, `${thisView} => Get Support Data`);
+		} finally {
+			setLoading((s) => ({ ...s, supportData: false }));
+		}
+	}
+
+	function getTotalAmount() {
+		let total = 0;
+
+		for (const i of api.list.copy) {
+			total += Number(i.amount);
+		}
+
+		return MyGlobal.ThousandSeparator(total);
+	}
+
+	function setBoxDrag() {
+		setOther((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
+	}
+
+	function setInputs(key, value) {
+		if (key == "from" || key == "to") {
+			setOther((s) => ({ ...s, find: { ...s.find, createdAt: { ...s.find.createdAt, [key]: value } } }));
+		} else {
+			setOther((s) => ({ ...s, find: { ...s.find, [key]: value } }));
+		}
+	}
+
+	function setSort(header) {
+		if (header != headers.Date) {
+			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
+		}
+	}
+
+	// UI Components
+	function uiBody() {
+		if (loading.supportData) {
+			return (
+				<div className={wrapper}>
+					<SpinnerBig />
+				</div>
+			);
+		} else if (api.list.copy.length && !api.list.data.length) {
+			return (
+				<div className={wrapper}>
+					<FontAwesomeIcon className="text-yellow-500" icon={faExclamationTriangle} size="7x" />
+					<span className="font-regular-12 gray-text">No RVs found.</span>
+				</div>
+			);
+		} else {
+			return (
+				<div className="flex flex-col w-full h-full justify-center items-start">
+					<div className="flex w-full px-4 justify-center items-center rounded-tl rounded-tr primary-background">{uiHeaders()}</div>
+					<Virtuoso
+						className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background"
+						data={doSorting()}
+						itemContent={(i, row) => uiRows(row, i)}
+						totalCount={api.list.copy.length}
+					/>
+				</div>
+			);
+		}
+	}
+
+	function uiExport() {
+		if (api.list.data.length && api.list.copy.length) {
+			return (
+				<button className="primary-button-transparent-background" onClick={() => {}}>
+					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
+				</button>
+			);
+		}
+	}
+
+	function uiFind() {
+		return (
+			<TextInputNative
+				id="findBox"
+				icon={faSearch}
+				onChange={(e) => setInputs("term", e.target.value)}
+				onClearButtonClick={() => setInputs("term", "")}
+				placeholder="Find"
+				showClearButton={showFindClearButton}
+				tabIndex="3"
+				value={other.find.term}
+				width="w-36"
+			/>
+		);
+	}
+
+	function uiFromDate() {
+		return (
+			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
+				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<ReactDatePicker
+					className="w-20 h-6 bg-transparent outline-none font-regular-10"
+					dateFormat="dd-MM-YYYY"
+					dropdownMode="select"
+					endDate={other.find.createdAt.to}
+					onChange={(e) => setInputs("from", e)}
+					peekNextMonth
+					placeholderText="From"
+					tabIndex="1"
+					selected={other.find.createdAt.from}
+					selectsStart
+					startDate={other.find.createdAt.from}
+					showMonthDropdown
+					showYearDropdown
+				/>
+				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
+			</div>
+		);
+	}
+
+	function uiHeaders() {
+		return Object.values(headers).map((m, i) => {
+			const showSortArrow = m == other.sort.column ? "block" : "hidden";
+
+			return (
+				<span className="flex w-1/3 justify-center items-center cursor-pointer" key={i}>
+					<div className="flex w-full h-9 space-x-1.5 justify-center items-center text-white font-medium-11" onClick={() => setSort(m)}>
+						<span>{m}</span>
+						<span className={showSortArrow}>{uiSortArrows(m)}</span>
+					</div>
+				</span>
+			);
+		});
+	}
+
+	function uiNew() {
+		return (
+			<button className="space-x-1.5 primary-button-transparent-background" onClick={() => unmount({ open_new_rv: true })}>
+				<FontAwesomeIcon icon={faPlusCircle} />
+				<span>New</span>
+			</button>
+		);
+	}
+
+	function uiRows(row, i) {
+		const style = "flex flex-wrap w-1/3 min-h-9 justify-center items-center text-center";
+
+		const amount = MyGlobal.HighlightText(row.amount, other.find.term);
+		const id = MyGlobal.HighlightText(row.custom_id, other.find.term);
+
+		return (
+			<div
+				className="flex w-full px-4 py-2 justify-center items-center rounded bottom-shadow contrast-background bottom-border font-regular-11 black-text"
+				key={i}>
+				<span className={style}>{dayjs(row.created_at).format("DD-MM-YYYY")}</span>
+				<span className={style} dangerouslySetInnerHTML={{ __html: id }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
+			</div>
+		);
+	}
+
+	function uiSortArrows(column) {
+		if (other.sort.column == column) {
+			if (other.sort.isAscending) {
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} size="sm" />;
+			} else {
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} size="sm" />;
+			}
+		}
+	}
+
+	function uiTitleBar() {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full space-x-3 justify-start items-center">
+					<span>RV List</span>
+				</span>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+			</DialogTitle>
+		);
+	}
+
+	function uiToDate() {
+		return (
+			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
+				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<ReactDatePicker
+					className="w-20 h-6 bg-transparent outline-none font-regular-10"
+					dateFormat="dd-MM-YYYY"
+					dropdownMode="select"
+					endDate={other.find.createdAt.to}
+					onChange={(e) => setInputs("to", e)}
+					placeholderText="To"
+					peekNextMonth
+					selected={other.find.createdAt.to}
+					selectsEnd
+					startDate={other.find.createdAt.to}
+					showMonthDropdown
+					showYearDropdown
+					tabIndex={2}
+				/>
+				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
+			</div>
+		);
+	}
+
+	// Hooks
+	useEffect(() => {
+		getSupportData();
+	}, []);
+
+	useEffect(() => {
+		doFiltering("");
+	}, [other.find.term]);
+
+	useEffect(() => {
+		if (other.find.createdAt.from && other.find.createdAt.to) {
+			doFiltering("createdAt");
+		}
+	}, [other.find.createdAt]);
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
+						{uiTitleBar()}
+						<div className="flex w-full h-[calc(100%-45px)] p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter primary-light-background">
+							<div className="flex flex-col w-full h-full justify-center items-start">
+								<div className="flex w-full pb-2 justify-between items-center">
+									<div className="flex w-1/2 space-x-2 justify-start items-center">
+										<span className="view-heading">Generated</span>
+										<Badge value={getDataCount()} />
+									</div>
+									<div className="flex w-1/2 space-x-2 justify-end items-center">
+										{uiFromDate()}
+										{uiToDate()}
+										{uiFind()}
+										{uiExport()}
+										{uiNew()}
+									</div>
+								</div>
+								{uiBody()}
 							</div>
 						</div>
 					</DialogPanel>

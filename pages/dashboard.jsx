@@ -7,8 +7,8 @@ import dayjs from "dayjs";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
-import { Badge, BadgeLarge } from "@/components/Elements";
 import { MyGlobal } from "@/utilities/global";
+import { BadgeLarge } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
 	faCalendarCheck,
@@ -308,9 +308,8 @@ export default function Dashboard({ setModuleProps }) {
 
 		const _key = MyGlobal.TrimInnerSpace(key).toLowerCase();
 
-		const amount = key == main.invoices.notGenerated.label ? main.invoices.notGenerated.amount : main.invoices[_key]?.amount;
-
-		const count = key == main.invoices.notGenerated.label ? main.invoices.notGenerated.count : main.invoices[_key]?.count;
+		const amount = key == main.rv.notGenerated.label ? main.rv.notGenerated.amount : main.rv[_key]?.amount;
+		const count = key == main.rv.notGenerated.label ? main.rv.notGenerated.count : main.rv[_key]?.count;
 
 		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
 

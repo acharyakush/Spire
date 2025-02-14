@@ -166,12 +166,12 @@ export default function Others({ module, unmount }) {
 						},
 						id: fe.id,
 						moduleId: fe.module_id,
-						ownerFirm: {
-							id: fe.owner_firm_id,
+						firm: {
+							id: fe.firm_id,
 							name: "",
 						},
-						ownerFirmBank: {
-							id: fe.owner_firm_bank_id,
+						bank: {
+							id: fe.bank_id,
 							name: "",
 						},
 						paymentSource: fe.payment_source,

@@ -65,7 +65,7 @@ export default function NewRv({ project, reload, unmount }) {
 		rvDueDate: rvDueDate,
 		rvId: 0,
 		rvNumber: 0,
-		ownersFirm: {
+		firm: {
 			address: "",
 			id: "",
 			name: "",
@@ -97,7 +97,7 @@ export default function NewRv({ project, reload, unmount }) {
 	// Functions
 	async function addRv() {
 		try {
-			const customId = `${MyGlobal.GetInitials(main.ownersFirm.name)}/${main.financialYear}/${main.rvId}`;
+			const customId = `${MyGlobal.GetInitials(main.firm.name)}/${main.financialYear}/${main.rvId}`;
 
 			const body = {
 				amount: totalAmount,
@@ -157,7 +157,7 @@ export default function NewRv({ project, reload, unmount }) {
 	function downloadPdf() {
 		setLoading((s) => ({ ...s, downloadPdf: true }));
 
-		const fileName = `${MyGlobal.GetInitials(main.ownersFirm.name)}_${main.financialYear}_${main.rvId}_${getCompanyDetails().name}`;
+		const fileName = `${MyGlobal.GetInitials(main.firm.name)}_${main.financialYear}_${main.rvId}_${getCompanyDetails().name}`;
 
 		const pdf = new jsPDF("p", "mm", "a4");
 		const rvBody = document.getElementById("rvBody");
@@ -254,7 +254,7 @@ export default function NewRv({ project, reload, unmount }) {
 		} else if (key == "rvDueDate") {
 			setMain((s) => ({ ...s, rvDueDate: value }));
 		} else if (key == "termsConditions") {
-			setMain((s) => ({ ...s, ownersFirm: { ...s.ownersFirm, termsConditions: value } }));
+			setMain((s) => ({ ...s, firm: { ...s.firm, termsConditions: value } }));
 		} else {
 			setMain((s) => ({ ...s, [key]: value }));
 		}
@@ -282,29 +282,28 @@ export default function NewRv({ project, reload, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Rv.GetNewRvSupportData, MyGlobal.GetHeaders({ projectId: project.id }));
 
 			if (response.status === 200) {
-				const ownersFirm = {
+				const firmObj = {
 					address: "",
 					id: "",
 					name: "",
 					termsConditions: "",
 				};
 
-				const ownersFirmsBank = { id: "", name: "" };
+				const bankObj = { id: "", name: "" };
+				const firm = response.data.firms.find((f) => f.id == project.firm_id);
 
-				const getOwnersFirm = response.data.ownerFirms.find((f) => f.id == project.invoice_firm_id);
-
-				if (typeof getOwnersFirm === "object") {
-					ownersFirm.address = getOwnersFirm.address;
-					ownersFirm.id = getOwnersFirm.id;
-					ownersFirm.name = getOwnersFirm.name;
-					ownersFirm.termsConditions = getOwnersFirm.terms_conditions;
+				if (typeof firm === "object") {
+					firmObj.address = firm.address;
+					firmObj.id = firm.id;
+					firmObj.name = firm.name;
+					firmObj.termsConditions = firm.terms_conditions;
 				}
 
-				const getOwnersFirmsBank = response.data.ownerFirmsBanks.find((f) => f.owner_firm_id == ownersFirm.id);
+				const bank = response.data.banks.find((f) => f.firm_id == firmObj.id);
 
-				if (typeof getOwnersFirmsBank === "object") {
-					ownersFirmsBank.id = getOwnersFirmsBank.id;
-					ownersFirmsBank.name = getOwnersFirmsBank.name;
+				if (typeof bank === "object") {
+					bankObj.id = bank.id;
+					bankObj.name = bank.name;
 				}
 
 				const totalExpenses = response.data.tasks.reduce((pv, cv) => {
@@ -318,7 +317,7 @@ export default function NewRv({ project, reload, unmount }) {
 
 					let source = "";
 
-					const getSource = MyGlobal.GetRevisedPaymentSourceList(response.data.ownerFirmsBanks).find((f) => f.id === m.source);
+					const getSource = MyGlobal.GetRevisedPaymentSourceList(response.data.banks).find((f) => f.id === m.source);
 
 					if (typeof getSource === "object") {
 						source = getSource.name;
@@ -340,10 +339,10 @@ export default function NewRv({ project, reload, unmount }) {
 					...s,
 					bank: {
 						...s.bank,
-						id: ownersFirmsBank.id,
-						name: ownersFirmsBank.name,
+						id: bankObj.id,
+						name: bankObj.name,
 					},
-					ownersFirm,
+					firm: firmObj,
 					particulars: [
 						{
 							amount: totalExpenses,
@@ -522,8 +521,8 @@ export default function NewRv({ project, reload, unmount }) {
 		let termsConditions = "";
 		let termsConditionsLength = "";
 
-		if (typeof main.ownersFirm.termsConditions === "string") {
-			termsConditions = main.ownersFirm.termsConditions.replace(/\\n/g, "\n");
+		if (typeof main.firm.termsConditions === "string") {
+			termsConditions = main.firm.termsConditions.replace(/\\n/g, "\n");
 			termsConditionsLength = termsConditions.split("\n").length;
 		}
 
@@ -551,7 +550,7 @@ export default function NewRv({ project, reload, unmount }) {
 				<span className="w-full text-left font-medium-12 logo-green-text">Bank Details</span>
 				<div className="flex w-full justify-between items-center text-black">
 					<span className={label}>Account Name</span>
-					<span className={value}>{main.ownersFirm.name}</span>
+					<span className={value}>{main.firm.name}</span>
 				</div>
 				<div className="flex w-full justify-between items-center">
 					<span className={label}>Account Number</span>
@@ -574,7 +573,7 @@ export default function NewRv({ project, reload, unmount }) {
 	}
 
 	function uiBilledBy() {
-		const { address, name } = main.ownersFirm;
+		const { address, name } = main.firm;
 
 		let _address = "";
 
@@ -663,7 +662,7 @@ export default function NewRv({ project, reload, unmount }) {
 				<div className="flex w-full justify-start items-center">
 					<span className="w-2/5 font-regular-10 gray-text">RV</span>
 					<div className="flex w-3/5 space-x-1 font-medium-10 black-text">
-						<span>{MyGlobal.GetInitials(main.ownersFirm.name)}</span>
+						<span>{MyGlobal.GetInitials(main.firm.name)}</span>
 						<span>/</span>
 						<span>{main.financialYear}</span>
 						<span>/</span>
@@ -724,8 +723,8 @@ export default function NewRv({ project, reload, unmount }) {
 	function uiTermsAndConditions() {
 		let termsConditions = "";
 
-		if (typeof main.ownersFirm.termsConditions === "string") {
-			termsConditions = main.ownersFirm.termsConditions.split("\\n").map((m, i) => (
+		if (typeof main.firm.termsConditions === "string") {
+			termsConditions = main.firm.termsConditions.split("\\n").map((m, i) => (
 				<span className="whitespace-pre-line" key={i}>
 					{m}
 				</span>

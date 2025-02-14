@@ -20,8 +20,8 @@ export default async function handler(req, res) {
 			headId,
 			isOfficeExpense,
 			moduleId,
-			ownerFirmsId,
-			ownerFirmsBankId,
+			firmId,
+			bankId,
 			particulars,
 			paymentSource,
 			paymentType,
@@ -31,42 +31,15 @@ export default async function handler(req, res) {
 		} = req.body;
 
 		let sqlQuery =
-			"UPDATE cash_flows_transactions SET entity_id = ?, head_id = ?, module_id = ?, owner_firm_id = ?, owner_firm_bank_id = ?, amount = ?, particulars = ?, payment_source = ?, payment_type = ?, remarks = ?, entry_at = ?, entry_by_id = ? WHERE id = ?";
+			"UPDATE cash_flows_transactions SET entity_id = ?, head_id = ?, module_id = ?, firm_id = ?, bank_id = ?, amount = ?, particulars = ?, payment_source = ?, payment_type = ?, remarks = ?, entry_at = ?, entry_by_id = ? WHERE id = ?";
 
-		let parameters = [
-			entityId,
-			headId,
-			moduleId,
-			ownerFirmsId,
-			ownerFirmsBankId,
-			amount,
-			particulars,
-			paymentSource,
-			paymentType,
-			remarks,
-			entryAt,
-			userId,
-			transactionId,
-		];
+		let parameters = [entityId, headId, moduleId, firmId, bankId, amount, particulars, paymentSource, paymentType, remarks, entryAt, userId, transactionId];
 
 		if (isOfficeExpense) {
 			sqlQuery =
-				"UPDATE cash_flows_transactions SET entity_id = ?, head_id = ?, module_id = ?, owner_firm_id = ?, owner_firm_bank_id = ?, amount = ?, particulars = ?, payment_source = ?, remarks = ?, entry_at = ?, entry_by_id = ? WHERE id = ?";
+				"UPDATE cash_flows_transactions SET entity_id = ?, head_id = ?, module_id = ?, firm_id = ?, bank_id = ?, amount = ?, particulars = ?, payment_source = ?, remarks = ?, entry_at = ?, entry_by_id = ? WHERE id = ?";
 
-			parameters = [
-				entityId,
-				headId,
-				moduleId,
-				ownerFirmsId,
-				ownerFirmsBankId,
-				amount,
-				particulars,
-				paymentSource,
-				remarks,
-				entryAt,
-				userId,
-				transactionId,
-			];
+			parameters = [entityId, headId, moduleId, firmId, bankId, amount, particulars, paymentSource, remarks, entryAt, userId, transactionId];
 		}
 
 		const result = await query(sqlQuery, parameters);

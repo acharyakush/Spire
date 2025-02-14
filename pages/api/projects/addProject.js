@@ -16,14 +16,14 @@ export default async function handler(req, res) {
 		const { clientId, company, dueOn, inquiryId, invoiceFees, invoiceFirm, mainProject, note, quote, subProject, teams, userId } = req.body;
 
 		// New Project ID
-		await query("CALL generate_dynamic_id('PJ', 'projects', @new_project_id)", []);
+		await query("CALL generate_ids('PJ', 'projects', @new_project_id)", []);
 		const [projectResponse] = await query("SELECT @new_project_id AS new_id;", []);
 
 		// New Company ID
 		let newCompanyId = company.id;
 
 		if (company.id == 0) {
-			await query("CALL generate_dynamic_id('CP', 'companies', @new_company_id)", []);
+			await query("CALL generate_ids('CP', 'companies', @new_company_id)", []);
 			const [companyResponse] = await query("SELECT @new_company_id AS new_id;", []);
 
 			newCompanyId = companyResponse.new_id;
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
 		let newSubProjectId = subProject.id;
 
 		if (subProject.id == 0) {
-			await query("CALL generate_dynamic_id('SP', 'sub_projects', @new_sub_project_id)", []);
+			await query("CALL generate_ids('SP', 'sub_projects', @new_sub_project_id)", []);
 			const [subProjectResponse] = await query("SELECT @new_sub_project_id AS new_id;", []);
 
 			newSubProjectId = subProjectResponse.new_id;
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
 		}
 
 		const response = await query(
-			`INSERT INTO projects (id, client_id, company_id, inquiry_id, invoice_firm_id, main_project_id, sub_project_id, quote, due_on, invoice_fees, teams, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			`INSERT INTO projects (id, client_id, company_id, inquiry_id, firm_id, main_project_id, sub_project_id, quote, due_on, invoice_fees, teams, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			[
 				projectResponse.new_id,
 				clientId,

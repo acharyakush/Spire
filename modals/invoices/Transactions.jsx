@@ -33,9 +33,10 @@ import {
 export function Transactions({ mount, project, reload, unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.Transactions.Invoice;
+	const thisView = MyConstants.Modules.Base.Invoices;
 
 	const [api, setApi] = useState({
-		ownerFirmsBanks: { copy: [], data: [] },
+		banks: { copy: [], data: [] },
 		transactions: { copy: [], data: [] },
 	});
 
@@ -108,7 +109,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 					paymentSource: { id: "", name: "" },
 				});
 
-				MyGlobal.AddActivity(`Added transaction in <b>${project.invoice_id}</b>.`, MyConstants.Modules.Base.Invoices);
+				MyGlobal.AddActivity(`Added transaction in <b>${project.invoice_id}</b>.`, thisView);
 
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionAdded);
 
@@ -117,7 +118,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.Invoices} => Transaction History => Add Transaction`);
+			MyGlobal.HandleErrors(error, `${thisView} => Transaction History => Add Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, adding: false }));
 		}
@@ -175,13 +176,13 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function getPaymentSources() {
-		let list = !api.ownerFirmsBanks.copy.length ? [] : api.ownerFirmsBanks.copy;
+		let list = !api.banks.copy.length ? [] : api.banks.copy;
 
 		if (list.length) {
 			const value = String(other.find.paymentSource);
 
 			if (value !== "undefined") {
-				list = api.ownerFirmsBanks.copy.filter((f) => {
+				list = api.banks.copy.filter((f) => {
 					return String(f.name).toLowerCase().includes(value.toLowerCase());
 				});
 			}
@@ -196,15 +197,15 @@ export function Transactions({ mount, project, reload, unmount }) {
 		try {
 			const response = await axios.get(
 				MyConstants.ApiEndpoints.Invoices.GetHistorySupportData,
-				MyGlobal.GetHeaders({ ownerFirmId: project.invoice_firm_id, projectId: project.id }),
+				MyGlobal.GetHeaders({ firmId: project.firm_id, projectId: project.id }),
 			);
 
 			if (response.status === 200) {
-				const ownerFirmsBanks = MyGlobal.GetRevisedPaymentSourceList(response.data.ownerFirmsBanks);
+				const banks = MyGlobal.GetRevisedPaymentSourceList(response.data.banks);
 
 				const history = response.data.history.map((m) => {
 					let source = "";
-					const getSource = ownerFirmsBanks.find((f) => f.id === m.source);
+					const getSource = banks.find((f) => f.id === m.source);
 
 					if (typeof getSource === "object") {
 						source = getSource.name;
@@ -219,9 +220,9 @@ export function Transactions({ mount, project, reload, unmount }) {
 				});
 
 				setApi({
-					ownerFirmsBanks: {
-						copy: ownerFirmsBanks,
-						data: ownerFirmsBanks,
+					banks: {
+						copy: banks,
+						data: banks,
 					},
 					transactions: {
 						copy: history,
@@ -230,7 +231,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				});
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.Invoices} => Payment Received => Get Support Data`);
+			MyGlobal.HandleErrors(error, `${thisView} => Payment Received => Get Support Data`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -335,6 +336,13 @@ export function Transactions({ mount, project, reload, unmount }) {
 		} else {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start">
+					<div className="flex w-full pb-4 space-x-2 justify-start items-center font-medium-16 primary-text">
+						<span>{project.company_name}</span>
+						<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
+						<span>{project.main_project_name}</span>
+						<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
+						<span>{project.sub_project_name}</span>
+					</div>
 					<div className="flex w-full pb-2 space-x-2 justify-end items-center">
 						{uiFromDate()}
 						{uiToDate()}
@@ -511,11 +519,9 @@ export function Transactions({ mount, project, reload, unmount }) {
 		return (
 			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full space-x-3 justify-start items-center">
-					<span>{project.company_name}</span>
+					<span>{thisView}</span>
 					<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
-					<span>{project.main_project_name}</span>
-					<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
-					<span>{project.sub_project_name}</span>
+					<span>Amount Received</span>
 				</span>
 				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>

@@ -637,7 +637,7 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 	}
 
 	function uiRows(row, i) {
-		const style = `flex w-1/3 justify-center items-center whitespace-pre-wrap`;
+		const style = `flex flex-wrap w-1/3 justify-center items-center whitespace-pre-wrap`;
 
 		return (
 			<div className="flex w-full px-4 py-2 justify-center items-center rounded bottom-shadow contrast-background bottom-border font-regular-11" key={i}>

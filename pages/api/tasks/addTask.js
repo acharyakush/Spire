@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 	try {
 		const { clientId, dueOn, expense, projectId, task, userId } = req.body;
 
-		await query("CALL generate_dynamic_id('TK', 'tasks', @new_task_id)", []);
+		await query("CALL generate_ids('TK', 'tasks', @new_task_id)", []);
 		const [storedProcedureResult] = await query("SELECT @new_task_id AS new_id;", []);
 
 		const taskInsertQueryResult = await query(

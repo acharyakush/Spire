@@ -13,11 +13,11 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { amountPaid, amountReceived, balance, entryAt, ownerFirmsId, particulars, paymentType, remarks, userId } = req.body;
+		const { amountPaid, amountReceived, balance, entryAt, firmId, particulars, paymentType, remarks, userId } = req.body;
 
 		const result = await query(
-			"INSERT INTO petty_cash_transactions (owner_firm_id, amount_paid, amount_received, balance, particulars, payment_type, remarks, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-			[ownerFirmsId, amountPaid, amountReceived, balance, particulars, paymentType, remarks, entryAt, userId],
+			"INSERT INTO petty_cash_transactions (firm_id, amount_paid, amount_received, balance, particulars, payment_type, remarks, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			[firmId, amountPaid, amountReceived, balance, particulars, paymentType, remarks, entryAt, userId],
 		);
 
 		if (result.affectedRows == 0) {

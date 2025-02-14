@@ -19,7 +19,7 @@ import { faBuilding, faCalendar, faFile, faIndianRupee, faInfoCircle, faList, fa
 export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
-		ownerFirms: [],
+		firms: [],
 		openingBalance: 0,
 	});
 
@@ -35,14 +35,14 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 		amountReceived: "",
 		balance: 0,
 		entryAt: new Date(),
-		ownerFirm: { id: "", name: "" },
+		firm: { id: "", name: "" },
 		particulars: "",
 		paymentType: "",
 		remarks: "",
 	});
 
 	const [other, setOther] = useState({
-		find: { ownerFirm: "" },
+		find: { firm: "" },
 		hasError: false,
 		isBoxMoved: false,
 	});
@@ -69,7 +69,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 			amountReceived: Number(main.amountReceived),
 			balance,
 			entryAt: main.entryAt,
-			ownerFirmsId: main.ownerFirm.id,
+			firmId: main.firm.id,
 			particulars: main.particulars,
 			paymentType: main.paymentType,
 			remarks: main.remarks,
@@ -103,12 +103,12 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 		return `primary-button-condensed ${disableAddButton}`;
 	}
 
-	function getFilteredOwnerFirms() {
-		let list = api.ownerFirms;
-		const term = String(other.find.ownerFirm);
+	function getFilteredFirms() {
+		let list = api.firms;
+		const term = String(other.find.firm);
 
 		if (term !== "undefined") {
-			list = api.ownerFirms.filter((f) => {
+			list = api.firms.filter((f) => {
 				return String(f.name).toLowerCase().includes(term.toLowerCase());
 			});
 		}
@@ -124,7 +124,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 
 			if (response.status === 200) {
 				setApi({
-					ownerFirms: response.data.ownerFirms,
+					firms: response.data.firms,
 					openingBalance: Number(response.data.openingBalance.at(0).balance),
 				});
 
@@ -145,7 +145,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 			return false;
 		}
 
-		if (!main.ownerFirm.id || !main.ownerFirm.name || other.hasError) {
+		if (!main.firm.id || !main.firm.name || other.hasError) {
 			return false;
 		}
 
@@ -163,13 +163,13 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 	function setInputs(key, value) {
 		if (value) {
 			if (typeof value === "object") {
-				if (key === "ownerFirm") {
+				if (key === "firm") {
 					setMain((s) => ({
 						...s,
-						ownerFirm: { id: value.id, name: value.name },
+						firm: { id: value.id, name: value.name },
 					}));
 
-					setOther((s) => ({ ...s, find: { ownerFirm: "" } }));
+					setOther((s) => ({ ...s, find: { firm: "" } }));
 				} else if (key === "entryAt") {
 					setMain((s) => ({ ...s, [key]: value }));
 				}
@@ -187,7 +187,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 				}
 			}
 		} else {
-			if (!["ownerFirm", "paymentType"].includes(key)) {
+			if (!["firm", "paymentType"].includes(key)) {
 				setMain((s) => ({ ...s, [key]: value }));
 			}
 
@@ -268,7 +268,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 							<div className="w-full" />
 						</div>
 						<div className="flex w-full space-x-5 justify-between items-center">
-							{uiOwnerFirms()}
+							{uiFirms()}
 							{uiPaymentType()}
 						</div>
 						<div className="flex w-full space-x-5 justify-center items-start">
@@ -300,25 +300,25 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 		);
 	}
 
-	function uiOwnerFirms() {
+	function uiFirms() {
 		return (
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={main.ownerFirm.name}
+				comparingValue2={main.firm.name}
 				displayValue="name"
-				filteredData={getFilteredOwnerFirms}
+				filteredData={getFilteredFirms}
 				hasDataObject
 				icon={faBuilding}
 				isReadOnly={false}
 				label="Firm"
-				onChange={(e) => setInputs("ownerFirm", e)}
+				onChange={(e) => setInputs("firm", e)}
 				onClick={() => {}}
-				onInputChange={(e) => setFind("ownerFirm", e.target.value)}
+				onInputChange={(e) => setFind("firm", e.target.value)}
 				onKeyPress={() => {}}
-				searchedItem={other.find.ownerFirm}
+				searchedItem={other.find.firm}
 				tabIndex="2"
-				value={main.ownerFirm.name}
+				value={main.firm.name}
 				width="w-full"
 			/>
 		);

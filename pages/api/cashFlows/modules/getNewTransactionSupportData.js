@@ -13,17 +13,17 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const [openingBalance, ownerFirms, ownerFirmsBanks, settings] = await Promise.all([
+		const [openingBalance, firms, banks, settings] = await Promise.all([
 			query("SELECT * FROM petty_cash", []), // Queries
-			query("SELECT * FROM owner_firms", []),
-			query("SELECT * FROM owner_firms_banks", []),
+			query("SELECT * FROM firms", []),
+			query("SELECT * FROM banks", []),
 			query("SELECT * FROM cash_flows_settings WHERE `key`='payment_types'", []),
 		]);
 
 		return res.status(200).json({
 			openingBalance,
-			ownerFirms,
-			ownerFirmsBanks,
+			firms,
+			banks,
 			settings,
 		});
 	} catch (error) {

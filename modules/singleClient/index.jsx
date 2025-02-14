@@ -346,7 +346,7 @@ export default function SingleClient({ client, unmount }) {
 						const invoiceFees = Number(fe.invoice_fees);
 						let invoiceFirmName = "";
 
-						const invoiceFirm = response.data.ownerFirms.find((f) => f.id == fe.invoice_firm_id);
+						const invoiceFirm = response.data.firms.find((f) => f.id == fe.firm_id);
 
 						if (typeof invoiceFirm === "object") {
 							invoiceFirmName = invoiceFirm.name;
@@ -366,9 +366,7 @@ export default function SingleClient({ client, unmount }) {
 							subProjectName = subProject.name;
 						}
 
-						const amountReceived = response.data.invoicesPaymentHistory
-							.filter((f) => f.project_id == fe.id)
-							.reduce((pv, cv) => pv + Number(cv.amount), 0);
+						const amountReceived = response.data.transactions.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.amount), 0);
 
 						const reimburseVoucher = tasks.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.expense), 0);
 

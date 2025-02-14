@@ -77,8 +77,8 @@ export default function Transactions({ reload, unmount }) {
 				const amountReceived = String(f.amount_received);
 				const balance = String(f.balance);
 				const entryByName = String(f.entry_by_name).toLowerCase();
-				const ownerFirmsName = String(f.owner_firm_name).toLowerCase();
-				const ownerFirmsBanksName = String(f.owner_firm_bank_name).toLowerCase();
+				const firmName = String(f.firm_name).toLowerCase();
+				const bankName = String(f.bank_name).toLowerCase();
 				const particulars = String(f.particulars).toLowerCase();
 				const paymentSource = String(f.payment_source).toLowerCase();
 				const paymentType = String(f.payment_type).toLowerCase();
@@ -89,8 +89,8 @@ export default function Transactions({ reload, unmount }) {
 					amountReceived.includes(findTerm) ||
 					balance.includes(findTerm) ||
 					entryByName.includes(findTerm) ||
-					ownerFirmsName.includes(findTerm) ||
-					ownerFirmsBanksName.includes(findTerm) ||
+					firmName.includes(findTerm) ||
+					bankName.includes(findTerm) ||
 					particulars.includes(findTerm) ||
 					paymentSource.includes(findTerm) ||
 					paymentType.includes(findTerm) ||
@@ -115,13 +115,13 @@ export default function Transactions({ reload, unmount }) {
 				} else if (column == headers.Date && !isAscending) {
 					return bEntryAt - aEntryAt;
 				} else if (column == headers.Firm && isAscending) {
-					return a.owner_firm_name.localeCompare(b.owner_firm_name);
+					return a.firm_name.localeCompare(b.firm_name);
 				} else if (column == headers.Firm && !isAscending) {
-					return b.owner_firm_name.localeCompare(a.owner_firm_name);
+					return b.firm_name.localeCompare(a.firm_name);
 				} else if (column == headers.Bank && isAscending) {
-					return a.owner_firm_bank_name.localeCompare(b.owner_firm_bank_name);
+					return a.bank_name.localeCompare(b.bank_name);
 				} else if (column == headers.Bank && !isAscending) {
-					return b.owner_firm_bank_name.localeCompare(a.owner_firm_bank_name);
+					return b.bank_name.localeCompare(a.bank_name);
 				} else if (column == headers.AmountPaid && isAscending) {
 					return a.amount_paid - b.amount_paid;
 				} else if (column == headers.AmountPaid && !isAscending) {
@@ -181,28 +181,27 @@ export default function Transactions({ reload, unmount }) {
 				let transactions = [];
 
 				response.data.transactions.forEach((fe) => {
-					let ownerFirmsName = "";
-					let ownerFirmsBanksName = "";
+					let firmName = "";
+					let bankName = "";
 
-					const ownerFirmsObj = response.data.ownerFirms.find((f) => f.id === fe.owner_firm_id);
+					const firms = response.data.firms.find((f) => f.id === fe.firm_id);
+					const banks = response.data.banks.find((f) => f.id === fe.bank_id);
 
-					const ownerFirmsBanksObj = response.data.ownerFirmsBanks.find((f) => f.id === fe.owner_firm_bank_id);
-
-					if (typeof ownerFirmsObj === "object") {
-						ownerFirmsName = ownerFirmsObj.name;
+					if (typeof firms === "object") {
+						firmName = firms.name;
 					}
 
-					if (typeof ownerFirmsBanksObj === "object") {
-						ownerFirmsBanksName = ownerFirmsBanksObj.name;
+					if (typeof banks === "object") {
+						bankName = banks.name;
 					}
 
 					transactions.push({
 						...fe,
 						amount: Number(fe.amount),
+						bank_name: bankName,
 						entry_at: new Date(fe.entry_at),
 						entry_by_name: MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name"),
-						owner_firm_name: ownerFirmsName,
-						owner_firm_bank_name: ownerFirmsBanksName,
+						firm_name: firmName,
 					});
 				});
 
@@ -361,7 +360,7 @@ export default function Transactions({ reload, unmount }) {
 
 		const colour = Number(row.balance) < 1000 ? "orange-text font-bold-10" : "black-text";
 
-		const ownerFirmsName = MyGlobal.HighlightText(row.owner_firm_name, other.find.transaction);
+		const firmName = MyGlobal.HighlightText(row.firm_name, other.find.transaction);
 		const paymentType = MyGlobal.HighlightText(row.payment_type, other.find.transaction);
 
 		const remarks = MyGlobal.HighlightText(row.remarks, other.find.transaction);
@@ -385,7 +384,7 @@ export default function Transactions({ reload, unmount }) {
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
 				<span className={style}>{dayjs(row.entry_at).format("DD-MM-YYYY")}</span>
-				<span className={style} dangerouslySetInnerHTML={{ __html: ownerFirmsName }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: firmName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: paymentType }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: remarks }} />

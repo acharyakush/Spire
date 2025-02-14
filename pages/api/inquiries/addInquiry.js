@@ -15,13 +15,13 @@ export default async function handler(req, res) {
 	try {
 		const { client, phoneNumber, emailAddress, entryDate, followUps, mainProjectId, note, quote, reference, subProject, userId } = req.body;
 
-		await query("CALL generate_dynamic_id('IQ', 'inquiries', @new_inquiry_id)", []);
+		await query("CALL generate_ids('IQ', 'inquiries', @new_inquiry_id)", []);
 		const [inquiryResponse] = await query("SELECT @new_inquiry_id AS new_id;", []);
 
 		let newReferenceId = reference.id;
 
 		if (reference.id == 0) {
-			await query("CALL generate_dynamic_id('RF', 'the_references', @new_reference_id)", []);
+			await query("CALL generate_ids('RF', 'the_references', @new_reference_id)", []);
 			const [response] = await query("SELECT @new_reference_id AS new_id;", []);
 
 			newReferenceId = response.new_id;
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 		let newSubProjectId = subProject.id;
 
 		if (subProject.id == 0) {
-			await query("CALL generate_dynamic_id('SP', 'sub_projects', @new_sub_project_id)", []);
+			await query("CALL generate_ids('SP', 'sub_projects', @new_sub_project_id)", []);
 			const [response] = await query("SELECT @new_sub_project_id AS new_id;", []);
 
 			newSubProjectId = response.new_id;
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
 		let newClientId = client.id;
 
 		if (client.id == 0) {
-			await query("CALL generate_dynamic_id('CN', 'clients', @new_client_id)", []);
+			await query("CALL generate_ids('CN', 'clients', @new_client_id)", []);
 			const [response] = await query("SELECT @new_client_id AS new_id;", []);
 
 			newClientId = response.new_id;

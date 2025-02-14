@@ -17,8 +17,8 @@ import { faBank, faBuilding, faCalendar, faClipboardQuestion, faIndianRupee, faL
 export default function NewHead({ mount, reload, vendor, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
-		ownerFirms: [],
-		ownerFirmsBanks: { copy: [], data: [] },
+		firms: [],
+		banks: { copy: [], data: [] },
 		paymentSources: { copy: [], data: [] },
 	});
 
@@ -30,8 +30,8 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 	const [main, setMain] = useState({
 		amount: "",
 		entryAt: new Date(),
-		ownerFirm: { id: "", name: "" },
-		ownerFirmBank: { id: "", list: [], name: "" },
+		firm: { id: "", name: "" },
+		bank: { id: "", list: [], name: "" },
 		paymentSource: { id: "", name: "" },
 		purpose: "",
 		remarks: "",
@@ -39,8 +39,8 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 
 	const [other, setOther] = useState({
 		find: {
-			ownerFirm: "",
-			ownerFirmBank: "",
+			firm: "",
+			bank: "",
 			paymentSource: "",
 		},
 		isBoxMoved: false,
@@ -58,8 +58,8 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 		const body = {
 			amount: Number(main.amount),
 			entryAt: main.entryAt,
-			ownerFirmId: main.ownerFirm.id,
-			ownerFirmBankId: main.ownerFirmBank.id,
+			firmId: main.firm.id,
+			bankId: main.bank.id,
 			paymentSource: main.paymentSource.id,
 			purpose: main.purpose,
 			remarks: main.remarks,
@@ -92,12 +92,12 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 		return `primary-button-condensed ${disableAddButton}`;
 	}
 
-	function getFilteredOwnerFirms() {
-		let list = api.ownerFirms;
-		const term = String(other.find.ownerFirm);
+	function getFilteredFirms() {
+		let list = api.firms;
+		const term = String(other.find.firm);
 
 		if (term !== "undefined") {
-			list = api.ownerFirms.filter((f) => {
+			list = api.firms.filter((f) => {
 				return String(f.name).toLowerCase().includes(term.toLowerCase());
 			});
 		}
@@ -105,15 +105,15 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 		return list;
 	}
 
-	function getFilteredOwnerFirmsBanks() {
-		if (main.ownerFirmBank.list.length) {
-			return main.ownerFirmBank.list;
+	function getFilteredBanks() {
+		if (main.bank.list.length) {
+			return main.bank.list;
 		} else {
-			let list = api.ownerFirmsBanks.copy;
-			const term = String(other.find.ownerFirmBank);
+			let list = api.banks.copy;
+			const term = String(other.find.bank);
 
 			if (term !== "undefined") {
-				list = api.ownerFirmsBanks.copy.filter((f) => {
+				list = api.banks.copy.filter((f) => {
 					return String(f.name).toLowerCase().includes(term.toLowerCase());
 				});
 			}
@@ -148,10 +148,10 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 				const basicPaymentSourceList = MyGlobal.GetBasicPaymentSourceList();
 
 				setApi({
-					ownerFirms: response.data.ownerFirms,
-					ownerFirmsBanks: {
-						copy: response.data.ownerFirmsBanks,
-						data: response.data.ownerFirmsBanks,
+					firms: response.data.firms,
+					banks: {
+						copy: response.data.banks,
+						data: response.data.banks,
 					},
 					paymentSources: {
 						copy: basicPaymentSourceList,
@@ -177,7 +177,7 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 			return false;
 		}
 
-		if (!main.ownerFirm.id || !main.ownerFirm.name || !main.ownerFirmBank.id || !main.ownerFirmBank.name) {
+		if (!main.firm.id || !main.firm.name || !main.bank.id || !main.bank.name) {
 			return false;
 		}
 
@@ -188,8 +188,8 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 		setMain({
 			amount: "",
 			entryAt: new Date(),
-			ownerFirm: { id: "", name: "" },
-			ownerFirmBank: { id: "", list: [], name: "" },
+			firm: { id: "", name: "" },
+			bank: { id: "", list: [], name: "" },
 			paymentSource: { id: "", name: "" },
 			purpose: "",
 			remarks: "",
@@ -207,8 +207,8 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 	function setInputs(key, value) {
 		if (value) {
 			if (typeof value === "object") {
-				if (key === "ownerFirm") {
-					const banks = api.ownerFirmsBanks.copy.filter((f) => f.owner_firm_id == value.id);
+				if (key === "firm") {
+					const banks = api.banks.copy.filter((f) => f.firm_id == value.id);
 					const _paymentSources = MyGlobal.GetRevisedPaymentSourceList([banks.at(0)]);
 
 					setApi((s) => ({
@@ -218,13 +218,13 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 
 					setMain((s) => ({
 						...s,
-						ownerFirm: { id: value.id, name: value.name },
-						ownerFirmBank: { id: banks.at(0).id, list: banks, name: banks.at(0).name },
+						firm: { id: value.id, name: value.name },
+						bank: { id: banks.at(0).id, list: banks, name: banks.at(0).name },
 					}));
-				} else if (key === "ownerFirmBank") {
+				} else if (key === "bank") {
 					setMain((s) => ({
 						...s,
-						ownerFirmBank: { ...s.ownerFirmBank, id: value.id, name: value.name },
+						bank: { ...s.bank, id: value.id, name: value.name },
 					}));
 				} else if (key === "entryAt") {
 					setMain((s) => ({ ...s, [key]: value }));
@@ -238,7 +238,7 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 				setMain((s) => ({ ...s, [key]: value }));
 			}
 
-			setOther((s) => ({ ...s, find: { ownerFirm: "", ownerFirmBank: "", paymentSource: "" } }));
+			setOther((s) => ({ ...s, find: { firm: "", bank: "", paymentSource: "" } }));
 		} else {
 			if (["amount", "entryAt", "purpose", "remarks"].includes(key)) {
 				setMain((s) => ({ ...s, [key]: value }));
@@ -294,8 +294,8 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 							{uiAmount()}
 						</div>
 						<div className="flex w-full space-x-5 justify-between items-center">
-							{uiOwnerFirms()}
-							{uiOwnerFirmsBanks()}
+							{uiFirms()}
+							{uiBanks()}
 						</div>
 						<div className="flex w-full space-x-5 justify-between items-center">
 							{uiPaymentSource()}
@@ -321,49 +321,49 @@ export default function NewHead({ mount, reload, vendor, unmount }) {
 		);
 	}
 
-	function uiOwnerFirms() {
+	function uiFirms() {
 		return (
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={main.ownerFirm.name}
+				comparingValue2={main.firm.name}
 				displayValue="name"
-				filteredData={getFilteredOwnerFirms}
+				filteredData={getFilteredFirms}
 				hasDataObject
 				icon={faBuilding}
 				isReadOnly={false}
 				label="Firm"
-				onChange={(e) => setInputs("ownerFirm", e)}
+				onChange={(e) => setInputs("firm", e)}
 				onClick={() => {}}
-				onInputChange={(e) => setFind("ownerFirm", e.target.value)}
+				onInputChange={(e) => setFind("firm", e.target.value)}
 				onKeyPress={() => {}}
-				searchedItem={other.find.ownerFirm}
+				searchedItem={other.find.firm}
 				tabIndex="4"
-				value={main.ownerFirm.name}
+				value={main.firm.name}
 				width="w-full"
 			/>
 		);
 	}
 
-	function uiOwnerFirmsBanks() {
+	function uiBanks() {
 		return (
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1="name"
-				comparingValue2={main.ownerFirmBank.name}
+				comparingValue2={main.bank.name}
 				displayValue="name"
-				filteredData={getFilteredOwnerFirmsBanks}
+				filteredData={getFilteredBanks}
 				hasDataObject
 				icon={faBank}
 				isReadOnly={false}
 				label="Banks"
-				onChange={(e) => setInputs("ownerFirmBank", e)}
+				onChange={(e) => setInputs("bank", e)}
 				onClick={() => {}}
-				onInputChange={(e) => setFind("ownerFirmBank", e.target.value)}
+				onInputChange={(e) => setFind("bank", e.target.value)}
 				onKeyPress={() => {}}
-				searchedItem={other.find.ownerFirmBank}
+				searchedItem={other.find.bank}
 				tabIndex="5"
-				value={main.ownerFirmBank.name}
+				value={main.bank.name}
 				width="w-full"
 			/>
 		);

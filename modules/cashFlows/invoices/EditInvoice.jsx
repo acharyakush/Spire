@@ -59,8 +59,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 		invoiceDueDate: new Date(),
 		invoiceId: 0,
 		invoiceNumber: 0,
-		invoicesPaymentHistory: [],
-		ownersFirm: {
+		firm: {
 			address: "",
 			id: "",
 			name: "",
@@ -74,6 +73,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 				rowId: 0,
 			},
 		],
+		transactions: [],
 		totalAmountReceived: 0,
 	});
 
@@ -95,7 +95,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 	// Functions
 	async function editInvoice() {
 		try {
-			const customId = `${MyGlobal.GetInitials(main.ownersFirm.name)}/${main.financialYear}/${main.invoiceId}`;
+			const customId = `${MyGlobal.GetInitials(main.firm.name)}/${main.financialYear}/${main.invoiceId}`;
 
 			const body = {
 				amount: totalAmount,
@@ -153,7 +153,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 	function downloadPdf() {
 		setLoading((s) => ({ ...s, downloadPdf: true }));
 
-		const fileName = `${MyGlobal.GetInitials(main.ownersFirm.name)}_${main.financialYear}_${main.invoiceId}_${getCompanyDetails().name}`;
+		const fileName = `${MyGlobal.GetInitials(main.firm.name)}_${main.financialYear}_${main.invoiceId}_${getCompanyDetails().name}`;
 
 		const pdf = new jsPDF("p", "mm", "a4");
 		const invoiceBody = document.getElementById("invoiceBody");
@@ -250,7 +250,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 		} else if (key == "invoiceDueDate") {
 			setMain((s) => ({ ...s, invoiceDueDate: value }));
 		} else if (key == "termsConditions") {
-			setMain((s) => ({ ...s, ownersFirm: { ...s.ownersFirm, termsConditions: value } }));
+			setMain((s) => ({ ...s, firm: { ...s.firm, termsConditions: value } }));
 		} else {
 			setMain((s) => ({ ...s, [key]: value }));
 		}
@@ -278,41 +278,41 @@ export default function EditInvoice({ project, reload, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetNewInvoiceSupportData, MyGlobal.GetHeaders({ projectId: project.id }));
 
 			if (response.status === 200) {
-				const ownersFirm = {
+				const firmObj = {
 					address: "",
 					id: "",
 					name: "",
 					termsConditions: "",
 				};
 
-				const ownersFirmsBank = { id: "", name: "" };
+				const bankObj = { id: "", name: "" };
 
-				const getOwnersFirm = response.data.ownerFirms.find((f) => f.id == project.invoice_firm_id);
+				const firm = response.data.firms.find((f) => f.id == project.firm_id);
 
-				if (typeof getOwnersFirm === "object") {
-					ownersFirm.address = getOwnersFirm.address;
-					ownersFirm.id = getOwnersFirm.id;
-					ownersFirm.name = getOwnersFirm.name;
-					ownersFirm.termsConditions = getOwnersFirm.terms_conditions;
+				if (typeof firm === "object") {
+					firmObj.address = firm.address;
+					firmObj.id = firm.id;
+					firmObj.name = firm.name;
+					firmObj.termsConditions = firm.terms_conditions;
 				}
 
-				const getOwnersFirmsBank = response.data.ownerFirmsBanks.find((f) => f.owner_firm_id == ownersFirm.id);
+				const bank = response.data.banks.find((f) => f.firm_id == firmObj.id);
 
-				if (typeof getOwnersFirmsBank === "object") {
-					ownersFirmsBank.id = getOwnersFirmsBank.id;
-					ownersFirmsBank.name = getOwnersFirmsBank.name;
+				if (typeof bank === "object") {
+					bankObj.id = bank.id;
+					bankObj.name = bank.name;
 				}
 
-				const getAmountReceived = response.data.invoicesPaymentHistory.filter((f) => f.project_id == project.id);
+				const getAmountReceived = response.data.transactions.filter((f) => f.project_id == project.id);
 
 				const totalAmountReceived = getAmountReceived.reduce((pv, cv) => {
 					return pv + Number(cv.amount);
 				}, 0);
 
-				const invoicesPaymentHistory = response.data.invoicesPaymentHistory.map((m) => {
+				const transactions = response.data.transactions.map((m) => {
 					let source = "";
 
-					const getSource = MyGlobal.GetRevisedPaymentSourceList(response.data.ownerFirmsBanks).find((f) => f.id === m.source);
+					const getSource = MyGlobal.GetRevisedPaymentSourceList(response.data.banks).find((f) => f.id === m.source);
 
 					if (typeof getSource === "object") {
 						source = getSource.name;
@@ -334,12 +334,12 @@ export default function EditInvoice({ project, reload, unmount }) {
 					...s,
 					bank: {
 						...s.bank,
-						id: ownersFirmsBank.id,
-						name: ownersFirmsBank.name,
+						id: bankObj.id,
+						name: bankObj.name,
 					},
 					invoiceId: MyGlobal.MakeNewInvoiceId(response.data.invoices),
-					invoicesPaymentHistory,
-					ownersFirm,
+					transactions,
+					firm: firmObj,
 					totalAmountReceived,
 				}));
 			}
@@ -528,8 +528,8 @@ export default function EditInvoice({ project, reload, unmount }) {
 		let termsConditions = "";
 		let termsConditionsLength = "";
 
-		if (typeof main.ownersFirm.termsConditions === "string") {
-			termsConditions = main.ownersFirm.termsConditions.replace(/\\n/g, "\n");
+		if (typeof main.firm.termsConditions === "string") {
+			termsConditions = main.firm.termsConditions.replace(/\\n/g, "\n");
 			termsConditionsLength = termsConditions.split("\n").length;
 		}
 
@@ -557,7 +557,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 				<span className="w-full text-left font-medium-12 logo-green-text">Bank Details</span>
 				<div className="flex w-full justify-between items-center text-black">
 					<span className={label}>Account Name</span>
-					<span className={value}>{main.ownersFirm.name}</span>
+					<span className={value}>{main.firm.name}</span>
 				</div>
 				<div className="flex w-full justify-between items-center">
 					<span className={label}>Account Number</span>
@@ -580,7 +580,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 	}
 
 	function uiBilledBy() {
-		const { address, name } = main.ownersFirm;
+		const { address, name } = main.firm;
 
 		let _address = "";
 
@@ -633,7 +633,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 				<div className="flex w-full justify-start items-center">
 					<span className="w-2/5 font-regular-10 gray-text">Invoice</span>
 					<div className="flex w-3/5 space-x-1 font-medium-10 black-text">
-						<span>{MyGlobal.GetInitials(main.ownersFirm.name)}</span>
+						<span>{MyGlobal.GetInitials(main.firm.name)}</span>
 						<span>/</span>
 						<span>{main.financialYear}</span>
 						<span>/</span>
@@ -728,8 +728,8 @@ export default function EditInvoice({ project, reload, unmount }) {
 	function uiTermsAndConditions() {
 		let termsConditions = "";
 
-		if (typeof main.ownersFirm.termsConditions === "string") {
-			termsConditions = main.ownersFirm.termsConditions.split("\\n").map((m, i) => (
+		if (typeof main.firm.termsConditions === "string") {
+			termsConditions = main.firm.termsConditions.split("\\n").map((m, i) => (
 				<span className="whitespace-pre-line" key={i}>
 					{m}
 				</span>
@@ -745,8 +745,8 @@ export default function EditInvoice({ project, reload, unmount }) {
 	}
 
 	function uiTransactionHistory() {
-		return main.invoicesPaymentHistory.map((m, i) => {
-			const bottomBorder = i == main.invoicesPaymentHistory.length - 1 ? "" : "bottom-border";
+		return main.transactions.map((m, i) => {
+			const bottomBorder = i == main.transactions.length - 1 ? "" : "bottom-border";
 			const wrapper = `flex w-full justify-center items-center ${bottomBorder} font-regular-11`;
 
 			return (

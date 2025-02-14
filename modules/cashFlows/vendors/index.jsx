@@ -105,12 +105,12 @@ export default function Vendors({ unmount }) {
 							id: fe.entry_by_id,
 							name: MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name"),
 						},
-						ownerFirm: {
-							id: fe.owner_firm_id,
+						firm: {
+							id: fe.firm_id,
 							name: "",
 						},
-						ownerFirmBank: {
-							id: fe.owner_firm_bank_id,
+						bank: {
+							id: fe.bank_id,
 							name: "",
 						},
 						paymentSource: fe.payment_source,

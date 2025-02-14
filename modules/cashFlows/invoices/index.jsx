@@ -16,10 +16,10 @@ import MyConstants from "@/utilities/constants";
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Transactions } from "./Transactions";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, Spinner, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Transactions } from "../../../modals/invoices/Transactions";
 import {
 	faCalendar,
 	faChevronRight,
@@ -573,7 +573,10 @@ export default function Invoices({ presetStatus, unmount }) {
 				</Tippy>
 				<span className={`${style} space-x-5`}>
 					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faFileDownload} size="lg" />
-					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faCoins} onClick={() => toggleTransactions(row)} size="lg" />
+
+					<Tippy content={<Tooltip text="Add & see transactions of this invoice." />} placement="bottom">
+						<FontAwesomeIcon className="cursor-pointer primary-text" icon={faCoins} onClick={() => toggleTransactions(row)} size="lg" />
+					</Tippy>
 				</span>
 			</div>
 		);
