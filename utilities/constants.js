@@ -54,6 +54,7 @@ const MyConstants = Object.freeze({
 			GetHistorySupportData: "api/invoices/getHistorySupportData",
 			GetNewInvoiceSupportData: "api/invoices/getNewInvoiceSupportData",
 			GetSupportData: "api/invoices/getSupportData",
+			UploadInvoice: "api/invoices/uploadInvoice",
 		}),
 		Notes: Object.freeze({
 			AddNote: "api/notes/addNote",
@@ -72,6 +73,7 @@ const MyConstants = Object.freeze({
 			GetNewRvSupportData: "api/rv/getNewRvSupportData",
 			GetNewTransactionSupportData: "api/rv/getNewTransactionSupportData",
 			GetSupportData: "api/rv/getSupportData",
+			UploadRv: "api/rv/uploadRv",
 		}),
 		Setter: "api/setter",
 		SingleProject: Object.freeze({
@@ -377,6 +379,7 @@ const MyConstants = Object.freeze({
 				Date: "Date",
 				Id: "ID",
 				Amount: "Amount",
+				Download: "Download",
 			}),
 		}),
 	}),

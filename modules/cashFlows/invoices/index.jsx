@@ -2,6 +2,7 @@
 
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
+import "tippy.js/animations/shift-away.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import axios from "axios";
@@ -546,10 +547,13 @@ export default function Invoices({ presetStatus, unmount }) {
 		let generateInvoiceTooltip = "";
 
 		if (!allowNewInvoice) {
-			generateInvoiceTooltip = "You do not have permission to generate invoice";
+			generateInvoiceTooltip = "You do not have permission to generate invoice.";
 		} else if (invoiceId != "Generate") {
-			generateInvoiceTooltip = "Edit this invoice";
+			generateInvoiceTooltip = "Edit this invoice.";
 		}
+
+		const showDownloadButton = row.invoice_id ? "cursor-pointer visible primary-text" : "invisible";
+
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
 				<span className={style} dangerouslySetInnerHTML={{ __html: id }} />
@@ -557,14 +561,14 @@ export default function Invoices({ presetStatus, unmount }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
 				<span className={`${style} cursor-help primary-text`}>
-					<Tippy content={<Tooltip text={row.created_at_time} />} placement="bottom">
+					<Tippy animation="shift-away" content={<Tooltip text={row.created_at_time} />} placement="bottom">
 						<span className={style}>{row.created_at}</span>
 					</Tippy>
 				</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountPending }} />
-				<Tippy content={<Tooltip text={generateInvoiceTooltip} />} disabled={!generateInvoiceTooltip} placement="bottom">
+				<Tippy animation="shift-away" content={<Tooltip text={generateInvoiceTooltip} />} disabled={!generateInvoiceTooltip} placement="bottom">
 					<span
 						className={`${style} cursor-pointer primary-text`}
 						dangerouslySetInnerHTML={{ __html: invoiceId }}
@@ -572,9 +576,21 @@ export default function Invoices({ presetStatus, unmount }) {
 					/>
 				</Tippy>
 				<span className={`${style} space-x-5`}>
-					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faFileDownload} size="lg" />
+					<Tippy animation="shift-away" content={<Tooltip text="Download this invoice." />} placement="bottom">
+						<FontAwesomeIcon
+							className={showDownloadButton}
+							icon={faFileDownload}
+							onClick={() => {
+								const link = document.createElement("a");
 
-					<Tippy content={<Tooltip text="Add & see transactions of this invoice." />} placement="bottom">
+								link.href = `/invoices/${row.id}.pdf`;
+								link.download = `${row.id}.pdf`;
+								link.click();
+							}}
+							size="lg"
+						/>
+					</Tippy>
+					<Tippy animation="shift-away" content={<Tooltip text="Add & see transactions of this invoice." />} placement="bottom">
 						<FontAwesomeIcon className="cursor-pointer primary-text" icon={faCoins} onClick={() => toggleTransactions(row)} size="lg" />
 					</Tippy>
 				</span>

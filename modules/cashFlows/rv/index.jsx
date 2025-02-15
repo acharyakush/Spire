@@ -2,6 +2,7 @@
 
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
+import "tippy.js/animations/shift-away.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import axios from "axios";
@@ -555,6 +556,7 @@ export default function RV({ unmount }) {
 			generateRvTooltip = "You do not have permission to generate RV";
 		}
 
+		const showDownloadButton = row.rv_id ? "cursor-pointer visible primary-text" : "invisible";
 		const showPlusButton = row.rv_id ? "cursor-pointer visible primary-text" : "invisible";
 
 		return (
@@ -564,14 +566,14 @@ export default function RV({ unmount }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
 				<span className={`${style} cursor-help primary-text`}>
-					<Tippy content={<Tooltip text={row.created_at_time} />} placement="bottom">
+					<Tippy animation="shift-away" content={<Tooltip text={row.created_at_time} />} placement="bottom">
 						<span className={style}>{row.created_at}</span>
 					</Tippy>
 				</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountPending }} />
-				<Tippy content={<Tooltip text={generateRvTooltip} />} disabled={!generateRvTooltip} placement="bottom">
+				<Tippy animation="shift-away" content={<Tooltip text={generateRvTooltip} />} disabled={!generateRvTooltip} placement="bottom">
 					<span
 						className={`${style} cursor-pointer primary-text`}
 						dangerouslySetInnerHTML={{ __html: _rvId }}
@@ -580,7 +582,22 @@ export default function RV({ unmount }) {
 				</Tippy>
 				<span className={`${style} space-x-5`}>
 					<FontAwesomeIcon className={showPlusButton} icon={faPlusCircle} onClick={() => toggleRvList(row)} size="lg" />
-					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faFileDownload} size="lg" />
+
+					<Tippy animation="shift-away" content={<Tooltip text="Download this reimbursement voucher." />} placement="bottom">
+						<FontAwesomeIcon
+							className={showDownloadButton}
+							icon={faFileDownload}
+							onClick={() => {
+								const link = document.createElement("a");
+
+								link.href = `/rv/${row.id}.pdf`;
+								link.download = `${row.id}.pdf`;
+								link.click();
+							}}
+							size="lg"
+						/>
+					</Tippy>
+
 					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faCoins} onClick={() => toggleTransactions(row)} size="lg" />
 				</span>
 			</div>

@@ -207,8 +207,16 @@ export default function NewInvoice({ project, reload, unmount }) {
 				}
 
 				pdf.save(`${fileName}.pdf`);
-				addInvoice();
+
+				const pdfBlob = pdf.output("blob");
+				const formData = new FormData();
+				formData.append("file", pdfBlob, `${project.id}.pdf`);
+
+				return axios.post(MyConstants.ApiEndpoints.Invoices.UploadInvoice, formData, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
 			})
+			.then(() => addInvoice())
 			.finally(() => {
 				invoiceBody.style.height = originalStyle.height;
 				invoiceBody.style.overflow = originalStyle.overflow;

@@ -205,8 +205,16 @@ export default function NewRv({ project, reload, unmount }) {
 				}
 
 				pdf.save(`${fileName}.pdf`);
-				addRv();
+
+				const pdfBlob = pdf.output("blob");
+				const formData = new FormData();
+				formData.append("file", pdfBlob, `${project.id}.pdf`);
+
+				return axios.post(MyConstants.ApiEndpoints.Rv.UploadRv, formData, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
 			})
+			.then(() => addRv())
 			.finally(() => {
 				rvBody.style.height = originalStyle.height;
 				rvBody.style.overflow = originalStyle.overflow;

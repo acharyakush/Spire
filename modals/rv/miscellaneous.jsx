@@ -20,6 +20,7 @@ import {
 	faBank,
 	faCalendar,
 	faExclamationTriangle,
+	faFileDownload,
 	faFileExcel,
 	faIndianRupee,
 	faMultiply,
@@ -737,7 +738,7 @@ export function RvList({ mount, project, unmount }) {
 	}
 
 	function setSort(header) {
-		if (header != headers.Date) {
+		if (header != headers.Date || header != headers.Download) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
 	}
@@ -827,7 +828,7 @@ export function RvList({ mount, project, unmount }) {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
-				<span className="flex w-1/3 justify-center items-center cursor-pointer" key={i}>
+				<span className="flex w-1/4 justify-center items-center cursor-pointer" key={i}>
 					<div className="flex w-full h-9 space-x-1.5 justify-center items-center text-white font-medium-11" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
@@ -847,7 +848,7 @@ export function RvList({ mount, project, unmount }) {
 	}
 
 	function uiRows(row, i) {
-		const style = "flex flex-wrap w-1/3 min-h-9 justify-center items-center text-center";
+		const style = "flex flex-wrap w-1/4 min-h-9 justify-center items-center text-center";
 
 		const amount = MyGlobal.HighlightText(row.amount, other.find.term);
 		const id = MyGlobal.HighlightText(row.custom_id, other.find.term);
@@ -859,6 +860,20 @@ export function RvList({ mount, project, unmount }) {
 				<span className={style}>{dayjs(row.created_at).format("DD-MM-YYYY")}</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: id }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
+				<span className={style}>
+					<FontAwesomeIcon
+						className="cursor-pointer visible primary-text"
+						icon={faFileDownload}
+						onClick={() => {
+							const link = document.createElement("a");
+
+							link.href = `/invoices/${project.id}.pdf`;
+							link.download = `${project.id}.pdf`;
+							link.click();
+						}}
+						size="lg"
+					/>
+				</span>
 			</div>
 		);
 	}
