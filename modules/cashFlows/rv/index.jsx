@@ -283,7 +283,7 @@ export default function RV({ unmount }) {
 					let mainProjectName = "";
 					let subProjectName = "";
 
-					const transactions = response.data.rvTransactionsHistory.filter((f) => f.project_id == m.id);
+					const transactions = response.data.transactions.filter((f) => f.project_id == m.id);
 
 					if (Array.isArray(transactions) && transactions.length) {
 						amountReceived = transactions.reduce((pv, cv) => {

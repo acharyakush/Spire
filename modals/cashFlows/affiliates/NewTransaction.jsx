@@ -16,6 +16,8 @@ import { faBank, faBuilding, faCalendar, faFile, faIndianRupee, faInfoCircle, fa
 
 export default function NewTransaction({ mount, project, reload, unmount }) {
 	// Business Logic
+	console.log(project);
+
 	const [api, setApi] = useState({
 		firms: [],
 		banks: { copy: [], data: [] },
@@ -44,28 +46,21 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 			firm: "",
 			paymentSource: "",
 		},
+		hasError: false,
 		isBoxMoved: false,
 	});
+
+	let totalPendingFees = 0;
+	const pendingFees = MyGlobal.GetNumbers(project.pending_fees);
+
+	if (pendingFees > 0) {
+		totalPendingFees = pendingFees;
+	}
 
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 	// Functions
-	function areAllDetailsFilled() {
-		if (!main.amount || !main.particulars || !main.paymentType || !main.remarks) {
-			return false;
-		}
-
-		if (!main.paymentSource.id || !main.paymentSource.name) {
-			return false;
-		}
-
-		if (!main.firm.id || !main.firm.name || !main.firm.selectedBank.id || !main.firm.selectedBank.name) {
-			return false;
-		}
-
-		return true;
-	}
 
 	async function doAddition() {
 		setLoading((s) => ({ ...s, adding: true }));
@@ -106,8 +101,7 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 	}
 
 	function getAddButtonStyle() {
-		const disableAddButton = loading.adding || !areAllDetailsFilled() ? "pointer-events-none" : "pointer-events-auto";
-
+		const disableAddButton = !isAddEligible() ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 		return `primary-button-condensed ${disableAddButton}`;
 	}
 
@@ -184,6 +178,26 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 		}
 	}
 
+	function isAddEligible() {
+		if (!main.amount || !main.particulars || !main.paymentType || !main.remarks) {
+			return false;
+		}
+
+		if (!main.paymentSource.id || !main.paymentSource.name) {
+			return false;
+		}
+
+		if (!main.firm.id || !main.firm.name || !main.firm.selectedBank.id || !main.firm.selectedBank.name) {
+			return false;
+		}
+
+		if (other.hasError || loading.adding) {
+			return false;
+		}
+
+		return true;
+	}
+
 	function resetFields() {
 		setMain({
 			amount: "",
@@ -232,6 +246,11 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 						selectedBank: { id: value.id, name: value.name },
 					},
 				}));
+			} else if (key === "amount") {
+				const hasError = Number(value) > totalPendingFees;
+
+				setOther((s) => ({ ...s, hasError }));
+				setMain((s) => ({ ...s, amount: value }));
 			} else {
 				setMain((s) => ({ ...s, [key]: value }));
 			}
@@ -254,8 +273,17 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 	}
 
 	function uiAmount() {
+		const error = (
+			<div className="p-2 space-x-1 font-regular-11">
+				<span>Receiving fees cannot be more than the pending fees</span>
+				<span className="font-bold-11">{MyGlobal.ThousandSeparator(totalPendingFees)}</span>
+			</div>
+		);
+
 		return (
 			<TextInput
+				errorText={error}
+				hasError={other.hasError}
 				icon={faIndianRupee}
 				id="amount"
 				label="Amount"

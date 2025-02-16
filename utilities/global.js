@@ -204,10 +204,6 @@ export const MyGlobal = Object.freeze({
 		return result;
 	},
 
-	GetModuleSequence: (module) => {
-		return permissions.find((f) => f.module == module).sequence;
-	},
-
 	GetMultipleInitials: (payload) => {
 		if (!payload) return "";
 

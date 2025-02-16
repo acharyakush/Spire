@@ -63,18 +63,15 @@ export function Transactions({ mount, project, reload, unmount }) {
 		sort: { column: "", isAscending: false },
 	});
 
-	let amountForComparison = 0;
+	let totalAmountPending = 0;
 
 	if (project.amount_received === 0) {
-		amountForComparison = project.amount;
+		totalAmountPending = project.amount;
 	} else {
-		amountForComparison = project.amount_pending;
+		totalAmountPending = project.amount_pending;
 	}
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
-	const errorStyle = other.hasError
-		? "flex w-full h-[58px] p-2 mt-5 space-x-2.5 justify-center items-center rounded font-regular-10 red-background-transparent-01 red-border red-text"
-		: "h-[58px] mt-5 invisible";
 
 	const showFromDateClearButton = other.find.entryAt.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearButton = other.find.entryAt.to ? "cursor-pointer primary-text" : "hidden";
@@ -270,7 +267,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				setMain((s) => ({ ...s, paymentSource: { id: "", name: "" } }));
 			}
 		} else if (key === "amountReceived") {
-			const hasError = Number(value) > amountForComparison;
+			const hasError = Number(value) > totalAmountPending;
 
 			setOther((s) => ({ ...s, hasError }));
 			setMain((s) => ({ ...s, amountReceived: value }));
@@ -305,8 +302,17 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiAmountReceived() {
+		const error = (
+			<div className="p-2 space-x-1 font-regular-11">
+				<span>Receiving amount cannot be more than the Pending amount</span>
+				<span className="font-bold-11">{MyGlobal.ThousandSeparator(totalAmountPending)}</span>
+			</div>
+		);
+
 		return (
 			<TextInput
+				errorText={error}
+				hasError={other.hasError}
 				icon={faIndianRupee}
 				id="amountReceived"
 				label="Amount Received"
@@ -585,10 +591,6 @@ export function Transactions({ mount, project, reload, unmount }) {
 								<button className={isAddEligible()} onClick={() => doAddition()}>
 									{uiAdd()}
 								</button>
-								<div className={errorStyle}>
-									<span>Amount received cannot be more than the Amount pending</span>
-									<span className="font-bold-12">{MyGlobal.ThousandSeparator(amountForComparison)}</span>
-								</div>
 							</div>
 						</div>
 					</DialogPanel>

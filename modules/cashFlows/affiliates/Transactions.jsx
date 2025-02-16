@@ -192,7 +192,7 @@ export default function Transactions({ project, reload, unmount }) {
 					return {
 						...m,
 						amount: Number(m.amount),
-						banks_name: bankName,
+						bank_name: bankName,
 						entry_at: new Date(m.entry_at),
 						entry_by_name: MyGlobal.GetAnyDataFromId(m.entry_by_id, "full_name"),
 						firm_name: firmName,
@@ -327,13 +327,11 @@ export default function Transactions({ project, reload, unmount }) {
 		const particulars = MyGlobal.HighlightText(row.particulars, other.find.transaction);
 		const paymentSource = MyGlobal.HighlightText(row.payment_source, other.find.transaction);
 		const paymentType = MyGlobal.HighlightText(row.payment_type, other.find.transaction);
-
 		const remarks = MyGlobal.HighlightText(row.remarks, other.find.transaction);
 
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
 				<span className={style}>{dayjs(row.entry_at).format("DD-MM-YYYY")}</span>
-
 				<span className={style} dangerouslySetInnerHTML={{ __html: firmName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: bankName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
@@ -405,9 +403,6 @@ export default function Transactions({ project, reload, unmount }) {
 						totalCount={api.transactions.copy.length}
 					/>
 					<div className="flex w-full h-9 justify-center items-center primary-border primary-background">{uiTransactionsFooter()}</div>
-					{other.isNewTransactionsOpen && (
-						<NewTransaction mount={other.isNewTransactionsOpen} project={project} reload={reload} unmount={toggleNewTransaction} />
-					)}
 				</div>
 			);
 		}
@@ -476,6 +471,9 @@ export default function Transactions({ project, reload, unmount }) {
 				</div>
 			</div>
 			<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiMain()}</div>
+			{other.isNewTransactionsOpen && (
+				<NewTransaction mount={other.isNewTransactionsOpen} project={project} reload={reload} unmount={toggleNewTransaction} />
+			)}
 		</div>
 	);
 }

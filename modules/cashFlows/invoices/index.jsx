@@ -291,10 +291,10 @@ export default function Invoices({ presetStatus, unmount }) {
 					let mainProjectName = "";
 					let subProjectName = "";
 
-					const transactionsHistory = response.data.transactionsHistory.filter((f) => f.project_id == m.id);
+					const transactions = response.data.transactions.filter((f) => f.project_id == m.id);
 
-					if (Array.isArray(transactionsHistory) && transactionsHistory.length) {
-						amountReceived = transactionsHistory.reduce((pv, cv) => {
+					if (Array.isArray(transactions) && transactions.length) {
+						amountReceived = transactions.reduce((pv, cv) => {
 							return pv + Number(cv.amount);
 						}, 0);
 					}

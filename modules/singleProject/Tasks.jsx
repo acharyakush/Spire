@@ -90,8 +90,8 @@ export default function Tasks({ project }) {
 	const allowEnablingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.EnableTask);
 	const allowMarkingTaskCompleted = MyGlobal.HasPermission(MyConstants.Modules.Derived.MarkTaskCompleted);
 	const allowNewTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewTask);
-	const allowDeletingParticularRemark = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteParticularRemark);
-	const allowEditingParticularRemark = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditParticularRemark);
+	const allowDeletingParticularRemark = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteSubTask);
+	const allowEditingSubTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditSubTask);
 	const allowMarkingSubTaskCompleted = MyGlobal.HasPermission(MyConstants.Modules.Derived.MarkSubTaskCompleted);
 
 	// Functions
@@ -755,7 +755,7 @@ export default function Tasks({ project }) {
 		const deleteSubTaskStyle =
 			allowDeletingParticularRemark && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
-		const editSubTaskStyle = allowEditingParticularRemark && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+		const editSubTaskStyle = allowEditingSubTask && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
 		const markSubTaskCompletedStyle =
 			allowMarkingSubTaskCompleted && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";

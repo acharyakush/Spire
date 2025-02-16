@@ -88,6 +88,7 @@
 
 	--red: #e31937;
 	--red-transparent-01: rgba(227, 25, 55, 0.1);
+	--red-transparent-05: rgba(227, 25, 55, 0.5);
 
 	--text: #ffffff;
 	--white: #ffffff;
@@ -127,6 +128,7 @@
 
 	--red: #b33a3a;
 	--red-transparent-01: rgba(179, 58, 58, 0.1);
+	--red-transparent-05: rgba(179, 58, 58, 0.5);
 
 	--text: #2d3e50;
 	--white: #2d3e50;
@@ -327,6 +329,10 @@ html {
 	@apply border-b border-b-[var(--red)];
 }
 
+.red-bottom-border-transparent-05 {
+	@apply border-b-2 border-[var(--red-transparent-05)];
+}
+
 .right-border {
 	@apply border-r border-[var(--primary-border)];
 }
@@ -379,6 +385,10 @@ html {
 
 .red-text {
 	@apply text-[var(--red)];
+}
+
+.red-text-important {
+	@apply !text-[var(--red)];
 }
 
 /*****************/

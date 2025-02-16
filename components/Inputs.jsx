@@ -2,6 +2,8 @@
 
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
+import "tippy.js/animations/shift-away.css";
+
 import Tippy from "@tippyjs/react";
 import ReactDatePicker from "react-datepicker";
 
@@ -334,7 +336,18 @@ export const DatePicker = ({ icon, label, onChange, tabIndex, value, width }) =>
 	);
 };
 
-export const EmailAddress = ({ isReadOnly = false, label = "Email Address", onChange, reference = null, suffix, tabIndex, value, width }) => {
+export const EmailAddress = ({
+	autoComplete = false,
+	isReadOnly = false,
+	label = "Email Address",
+	onChange,
+	reference = null,
+	suffix,
+	tabIndex,
+	value,
+	width,
+}) => {
+	const _autoComplete = autoComplete ? "off" : "on";
 	const emailAddressSuffix = `@${applicationName.toLowerCase()}.com`;
 
 	const aesthetics = isReadOnly ? "cursor-not-allowed opacity-50" : "cursor-default opacity-100";
@@ -349,7 +362,15 @@ export const EmailAddress = ({ isReadOnly = false, label = "Email Address", onCh
 			<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">{label}</span>
 			<div className={inputWrapper}>
 				<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
-				<input autoComplete="off" className="inputs" onChange={onChange} readOnly={isReadOnly} ref={reference} tabIndex={tabIndex} value={value} />
+				<input
+					autoComplete={_autoComplete}
+					className="inputs"
+					onChange={onChange}
+					readOnly={isReadOnly}
+					ref={reference}
+					tabIndex={tabIndex}
+					value={value}
+				/>
 				{suffix && (
 					<span className="flex h-9 px-1 justify-center items-center full-border no-right-border font-regular-8 primary-light-background black-text">
 						{emailAddressSuffix}
@@ -381,6 +402,8 @@ export const Password = ({ eyeIconStyle, eyeIconUi, onChange, reference, toggleC
 
 export const TextInput = ({
 	disable = false,
+	errorText = "",
+	hasError = false,
 	icon,
 	iconSize = "1x",
 	id,
@@ -398,26 +421,37 @@ export const TextInput = ({
 	const cursor = isReadOnly ? "cursor-not-allowed" : "cursor-default";
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 justify-center items-center ${cursor}`;
 
-	const inputWrapper = `flex w-full h-9 px-3 space-x-1 justify-start items-center ${clickEvent} rounded primary-background-transparent-01 primary-bottom-border-transparent-05`;
+	const animation = hasError ? "animate__animated animate__shakeX animate__faster" : "";
+	const colour = hasError ? "red-text-important" : "primary-text";
+
+	const background = hasError
+		? "red-background-transparent-01 red-bottom-border-transparent-05"
+		: "primary-background-transparent-01 primary-bottom-border-transparent-05";
+
+	const inputStyle = `inputs ${colour}`;
+	const inputWrapper = `flex w-full h-9 px-3 space-x-1 justify-start items-center ${clickEvent} rounded ${animation} ${background}`;
 
 	return (
 		<div className={wrapper}>
 			<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">{label}</span>
-			<div className={inputWrapper}>
-				<FontAwesomeIcon className="primary-text" icon={icon} size={iconSize} />
-				<input
-					autoComplete="off"
-					className="inputs"
-					id={id}
-					maxLength={maxLength}
-					onChange={onChange}
-					onKeyPress={onKeyPress}
-					readOnly={isReadOnly}
-					tabIndex={tabIndex}
-					type="text"
-					value={value}
-				/>
-			</div>
+
+			<Tippy allowHTML animation="shift-away" content={errorText} visible={hasError} placement="right">
+				<div className={inputWrapper}>
+					<FontAwesomeIcon className={colour} icon={icon} size={iconSize} />
+					<input
+						autoComplete="off"
+						className={inputStyle}
+						id={id}
+						maxLength={maxLength}
+						onChange={onChange}
+						onKeyPress={onKeyPress}
+						readOnly={isReadOnly}
+						tabIndex={tabIndex}
+						type="text"
+						value={value}
+					/>
+				</div>
+			</Tippy>
 		</div>
 	);
 };

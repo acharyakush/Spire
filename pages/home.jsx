@@ -20,6 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { faCheck, faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import Employees from "@/modules/employees";
 
 export default function Home() {
 	// Business Logic
@@ -89,6 +90,8 @@ export default function Home() {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-permissions" }));
 
+			MyGlobal.SetPermission(response.data);
+
 			const modules = [];
 			const userData = MyGlobal.GetUserData();
 
@@ -97,31 +100,47 @@ export default function Home() {
 				.filter((f) => {
 					if (userData.permissions != -1) {
 						const permissions = String(userData.permissions).split(",");
-						const permissionId = String(f.id);
 
-						if (permissions.includes(permissionId)) {
-							modules.push(f);
+						if (permissions.includes(f.id)) {
+							modules.push({ ...f, sequence: getSequence(f.module) });
 						}
 					} else {
-						modules.push(f);
+						modules.push({ ...f, sequence: getSequence(f.module) });
 					}
 				});
 
-			const sequentialModules = modules.sort((a, b) => a.sequence - b.sequence);
+			modules.sort((a, b) => a.sequence - b.sequence);
 
-			MyGlobal.SetPermission(response.data);
+			setApi((s) => ({ ...s, allPermissions: response.data, modules }));
 
-			setApi((s) => ({ ...s, allPermissions: response.data, modules: sequentialModules }));
+			const firstModule = modules.find((f) => f.sequence === 0);
+			const selectedModule = { index: 0, name: "" };
 
-			setMain((s) => ({
-				...s,
-				selectedModule: {
-					index: 0,
-					name: sequentialModules.at(0).module,
-				},
-			}));
+			if (typeof firstModule === "object") {
+				selectedModule.index = firstModule.sequence;
+				selectedModule.name = firstModule.name;
+			}
+
+			setMain((s) => ({ ...s, selectedModule }));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get All Permissions");
+		}
+	}
+
+	function getSequence(module) {
+		switch (module) {
+			case MyConstants.Modules.Base.CashFlow:
+				return 6;
+			case MyConstants.Modules.Base.Clients:
+				return 4;
+			case MyConstants.Modules.Base.Dashboard:
+				return 0;
+			case MyConstants.Modules.Base.Inquiries:
+				return 1;
+			case MyConstants.Modules.Base.Projects:
+				return 2;
+			default:
+				return -1;
 		}
 	}
 
@@ -273,6 +292,8 @@ export default function Home() {
 	function uiMain() {
 		if (mounted.activities) {
 			return <Activities unmount={toggleActivitiesView} />;
+		} else if (mounted.employees) {
+			return <Employees unmount={toggleEmployeeView} />;
 		} else {
 			return uiSelectedModule();
 		}
@@ -281,7 +302,7 @@ export default function Home() {
 	function uiModules() {
 		return api.modules
 			.filter((f) => f.name != baseModules.Affiliates && f.name != baseModules.Invoices && f.name != baseModules.Firms)
-			.filter((f) => f.sequence <= 8)
+			.filter((f) => f.sequence >= 0)
 			.map((m, i) => {
 				const isSelected = i == main.selectedModule.index;
 
@@ -315,7 +336,7 @@ export default function Home() {
 
 	function uiOtherModulesList() {
 		return api.modules
-			.filter((f) => f.sequence > 8)
+			.filter((f) => f.sequence <= 0)
 			.map((m, i) => {
 				const isSelected = m.name == main.selectedModule.name;
 				const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "gray-text";

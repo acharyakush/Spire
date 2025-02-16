@@ -47,8 +47,6 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 		isBoxMoved: false,
 	});
 
-	const errorStyle = other.hasError ? "font-medium-8 red-text" : "hidden";
-
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
@@ -209,9 +207,18 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 	}
 
 	function uiAmountPaid() {
+		const error = (
+			<div className="p-2 space-x-1 font-regular-11">
+				<span>Paying amount cannot be more than the current balance</span>
+				<span className="font-bold-11">{MyGlobal.ThousandSeparator(lastTransaction.balance)}</span>
+			</div>
+		);
+
 		return (
 			<div className="flex flex-col w-full space-y-2 justify-center items-center">
 				<TextInput
+					errorText={error}
+					hasError={other.hasError}
 					icon={faIndianRupee}
 					id="amountPaid"
 					isReadOnly={main.amountReceived.length}
@@ -223,16 +230,6 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 					width="w-full"
 				/>
 			</div>
-
-			/* <Tippy
-					animation="shift-away"
-					appendTo="reference"
-					className="font-medium-12"
-					content={`Amount paid cannot be more than the current balance: ${api.openingBalance}`}
-					placement="bottom"
-					visible={other.hasError}> */
-
-			/* </Tippy> */
 		);
 	}
 
@@ -279,7 +276,6 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 							{uiAmountPaid()}
 							{uiAmountReceived()}
 						</div>
-						<span className={errorStyle}>Amount paid cannot be more than the current balance: {lastTransaction.balance}</span>
 					</div>
 				</div>
 			);

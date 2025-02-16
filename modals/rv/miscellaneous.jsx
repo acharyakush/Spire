@@ -74,9 +74,6 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
-	const errorStyle = other.hasError
-		? "flex w-full h-[58px] p-2 mt-5 space-x-2.5 justify-center items-center rounded font-regular-10 red-background-transparent-01 red-border red-text"
-		: "h-[58px] mt-5 invisible";
 
 	const showFromDateClearButton = other.find.entryAt.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearButton = other.find.entryAt.to ? "cursor-pointer primary-text" : "hidden";
@@ -306,8 +303,17 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiAmountReceived() {
+		const error = (
+			<div className="p-2 space-x-1 font-regular-11">
+				<span>Receiving amount cannot be more than the Pending amount</span>
+				<span className="font-bold-11">{MyGlobal.ThousandSeparator(totalAmountPending)}</span>
+			</div>
+		);
+
 		return (
 			<TextInput
+				errorText={error}
+				hasError={other.hasError}
 				icon={faIndianRupee}
 				id="amountReceived"
 				label="Amount Received"
@@ -586,10 +592,6 @@ export function Transactions({ mount, project, reload, unmount }) {
 								<button className={isAddEligible()} onClick={() => doAddition()}>
 									{uiAdd()}
 								</button>
-								<div className={errorStyle}>
-									<span>Amount received cannot be more than the Amount pending</span>
-									<span className="font-bold-12">{MyGlobal.ThousandSeparator(totalAmountPending)}</span>
-								</div>
 							</div>
 						</div>
 					</DialogPanel>
