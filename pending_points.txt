@@ -6,7 +6,7 @@ Invoices
 1. The "Invoice ID" column should open "Edit Invoice" if user is administrator.
 
 Modules
-1. Employees, Profile, Settings
+1. Profile, Settings
 
 
 Cash Flows => New Entity

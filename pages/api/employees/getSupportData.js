@@ -13,9 +13,10 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
+		const employees = await query("SELECT * FROM employees", []);
 		const permissions = await query("SELECT * FROM permissions", []);
 
-		return res.status(200).json({ permissions });
+		return res.status(200).json({ employees, permissions });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");

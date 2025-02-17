@@ -15,8 +15,6 @@ export default async function handler(req, res) {
 	try {
 		const {
 			address,
-			allowedIpAddress,
-			allowRemoteWorking,
 			birthDate,
 			city,
 			state,
@@ -36,7 +34,7 @@ export default async function handler(req, res) {
 		const [response] = await query("SELECT @new_employee_id AS new_id;");
 
 		const result = await query(
-			`INSERT INTO employees (id, administrator_id, first_name, last_name, full_name, email_address, password, gender, birth_date, phone_number, address, city, state, employment_type, employment_status, permissions, allow_remote_working, allowed_ip_addresses, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			`INSERT INTO employees (id, administrator_id, first_name, last_name, full_name, email_address, password, gender, birth_date, phone_number, address, city, state, designation, employment_type, permissions, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			[
 				response.new_id,
 				reportsTo.id,
@@ -51,11 +49,9 @@ export default async function handler(req, res) {
 				address,
 				city,
 				state,
+				designation,
 				employmentType,
-				"",
 				permissions,
-				allowRemoteWorking,
-				allowedIpAddress,
 				userId,
 			],
 		);

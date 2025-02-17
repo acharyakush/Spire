@@ -3,6 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import NewEmployee from "./NewEmployee";
+import EditEmployee from "./EditEmployee";
 import MyConstants from "@/utilities/constants";
 
 import { useState } from "react";
@@ -45,7 +46,7 @@ export default function Employees({ unmount }) {
 			const wrapper = `flex w-full px-4 py-2 space-x-3 justify-start items-center rounded shadow ${selectedStyle} font-medium-12 hovered-rows`;
 
 			return (
-				<button className={wrapper} key={i} onClick={() => setCategory(m)}>
+				<button className={wrapper} key={i} onClick={() => toggleModule(m)}>
 					<FontAwesomeIcon icon={icon} size="sm" />
 					<span>{m}</span>
 				</button>
@@ -60,7 +61,16 @@ export default function Employees({ unmount }) {
 					key={`ErrorBoundary_${module}`}
 					onError={(e) => MyGlobal.LogErrors(e.message, module)}
 					FallbackComponent={ErrorFallbackComponent}>
-					<NewEmployee unmount={toggleModule} />
+					<NewEmployee />
+				</ErrorBoundary>
+			);
+		} else {
+			return (
+				<ErrorBoundary
+					key={`ErrorBoundary_${module}`}
+					onError={(e) => MyGlobal.LogErrors(e.message, module)}
+					FallbackComponent={ErrorFallbackComponent}>
+					<EditEmployee />
 				</ErrorBoundary>
 			);
 		}

@@ -13,19 +13,14 @@ import { ComboBox, ComboBox2, DatePicker, EmailAddress, Password, TextArea, Text
 import {
 	faBirthdayCake,
 	faBriefcase,
-	faBuildingCircleXmark,
-	faCircle,
-	faCircleDot,
 	faCity,
 	faEye,
 	faEyeSlash,
 	faFont,
 	faHome,
-	faLocationDot,
 	faPhone,
 	faSquare,
 	faSquareCheck,
-	faUserCircle,
 	faUsers,
 	faVenusMars,
 } from "@fortawesome/free-solid-svg-icons";
@@ -34,7 +29,6 @@ export default function NewEmployee() {
 	// Business Logic
 	const [api, setApi] = useState({
 		administrators: [],
-		allowedIpAddresses: [],
 		permissions: [],
 	});
 
@@ -45,8 +39,6 @@ export default function NewEmployee() {
 
 	const [main, setMain] = useState({
 		address: "",
-		allowedIpAddress: "",
-		allowRemoteWorking: 0,
 		birthDate: new Date(),
 		city: "",
 		state: "",
@@ -59,7 +51,6 @@ export default function NewEmployee() {
 		permissions: [],
 		phoneNumber: "",
 		reportsTo: { id: "", name: "" },
-		username: "",
 	});
 
 	const [other, setOther] = useState({
@@ -98,10 +89,6 @@ export default function NewEmployee() {
 		} finally {
 			setLoading((s) => ({ ...s, adding: false }));
 		}
-	}
-
-	function fillIpAddresses() {
-		setApi((s) => ({ ...s, allowedIpAddresses: Object.values(MyConstants.IpAddresses) }));
 	}
 
 	async function getSupportData() {
@@ -156,21 +143,6 @@ export default function NewEmployee() {
 		}
 	}
 
-	function setIpAddressInputs(payload, source) {
-		const old = [...api.allowedIpAddresses];
-		const newData = old;
-
-		if (source === 0) {
-			newData.shift();
-			newData.unshift(payload);
-		} else {
-			newData.pop();
-			newData.push(payload);
-		}
-
-		setApi((s) => ({ ...s, allowedIpAddresses: newData }));
-	}
-
 	function setLightInputs(key, value) {
 		setMain((s) => ({ ...s, [key]: value }));
 	}
@@ -220,88 +192,13 @@ export default function NewEmployee() {
 		);
 	}
 
-	function uiAllowedIpAddresses() {
-		return (
-			<div className="flex flex-col w-full p-2 space-y-1 justify-center items-center">
-				<span className="flex w-full justify-between items-center font-regular-10 light-slate-gray-text">
-					<span>Allowed IP Addresses</span>
-					<span className="cursor-pointer font-regular-11 primary-text" onClick={() => fillIpAddresses()}>
-						Autofill
-					</span>
-				</span>
-				{uiAllowedIpAddressesItems()}
-			</div>
-		);
-	}
-
-	function uiAllowedIpAddressesItems() {
-		return (
-			<div className="flex flex-col w-full p-2 space-y-1 justify-center items-start rounded bottom-shadow full-border">
-				<TextInput
-					icon={faLocationDot}
-					label="Office"
-					onChange={(e) => setIpAddressInputs(e.target.value, 0)}
-					onKeyPress={() => {}}
-					tabIndex="15"
-					value={api.allowedIpAddresses.at(0)}
-					width="w-full"
-				/>
-				<TextInput
-					icon={faLocationDot}
-					label="Remote"
-					onChange={(e) => setIpAddressInputs(e.target.value, 1)}
-					onKeyPress={() => {}}
-					isReadOnly={main.allowRemoteWorking == 0}
-					tabIndex="16"
-					value={api.allowedIpAddresses.at(1)}
-					width="w-full"
-				/>
-			</div>
-		);
-	}
-
-	function uiAllowRemoteWorking() {
-		return (
-			<div className="flex flex-col w-full p-2 space-y-1 justify-center items-center">
-				<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">Allow Remote Working</span>
-				<div className="flex w-full h-9 px-2 space-x-1 justify-start items-center rounded bottom-shadow contrast-background full-border">
-					<FontAwesomeIcon className="primary-text" icon={faBuildingCircleXmark} />
-					<span className="flex w-full space-x-5 justify-between items-center">{uiAllowRemoteWorkingItems()}</span>
-				</div>
-			</div>
-		);
-	}
-
-	function uiAllowRemoteWorkingItems() {
-		const allowRemoteWorking = main.allowRemoteWorking == 1;
-
-		const positiveIcon = allowRemoteWorking ? faCircleDot : faCircle;
-		const negativeIcon = allowRemoteWorking ? faCircle : faCircleDot;
-
-		const positiveIconColour = `cursor-pointer ${allowRemoteWorking ? "primary-text" : "gray-text"}`;
-		const negativeIconColour = `cursor-pointer ${!allowRemoteWorking ? "primary-text" : "gray-text"}`;
-
-		return (
-			<>
-				<div className="flex w-full space-x-2 justify-center items-center">
-					<FontAwesomeIcon className={positiveIconColour} icon={positiveIcon} onClick={() => setLightInputs("allowRemoteWorking", 1)} />
-					<span className="font-regular-10 black-text">Yes</span>
-				</div>
-				<div className="flex w-full space-x-2 justify-center items-center">
-					<FontAwesomeIcon className={negativeIconColour} icon={negativeIcon} onClick={() => setLightInputs("allowRemoteWorking", 0)} />
-					<span className="font-regular-10 black-text">No</span>
-				</div>
-			</>
-		);
-	}
-
 	function uiBirthDate() {
 		return (
 			<DatePicker
 				icon={faBirthdayCake}
 				label="Birth Date"
 				onChange={(e) => setHeavyInputs("birthDate", e)}
-				tabIndex="8"
+				tabIndex="5"
 				value={main.birthDate}
 				width="w-full"
 			/>
@@ -334,7 +231,7 @@ export default function NewEmployee() {
 				onClick={() => {}}
 				onKeyPress={() => {}}
 				searchedItem=""
-				tabIndex="15"
+				tabIndex="14"
 				value={main.designation}
 				width="w-full"
 			/>
@@ -462,7 +359,7 @@ export default function NewEmployee() {
 	function uiPermissions() {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-1 justify-center items-center">
-				<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">Permissions</span>
+				<span className="flex w-full space-x-5 justify-between items-center font-regular-10 light-slate-gray-text">Permissions</span>
 				<div className="w-full p-3 columns-3 rounded bottom-shadow contrast-background full-border">{uiPermissionsItems()}</div>
 			</div>
 		);
@@ -536,20 +433,6 @@ export default function NewEmployee() {
 		);
 	}
 
-	function uiUserName() {
-		return (
-			<TextInput
-				icon={faUserCircle}
-				label="User Name"
-				onChange={(e) => setLightInputs("username", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="6"
-				value={main.username}
-				width="w-full"
-			/>
-		);
-	}
-
 	// Hooks
 	useEffect(() => {
 		getSupportData();
@@ -569,14 +452,14 @@ export default function NewEmployee() {
 				{uiLastName()}
 			</div>
 			<div className="flex w-full px-5 py-2.5 space-x-10 justify-between items-center">
-				{uiUserName()}
+				{uiBirthDate()}
 				{uiEmailAddress()}
 				{uiPassword()}
 			</div>
 			<div className="flex w-full px-5 py-2.5 space-x-10 justify-between items-center">
-				{uiBirthDate()}
 				{uiGender()}
 				{uiPhoneNumber()}
+				<div className="w-full" />
 			</div>
 			<div className="flex w-full px-5 py-2.5 space-x-10 justify-between items-center">
 				{uiAddress()}
@@ -584,11 +467,10 @@ export default function NewEmployee() {
 				{uiState()}
 			</div>
 			<div className="flex w-full px-5 py-2.5 space-x-10 justify-between items-center">
-				{uiAllowRemoteWorking()}
 				{uiDesignation()}
 				{uiEmploymentType()}
+				<div className="w-full" />
 			</div>
-			<div className="flex w-full px-5 py-2.5 justify-between items-center">{uiAllowedIpAddresses()}</div>
 			<div className="flex w-full px-5 py-2.5 justify-between items-center">{uiPermissions()}</div>
 			<footer className="w-full dialog-footer !px-7 !py-5">
 				<button className={addButtonStyle} onClick={() => doAddition()}>

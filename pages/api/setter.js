@@ -37,7 +37,6 @@ export default async function handler(req, res) {
 				}
 
 				queryString = "INSERT INTO activities (entry_by_id, module, activity, ip_address, details) VALUES (?, ?, ?, ?, ?)";
-
 				queryParameters = [request.userId, request.module, request.activity, ipAddress, ""];
 			} else if (request.type == "set-user-status") {
 				queryString = "UPDATE employees SET is_active=? WHERE id=?";

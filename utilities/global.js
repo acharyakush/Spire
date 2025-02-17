@@ -416,13 +416,6 @@ export const MyGlobal = Object.freeze({
 		}
 	},
 
-	SetUserStatus: async (status) => {
-		if (!MyGlobal.IsUserAdministrator()) {
-			const body = { status, type: "set-user-status", userId };
-			axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
-		}
-	},
-
 	SeparateObjectsIntoArrays: (array, chunkSize) => {
 		const result = [];
 
@@ -473,17 +466,22 @@ export const MyGlobal = Object.freeze({
 			Get: (key) => (!isDevelopment ? secureLocalStorage.getItem(key) : globalThis.localStorage.getItem(key)),
 			Remove: (key) => (!isDevelopment ? secureLocalStorage.removeItem(key) : globalThis.localStorage.removeItem(key)),
 			RemoveAll: () => {
+				const keysToRemove = [];
+
 				for (let i = 0; i < globalThis.localStorage.length; i++) {
 					const key = globalThis.localStorage.key(i) || "";
-
 					if (key && key.startsWith(applicationName)) {
-						!isDevelopment ? secureLocalStorage.removeItem(key) : globalThis.localStorage.removeItem(key);
-						i--;
+						keysToRemove.push(key);
 					}
 				}
 
+				keysToRemove.forEach((key) => {
+					!isDevelopment ? secureLocalStorage.removeItem(key) : globalThis.localStorage.removeItem(key);
+				});
+
 				globalThis.console.clear();
 			},
+
 			Set: (key, value) => (!isDevelopment ? secureLocalStorage.setItem(key, value) : globalThis.localStorage.setItem(key, value)),
 		},
 		Session: {
@@ -491,14 +489,18 @@ export const MyGlobal = Object.freeze({
 			Get: (key) => globalThis.sessionStorage.getItem(key),
 			Remove: (key) => globalThis.sessionStorage.removeItem(key),
 			RemoveAll: () => {
+				const keysToRemove = [];
+
 				for (let i = 0; i < globalThis.sessionStorage.length; i++) {
 					const key = globalThis.sessionStorage.key(i) || "";
-
 					if (key && key.startsWith(applicationName)) {
-						!isDevelopment ? secureLocalStorage.removeItem(key) : globalThis.sessionStorage.removeItem(key);
-						i--;
+						keysToRemove.push(key);
 					}
 				}
+
+				keysToRemove.forEach((key) => {
+					!isDevelopment ? secureLocalStorage.removeItem(key) : globalThis.sessionStorage.removeItem(key);
+				});
 
 				globalThis.console.clear();
 			},

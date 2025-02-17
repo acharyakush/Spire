@@ -8,6 +8,7 @@ import Clients from "@/modules/clients";
 import Projects from "@/modules/projects";
 import Inquiries from "@/modules/inquiries";
 import CashFlows from "@/modules/cashFlows";
+import Employees from "@/modules/employees";
 import Activities from "@/modules/activities";
 import MyConstants from "@/utilities/constants";
 import Affiliates from "@/modules/cashFlows/affiliates";
@@ -20,7 +21,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { faCheck, faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
-import Employees from "@/modules/employees";
 
 export default function Home() {
 	// Business Logic
@@ -220,11 +220,18 @@ export default function Home() {
 	}
 
 	function logout() {
-		MyGlobal.AddActivity("Logged out.");
-		// MyGlobal.SetUserStatus(0);
-		MyGlobal.ClearAllUserData();
+		try {
+			MyGlobal.AddActivity("Logged out.");
+			MyGlobal.ClearAllUserData();
 
-		router.replace("/");
+			setTimeout(() => {
+				router.replace("/");
+			}, 0);
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Logout");
+			console.error("Logout failed: ", error);
+			window.location.href = "/";
+		}
 	}
 
 	function setModule(index, module) {
