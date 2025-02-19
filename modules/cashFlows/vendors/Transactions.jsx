@@ -156,11 +156,18 @@ export default function Transactions({ head, reload, unmount }) {
 		}
 	}
 
-	async function getSupportData() {
+	async function getSupportData(action) {
+		if (action && action === "reload-root-statistics") {
+			reload();
+		}
+
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Vendors.GetTransactionsSupportData, MyGlobal.GetHeaders({ vendorId: head.vendorId }));
+			const response = await axios.get(
+				MyConstants.ApiEndpoints.Vendors.GetTransactionsSupportData,
+				MyGlobal.GetHeaders({ headId: head.id, vendorId: head.vendorId }),
+			);
 
 			if (response.status === 200) {
 				const transactions = response.data.transactions.map((m) => {
@@ -331,7 +338,7 @@ export default function Transactions({ head, reload, unmount }) {
 		return (
 			<div className="flex flex-col w-full h-full justify-start items-center">
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
-					<div className="flex w-1/5 space-x-2 justify-start items-center">
+					<div className="flex w-1/2 space-x-2 justify-start items-center">
 						<div className="flex w-full space-x-2.5 justify-start items-center">
 							<span
 								className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
@@ -339,12 +346,12 @@ export default function Transactions({ head, reload, unmount }) {
 								{MyConstants.Modules.Base.Vendors}
 							</span>
 							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-							<span className="view-heading">Transactions</span>
+							<span className="view-heading">{head.purpose}'s Transactions</span>
 							{api.transactions.copy.length > 0 && <Badge value={getRowsCount()} />}
 						</div>
 					</div>
-					<div className="flex w-4/5 space-x-2 justify-end items-center">
-						<div className="flex w-1/2 space-x-2 justify-end items-center">
+					<div className="flex w-1/2 space-x-2 justify-end items-center">
+						<div className="flex w-full space-x-2 justify-end items-center">
 							{uiFromDate()}
 							{uiToDate()}
 						</div>
@@ -466,7 +473,7 @@ export default function Transactions({ head, reload, unmount }) {
 	return (
 		<>
 			{uiMain()}
-			{mounted.newTransaction && <NewTransaction head={head} mount={mounted.newTransaction} reload={reload} unmount={toggleNewTransaction} />}
+			{mounted.newTransaction && <NewTransaction head={head} mount={mounted.newTransaction} reload={getSupportData} unmount={toggleNewTransaction} />}
 		</>
 	);
 }

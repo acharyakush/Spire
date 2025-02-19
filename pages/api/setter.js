@@ -63,8 +63,8 @@ export default async function handler(req, res) {
 				queryString = "UPDATE projects SET government_id=? WHERE id=?";
 				queryParameters = [request.governmentId, request.projectId];
 			} else if (request.type == "edit-quote") {
-				queryString = "UPDATE projects SET quote=? WHERE id=?";
-				queryParameters = [request.quote, request.projectId];
+				queryString = "UPDATE projects SET quote=?, invoice_fees=? WHERE id=?";
+				queryParameters = [request.quote, request.quote, request.projectId];
 			} else if (request.type == "edit-task") {
 				queryString = "UPDATE tasks SET task=?, due_on=?, expense=? WHERE id=?";
 				queryParameters = [request.task, request.dueOn, request.expense, request.taskId];

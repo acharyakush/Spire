@@ -513,7 +513,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const clientName = MyGlobal.HighlightText(row.client_name, main.findText);
 
 			return (
-				<Tippy content={<Tooltip text={tooltipText} />} placement="bottom">
+				<Tippy allowHTML className="whitespace-pre-line" content={<Tooltip text={tooltipText} />} placement="bottom">
 					<span dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleProjectView(row)} />
 				</Tippy>
 			);
@@ -620,7 +620,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		const governmentId = MyGlobal.HighlightText(row.government_id ?? "", main.findText);
 		const governmentIdTextColour = !row.government_id ? "gray-text" : "primary-text";
 
-		const clientIdAndName = `${row.client_id} - ${row.client_name}`;
+		const clientIdAndName = [`Client ID - ${row.client_id}`, <br />, `Project ID - ${row.id}`];
 		const companyName = MyGlobal.HighlightText(row.company_name, main.findText);
 
 		const mainProjectName = MyGlobal.HighlightText(row.main_project_name, main.findText);

@@ -351,10 +351,6 @@ export default function Transactions({ reload, unmount }) {
 		}
 	}
 
-	function uiNewStartingBalance() {
-		return <FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleNewStartingBalance()} />;
-	}
-
 	function uiRows(row, i) {
 		const style = "flex flex-wrap w-[12.50%] min-h-9 justify-center items-center text-center";
 
@@ -493,7 +489,6 @@ export default function Transactions({ reload, unmount }) {
 				</div>
 				<div className="flex w-1/2 space-x-2 justify-end items-center">
 					<div className="flex w-full space-x-2 justify-end items-center">
-						{uiNewStartingBalance()}
 						{uiFromDate()}
 						{uiToDate()}
 					</div>

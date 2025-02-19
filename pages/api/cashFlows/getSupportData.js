@@ -29,6 +29,9 @@ export default async function handler(req, res) {
 			projects,
 			reimburseVouchers,
 			settings,
+			vendors,
+			vendorsHeads,
+			vendorsTransactions,
 		] = await Promise.all([
 			query("SELECT * FROM affiliates", []), // Queries
 			query("SELECT * FROM affiliates_projects", []),
@@ -45,6 +48,9 @@ export default async function handler(req, res) {
 			query("SELECT * FROM projects", []),
 			query("SELECT * FROM rv", []),
 			query("SELECT * FROM cash_flows_settings WHERE `key`='payment_types'", []),
+			query("SELECT * FROM vendors", []),
+			query("SELECT * FROM vendors_heads", []),
+			query("SELECT * FROM vendors_transactions", []),
 		]);
 
 		return res.status(200).json({
@@ -63,6 +69,9 @@ export default async function handler(req, res) {
 			projects,
 			reimburseVouchers,
 			settings,
+			vendors,
+			vendorsHeads,
+			vendorsTransactions,
 		});
 	} catch (error) {
 		console.error(error);

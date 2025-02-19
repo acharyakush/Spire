@@ -190,20 +190,57 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 				// Affiliates //
 				// ========== //
 
-				const _affiliates = Object.assign({}, main.affiliates);
+				const affiliates = Object.assign({}, main.affiliates);
+				const paidAffiliatesList = [];
 
 				response.data.affiliatesProjects.forEach((fe) => {
-					_affiliates.total.amount += Number(fe.total_fees);
-					_affiliates.total.count += 1;
+					affiliates.total.amount += Number(fe.total_fees);
+					affiliates.total.count += 1;
 				});
 
 				response.data.affiliatesTransactions.forEach((fe) => {
-					_affiliates.paid.amount += Number(fe.amount);
-					_affiliates.paid.count += 1;
+					affiliates.paid.amount += Number(fe.amount);
+
+					const paidAffiliates = response.data.affiliatesProjects.filter((f) => f.affiliate_id === fe.affiliate_id && f.project_id === fe.project_id);
+
+					if (paidAffiliates.length) {
+						if (!paidAffiliatesList.includes(paidAffiliates.at(0).id)) {
+							paidAffiliatesList.push(paidAffiliates.at(0).id);
+						}
+					}
 				});
 
-				_affiliates.pending.amount = _affiliates.total.amount - _affiliates.paid.amount;
-				_affiliates.pending.count = _affiliates.total.count - _affiliates.paid.count;
+				affiliates.paid.count = paidAffiliatesList.length;
+				affiliates.pending.amount = affiliates.total.amount - affiliates.paid.amount;
+				affiliates.pending.count = affiliates.total.count - affiliates.paid.count;
+
+				// ======= //
+				// Vendors //
+				// ======= //
+
+				const vendors = Object.assign({}, main.vendors);
+				const paidVendorsList = [];
+
+				response.data.vendorsHeads.forEach((fe) => {
+					vendors.total.amount += Number(fe.amount);
+					vendors.total.count += 1;
+				});
+
+				response.data.vendorsTransactions.forEach((fe) => {
+					vendors.paid.amount += Number(fe.amount);
+
+					const paidvendors = response.data.vendorsHeads.filter((f) => f.id === fe.head_id && f.vendor_id === fe.vendor_id);
+
+					if (paidvendors.length) {
+						if (!paidVendorsList.includes(paidvendors.at(0).id)) {
+							paidVendorsList.push(paidvendors.at(0).id);
+						}
+					}
+				});
+
+				vendors.paid.count = paidVendorsList.length;
+				vendors.pending.amount = vendors.total.amount - vendors.paid.amount;
+				vendors.pending.count = vendors.total.count - vendors.paid.count;
 
 				// ======== //
 				// Invoices //
@@ -326,7 +363,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 
 				setMain((s) => ({
 					...s,
-					affiliates: _affiliates,
+					affiliates: affiliates,
 					invoices: _invoices,
 					otherIncome: otherIncome,
 					officeExpense,
@@ -457,7 +494,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 						<Badge value={`Total ${main.totalInvoicesAmount}`} />
 					</div>
 				</div>
-				<div className="flex w-full space-x-16 justify-between items-center">{uiInvoicesBlock()}</div>
+				<div className="flex w-full space-x-32 justify-between items-center">{uiInvoicesBlock()}</div>
 			</div>
 		);
 	}
@@ -667,7 +704,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 						<Badge value={`Total ${main.totalRvAmount}`} />
 					</div>
 				</div>
-				<div className="flex w-full space-x-16 justify-between items-center">{uiRVsBlock()}</div>
+				<div className="flex w-full space-x-32 justify-between items-center">{uiRVsBlock()}</div>
 			</div>
 		);
 	}

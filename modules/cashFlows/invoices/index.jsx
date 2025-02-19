@@ -317,12 +317,14 @@ export default function Invoices({ presetStatus, unmount }) {
 					let invoiceCreatedAt = "";
 					let invoiceCreatedAtTime = "";
 					let invoiceDueDate = "";
+					let invoiceDueDateTime = "";
 
 					if (typeof invoice === "object") {
 						invoiceId = invoice.custom_id;
 						invoiceCreatedAt = dayjs(invoice.created_at).format("DD/MM/YYYY");
 						invoiceCreatedAtTime = dayjs(invoice.created_at).format("hh:mm:ss a");
-						invoiceDueDate = invoice.due_date;
+						invoiceDueDate = invoice.due_date ? dayjs(invoice.due_date).format("DD/MM/YYYY") : "";
+						invoiceDueDateTime = invoice.due_date ? dayjs(invoice.due_date).format("hh:mm:ss a") : "";
 					}
 
 					const mainProject = response.data.mainProjects.find((f) => f.id == m.main_project_id);
@@ -347,6 +349,7 @@ export default function Invoices({ presetStatus, unmount }) {
 						created_at_time: invoiceCreatedAtTime,
 						invoice_id: invoiceId,
 						invoice_due_date: invoiceDueDate,
+						invoice_due_date_time: invoiceDueDateTime,
 						main_project_name: mainProjectName,
 						sub_project_name: subProjectName,
 					};
@@ -481,7 +484,7 @@ export default function Invoices({ presetStatus, unmount }) {
 
 			return (
 				<span
-					className="flex w-[10%] space-x-2 justify-center items-center cursor-pointer text-white font-medium-10"
+					className="flex w-[9.09%] space-x-2 justify-center items-center cursor-pointer text-white font-medium-10"
 					key={i}
 					onClick={() => setSort(m)}>
 					<span>{m}</span>
@@ -530,7 +533,7 @@ export default function Invoices({ presetStatus, unmount }) {
 	}
 
 	function uiRows(row, i) {
-		const style = `flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center`;
+		const style = `flex flex-wrap w-[9.09%] min-h-9 justify-center items-center text-center`;
 
 		const id = MyGlobal.HighlightText(row.id, main.filter.find);
 
@@ -561,8 +564,13 @@ export default function Invoices({ presetStatus, unmount }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
 				<span className={`${style} cursor-help primary-text`}>
-					<Tippy animation="shift-away" content={<Tooltip text={row.created_at_time} />} placement="bottom">
+					<Tippy animation="shift-away" content={<Tooltip text={row.created_at_time} />} disabled={!row.created_at} placement="bottom">
 						<span className={style}>{row.created_at}</span>
+					</Tippy>
+				</span>
+				<span className={`${style} cursor-help primary-text`}>
+					<Tippy animation="shift-away" content={<Tooltip text={row.invoice_due_date_time} />} disabled={!row.invoice_due_date} placement="bottom">
+						<span className={style}>{row.invoice_due_date}</span>
 					</Tippy>
 				</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />

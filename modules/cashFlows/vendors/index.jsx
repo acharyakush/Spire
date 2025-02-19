@@ -96,10 +96,28 @@ export default function Vendors({ unmount }) {
 							});
 					}
 
+					let bankName = "";
+					let firmName = "";
+
+					const firm = response.data.firms.find((f) => f.id === fe.firm_id);
+					const bank = response.data.banks.find((f) => f.id === fe.bank_id);
+
+					if (typeof bank === "object") {
+						bankName = bank.name;
+					}
+
+					if (typeof firm === "object") {
+						firmName = firm.name;
+					}
+
 					heads.push({
 						amount: Number(fe.amount),
 						amountPaid,
 						amountPending: Number(fe.amount) - amountPaid,
+						bank: {
+							id: fe.bank_id,
+							name: bankName,
+						},
 						entryAt: fe.entry_at,
 						entryBy: {
 							id: fe.entry_by_id,
@@ -107,15 +125,12 @@ export default function Vendors({ unmount }) {
 						},
 						firm: {
 							id: fe.firm_id,
-							name: "",
+							name: firmName,
 						},
-						bank: {
-							id: fe.bank_id,
-							name: "",
-						},
+						id: fe.id,
 						paymentSource: fe.payment_source,
 						purpose: fe.purpose,
-						remark: fe.remarks,
+						remarks: fe.remarks,
 						vendorId: fe.vendor_id,
 					});
 				});
@@ -257,22 +272,54 @@ export default function Vendors({ unmount }) {
 						<BadgeGreenLarge value={i + 1} />
 					</span>
 					<span className="font-medium-16 black-text">{m.purpose}</span>
-					<div className="flex flex-col w-full p-4 space-y-2 rounded shadow contrast-background">
-						<div className="flex w-full justify-between items-center">
-							<span className="font-regular-12">Total Pending</span>
-							<span className="font-medium-12 red-text">{MyGlobal.ThousandSeparator(m.amountPending)}</span>
-						</div>
-						<div className="full-border" />
-						<div className="flex w-full justify-between items-center">
-							<span className="font-regular-12">Total Paid</span>
-							<span className="font-medium-12 green-text">{MyGlobal.ThousandSeparator(m.amountPaid)}</span>
-						</div>
-						<div className="full-border" />
-						<div className="flex w-full justify-between items-center">
-							<span className="font-regular-12">Total Fees</span>
-							<span className="font-medium-14 black-text">{MyGlobal.ThousandSeparator(m.amount)}</span>
+					<div className="flip-card">
+						<div className="flip-card-inner">
+							<div className="p-4 space-y-2 rounded shadow contrast-background flip-card-front">
+								<div className="flex w-full justify-between items-center">
+									<span className="font-regular-12">Total Pending</span>
+									<span className="font-medium-12 red-text">{MyGlobal.ThousandSeparator(m.amountPending)}</span>
+								</div>
+								<div className="full-border" />
+								<div className="flex w-full justify-between items-center">
+									<span className="font-regular-12">Total Paid</span>
+									<span className="font-medium-12 green-text">{MyGlobal.ThousandSeparator(m.amountPaid)}</span>
+								</div>
+								<div className="full-border" />
+								<div className="flex w-full justify-between items-center">
+									<span className="font-regular-12">Total Fees</span>
+									<span className="font-medium-14 black-text">{MyGlobal.ThousandSeparator(m.amount)}</span>
+								</div>
+							</div>
+							<div className="flex flex-col justify-center items-center p-4 rounded shadow contrast-background flip-card-back">
+								<div className="flex w-full justify-between items-center">
+									<span className="font-regular-12">Firm</span>
+									<span className="font-medium-12 primary-text">{m.firm.name}</span>
+								</div>
+								<div className="full-border" />
+								<div className="flex w-full justify-between items-center">
+									<span className="font-regular-12">Bank</span>
+									<span className="font-medium-12 primary-text">{m.bank.name}</span>
+								</div>
+								<div className="full-border" />
+								<div className="flex w-full justify-between items-center">
+									<span className="font-regular-12">Remarks</span>
+									<span className="font-medium-12 primary-text">{m.remarks}</span>
+								</div>
+								<div className="full-border" />
+								<div className="flex w-full justify-between items-center">
+									<span className="font-regular-12">Created At</span>
+									<span className="font-medium-12 primary-text">{dayjs(m.entry_at).format("DD/MM/YYYY")}</span>
+								</div>
+								<div className="full-border" />
+								<div className="flex w-full justify-between items-center">
+									<span className="font-regular-12">Created By</span>
+									<span className="font-medium-12 primary-text">{m.entryBy.name}</span>
+								</div>
+							</div>
 						</div>
 					</div>
+
+					{/* BUTTON BELOW */}
 					<div className="absolute -bottom-5 cursor-pointer group" onClick={() => toggleTransactions(m)}>
 						<span className="flex w-fit px-4 py-2 justify-center items-center rounded-full text-white font-medium-11 primary-background primary-border transition-all duration-500 ease-in-out">
 							<FontAwesomeIcon icon={faCoins} />

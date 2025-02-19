@@ -315,6 +315,7 @@ const MyConstants = Object.freeze({
 			MainProject: "Main Project",
 			SubProject: "Sub Project",
 			CreatedAt: "Created At",
+			DueDate: "Due Date",
 			Amount: "Amount",
 			AmountReceived: "Received",
 			AmountPending: "Pending",

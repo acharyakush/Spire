@@ -260,10 +260,9 @@ export function EditCompany({ company, mount, reload, unmount }) {
 			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				reload();
+				reload("reload-root");
 
 				MyGlobal.AddActivity(getActivityMessage(), MyConstants.Modules.Other.SingleClient);
-
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.CompanyEdited);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);

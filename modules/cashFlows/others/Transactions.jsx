@@ -55,6 +55,8 @@ export default function Transactions({ entity, reload, unmount }) {
 		newTransaction: false,
 	});
 
+	console.log(entity);
+
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const isOfficeExpense = entity.module.id !== MyConstants.Modules.Other.CashFlowModules.OfficeExpense.id;
@@ -505,7 +507,7 @@ export default function Transactions({ entity, reload, unmount }) {
 							{entity.module.name}
 						</span>
 						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-						<span className="view-heading">{entity.name}'s Transactions</span>
+						<span className="view-heading">{entity.head.purpose}'s Transactions</span>
 						{api.transactions.copy.length > 0 && <Badge value={getRowsCount()} />}
 					</div>
 				</div>

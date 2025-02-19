@@ -87,8 +87,6 @@ export default function NewTransaction({ head, mount, reload, unmount }) {
 
 			if (response.status === 200) {
 				reload("reload-root-statistics");
-				resetFields();
-				getSupportData();
 
 				MyGlobal.AddActivity(`Added transaction for <b>${head.vendor_id}</b>.`, MyConstants.Modules.Base.Vendors);
 
@@ -100,6 +98,7 @@ export default function NewTransaction({ head, mount, reload, unmount }) {
 			MyGlobal.HandleErrors(error, "Cash Flow => Vendors => Single Vendor => New Transaction");
 		} finally {
 			setLoading((s) => ({ ...s, adding: false }));
+			unmount();
 		}
 	}
 

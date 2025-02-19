@@ -377,7 +377,11 @@ export default function NewRv({ project, reload, unmount }) {
 			downloadPdf();
 		}
 
-		setMounted((s) => ({ ...s, preview: !s.preview }));
+		if (main.particulars.reduce((pv, cv) => pv + Number(cv.amount), 0) === 0) {
+			MyGlobal.ShowErrorToast("Cannot generate a reimbursement voucher of 0.");
+		} else {
+			setMounted((s) => ({ ...s, preview: !s.preview }));
+		}
 	}
 
 	// UI Components

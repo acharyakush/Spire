@@ -31,7 +31,10 @@ export default function Transactions({ project, reload, unmount }) {
 	const headers = MyConstants.TableHeaders.Transactions.General;
 
 	const [api, setApi] = useState({
-		transactions: { copy: [], data: [] },
+		transactions: {
+			copy: [],
+			data: [],
+		},
 	});
 
 	const [loading, setLoading] = useState({
@@ -173,6 +176,8 @@ export default function Transactions({ project, reload, unmount }) {
 				MyGlobal.GetHeaders({ projectId: project.project_id }),
 			);
 
+			console.log(project);
+
 			if (response.status === 200) {
 				const transactions = response.data.transactions.map((m) => {
 					let firmName = "";
@@ -198,6 +203,17 @@ export default function Transactions({ project, reload, unmount }) {
 						firm_name: firmName,
 					};
 				});
+				// .unshift({
+				// 	amount: project.total_fees,
+				// 	bank_name: project.bank.name,
+				// 	entry_at: project.entry_at,
+				// 	entry_by: project.entry_by_name,
+				// 	firm_name: project.firm.name,
+				// 	particulars: "",
+				// 	payment_source: "",
+				// 	payment_type: "",
+				// 	remarks: "",
+				// });
 
 				setApi({
 					transactions: {
@@ -451,18 +467,18 @@ export default function Transactions({ project, reload, unmount }) {
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<div className="flex w-full px-5 py-2.5 justify-between items-center">
-				<div className="flex w-1/5 space-x-2 justify-start items-center">
+				<div className="flex w-1/2 space-x-2 justify-start items-center">
 					<div className="flex w-full space-x-2 justify-start items-center">
 						<span className="cursor-pointer view-heading" onClick={() => unmount()}>
 							{MyConstants.Modules.Base.Affiliates}
 						</span>
 						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-						<span className="view-heading">Transactions</span>
+						<span className="view-heading">{project.company_name}'s Transactions</span>
 						{api.transactions.copy.length > 0 && <Badge value={getRowsCount()} />}
 					</div>
 				</div>
-				<div className="flex w-4/5 space-x-2 justify-end items-center">
-					<div className="flex w-1/2 space-x-2 justify-end items-center">
+				<div className="flex w-1/2 space-x-2 justify-end items-center">
+					<div className="flex w-full space-x-2 justify-end items-center">
 						{uiFromDate()}
 						{uiToDate()}
 					</div>

@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 		const [response] = await query("SELECT @new_head_id AS new_id;", []);
 
 		const result = await query(
-			"INSERT INTO vendors_heads (id, vendor_id, firm_id, bank_id, amount, payment_source, purpose, remarks, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO vendors_heads (id, vendor_id, firm_id, bank_id, amount, payment_source, purpose, remarks, entry_at, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 			[response.new_id, vendorId, firmId, bankId, amount, paymentSource, purpose, remarks, entryAt, userId],
 		);
 

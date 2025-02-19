@@ -320,7 +320,7 @@ export default function SingleClient({ client, unmount }) {
 		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
 	}
 
-	async function setSupportData() {
+	async function setSupportData(action) {
 		setMain((s) => ({ ...s, supportData: true }));
 
 		try {
@@ -401,6 +401,52 @@ export default function SingleClient({ client, unmount }) {
 					}
 				}
 
+				const selectedCompany = {
+					details: {
+						address: "",
+						client_id: "",
+						email_address: "",
+						entry_at: "",
+						entry_by_id: "",
+						gstin: "",
+						id: "",
+						invoice_fees: "",
+						name: "",
+						pan: "",
+						phone_number: "",
+						reimbursement_voucher: "",
+						total_affiliate_fees: "",
+					},
+					id: 0,
+					index: 0,
+					name: "All",
+				};
+
+				if (action && action === "reload-root") {
+					const companyObj = companies.find((f) => f.id === main.selectedCompany.id);
+
+					if (typeof companyObj === "object") {
+						selectedCompany.details = {
+							address: companyObj.address,
+							client_id: companyObj.client_id,
+							email_address: companyObj.email_address,
+							entry_at: companyObj.entry_at,
+							entry_by_id: companyObj.entry_by_id,
+							gstin: companyObj.gstin,
+							id: companyObj.id,
+							invoice_fees: companyObj.invoice_fees,
+							name: companyObj.name,
+							pan: companyObj.pan,
+							phone_number: companyObj.phone_number,
+							reimbursement_voucher: companyObj.reimbursement_voucher,
+							total_affiliate_fees: companyObj.total_affiliate_fees,
+						};
+						selectedCompany.id = companyObj.id;
+						selectedCompany.index = main.selectedCompany.index;
+						selectedCompany.name = companyObj.name;
+					}
+				}
+
 				setApi((s) => ({
 					...s,
 					companies,
@@ -412,7 +458,7 @@ export default function SingleClient({ client, unmount }) {
 					tasks,
 				}));
 
-				setMain((s) => ({ ...s, projects: revisedProjects }));
+				setMain((s) => ({ ...s, projects: revisedProjects, selectedCompany }));
 				setMounted((s) => ({ ...s, mainComponent: true }));
 			}
 		} catch (error) {

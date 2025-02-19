@@ -13,12 +13,14 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const [heads, transactions] = await Promise.all([
-			query("SELECT * FROM vendors_heads WHERE vendor_id=?", [req.query.vendorId]), // Queries
+		const [banks, firms, heads, transactions] = await Promise.all([
+			query("SELECT * FROM banks", []), // Queries
+			query("SELECT * FROM firms", []),
+			query("SELECT * FROM vendors_heads WHERE vendor_id=?", [req.query.vendorId]),
 			query("SELECT * FROM vendors_transactions WHERE vendor_id=?", [req.query.vendorId]),
 		]);
 
-		return res.status(200).json({ heads, transactions });
+		return res.status(200).json({ banks, firms, heads, transactions });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");
