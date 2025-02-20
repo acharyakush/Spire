@@ -161,7 +161,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 
 		const fileName = `${MyGlobal.GetInitials(main.firm.name)}_${main.financialYear}_${main.invoiceId}_${getCompanyDetails().name}`;
 
-		const pdf = new jsPDF("p", "mm", "a4");
+		const pdf = new jsPDF("p", "mm", "a4", true);
 		const invoiceBody = document.getElementById("invoiceBody");
 		const pageHeight = pdf.internal.pageSize.getHeight();
 		const marginBottom = 50;
@@ -194,8 +194,8 @@ export default function NewInvoice({ project, reload, unmount }) {
 					const ctx = croppedCanvas.getContext("2d");
 					ctx.drawImage(c, 0, sourceY, c.width, croppedCanvas.height, 0, 0, croppedCanvas.width, croppedCanvas.height);
 
-					const croppedImgData = croppedCanvas.toDataURL("image/png");
-					pdf.addImage(croppedImgData, "PNG", 10, yPosition, pdfWidth, cropHeight);
+					const croppedImgData = croppedCanvas.toDataURL("image/png", 1);
+					pdf.addImage(croppedImgData, "PNG", 10, yPosition, pdfWidth, cropHeight, "", "FAST");
 
 					remainingHeight -= cropHeight;
 					sourceY += cropHeight * (canvasHeight / imgHeight);

@@ -5,17 +5,6 @@ Pending Points
 Invoices
 1. The "Invoice ID" column should open "Edit Invoice" if user is administrator.
 
-Modules
-1. Profile, Settings
-
-Unsolved Issues (Due to 01:00 AM)
-2. Activities & Employees View => Cannot go to parent view on clicking Tab bar links
-3. Profile view not opening
-4. Settings view not opening
-8. Projects => Single Project => Unmapping affiliate removes from project but does not unmap project Cash Flows => Affiliates => Project Lists.
+1. Add Profile & Settings modules
 11. Cash Flows => Petty Cash => Transactions => Add "Edit Transactions" facility.
 13. Cash Flows => Petty Cash & Other Income => Export to Excel not working.
-20. Cash Flows => Vendors/Other Expenses => Transactions => New Transaction => Remove Payment Type menu.
-25. Cash Flows => Affiliate/Vendor/Other Expense => Transactions => Opening information not visible.
-26. Cash Flows => Invoices/RV => Lower PDF file size.
-27. Cash Flows => New Entity deserving modules => Show Bank Account Number, Bank Account Holder Name & IFSC fields.

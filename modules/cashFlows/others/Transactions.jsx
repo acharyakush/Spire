@@ -55,8 +55,6 @@ export default function Transactions({ entity, reload, unmount }) {
 		newTransaction: false,
 	});
 
-	console.log(entity);
-
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const isOfficeExpense = entity.module.id !== MyConstants.Modules.Other.CashFlowModules.OfficeExpense.id;
@@ -214,6 +212,18 @@ export default function Transactions({ entity, reload, unmount }) {
 					};
 				});
 
+				transactions.unshift({
+					amount: Number(entity.head.amount),
+					bank_name: entity.head.bank.name,
+					entry_at: new Date(entity.head.entryAt),
+					entry_by_name: entity.head.entryBy.name,
+					firm_name: entity.head.firm.name,
+					particulars: "",
+					payment_source_name: entity.head.paymentSource,
+					payment_type: isOfficeExpense ? entity.head.paymentType : "",
+					remarks: entity.head.remarks,
+				});
+
 				setApi({
 					transactions: {
 						copy: transactions,
@@ -350,11 +360,35 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function uiRows(row, i) {
-		const colour = isUserAdministrator && "cursor-pointer";
-		const style = `flex flex-wrap ${columnWidth} min-h-9 justify-center items-center text-center ${colour}`;
+		const isParentRow = i == 0;
 
-		const background = isUserAdministrator ? "hovered-rows-2" : "contrast-background";
-		const wrapper = `flex w-full justify-center items-center ${background} bottom-border font-regular-10 black-text`;
+		const background = () => {
+			if (isParentRow) {
+				return "primary-background-transparent-01";
+			} else {
+				if (isUserAdministrator) {
+					return "hovered-rows-2";
+				} else {
+					return "contrast-background";
+				}
+			}
+		};
+
+		const colour = () => {
+			if (isParentRow) {
+				return "cursor-not-allowed";
+			} else {
+				if (isUserAdministrator) {
+					return "cursor-pointer";
+				} else {
+					return "cursor-default";
+				}
+			}
+		};
+
+		const style = `flex flex-wrap ${columnWidth} min-h-9 justify-center items-center text-center ${colour()}`;
+
+		const wrapper = `flex w-full justify-center items-center ${background()} bottom-border font-regular-10 black-text`;
 
 		const amount = MyGlobal.HighlightText(MyGlobal.ThousandSeparator(row.amount), other.find.transaction);
 		const entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.transaction);
@@ -366,7 +400,7 @@ export default function Transactions({ entity, reload, unmount }) {
 		const remarks = MyGlobal.HighlightText(row.remarks, other.find.transaction);
 
 		return (
-			<div className={wrapper} key={i} onClick={() => toggleEditTransaction(row)}>
+			<div className={wrapper} key={i} onClick={() => !isParentRow && toggleEditTransaction(row)}>
 				<span className={style}>{dayjs(row.entry_at).format("DD-MM-YYYY")}</span>
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: firmName }} />
@@ -446,6 +480,7 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function uiTransactionsFooter() {
+		console.log(entity);
 		let totalAmount = 0;
 
 		if ("head" in entity) {
@@ -454,20 +489,16 @@ export default function Transactions({ entity, reload, unmount }) {
 			}
 		}
 
-		const totalPaidAmount = api.transactions.data.reduce((pv, cv) => {
-			return pv + Number(cv.amount);
-		}, 0);
-
-		const totalPending = MyGlobal.ThousandSeparator(totalAmount - totalPaidAmount);
+		const totalPaidAmount = Number(entity.head.amountPaid);
 
 		return (
 			<span className="w-full space-x-5 text-center text-white font-regular-10">
 				<span>
-					Pending <b className="font-bold-10">{totalPending}</b>
+					Pending <b className="font-bold-10">{MyGlobal.ThousandSeparator(entity.head.amountPending)}</b>
 				</span>
 				<span />
 				<span>
-					Paid <b className="font-bold-10">{MyGlobal.ThousandSeparator(totalPaidAmount)}</b>
+					Paid <b className="font-bold-10">{MyGlobal.ThousandSeparator(entity.head.amountPaid)}</b>
 				</span>
 				<span />
 				<span>
@@ -492,17 +523,11 @@ export default function Transactions({ entity, reload, unmount }) {
 	}, [other.find.date]);
 
 	// Main UI
-	if (!other.hasMounted) {
-		return;
-	}
-
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<div className="flex w-full px-5 py-2.5 justify-between items-center">
 				<div className="flex w-1/2 space-x-2 justify-start items-center">
 					<div className="flex w-full space-x-2 justify-start items-center">
-						<span className="view-heading">{MyConstants.Modules.Base.CashFlow}</span>
-						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
 						<span className="cursor-pointer hover:underline hover:underline-offset-8 view-heading" onClick={() => unmount()}>
 							{entity.module.name}
 						</span>

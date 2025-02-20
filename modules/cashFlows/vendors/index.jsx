@@ -12,7 +12,7 @@ import NewHead from "@/modals/cashFlows/vendors/NewHead";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Badge, BadgeGreenLarge, Spinner } from "@/components/Elements";
+import { Badge, BadgeGreenLarge, Spinner, SpinnerBig } from "@/components/Elements";
 import { faBank, faChevronRight, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 
 export default function Vendors({ unmount }) {
@@ -45,7 +45,6 @@ export default function Vendors({ unmount }) {
 	});
 
 	const [mounted, setMounted] = useState({
-		mainComponent: false,
 		newHead: false,
 		newVendor: false,
 		transactions: false,
@@ -83,6 +82,8 @@ export default function Vendors({ unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Vendors.GetHeads, MyGlobal.GetHeaders({ vendorId }));
 
 			const heads = [];
+			const firms = response.data.firms;
+			const banks = response.data.banks;
 
 			if (response.data.heads.length) {
 				response.data.heads.forEach((fe) => {
@@ -99,8 +100,8 @@ export default function Vendors({ unmount }) {
 					let bankName = "";
 					let firmName = "";
 
-					const firm = response.data.firms.find((f) => f.id === fe.firm_id);
-					const bank = response.data.banks.find((f) => f.id === fe.bank_id);
+					const firm = firms.find((f) => f.id === fe.firm_id);
+					const bank = banks.find((f) => f.id === fe.bank_id);
 
 					if (typeof bank === "object") {
 						bankName = bank.name;
@@ -137,6 +138,60 @@ export default function Vendors({ unmount }) {
 			}
 
 			setApi((s) => ({ ...s, heads }));
+
+			const selectedHeadData = heads.find((f) => f.id === main.selectedVendor.selectedHead?.id && f.vendorId === vendorId);
+
+			if (typeof selectedHeadData === "object") {
+				let bankName = "";
+				let firmName = "";
+
+				const firm = firms.find((f) => f.id === selectedHeadData.firm_id);
+				const bank = banks.find((f) => f.id === selectedHeadData.bank_id);
+
+				if (typeof bank === "object") {
+					bankName = bank.name;
+				}
+
+				if (typeof firm === "object") {
+					firmName = firm.name;
+				}
+
+				let amountPaid = 0;
+
+				if (response.data.transactions.length) {
+					response.data.transactions
+						.filter((f) => f.head_id === selectedHeadData.id)
+						.forEach((_fe) => {
+							amountPaid += Number(_fe.amount);
+						});
+				}
+
+				const selectedHeadNewData = {
+					amount: Number(selectedHeadData.amount),
+					amountPaid,
+					amountPending: Number(selectedHeadData.amount) - amountPaid,
+					bank: {
+						id: selectedHeadData.bank_id,
+						name: bankName,
+					},
+					entryAt: selectedHeadData.entry_at,
+					entryBy: {
+						id: selectedHeadData.entry_by_id,
+						name: MyGlobal.GetAnyDataFromId(selectedHeadData.entry_by_id, "full_name"),
+					},
+					firm: {
+						id: selectedHeadData.firm_id,
+						name: firmName,
+					},
+					id: selectedHeadData.id,
+					paymentSource: selectedHeadData.payment_source,
+					purpose: selectedHeadData.purpose,
+					remarks: selectedHeadData.remarks,
+					vendorId: selectedHeadData.vendor_id,
+				};
+
+				setMain((s) => ({ ...s, selectedVendor: { ...s.selectedVendor, selectedHead: selectedHeadNewData } }));
+			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `Vendors => Get Support Data`);
 		} finally {
@@ -144,7 +199,7 @@ export default function Vendors({ unmount }) {
 		}
 	}
 
-	async function getSupportData() {
+	async function getSupportData(action) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
@@ -204,10 +259,11 @@ export default function Vendors({ unmount }) {
 					});
 
 					setApi((s) => ({ ...s, vendors }));
-					setVendor(vendors.at(0));
-				}
 
-				setMounted((s) => ({ ...s, mainComponent: true }));
+					const selectedVendorIndex = action && action === "reload-root-statistics" ? main.selectedVendor.id : 0;
+
+					setVendor(vendors.at(selectedVendorIndex));
+				}
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Get All Vendors`);
@@ -263,74 +319,82 @@ export default function Vendors({ unmount }) {
 	}
 
 	function uiHeads() {
-		return api.heads.map((m, i) => {
+		if (loading.entities) {
 			return (
-				<div
-					className="flex flex-col w-full p-4 space-y-3 justify-center items-center relative rounded shadow full-border primary-background-transparent-01"
-					key={m.id}>
-					<span className="absolute -left-5 -top-2.5">
-						<BadgeGreenLarge value={i + 1} />
-					</span>
-					<span className="font-medium-16 black-text">{m.purpose}</span>
-					<div className="flip-card">
-						<div className="flip-card-inner">
-							<div className="p-4 space-y-2 rounded shadow contrast-background flip-card-front">
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Total Pending</span>
-									<span className="font-medium-12 red-text">{MyGlobal.ThousandSeparator(m.amountPending)}</span>
+				<div className={blankDataWrapper}>
+					<SpinnerBig />
+				</div>
+			);
+		} else {
+			return api.heads.map((m, i) => {
+				return (
+					<div
+						className="flex flex-col w-full p-4 space-y-3 justify-center items-center relative rounded shadow full-border primary-background-transparent-01"
+						key={m.id}>
+						<span className="absolute -left-5 -top-2.5">
+							<BadgeGreenLarge value={i + 1} />
+						</span>
+						<span className="font-medium-16 black-text">{m.purpose}</span>
+						<div className="flip-card">
+							<div className="flip-card-inner">
+								<div className="p-4 space-y-2 rounded shadow contrast-background flip-card-front">
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Total Pending</span>
+										<span className="font-medium-12 red-text">{MyGlobal.ThousandSeparator(m.amountPending)}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Total Paid</span>
+										<span className="font-medium-12 green-text">{MyGlobal.ThousandSeparator(m.amountPaid)}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Total Fees</span>
+										<span className="font-medium-14 black-text">{MyGlobal.ThousandSeparator(m.amount)}</span>
+									</div>
 								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Total Paid</span>
-									<span className="font-medium-12 green-text">{MyGlobal.ThousandSeparator(m.amountPaid)}</span>
-								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Total Fees</span>
-									<span className="font-medium-14 black-text">{MyGlobal.ThousandSeparator(m.amount)}</span>
-								</div>
-							</div>
-							<div className="flex flex-col justify-center items-center p-4 rounded shadow contrast-background flip-card-back">
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Firm</span>
-									<span className="font-medium-12 primary-text">{m.firm.name}</span>
-								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Bank</span>
-									<span className="font-medium-12 primary-text">{m.bank.name}</span>
-								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Remarks</span>
-									<span className="font-medium-12 primary-text">{m.remarks}</span>
-								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Created At</span>
-									<span className="font-medium-12 primary-text">{dayjs(m.entry_at).format("DD/MM/YYYY")}</span>
-								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Created By</span>
-									<span className="font-medium-12 primary-text">{m.entryBy.name}</span>
+								<div className="flex flex-col justify-center items-center p-4 rounded shadow contrast-background flip-card-back">
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Firm</span>
+										<span className="font-medium-12 primary-text">{m.firm.name}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Bank</span>
+										<span className="font-medium-12 primary-text">{m.bank.name}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Remarks</span>
+										<span className="font-medium-12 primary-text">{m.remarks}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Created At</span>
+										<span className="font-medium-12 primary-text">{dayjs(m.entry_at).format("DD/MM/YYYY")}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Created By</span>
+										<span className="font-medium-12 primary-text">{m.entryBy.name}</span>
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
 
-					{/* BUTTON BELOW */}
-					<div className="absolute -bottom-5 cursor-pointer group" onClick={() => toggleTransactions(m)}>
-						<span className="flex w-fit px-4 py-2 justify-center items-center rounded-full text-white font-medium-11 primary-background primary-border transition-all duration-500 ease-in-out">
-							<FontAwesomeIcon icon={faCoins} />
-							<span className="flex justify-center items-center max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-in-out whitespace-nowrap">
-								Transactions
+						{/* BUTTON BELOW */}
+						<div className="absolute -bottom-5 cursor-pointer group" onClick={() => toggleTransactions(m)}>
+							<span className="flex w-fit px-4 py-2 justify-center items-center rounded-full text-white font-medium-11 primary-background primary-border transition-all duration-500 ease-in-out">
+								<FontAwesomeIcon icon={faCoins} />
+								<span className="flex justify-center items-center max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-in-out whitespace-nowrap">
+									Transactions
+								</span>
 							</span>
-						</span>
+						</div>
 					</div>
-				</div>
-			);
-		});
+				);
+			});
+		}
 	}
 
 	function uiNewHead() {
@@ -343,7 +407,7 @@ export default function Vendors({ unmount }) {
 		if (loading.supportData) {
 			return (
 				<div className={blankDataWrapper}>
-					<span className="font-regular-12 gray-text">Loading...</span>
+					<SpinnerBig />
 				</div>
 			);
 		} else if (!api.vendors.length) {
@@ -437,10 +501,6 @@ export default function Vendors({ unmount }) {
 	}, []);
 
 	// Main UI
-	if (!mounted.mainComponent) {
-		return;
-	}
-
 	if (mounted.newVendor) {
 		return <NewVendor reload={getSupportData} unmount={toggleNewVendor} />;
 	} else if (mounted.transactions) {

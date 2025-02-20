@@ -22,18 +22,16 @@ export default async function handler(req, res) {
 			if (request.type == "add-user-activity") {
 				let ipAddress = "";
 
-				if (request.activity != "Logged out.") {
-					ipAddress =
-						String(req.headers["x-forwarded-for"] || "")
-							.split(",")
-							.at(0)
-							.trim() ||
-						req.socket.remoteAddress ||
-						"";
+				ipAddress =
+					String(req.headers["x-forwarded-for"] || "")
+						.split(",")
+						.at(0)
+						.trim() ||
+					req.socket.remoteAddress ||
+					"";
 
-					if (ipAddress === "::1" || ipAddress === "127.0.0.1" || ipAddress === "::ffff:127.0.0.1") {
-						ipAddress = "Localhost";
-					}
+				if (ipAddress === "::1" || ipAddress === "127.0.0.1" || ipAddress === "::ffff:127.0.0.1") {
+					ipAddress = "Localhost";
 				}
 
 				queryString = "INSERT INTO activities (entry_by_id, module, activity, ip_address, details) VALUES (?, ?, ?, ?, ?)";
@@ -98,9 +96,6 @@ export default async function handler(req, res) {
 			} else if (request.type == "mark-project-completed") {
 				queryString = "UPDATE projects SET status=?, completed_on=NOW() WHERE id=?";
 				queryParameters = ["Completed", request.projectId];
-			} else if (request.type == "unmap-affiliate") {
-				queryString = "UPDATE projects SET affiliate_ids=? WHERE id=?";
-				queryParameters = [request.affiliateIds, request.projectId];
 			}
 
 			const response = await query(queryString, queryParameters);

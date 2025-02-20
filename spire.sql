@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 19, 2025 at 08:36 PM
+-- Generation Time: Feb 20, 2025 at 08:20 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -679,7 +679,27 @@ INSERT INTO `activities` (`id`, `module`, `activity`, `details`, `ip_address`, `
 (595, 'Single Client', 'Edited Name from <b>Moon Pharma Pvt Ltd...</b> to <b>Honey Moon Pharma Pvt Ltd</b> of <b>CP000009</b> of <b>CN000001</b>.', '', 'Localhost', 'A3', '2025-02-20 01:00:39'),
 (596, 'Single Client', 'Edited Phone Number from <b>blank</b> to <b>9099300543</b> of <b>CP000009</b> of <b>CN000001</b>.', '', 'Localhost', 'A3', '2025-02-20 01:00:50'),
 (597, 'Single Client', 'Edited Name from <b>Honey Moon Pharma Pvt Ltd</b> to <b>Honey Moon Pharma Pvt Ltd.</b> of <b>CP000009</b> of <b>CN000001</b>.', '', 'Localhost', 'A3', '2025-02-20 01:01:06'),
-(598, 'General', 'Logged out.', '', '', 'A3', '2025-02-20 01:05:16');
+(598, 'General', 'Logged out.', '', '', 'A3', '2025-02-20 01:05:16'),
+(599, 'General', 'Logged in.', '', 'Localhost', 'A3', '2025-02-20 19:33:47'),
+(600, 'Cash Flow', 'Added head <b>april payment</b> for <b>abc</b> in <b>Other Income</b>.', '', 'Localhost', 'A3', '2025-02-20 19:47:52'),
+(601, 'New Invoice', 'Generated invoice <b>SA/2024-25/00004</b> for <b>PJ000005</b>', '', 'Localhost', 'A3', '2025-02-20 19:52:06'),
+(602, 'New Invoice', 'Generated invoice <b>SA/2024-25/00005</b> for <b>PJ000006</b>', '', 'Localhost', 'A3', '2025-02-20 19:54:57'),
+(603, 'New Invoice', 'Generated invoice <b>PS/2024-25/00006</b> for <b>PJ000004</b>', '', 'Localhost', 'A3', '2025-02-20 19:55:49'),
+(604, 'New Invoice', 'Generated invoice <b>SA/2024-25/00007</b> for <b>PJ000007</b>', '', 'Localhost', 'A3', '2025-02-20 19:57:14'),
+(605, 'New Invoice', 'Generated invoice <b>PS/2024-25/00008</b> for <b>PJ000008</b>', '', 'Localhost', 'A3', '2025-02-20 19:57:39'),
+(606, 'Cash Flow', 'Edited transaction of <b>Other Income</b> in <b>abc</b> in <b>mm</b>.', '', 'Localhost', 'A3', '2025-02-20 20:56:15'),
+(607, 'Vendors', 'Added transaction for <b>undefined</b>.', '', 'Localhost', 'A3', '2025-02-20 21:58:58'),
+(608, 'Vendors', 'Added transaction for <b>undefined</b>.', '', 'Localhost', 'A3', '2025-02-20 22:04:06'),
+(609, 'Vendors', 'Added transaction for <b>undefined</b>.', '', 'Localhost', 'A3', '2025-02-20 22:29:11'),
+(610, 'Vendors', 'Added transaction for <b>undefined</b>.', '', 'Localhost', 'A3', '2025-02-20 22:29:32'),
+(611, 'Cash Flow', 'Added transaction in <b>Other Expense</b> in <b>Hello</b> in <b>Nothing</b>.', '', 'Localhost', 'A3', '2025-02-20 22:33:58'),
+(612, 'Cash Flow', 'Added transaction in <b>Other Expense</b> in <b>Hello</b> in <b>Nothing</b>.', '', 'Localhost', 'A3', '2025-02-20 22:39:02'),
+(613, 'Cash Flow', 'Added entity <b>may payment</b> in <b>Other Income</b>.', '', 'Localhost', 'A3', '2025-02-20 23:22:36'),
+(614, 'Cash Flow', 'Added entity <b>xyz</b> in <b>Other Income</b>.', '', 'Localhost', 'A3', '2025-02-20 23:23:53'),
+(615, 'Cash Flow', 'Added entity <b>Ishita Karia</b> in <b>Other Income</b>.', '', 'Localhost', 'A3', '2025-02-20 23:34:08'),
+(616, 'Affiliates', 'Unmapped affiliate <b>AF000002</b> from <b>PJ000004</b> due to <b>bnm.</b>.', '', 'Localhost', 'A3', '2025-02-21 00:16:34'),
+(617, 'Affiliates', 'Unmapped affiliate <b>AF000002</b> from <b>PJ000004</b> due to <b>pol</b>.', '', 'Localhost', 'A3', '2025-02-21 00:42:02'),
+(618, 'General', 'Logged out.', '', 'Localhost', 'A3', '2025-02-21 00:50:30');
 
 -- --------------------------------------------------------
 
@@ -762,7 +782,6 @@ CREATE TABLE `affiliates_projects` (
 INSERT INTO `affiliates_projects` (`id`, `affiliate_id`, `client_id`, `project_id`, `adjusted_project_id`, `adjusted_fees`, `total_fees`) VALUES
 (3, 'AF000001', 'CN000001', 'PJ000001', NULL, 0.00, 5000.00),
 (4, 'AF000001', 'CN000005', 'PJ000002', NULL, 0.00, 1250.00),
-(6, 'AF000002', 'CN000012', 'PJ000004', NULL, 0.00, 1000.00),
 (7, 'AF000002', 'CN000011', 'PJ000007', NULL, 0.00, 2000.00),
 (10, 'AF000001', 'CN000005', 'PJ000006', NULL, 0.00, 12500.00),
 (11, 'AF000002', 'CN000005', 'PJ000006', NULL, 0.00, 88500.00);
@@ -797,17 +816,13 @@ INSERT INTO `affiliates_transactions` (`id`, `affiliate_id`, `project_id`, `firm
 (2, 'AF000001', 'PJ000001', 'AC02', 'BK02', 55.00, 'pol', 'BK04', 'Professional Fees', '455 rto.', '2025-02-02 13:40:16', 'A3'),
 (3, 'AF000001', 'PJ000001', 'AC01', 'BK01', 78.00, 'mko', 'BK04', 'Reimbursement Voucher', 'bgt', '2025-02-20 14:11:46', 'A3'),
 (4, 'AF000001', 'PJ000002', 'AC01', 'BK01', 225.00, 'mmk', 'CC', 'Professional Fees', 'ppol', '2025-02-02 15:21:03', 'A3'),
-(6, 'AF000002', 'PJ000004', 'AC04', 'BK04', 225.00, 'nnm', 'NETBANKING', 'Professional Fees', 'mmn', '2025-02-19 16:31:25', 'A3'),
 (7, 'AF000002', 'PJ000007', 'AC02', 'BK02', 153.00, 'lop', 'CC', 'Reimbursement Voucher', 'njo', '2025-02-02 16:32:33', 'A3'),
 (8, 'AF000002', 'PJ000007', 'AC01', 'BK01', 316.00, 'l', 'CHEQUE', 'Reimbursement Voucher', 'b', '2025-02-02 16:35:47', 'A3'),
 (9, 'AF000001', 'PJ000001', 'AC02', 'BK02', 1.00, 'm', 'CASH', 'Professional Fees', 'b', '2025-02-02 16:37:14', 'A3'),
-(10, 'AF000002', 'PJ000004', 'AC02', 'BK02', 152.00, 'ppol', 'DC', 'Reimbursement Voucher', 'mkop', '2025-02-02 16:42:59', 'A3'),
 (11, 'AF000001', 'PJ000002', 'AC04', 'BK04', 1.00, 'mlll', 'CHEQUE', 'Reimbursement Voucher', 'bbm', '2025-02-02 16:48:37', 'A3'),
-(12, 'AF000002', 'PJ000004', 'AC03', 'BK03', 99.00, 'op', 'INSTAMOJO', 'Reimbursement Voucher', 'hghg', '2025-02-02 16:49:46', 'A3'),
 (13, 'AF000001', 'PJ000001', 'AC04', 'BK04', 500.00, 'mko', 'CHEQUE', 'Professional Fees', 'mklo', '2025-02-03 15:38:46', 'A3'),
 (14, 'AF000001', 'PJ000001', 'AC02', 'BK02', 12.00, 'er', 'BK02', 'Professional Fees', 'tr', '2025-02-05 15:40:37', 'A3'),
-(15, 'AF000002', 'PJ000007', 'AC03', 'BK03', 1.00, 'zz', 'CASH', 'Professional Fees', 'aa', '2025-02-07 17:53:43', 'A3'),
-(16, 'AF000002', 'PJ000004', 'AC02', 'BK02', 3.00, 'qq', 'CASH', 'Reimbursement Voucher', 'dd', '2025-02-07 17:59:57', 'A3');
+(15, 'AF000002', 'PJ000007', 'AC03', 'BK03', 1.00, 'zz', 'CASH', 'Professional Fees', 'aa', '2025-02-07 17:53:43', 'A3');
 
 -- --------------------------------------------------------
 
@@ -846,12 +861,13 @@ INSERT INTO `banks` (`id`, `firm_id`, `name`, `account_number`, `ifsc_code`, `br
 CREATE TABLE `cash_flows_entities` (
   `id` int(11) UNSIGNED NOT NULL,
   `module_id` char(4) NOT NULL,
-  `bank_id` char(8) NOT NULL,
   `name` varchar(500) NOT NULL,
   `email_address` varchar(200) DEFAULT NULL,
   `phone_number` bigint(12) DEFAULT NULL,
-  `payment_source` varchar(500) NOT NULL,
   `purpose` varchar(500) NOT NULL,
+  `account_holder_name` varchar(500) NOT NULL,
+  `account_number` bigint(100) NOT NULL,
+  `ifsc` varchar(200) NOT NULL,
   `upi_id` varchar(200) DEFAULT NULL,
   `entry_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `entry_by_id` char(8) NOT NULL
@@ -861,14 +877,17 @@ CREATE TABLE `cash_flows_entities` (
 -- Dumping data for table `cash_flows_entities`
 --
 
-INSERT INTO `cash_flows_entities` (`id`, `module_id`, `bank_id`, `name`, `email_address`, `phone_number`, `payment_source`, `purpose`, `upi_id`, `entry_at`, `entry_by_id`) VALUES
-(1, 'OFEX', 'BK03', 'Tea Stall', 'ramesh.parmar@gmail.com', 8000721554, 'INSTAMOJO', 'For monthly tea/coffee', 'parmar.ramesh@axl', '2025-02-04 11:55:20', 'A3'),
-(2, 'OFEX', 'BK02', 'Canteen', NULL, NULL, 'CC', 'Snacks for Clients', NULL, '2025-02-04 13:12:41', 'A3'),
-(3, 'PECA', 'BK02', 'pos', NULL, NULL, 'CC', 'dsdfsd', NULL, '2025-02-06 08:59:08', 'A3'),
-(4, 'OFEX', 'BK02', 'anuj shah', '', NULL, 'INSTAMOJO', 'snacks of dskr', '', '2025-02-10 11:03:02', 'A3'),
-(5, 'OFEX', 'BK01', 'mitesh patel', 'mitesh.patel@gmail.com', 9978075347, 'CHEQUE', 'new employee induction expense', '', '2025-02-06 11:04:39', 'A3'),
-(6, 'OTIN', 'BK03', 'abc', '', 0, 'CASH', 'mm', 'kjdnkajsndkasd', '2025-02-07 12:30:58', 'A3'),
-(7, 'OTEX', 'BK03', 'Hello', '', 0, 'CC', 'Nothing', '', '2025-02-19 13:01:18', 'A3');
+INSERT INTO `cash_flows_entities` (`id`, `module_id`, `name`, `email_address`, `phone_number`, `purpose`, `account_holder_name`, `account_number`, `ifsc`, `upi_id`, `entry_at`, `entry_by_id`) VALUES
+(1, 'OFEX', 'Tea Stall', 'ramesh.parmar@gmail.com', 8000721554, 'For monthly tea/coffee', '', 0, '', 'parmar.ramesh@axl', '2025-02-04 11:55:20', 'A3'),
+(2, 'OFEX', 'Canteen', NULL, NULL, 'Snacks for Clients', '', 0, '', NULL, '2025-02-04 13:12:41', 'A3'),
+(3, 'PECA', 'pos', NULL, NULL, 'dsdfsd', '', 0, '', NULL, '2025-02-06 08:59:08', 'A3'),
+(4, 'OFEX', 'anuj shah', '', NULL, 'snacks of dskr', '', 0, '', '', '2025-02-10 11:03:02', 'A3'),
+(5, 'OFEX', 'mitesh patel', 'mitesh.patel@gmail.com', 9978075347, 'new employee induction expense', '', 0, '', '', '2025-02-06 11:04:39', 'A3'),
+(6, 'OTIN', 'abc', '', 0, 'mm', '', 0, '', 'kjdnkajsndkasd', '2025-02-07 12:30:58', 'A3'),
+(7, 'OTEX', 'Hello', '', 0, 'Nothing', '', 0, '', '', '2025-02-19 13:01:18', 'A3'),
+(8, 'OTIN', 'may payment', '', 0, 'No purpose.', 'ACHARYA KUSH BHADRESH', 516843516816816, 'BOB168181381381', '', '2025-02-20 12:21:55', 'A3'),
+(9, 'OTIN', 'xyz', '', 0, 'Purposeless.', 'SHAH MITESH PRAFULCHANDRA', 6846813513813813, 'KTKBNK813813813813', '', '2025-02-20 12:23:16', 'A3'),
+(10, 'OTIN', 'Ishita Karia', 'karia.couple@outlook.com', 8000721554, 'Revenge of Bad Treatment', 'Karia Ishita Ravi', 75135974128863, 'SBI845332177866', 'ishita.karya@oksbi', '2025-02-17 13:00:00', 'A3');
 
 -- --------------------------------------------------------
 
@@ -907,7 +926,8 @@ INSERT INTO `cash_flows_heads` (`id`, `entity_id`, `module_id`, `firm_id`, `bank
 (12, 5, 'OFEX', 'AC02', 'BK02', 1000.00, 'CHEQUE', 'pols', '1123', '2025-02-08 11:55:26', 'A3'),
 (13, 5, 'OFEX', 'AC03', 'BK03', 1250.00, 'INSTAMOJO', 'lolp', 'ppol', '2025-02-08 12:01:03', 'A3'),
 (14, 5, 'OFEX', 'AC02', 'BK02', 1123.00, 'CC', 'zsxcf', 'eert', '2025-02-08 12:01:29', 'A3'),
-(15, 7, 'OTEX', 'AC02', 'BK02', 1500.00, 'CC', 'April\'s Birthday Treat', 'No remarks here.', '2025-02-19 13:01:46', 'A3');
+(15, 7, 'OTEX', 'AC02', 'BK02', 1500.00, 'CC', 'April\'s Birthday Treat', 'No remarks here.', '2025-02-19 13:01:46', 'A3'),
+(16, 6, 'OTIN', 'AC03', 'BK03', 1525.00, 'CC', 'april payment', 'Nice one sir.', '2025-02-20 08:47:33', 'A3');
 
 -- --------------------------------------------------------
 
@@ -985,11 +1005,13 @@ INSERT INTO `cash_flows_transactions` (`id`, `entity_id`, `head_id`, `module_id`
 (17, 1, 4, 'OFEX', 'AC04', 'BK04', 25000.00, 'ccc', 'CHEQUE', '', 'bbbb', '2025-02-07 14:31:13', 'A3'),
 (18, 2, 5, 'OFEX', 'AC02', 'BK02', 55.00, 'cvcvb', 'UPI', '', 'deweqexx', '2025-02-07 09:02:24', 'A3'),
 (19, 1, 8, 'OFEX', 'AC03', 'BK03', 115.00, 'pppn', 'NETBANKING', '', 'aaa', '2025-02-07 04:03:13', 'A3'),
-(20, 6, 9, 'OTIN', 'AC02', 'BK02', 524.00, 'ss', 'CHEQUE', 'Professional Fees', 'dd', '2025-02-07 18:06:15', 'A3'),
+(20, 6, 9, 'OTIN', 'AC02', 'BK02', 524.00, 'ss123', 'CHEQUE', 'Professional Fees', 'dd', '2025-02-07 12:36:15', 'A3'),
 (21, 1, 3, 'OFEX', 'AC02', 'BK02', 750.00, 'mmlpmm', 'CHEQUE', '', 'mkl', '2025-02-08 07:23:08', 'A3'),
 (22, 1, 8, 'OFEX', 'AC03', 'BK03', 114.00, 'njkl', 'CHEQUE', '', 'b', '2025-02-08 18:51:06', 'A3'),
 (23, 2, 5, 'OFEX', 'AC04', 'BK04', 55.00, 'd', 'CC', '', 'a', '2025-02-08 18:52:06', 'A3'),
-(24, 4, 11, 'OFEX', 'AC02', 'BK02', 1250.00, 'm', 'CHEQUE', '', 'b', '2025-02-08 18:52:55', 'A3');
+(24, 4, 11, 'OFEX', 'AC02', 'BK02', 1250.00, 'm', 'CHEQUE', '', 'b', '2025-02-08 18:52:55', 'A3'),
+(25, 7, 15, 'OTEX', 'AC02', 'BK02', 1255.00, 'pols', 'BK02', '', 'pols', '2025-02-20 17:02:13', 'A3'),
+(26, 7, 15, 'OTEX', 'AC01', 'BK01', 5.00, 'pol', 'CASH', '', 'bbn', '2025-02-20 17:08:47', 'A3');
 
 -- --------------------------------------------------------
 
@@ -1241,7 +1263,12 @@ CREATE TABLE `invoices` (
 INSERT INTO `invoices` (`id`, `custom_id`, `client_id`, `project_id`, `amount`, `amount_received`, `due_date`, `created_at`, `receipt_date`) VALUES
 (1, 'SA/2025-26/00001', 'CN000001', 'PJ000001', 5750.00, 127.00, '2025-01-24 20:03:34', '2025-01-17 22:25:48', '2025-01-17 22:25:48'),
 (2, 'BF/2025-26/00002', 'CN000005', 'PJ000002', 2500.00, 557.00, '2025-01-24 20:03:34', '2025-01-17 22:26:51', '2025-01-17 22:26:51'),
-(3, 'PS/2024-25/00003', 'CN000004', 'PJ000003', 2050.00, 0.00, NULL, '2025-02-15 22:05:58', '2025-02-15 16:33:49');
+(3, 'PS/2024-25/00003', 'CN000004', 'PJ000003', 2050.00, 0.00, NULL, '2025-02-15 22:05:58', '2025-02-15 16:33:49'),
+(4, 'SA/2024-25/00004', 'CN000007', 'PJ000005', 515000.00, 0.00, NULL, '2025-02-20 19:52:05', '2025-02-20 14:21:55'),
+(5, 'SA/2024-25/00005', 'CN000005', 'PJ000006', 500.00, 0.00, NULL, '2025-02-20 19:54:57', '2025-02-20 14:24:50'),
+(6, 'PS/2024-25/00006', 'CN000012', 'PJ000004', 80000.00, 17000.00, NULL, '2025-02-20 19:55:49', '2025-02-20 14:25:43'),
+(7, 'SA/2024-25/00007', 'CN000011', 'PJ000007', 30002.00, 0.00, NULL, '2025-02-20 19:57:13', '2025-02-20 14:27:04'),
+(8, 'PS/2024-25/00008', 'CN000001', 'PJ000008', 14856.00, 0.00, NULL, '2025-02-20 19:57:39', '2025-02-20 14:27:33');
 
 -- --------------------------------------------------------
 
@@ -1819,7 +1846,7 @@ INSERT INTO `projects` (`id`, `affiliate_ids`, `client_id`, `company_id`, `firm_
 ('PJ000001', 'AF000001,AF000002', 'CN000001', 'CP000001', 'AC01', 'PJ1/22/12/2024', 'IQ000001', 'MP000004', 'SP000003', '2024-12-15 04:09:42', '2025-02-01 16:22:15', '2024-12-17 23:48:41', 5750.00, 575.00, 110.00, '', 'Active', 'A3,A2', 0, 0, '2024-12-17 23:48:41', 'A3'),
 ('PJ000002', 'AF000001', 'CN000005', 'CP000002', 'AC02', NULL, 'IQ000007', 'MP000001', 'SP000010', '2025-01-30 21:23:36', '2025-01-30 00:51:35', '2025-01-12 11:41:51', 2500.00, 1500.00, 1250.00, NULL, 'Completed', 'A3', 0, 0, '2025-01-12 11:41:51', 'A3'),
 ('PJ000003', NULL, 'CN000004', 'CP000003', 'AC03', NULL, 'IQ000005', 'MP000012', 'SP000023', '2025-01-04 18:30:00', NULL, '2025-01-28 23:46:17', 2050.00, 1500.00, NULL, 'mm', 'Hold', 'A1', 0, 0, '2025-01-28 23:46:17', 'A3'),
-('PJ000004', 'AF000002', 'CN000012', 'CP000004', 'AC03', NULL, 'IQ000015', 'MP000011', 'SP000025', '2025-01-31 18:30:00', NULL, '2025-02-01 13:44:26', 80000.00, 15000.00, 1000.00, '', 'Active', 'A3,A1', 0, 0, '2025-02-01 13:44:26', 'A3'),
+('PJ000004', '', 'CN000012', 'CP000004', 'AC03', NULL, 'IQ000015', 'MP000011', 'SP000025', '2025-01-31 18:30:00', NULL, '2025-02-01 13:44:26', 80000.00, 15000.00, 1000.00, '', 'Active', 'A3,A1', 0, 0, '2025-02-01 13:44:26', 'A3'),
 ('PJ000005', NULL, 'CN000007', 'CP000005', 'AC01', NULL, 'IQ000010', 'MP000005', 'SP000036', '2026-07-12 18:30:00', NULL, '2025-02-01 15:26:57', 515000.00, 15000.00, NULL, '', 'Active', 'A2', 0, 0, '2025-02-01 15:26:57', 'A3'),
 ('PJ000006', 'AF000001,AF000002', 'CN000005', 'CP000002', 'AC01', NULL, 'IQ000013', 'MP000007', 'SP000006', '2025-03-02 18:30:00', NULL, '2025-02-01 15:41:09', 500.00, 100.00, 99999999.99, '', 'Active', 'A1,A2,A3', 0, 0, '2025-02-01 15:41:09', 'A3'),
 ('PJ000007', 'AF000002', 'CN000011', 'CP000008', 'AC01', NULL, 'IQ000014', 'MP000006', 'SP000039', '2025-02-19 13:00:00', NULL, '2025-02-01 15:43:00', 30002.00, 30000.00, 2000.00, '', 'Active', 'A3', 0, 0, '2025-02-01 15:43:00', 'A3'),
@@ -2234,7 +2261,11 @@ INSERT INTO `vendors_transactions` (`id`, `vendor_id`, `head_id`, `firm_id`, `ba
 (1, 'VD000001', 'VH000001', 'AC02', 'BK02', 500.00, 'sed', 'CASH', 'Reimbursement Voucher', 'sedddd', '2025-02-12 16:14:07', 'A3'),
 (2, 'VD000001', 'VH000001', 'AC01', 'BK01', 125.00, 'Call', 'CASH', 'Professional Fees', 'Mall', '2025-02-19 18:54:05', 'A3'),
 (3, 'VD000002', 'VH000003', 'AC02', 'BK02', 1525.00, 'Hello', 'CASH', 'Professional Fees', 'Yellow', '2025-02-19 18:59:35', 'A3'),
-(4, 'VD000001', 'VH000002', 'AC01', 'BK01', 100.00, 'Nice', 'INSTAMOJO', 'Reimbursement Voucher', 'Rice', '2025-02-19 19:03:26', 'A3');
+(4, 'VD000001', 'VH000002', 'AC01', 'BK01', 100.00, 'Nice', 'INSTAMOJO', 'Reimbursement Voucher', 'Rice', '2025-02-19 19:03:26', 'A3'),
+(5, 'VD000001', 'VH000001', 'AC02', 'BK02', 100.00, 'Pols.', 'BK02', '', 'Lols.', '2025-02-20 16:28:30', 'A3'),
+(6, 'VD000001', 'VH000001', 'AC02', 'BK02', 6.00, 'Pols.', 'CC', '', 'Lols.', '2025-02-20 16:33:16', 'A3'),
+(7, 'VD000001', 'VH000001', 'AC01', 'BK01', 9.00, 're', 'CHEQUE', '', 're', '2025-02-20 16:58:49', 'A3'),
+(8, 'VD000001', 'VH000002', 'AC01', 'BK01', 50.00, 'qwe', 'CASH', '', 'qwe', '2025-02-20 16:59:21', 'A3');
 
 --
 -- Indexes for dumped tables
@@ -2291,7 +2322,6 @@ ALTER TABLE `banks`
 --
 ALTER TABLE `cash_flows_entities`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_cfe_bank_id` (`bank_id`),
   ADD KEY `fk_cfe_module_id` (`module_id`);
 
 --
@@ -2655,7 +2685,7 @@ ALTER TABLE `vendors_transactions`
 -- AUTO_INCREMENT for table `activities`
 --
 ALTER TABLE `activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=599;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=619;
 
 --
 -- AUTO_INCREMENT for table `affiliates_projects`
@@ -2673,13 +2703,13 @@ ALTER TABLE `affiliates_transactions`
 -- AUTO_INCREMENT for table `cash_flows_entities`
 --
 ALTER TABLE `cash_flows_entities`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `cash_flows_heads`
 --
 ALTER TABLE `cash_flows_heads`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `cash_flows_settings`
@@ -2691,7 +2721,7 @@ ALTER TABLE `cash_flows_settings`
 -- AUTO_INCREMENT for table `cash_flows_transactions`
 --
 ALTER TABLE `cash_flows_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `customers`
@@ -2703,7 +2733,7 @@ ALTER TABLE `customers`
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `invoices_transactions`
@@ -2811,7 +2841,7 @@ ALTER TABLE `tasks_settings`
 -- AUTO_INCREMENT for table `vendors_transactions`
 --
 ALTER TABLE `vendors_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables
@@ -2844,7 +2874,6 @@ ALTER TABLE `banks`
 -- Constraints for table `cash_flows_entities`
 --
 ALTER TABLE `cash_flows_entities`
-  ADD CONSTRAINT `fk_cfe_bank_id` FOREIGN KEY (`bank_id`) REFERENCES `banks` (`id`),
   ADD CONSTRAINT `fk_cfe_module_id` FOREIGN KEY (`module_id`) REFERENCES `cash_flows_modules` (`custom_id`);
 
 --

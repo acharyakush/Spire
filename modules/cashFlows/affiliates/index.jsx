@@ -151,8 +151,6 @@ export default function Affiliates({ unmount }) {
 					setApi({ affiliates });
 					setSelectedAffiliate(affiliates.at(0));
 				}
-
-				setMounted((s) => ({ ...s, mainComponent: true }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Get All Affiliates`);
@@ -325,10 +323,6 @@ export default function Affiliates({ unmount }) {
 	}, []);
 
 	// Main UI
-	if (!mounted.mainComponent) {
-		return;
-	}
-
 	if (mounted.newAffiliate) {
 		return <NewAffiliate reload={setSupportData} unmount={toggleNewAffiliate} />;
 	} else if (mounted.transactions) {

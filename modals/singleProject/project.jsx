@@ -802,16 +802,18 @@ export function UnmapAffiliate({ mount, affiliate, project, reload, unmount }) {
 					.filter((f) => f !== affiliate.id)
 					.join(", ")
 					.trim();
+			} else {
+				_affiliateIds = "";
 			}
 
 			const body = {
+				clientId: project.client_id,
+				affiliateId: affiliate.id,
 				affiliateIds: _affiliateIds,
 				projectId: project.id,
-				type: "unmap-affiliate",
-				userId: MyGlobal.GetUserId(),
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.Affiliates.UnmapAffiliate, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload(project.id);

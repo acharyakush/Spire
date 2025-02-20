@@ -11,8 +11,8 @@ import { MyGlobal } from "@/utilities/global";
 import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { ComboBox, ComboBox2, DatePicker, TextInput } from "@/components/Inputs";
-import { faBank, faBuilding, faCalendar, faFile, faIndianRupee, faInfoCircle, faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { ComboBox2, DatePicker, TextInput } from "@/components/Inputs";
+import { faBank, faBuilding, faCalendar, faIndianRupee, faInfoCircle, faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export default function NewTransaction({ head, mount, reload, unmount }) {
 	// Business Logic
@@ -55,10 +55,6 @@ export default function NewTransaction({ head, mount, reload, unmount }) {
 	} else {
 		totalHeadAmount = head.amountPending;
 	}
-
-	const errorStyle = other.hasError
-		? "flex w-full h-[58px] px-2 mt-5 space-x-1.5 justify-center items-center rounded font-regular-12 red-background-transparent-01 red-border red-text"
-		: "h-[58px] mt-5 invisible";
 
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -199,18 +195,6 @@ export default function NewTransaction({ head, mount, reload, unmount }) {
 		return `primary-button-condensed w-full mt-5 ${clickEvent}`;
 	}
 
-	function resetFields() {
-		setMain({
-			amount: "",
-			entryAt: new Date(),
-			firm: { banks: [], id: "", name: "", selectedBank: { id: "", name: "" } },
-			particulars: "",
-			paymentSource: { id: "", name: "" },
-			paymentType: "",
-			remarks: "",
-		});
-	}
-
 	function setBoxDrag() {
 		setOther((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
 	}
@@ -248,6 +232,7 @@ export default function NewTransaction({ head, mount, reload, unmount }) {
 				}));
 			} else if (key === "amount") {
 				const hasError = Number(value) > totalHeadAmount;
+
 				setOther((s) => ({ ...s, hasError }));
 				setMain((s) => ({ ...s, amount: value }));
 			} else {
@@ -274,8 +259,17 @@ export default function NewTransaction({ head, mount, reload, unmount }) {
 	}
 
 	function uiAmount() {
+		const error = (
+			<div className="p-2 space-x-1 font-regular-11">
+				<span>Amount cannot be more than the total pending amount</span>
+				<span className="font-bold-11">{MyGlobal.ThousandSeparator(totalHeadAmount)}</span>
+			</div>
+		);
+
 		return (
 			<TextInput
+				errorText={error}
+				hasError={other.hasError}
 				icon={faIndianRupee}
 				id="amount"
 				label="Amount"
@@ -307,17 +301,13 @@ export default function NewTransaction({ head, mount, reload, unmount }) {
 							{uiFirms()}
 							{uiBanks()}
 						</div>
-						<div className="flex w-full space-x-10 justify-between items-center">
-							{uiPaymentType()}
-							{uiPaymentSource()}
-						</div>
 						<div className="flex w-full space-x-10 justify-center items-start">
 							{uiParticulars()}
 							{uiRemarks()}
 						</div>
-						<div className={errorStyle}>
-							<span>Amount cannot be more than the total pending amount</span>
-							<span className="font-bold-12">{MyGlobal.ThousandSeparator(totalHeadAmount)}</span>
+						<div className="flex w-full space-x-12 justify-between items-center">
+							{uiPaymentSource()}
+							<div className="w-full" />
 						</div>
 					</div>
 				</div>
@@ -412,6 +402,7 @@ export default function NewTransaction({ head, mount, reload, unmount }) {
 				filteredData={getPaymentSources}
 				hasDataObject
 				icon={faBank}
+				isMenuInverted
 				isReadOnly={false}
 				label="Payment Source"
 				onChange={(e) => setInputs("paymentSource", e)}
@@ -421,25 +412,6 @@ export default function NewTransaction({ head, mount, reload, unmount }) {
 				searchedItem={other.find.paymentSource}
 				tabIndex="2"
 				value={main.paymentSource.name}
-				width="w-full"
-			/>
-		);
-	}
-
-	function uiPaymentType() {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={api.paymentTypes}
-				icon={faFile}
-				label="Payment Type"
-				onChange={(e) => setInputs("paymentType", e)}
-				onClick={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="6"
-				value={main.paymentType}
 				width="w-full"
 			/>
 		);

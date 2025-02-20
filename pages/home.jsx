@@ -244,6 +244,8 @@ export default function Home() {
 		} else {
 			setMain((s) => ({ ...s, selectedModule: { index, name: module.name } }));
 		}
+
+		unmountChildViews();
 	}
 
 	function setModuleProps(key, value) {
@@ -293,6 +295,16 @@ export default function Home() {
 			gliderRef.current.style.opacity = "1";
 			gliderRef.current.style.display = "block";
 		});
+	}
+
+	function unmountChildViews() {
+		setMounted((s) => ({
+			...s,
+			activities: false,
+			employees: false,
+			profile: false,
+			settings: false,
+		}));
 	}
 
 	// UI Components

@@ -29,6 +29,7 @@ import {
 export default function Transactions({ head, reload, unmount }) {
 	// Business Logic
 	const headers = MyConstants.TableHeaders.Transactions.General;
+	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const [api, setApi] = useState({
 		transactions: { copy: [], data: [] },
@@ -158,7 +159,7 @@ export default function Transactions({ head, reload, unmount }) {
 
 	async function getSupportData(action) {
 		if (action && action === "reload-root-statistics") {
-			reload();
+			reload(action);
 		}
 
 		setLoading((s) => ({ ...s, supportData: true }));
@@ -195,6 +196,18 @@ export default function Transactions({ head, reload, unmount }) {
 					};
 				});
 
+				transactions.unshift({
+					amount: Number(head.amount),
+					bank_name: head.bank.name,
+					entry_at: new Date(head.entryAt),
+					entry_by_name: head.entryBy.name,
+					firm_name: head.firm.name,
+					particulars: "",
+					payment_source_name: head.paymentSource,
+					payment_type: "",
+					remarks: head.remarks,
+				});
+
 				setApi({
 					transactions: {
 						copy: transactions,
@@ -210,16 +223,6 @@ export default function Transactions({ head, reload, unmount }) {
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
-	}
-
-	function getTotalAmount() {
-		let total = 0;
-
-		for (const i of api.transactions.copy) {
-			total += i.amount;
-		}
-
-		return MyGlobal.ThousandSeparator(total);
 	}
 
 	function setFind(key, value) {
@@ -283,16 +286,30 @@ export default function Transactions({ head, reload, unmount }) {
 	}
 
 	function uiFooter() {
-		return Object.values(headers).map((m, i) => {
-			const showTotalAmount = i == 3 ? "visible" : "invisible";
-			const wrapper = `w-[11.11%] space-x-1 text-center text-white font-medium-10 ${showTotalAmount}`;
+		let totalAmount = 0;
 
-			return (
-				<span className={wrapper} key={i}>
-					<span>{getTotalAmount()}</span>
+		if ("amount" in head) {
+			totalAmount = Number(head.amount);
+		}
+
+		const totalPaidAmount = MyGlobal.ThousandSeparator(head.amountPaid);
+		const totalPending = MyGlobal.ThousandSeparator(head.amountPending);
+
+		return (
+			<span className="w-full space-x-5 text-center text-white font-regular-10">
+				<span>
+					Pending <b className="font-bold-10">{totalPending}</b>
 				</span>
-			);
-		});
+				<span />
+				<span>
+					Paid <b className="font-bold-10">{totalPaidAmount}</b>
+				</span>
+				<span />
+				<span>
+					Total <b className="font-bold-10">{MyGlobal.ThousandSeparator(totalAmount)}</b>
+				</span>
+			</span>
+		);
 	}
 
 	function uiFromDate() {
@@ -365,7 +382,34 @@ export default function Transactions({ head, reload, unmount }) {
 	}
 
 	function uiRows(row, i) {
-		const style = "flex flex-wrap w-[11.11%] min-h-9 justify-center items-center text-center";
+		const isParentRow = i == 0;
+
+		const background = () => {
+			if (isParentRow) {
+				return "primary-background-transparent-01";
+			} else {
+				if (isUserAdministrator) {
+					return "hovered-rows-2";
+				} else {
+					return "contrast-background";
+				}
+			}
+		};
+
+		const colour = () => {
+			if (isParentRow) {
+				return "cursor-not-allowed";
+			} else {
+				if (isUserAdministrator) {
+					return "cursor-pointer";
+				} else {
+					return "cursor-default";
+				}
+			}
+		};
+
+		const style = `flex flex-wrap w-[11.11%] min-h-9 justify-center items-center text-center ${colour()}`;
+		const wrapper = `flex w-full justify-center items-center ${background()} bottom-border font-regular-10 black-text`;
 
 		const amount = MyGlobal.HighlightText(row.amount, other.find.transaction);
 		const entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.transaction);
@@ -377,7 +421,7 @@ export default function Transactions({ head, reload, unmount }) {
 		const remarks = MyGlobal.HighlightText(row.remarks, other.find.transaction);
 
 		return (
-			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
+			<div className={wrapper} key={i} onClick={() => !isParentRow && toggleEditTransaction(row)}>
 				<span className={style}>{dayjs(row.entry_at).format("DD-MM-YYYY")}</span>
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: firmName }} />

@@ -45,10 +45,20 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 			bank: "",
 			paymentSource: "",
 		},
+		hasError: false,
 		isBoxMoved: false,
 	});
 
+	let totalHeadAmount = 0;
+
+	if (entity.head.amount === 0) {
+		totalHeadAmount = entity.head.amount;
+	} else {
+		totalHeadAmount = entity.head.amountPending;
+	}
+
 	const isOfficeExpense = entity.module.id === MyConstants.Modules.Other.CashFlowModules.OfficeExpense.id;
+	const isOtherExpense = entity.module.id === MyConstants.Modules.Other.CashFlowModules.OtherExpense.id;
 
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -177,7 +187,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 	}
 
 	function isAddEligible() {
-		if (isOfficeExpense) {
+		if (isOfficeExpense || isOtherExpense) {
 			if (!main.amount || !main.particulars || !main.remarks) {
 				return false;
 			}
@@ -236,6 +246,11 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 						paymentSource: { id: value.id, name: value.name },
 					}));
 				}
+			} else if (key === "amount") {
+				const hasError = Number(value) > totalHeadAmount;
+
+				setOther((s) => ({ ...s, hasError }));
+				setMain((s) => ({ ...s, amount: value }));
 			} else {
 				setMain((s) => ({ ...s, [key]: value }));
 			}
@@ -262,8 +277,17 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 	}
 
 	function uiAmount() {
+		const error = (
+			<div className="p-2 space-x-1 font-regular-11">
+				<span>Amount cannot be more than the total pending amount</span>
+				<span className="font-bold-11">{MyGlobal.ThousandSeparator(totalHeadAmount)}</span>
+			</div>
+		);
+
 		return (
 			<TextInput
+				errorText={error}
+				hasError={other.hasError}
 				icon={faIndianRupee}
 				id="amount"
 				label="Amount"
@@ -417,7 +441,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 				comparisonValue=""
 				filteredData={api.paymentTypes}
 				icon={faFile}
-				isReadOnly={isOfficeExpense}
+				isReadOnly={isOfficeExpense || isOtherExpense}
 				label="Payment Type"
 				onChange={(e) => setInputs("paymentType", e)}
 				onClick={() => {}}

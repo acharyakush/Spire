@@ -12,8 +12,8 @@ import NewEntity from "@/modals/cashFlows/others/NewEntity";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Badge, BadgeGreenLarge, Spinner } from "@/components/Elements";
-import { faBank, faChevronRight, faCoins, faEnvelope, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { Badge, BadgeGreenLarge, Spinner, SpinnerBig } from "@/components/Elements";
+import { faChevronRight, faCoins, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 
 export default function Others({ module, unmount }) {
 	// Business Logic
@@ -32,14 +32,16 @@ export default function Others({ module, unmount }) {
 		find: "",
 		isLoading: false,
 		selectedEntity: {
+			accountHolderName: "",
+			accountNumber: "",
 			emailAddress: "",
 			entryAt: "",
 			entryBy: { id: "", name: "" },
 			head: {},
 			id: "",
+			ifsc: "",
 			module: { id: "", name: "" },
 			name: "",
-			paymentSource: "",
 			phoneNumber: "",
 			purpose: "",
 			upiId: "",
@@ -47,7 +49,6 @@ export default function Others({ module, unmount }) {
 	});
 
 	const [mounted, setMounted] = useState({
-		mainComponent: false,
 		newEntity: false,
 		newHead: false,
 	});
@@ -102,6 +103,8 @@ export default function Others({ module, unmount }) {
 					}
 
 					list.push({
+						accountHolderName: fe.account_holder_name,
+						accountNumber: fe.account_number,
 						emailAddress: fe.email_address,
 						entryAt: fe.entry_at,
 						entryBy: {
@@ -109,12 +112,12 @@ export default function Others({ module, unmount }) {
 							name: MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name"),
 						},
 						id: fe.id,
+						ifsc: fe.ifsc,
 						module: {
 							id: fe.module_id,
 							name: moduleName,
 						},
 						name: fe.name,
-						paymentSource: fe.payment_source,
 						phoneNumber: fe.phone_number,
 						purpose: fe.purpose,
 						upiId: fe.upi_id,
@@ -125,7 +128,6 @@ export default function Others({ module, unmount }) {
 			}
 
 			setApi((s) => ({ ...s, list }));
-			setMounted((s) => ({ ...s, mainComponent: true }));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${module.name} => Get Support Data`);
 		} finally {
@@ -188,7 +190,6 @@ export default function Others({ module, unmount }) {
 							id: fe.bank_id,
 							name: bankName,
 						},
-						paymentSource: fe.payment_source,
 						purpose: fe.purpose,
 						remarks: fe.remarks,
 					});
@@ -207,6 +208,8 @@ export default function Others({ module, unmount }) {
 		setMain((s) => ({
 			...s,
 			selectedEntity: {
+				accountHolderName: object.accountHolderName,
+				accountNumber: object.accountNumber,
 				emailAddress: object.emailAddress,
 				entryAt: object.entryAt,
 				entryBy: {
@@ -214,12 +217,12 @@ export default function Others({ module, unmount }) {
 					name: object.entryBy.name,
 				},
 				id: object.id,
+				ifsc: object.ifsc,
 				module: {
 					id: object.module.id,
 					name: object.module.name,
 				},
 				name: object.name,
-				paymentSource: object.paymentSource,
 				phoneNumber: object.phoneNumber,
 				purpose: object.purpose,
 				upiId: object.upiId,
@@ -270,83 +273,91 @@ export default function Others({ module, unmount }) {
 	}
 
 	function uiHeads() {
-		return api.heads.map((m, i) => {
-			const totalPaidOrReceived = module.name === MyConstants.Modules.Other.CashFlowModules.OtherIncome.name ? "Total Received" : "Total Paid";
-
+		if (loading.entities) {
 			return (
-				<div
-					className="flex flex-col w-full p-4 space-y-3 justify-center items-center relative rounded shadow full-border primary-background-transparent-01"
-					key={m.id}>
-					<span className="absolute -left-5 -top-2.5">
-						<BadgeGreenLarge value={i + 1} />
-					</span>
-					<span className="font-medium-16 black-text">{m.purpose}</span>
-					<div className="flip-card">
-						<div className="flip-card-inner">
-							<div className="p-4 space-y-2 rounded shadow contrast-background flip-card-front">
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Total Pending</span>
-									<span className="font-medium-12 red-text">{MyGlobal.ThousandSeparator(m.amountPending)}</span>
+				<div className={blankDataWrapper}>
+					<SpinnerBig />
+				</div>
+			);
+		} else {
+			return api.heads.map((m, i) => {
+				const totalPaidOrReceived = module.name === MyConstants.Modules.Other.CashFlowModules.OtherIncome.name ? "Total Received" : "Total Paid";
+
+				return (
+					<div
+						className="flex flex-col w-full p-4 space-y-3 justify-center items-center relative rounded shadow full-border primary-background-transparent-01"
+						key={m.id}>
+						<span className="absolute -left-5 -top-2.5">
+							<BadgeGreenLarge value={i + 1} />
+						</span>
+						<span className="font-medium-16 black-text">{m.purpose}</span>
+						<div className="flip-card">
+							<div className="flip-card-inner">
+								<div className="p-4 space-y-2 rounded shadow contrast-background flip-card-front">
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Total Pending</span>
+										<span className="font-medium-12 red-text">{MyGlobal.ThousandSeparator(m.amountPending)}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">{totalPaidOrReceived}</span>
+										<span className="font-medium-12 green-text">{MyGlobal.ThousandSeparator(m.amountPaid)}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Total Fees</span>
+										<span className="font-medium-14 black-text">{MyGlobal.ThousandSeparator(m.amount)}</span>
+									</div>
 								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">{totalPaidOrReceived}</span>
-									<span className="font-medium-12 green-text">{MyGlobal.ThousandSeparator(m.amountPaid)}</span>
-								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Total Fees</span>
-									<span className="font-medium-14 black-text">{MyGlobal.ThousandSeparator(m.amount)}</span>
-								</div>
-							</div>
-							<div className="flex flex-col justify-center items-center p-4 rounded shadow contrast-background flip-card-back">
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Firm</span>
-									<span className="font-medium-12 primary-text">{m.firm.name}</span>
-								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Bank</span>
-									<span className="font-medium-12 primary-text">{m.bank.name}</span>
-								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Remarks</span>
-									<span className="font-medium-12 primary-text">{m.remarks}</span>
-								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Created At</span>
-									<span className="font-medium-12 primary-text">{dayjs(m.entry_at).format("DD/MM/YYYY")}</span>
-								</div>
-								<div className="full-border" />
-								<div className="flex w-full justify-between items-center">
-									<span className="font-regular-12">Created By</span>
-									<span className="font-medium-12 primary-text">{m.entryBy.name}</span>
+								<div className="flex flex-col justify-center items-center p-4 rounded shadow contrast-background flip-card-back">
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Firm</span>
+										<span className="font-medium-12 primary-text">{m.firm.name}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Bank</span>
+										<span className="font-medium-12 primary-text">{m.bank.name}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Remarks</span>
+										<span className="font-medium-12 primary-text">{m.remarks}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Created At</span>
+										<span className="font-medium-12 primary-text">{dayjs(m.entry_at).format("DD/MM/YYYY")}</span>
+									</div>
+									<div className="full-border" />
+									<div className="flex w-full justify-between items-center">
+										<span className="font-regular-12">Created By</span>
+										<span className="font-medium-12 primary-text">{m.entryBy.name}</span>
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
 
-					{/* BUTTON BELOW */}
-					<div className="absolute -bottom-5 cursor-pointer group" onClick={() => toggleTransactions(m)}>
-						<span className="flex w-fit px-4 py-2 justify-center items-center rounded-full text-white font-medium-11 primary-background primary-border transition-all duration-500 ease-in-out">
-							<FontAwesomeIcon icon={faCoins} />
-							<span className="flex justify-center items-center max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-in-out whitespace-nowrap">
-								Transactions
+						{/* BUTTON BELOW */}
+						<div className="absolute -bottom-5 cursor-pointer group" onClick={() => toggleTransactions(m)}>
+							<span className="flex w-fit px-4 py-2 justify-center items-center rounded-full text-white font-medium-11 primary-background primary-border transition-all duration-500 ease-in-out">
+								<FontAwesomeIcon icon={faCoins} />
+								<span className="flex justify-center items-center max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-in-out whitespace-nowrap">
+									Transactions
+								</span>
 							</span>
-						</span>
+						</div>
 					</div>
-				</div>
-			);
-		});
+				);
+			});
+		}
 	}
 
 	function uiMain() {
 		if (loading.supportData) {
 			return (
 				<div className={blankDataWrapper}>
-					<span className="font-regular-12 gray-text">Loading...</span>
+					<SpinnerBig />
 				</div>
 			);
 		} else if (!api.list.length) {
@@ -389,7 +400,9 @@ export default function Others({ module, unmount }) {
 			);
 		} else {
 			const showEmailAddress = main.selectedEntity.emailAddress && main.selectedEntity.emailAddress.length > 0;
+
 			const showPhoneNumber = main.selectedEntity.phoneNumber && String(main.selectedEntity.phoneNumber).length > 0;
+
 			const showUpiId = main.selectedEntity.upiId && main.selectedEntity.upiId.length > 0;
 
 			const wrapper = "flex h-[22px] space-x-2.5 justify-center items-center primary-text";
@@ -401,32 +414,70 @@ export default function Others({ module, unmount }) {
 			return (
 				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">
 					<div className="flex w-full justify-between items-center">
-						<div className="flex flex-col w-1/2 justify-center items-start">
+						<div className="flex flex-col w-1/3 justify-center items-start">
 							<span className="view-heading">
 								{main.selectedEntity.name}
 								{uiNewHead()}
 							</span>
-							<span className="font-regular-11 gray-text">Purpose {main.selectedEntity.purpose}</span>
-							<span className="font-regular-11 gray-text">Registered on {dayjs(main.selectedEntity.entryAt).format("DD MMM, YYYY")}</span>
+							<div className="flex w-fit space-x-6 justify-start items-center gray-text">
+								<span className="font-regular-11">Purpose</span>
+								<span className="font-semibold-12">{main.selectedEntity.purpose}</span>
+							</div>
+							<div className="flex w-fit space-x-2 justify-start items-center gray-text">
+								<span className="font-regular-11">Registered</span>
+								<span className="font-semibold-1@">{dayjs(main.selectedEntity.entryAt).format("DD MMM, YYYY")}</span>
+							</div>
 						</div>
-						<div className="flex flex-col w-1/2 space-y-2 justify-center items-end">
+						<div className="flex flex-col w-1/3 space-y-2 justify-center items-start">
+							<div className={wrapper}>
+								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
+									<span className="font-regular-11">Account Holder Name</span>
+									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openWhatsAppWeb()}>
+										{main.selectedEntity.accountHolderName}
+									</span>
+								</div>
+							</div>
+
+							<div className={wrapper}>
+								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
+									<span className="font-regular-11">Account Number</span>
+									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openEmailClient()}>
+										{main.selectedEntity.accountNumber}
+									</span>
+								</div>
+							</div>
+
+							<div className={wrapper}>
+								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
+									<span className="font-regular-11">IFS Code</span>
+									<span className="font-semibold-12 primary-text">{main.selectedEntity.ifsc}</span>
+								</div>
+							</div>
+						</div>
+						<div className="flex flex-col w-1/3 space-y-2 justify-center items-start">
 							<div className={emailAddressWrapper}>
-								<FontAwesomeIcon className="primary-text" icon={faPhone} />
-								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openWhatsAppWeb()}>
-									{main.selectedEntity.phoneNumber}
-								</span>
+								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
+									<span className="font-regular-11">Contact Number</span>
+									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openWhatsAppWeb()}>
+										{main.selectedEntity.phoneNumber}
+									</span>
+								</div>
 							</div>
 
 							<div className={phoneNumberWrapper}>
-								<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
-								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openEmailClient()}>
-									{main.selectedEntity.emailAddress}
-								</span>
+								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
+									<span className="font-regular-11">Email Address</span>
+									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openEmailClient()}>
+										{main.selectedEntity.emailAddress}
+									</span>
+								</div>
 							</div>
 
 							<div className={upiIdWrapper}>
-								<FontAwesomeIcon icon={faBank} />
-								<span className="font-regular-11">{main.selectedEntity.upiId}</span>
+								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
+									<span className="font-regular-11">UPI ID</span>
+									<span className="font-semibold-12 primary-text">{main.selectedEntity.upiId}</span>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -447,10 +498,6 @@ export default function Others({ module, unmount }) {
 	}, []);
 
 	// Main UI
-	if (!mounted.mainComponent) {
-		return;
-	}
-
 	if (mounted.transactions) {
 		return <Transactions entity={main.selectedEntity} reload={getSupportData} unmount={toggleTransactions} />;
 	} else {
