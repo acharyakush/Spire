@@ -177,18 +177,20 @@ export default function Clients() {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetClients, MyGlobal.GetHeaders());
 
-			const confirmedClients = response.data.filter((f) => f.is_confirmed == 1);
-
 			if (response.status === 200) {
-				setApi({
-					clients: {
-						copy: confirmedClients,
-						data: confirmedClients,
-					},
-				});
+				if (Array.isArray(response.data) && response.data.length) {
+					const confirmedClients = response.data.filter((f) => f.is_confirmed == 1);
 
-				setMounted((s) => ({ ...s, mainComponent: true }));
+					setApi({
+						clients: {
+							copy: confirmedClients,
+							data: confirmedClients,
+						},
+					});
+				}
 			}
+
+			setMounted((s) => ({ ...s, mainComponent: true }));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Get All Clients`);
 		} finally {
@@ -388,10 +390,6 @@ export default function Clients() {
 	}, [main.find]);
 
 	// Main UI
-	if (!mounted.mainComponent) {
-		return;
-	}
-
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<>

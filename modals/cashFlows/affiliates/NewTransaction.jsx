@@ -16,8 +16,6 @@ import { faBank, faBuilding, faCalendar, faFile, faIndianRupee, faInfoCircle, fa
 
 export default function NewTransaction({ mount, project, reload, unmount }) {
 	// Business Logic
-	console.log(project);
-
 	const [api, setApi] = useState({
 		firms: [],
 		banks: { copy: [], data: [] },

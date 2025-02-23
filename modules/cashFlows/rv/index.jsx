@@ -291,13 +291,22 @@ export default function RV({ unmount }) {
 						}, 0);
 					}
 
+					let originalAmount = 0;
 					let amount = 0;
 
 					response.data.tasks.filter((f) => {
 						if (f.project_id === m.id) {
 							amount += Number(f.expense);
+							originalAmount += Number(f.expense);
 						}
 					});
+
+					const sameRvs = response.data.rv.filter((f) => f.project_id === m.id);
+
+					if (Array.isArray(sameRvs) && sameRvs.length) {
+						amount = 0;
+						amount = sameRvs.reduce((pv, cv) => pv + Number(cv.amount), 0);
+					}
 
 					amountPending = amount - amountReceived;
 
@@ -341,6 +350,7 @@ export default function RV({ unmount }) {
 						created_at_time: rvCreatedAtTime,
 						invoice_id: "",
 						main_project_name: mainProjectName,
+						original_amount: originalAmount,
 						sub_project_name: subProjectName,
 						rv_id: rvId,
 					};
@@ -443,10 +453,10 @@ export default function RV({ unmount }) {
 
 		return Object.values(headers).map((m, i) => {
 			return (
-				<span className="w-[11.11%] space-x-1 text-center text-white font-medium-10" key={i}>
-					<span>{i == 5 && totals.amount}</span>
-					<span>{i == 6 && totals.received}</span>
-					<span>{i == 7 && totals.pending}</span>
+				<span className="w-[11.11%] space-x-1 text-center text-white font-semibold-12" key={i}>
+					<span>{i == 5 && MyGlobal.ThousandSeparator(totals.amount)}</span>
+					<span>{i == 6 && MyGlobal.ThousandSeparator(totals.received)}</span>
+					<span>{i == 7 && MyGlobal.ThousandSeparator(totals.pending)}</span>
 				</span>
 			);
 		});

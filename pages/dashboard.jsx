@@ -103,14 +103,14 @@ export default function Dashboard({ setModuleProps }) {
 
 				const tasksCount = { overdue: 0, today: 0, tomorrow: 0, total: response.data.tasks.length, upcoming: 0 };
 
-				for (const inquiry of response.data.inquiries) {
-					if (inquiry.status == inquiriesStatus.Closed) {
+				for (const i of response.data.inquiries) {
+					if (i.status == inquiriesStatus.Closed) {
 						inquiriesCount.closed++;
-					} else if (inquiry.status == inquiriesStatus.Confirmed) {
+					} else if (i.status == inquiriesStatus.Confirmed) {
 						inquiriesCount.confirmed++;
-					} else if (inquiry.status == inquiriesStatus.Hold) {
+					} else if (i.status == inquiriesStatus.Hold) {
 						inquiriesCount.hold++;
-					} else if (inquiry.status == inquiriesStatus.Open) {
+					} else if (i.status == inquiriesStatus.Open) {
 						inquiriesCount.open++;
 					}
 				}

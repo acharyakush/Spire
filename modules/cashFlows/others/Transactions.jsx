@@ -480,7 +480,6 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function uiTransactionsFooter() {
-		console.log(entity);
 		let totalAmount = 0;
 
 		if ("head" in entity) {
@@ -488,8 +487,6 @@ export default function Transactions({ entity, reload, unmount }) {
 				totalAmount = Number(entity.head.amount);
 			}
 		}
-
-		const totalPaidAmount = Number(entity.head.amountPaid);
 
 		return (
 			<span className="w-full space-x-5 text-center text-white font-regular-10">

@@ -369,7 +369,11 @@ export default function NewInvoice({ project, reload, unmount }) {
 			downloadPdf();
 		}
 
-		setMounted((s) => ({ ...s, preview: !s.preview }));
+		if (totalPendingAmount === 0) {
+			MyGlobal.ShowErrorToast("Cannot generate an invoice of 0.");
+		} else {
+			setMounted((s) => ({ ...s, preview: !s.preview }));
+		}
 	}
 
 	// UI Components

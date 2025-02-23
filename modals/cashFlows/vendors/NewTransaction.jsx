@@ -301,12 +301,12 @@ export default function NewTransaction({ head, mount, reload, unmount }) {
 							{uiFirms()}
 							{uiBanks()}
 						</div>
-						<div className="flex w-full space-x-10 justify-center items-start">
-							{uiParticulars()}
-							{uiRemarks()}
-						</div>
-						<div className="flex w-full space-x-12 justify-between items-center">
+						<div className="flex w-full space-x-10 justify-between items-center">
 							{uiPaymentSource()}
+							{uiParticulars()}
+						</div>
+						<div className="flex w-full space-x-12 justify-center items-start">
+							{uiRemarks()}
 							<div className="w-full" />
 						</div>
 					</div>
@@ -402,7 +402,6 @@ export default function NewTransaction({ head, mount, reload, unmount }) {
 				filteredData={getPaymentSources}
 				hasDataObject
 				icon={faBank}
-				isMenuInverted
 				isReadOnly={false}
 				label="Payment Source"
 				onChange={(e) => setInputs("paymentSource", e)}

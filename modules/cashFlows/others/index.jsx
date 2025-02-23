@@ -399,6 +399,12 @@ export default function Others({ module, unmount }) {
 				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-center items-center font-medium-12 gray-text">Select an entity</div>
 			);
 		} else {
+			const showAccountHolderName = main.selectedEntity.accountHolderName && main.selectedEntity.accountHolderName.length > 0;
+
+			const showAccountNumber = main.selectedEntity.accountNumber && String(main.selectedEntity.accountNumber).length > 0;
+
+			const showIfsc = main.selectedEntity.ifsc && main.selectedEntity.ifsc.length > 0;
+
 			const showEmailAddress = main.selectedEntity.emailAddress && main.selectedEntity.emailAddress.length > 0;
 
 			const showPhoneNumber = main.selectedEntity.phoneNumber && String(main.selectedEntity.phoneNumber).length > 0;
@@ -406,6 +412,10 @@ export default function Others({ module, unmount }) {
 			const showUpiId = main.selectedEntity.upiId && main.selectedEntity.upiId.length > 0;
 
 			const wrapper = "flex h-[22px] space-x-2.5 justify-center items-center primary-text";
+
+			const accountHolderNameWrapper = showAccountHolderName ? `${wrapper} visible` : "h-[22px] invisible";
+			const accountNumberWrapper = showAccountNumber ? `${wrapper} visible` : "h-[22px] invisible";
+			const ifscWrapper = showIfsc ? `${wrapper} visible` : "h-[22px] invisible";
 
 			const emailAddressWrapper = showEmailAddress ? `${wrapper} visible` : "h-[22px] invisible";
 			const phoneNumberWrapper = showPhoneNumber ? `${wrapper} visible` : "h-[22px] invisible";
@@ -425,48 +435,44 @@ export default function Others({ module, unmount }) {
 							</div>
 							<div className="flex w-fit space-x-2 justify-start items-center gray-text">
 								<span className="font-regular-11">Registered</span>
-								<span className="font-semibold-1@">{dayjs(main.selectedEntity.entryAt).format("DD MMM, YYYY")}</span>
+								<span className="font-semibold-12">{dayjs(main.selectedEntity.entryAt).format("DD MMM, YYYY")}</span>
 							</div>
 						</div>
 						<div className="flex flex-col w-1/3 space-y-2 justify-center items-start">
-							<div className={wrapper}>
-								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
-									<span className="font-regular-11">Account Holder Name</span>
-									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openWhatsAppWeb()}>
-										{main.selectedEntity.accountHolderName}
-									</span>
+							<div className={accountHolderNameWrapper}>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-40 font-regular-11">Account Holder Name</span>
+									<span className="cursor-pointer font-semibold-12 primary-text">{main.selectedEntity.accountHolderName}</span>
 								</div>
 							</div>
 
-							<div className={wrapper}>
-								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
-									<span className="font-regular-11">Account Number</span>
-									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openEmailClient()}>
-										{main.selectedEntity.accountNumber}
-									</span>
+							<div className={accountNumberWrapper}>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-40 font-regular-11">Account Number</span>
+									<span className="cursor-pointer font-semibold-12 primary-text">{main.selectedEntity.accountNumber}</span>
 								</div>
 							</div>
 
-							<div className={wrapper}>
-								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
-									<span className="font-regular-11">IFS Code</span>
+							<div className={ifscWrapper}>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-40 font-regular-11">IFS Code</span>
 									<span className="font-semibold-12 primary-text">{main.selectedEntity.ifsc}</span>
 								</div>
 							</div>
 						</div>
 						<div className="flex flex-col w-1/3 space-y-2 justify-center items-start">
-							<div className={emailAddressWrapper}>
-								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
-									<span className="font-regular-11">Contact Number</span>
+							<div className={phoneNumberWrapper}>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-32 font-regular-11">Contact Number</span>
 									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openWhatsAppWeb()}>
 										{main.selectedEntity.phoneNumber}
 									</span>
 								</div>
 							</div>
 
-							<div className={phoneNumberWrapper}>
-								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
-									<span className="font-regular-11">Email Address</span>
+							<div className={emailAddressWrapper}>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-32 font-regular-11">Email Address</span>
 									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openEmailClient()}>
 										{main.selectedEntity.emailAddress}
 									</span>
@@ -474,8 +480,8 @@ export default function Others({ module, unmount }) {
 							</div>
 
 							<div className={upiIdWrapper}>
-								<div className="flex w-fit space-x-2 justify-start items-center gray-text">
-									<span className="font-regular-11">UPI ID</span>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-32 font-regular-11">UPI ID</span>
 									<span className="font-semibold-12 primary-text">{main.selectedEntity.upiId}</span>
 								</div>
 							</div>

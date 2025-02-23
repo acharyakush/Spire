@@ -260,9 +260,24 @@ export default function Vendors({ unmount }) {
 
 					setApi((s) => ({ ...s, vendors }));
 
-					const selectedVendorIndex = action && action === "reload-root-statistics" ? main.selectedVendor.id : 0;
+					if (action && action === "reload-root-statistics") {
+						const obj = vendors.find((f) => f.id === main.selectedVendor.selectedHead?.vendorId);
 
-					setVendor(vendors.at(selectedVendorIndex));
+						if (typeof obj === "object") {
+							setMain((s) => ({
+								...s,
+								selectedVendor: {
+									...s.selectedVendor,
+									details: obj,
+									id: obj.id,
+								},
+							}));
+
+							getSelectedVendorHeads(obj.id);
+						}
+					} else {
+						setVendor(vendors.at(0));
+					}
 				}
 			}
 		} catch (error) {
@@ -453,10 +468,22 @@ export default function Vendors({ unmount }) {
 				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-center items-center font-medium-12 gray-text">Select a vendor</div>
 			);
 		} else {
+			const showEmailAddress = main.selectedVendor.details.email_address && main.selectedVendor.details.email_address.length > 0;
+
+			const showPhoneNumber = main.selectedVendor.details.phone_number && String(main.selectedVendor.details.phone_number).length > 0;
+
+			const showUpiId = main.selectedVendor.details.upi_id && main.selectedVendor.details.upi_id.length > 0;
+
+			const wrapper = "flex h-[22px] space-x-2.5 justify-center items-center primary-text";
+
+			const emailAddressWrapper = showEmailAddress ? `${wrapper} visible` : "h-[22px] invisible";
+			const phoneNumberWrapper = showPhoneNumber ? `${wrapper} visible` : "h-[22px] invisible";
+			const upiIdWrapper = showUpiId ? `${wrapper} visible` : "h-[22px] invisible";
+
 			return (
 				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">
 					<div className="flex w-full justify-between items-center">
-						<div className="flex flex-col w-1/2 justify-center items-start">
+						<div className="flex flex-col w-1/2 space-y-2 justify-center items-start">
 							<span className="view-heading">
 								{main.selectedVendor.details.name}
 								{uiNewHead()}
@@ -465,22 +492,30 @@ export default function Vendors({ unmount }) {
 								Associated since {dayjs(main.selectedVendor.details.joined_on).format("DD MMM, YYYY")}
 							</span>
 						</div>
-						<div className="flex flex-col w-1/2 space-y-2 justify-center items-end">
-							<div className="flex space-x-2.5 justify-center items-center">
-								<FontAwesomeIcon className="primary-text" icon={faPhone} />
-								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openWhatsAppWeb()}>
-									{main.selectedVendor.details.phone_number}
-								</span>
+						<div className="flex flex-col w-1/2 space-y-2 justify-center items-start">
+							<div className={phoneNumberWrapper}>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-32 font-regular-11">Contact Number</span>
+									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openWhatsAppWeb()}>
+										{main.selectedVendor.details.phone_number}
+									</span>
+								</div>
 							</div>
-							<div className="flex space-x-2.5 justify-center items-center">
-								<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
-								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openEmailClient()}>
-									{main.selectedVendor.details.email_address}
-								</span>
+
+							<div className={emailAddressWrapper}>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-32 font-regular-11">Email Address</span>
+									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openEmailClient()}>
+										{main.selectedVendor.details.email_address}
+									</span>
+								</div>
 							</div>
-							<div className="flex space-x-2.5 justify-center items-center primary-text">
-								<FontAwesomeIcon icon={faBank} />
-								<span className="font-regular-11">{main.selectedVendor.details.upi_id}</span>
+
+							<div className={upiIdWrapper}>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-32 font-regular-11">UPI ID</span>
+									<span className="font-semibold-12 primary-text">{main.selectedVendor.details.upi_id}</span>
+								</div>
 							</div>
 						</div>
 					</div>

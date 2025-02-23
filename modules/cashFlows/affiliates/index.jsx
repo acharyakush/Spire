@@ -26,7 +26,10 @@ export default function Affiliates({ unmount }) {
 		isLoading: false,
 		selectedAffiliate: {
 			details: {
+				bank_account_holder_name: "",
+				bank_account_number: "",
 				email_address: "",
+				ifsc: "",
 				joined_on: "",
 				name: "",
 				phone_number: "",
@@ -89,7 +92,7 @@ export default function Affiliates({ unmount }) {
 		}));
 	}
 
-	async function setSupportData() {
+	async function setSupportData(action) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
@@ -149,7 +152,27 @@ export default function Affiliates({ unmount }) {
 					});
 
 					setApi({ affiliates });
-					setSelectedAffiliate(affiliates.at(0));
+
+					if (action && action === "reload-root-statistics") {
+						const obj = affiliates.find((f) => f.id === main.selectedAffiliate.id);
+
+						if (typeof obj === "object") {
+							const selectedProject = obj.projects.find((f) => f.id === main.selectedAffiliate.selectedProject.id);
+
+							setMain((s) => ({
+								...s,
+								selectedAffiliate: {
+									...s.selectedAffiliate,
+									details: obj,
+									id: obj.id,
+									projects: obj.projects,
+									selectedProject,
+								},
+							}));
+						}
+					} else {
+						setSelectedAffiliate(affiliates.at(0));
+					}
 				}
 			}
 		} catch (error) {
@@ -275,34 +298,86 @@ export default function Affiliates({ unmount }) {
 				</div>
 			);
 		} else {
+			const showAccountHolderName =
+				main.selectedAffiliate.details.bank_account_holder_name && main.selectedAffiliate.details.bank_account_holder_name.length > 0;
+
+			const showAccountNumber =
+				main.selectedAffiliate.details.bank_account_number && String(main.selectedAffiliate.details.bank_account_number).length > 0;
+
+			const showIfsc = main.selectedAffiliate.details.ifsc && main.selectedAffiliate.details.ifsc.length > 0;
+
+			const showEmailAddress = main.selectedAffiliate.details.email_address && main.selectedAffiliate.details.email_address.length > 0;
+
+			const showPhoneNumber = main.selectedAffiliate.details.phone_number && String(main.selectedAffiliate.details.phone_number).length > 0;
+
+			const showUpiId = main.selectedAffiliate.details.upi_id && main.selectedAffiliate.details.upi_id.length > 0;
+
+			const wrapper = "flex h-[22px] space-x-2.5 justify-center items-center primary-text";
+
+			const accountHolderNameWrapper = showAccountHolderName ? `${wrapper} visible` : "h-[22px] invisible";
+			const accountNumberWrapper = showAccountNumber ? `${wrapper} visible` : "h-[22px] invisible";
+			const ifscWrapper = showIfsc ? `${wrapper} visible` : "h-[22px] invisible";
+
+			const emailAddressWrapper = showEmailAddress ? `${wrapper} visible` : "h-[22px] invisible";
+			const phoneNumberWrapper = showPhoneNumber ? `${wrapper} visible` : "h-[22px] invisible";
+			const upiIdWrapper = showUpiId ? `${wrapper} visible` : "h-[22px] invisible";
+
 			return (
 				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">
 					<div className="flex w-full justify-between items-center">
-						<div className="flex flex-col w-1/2 justify-center items-start">
+						<div className="flex flex-col w-1/3 justify-center items-start">
 							<div className="flex w-fit space-x-2.5 justify-center items-center">
 								<span className="view-heading">{main.selectedAffiliate.details.name}</span>
-								<Badge value={main.selectedAffiliate.projects.length} />
+								{main.selectedAffiliate.projects.length > 0 && <Badge value={main.selectedAffiliate.projects.length} />}
 							</div>
-							<span className="font-regular-11 gray-text">
-								Associated since {dayjs(main.selectedAffiliate.details.joined_on).format("DD MMM, YYYY")}
-							</span>
+
+							<div className="flex w-fit space-x-2 justify-start items-center gray-text">
+								<span className="font-regular-11">Associated since</span>
+								<span className="font-semibold-12">{dayjs(main.selectedAffiliate.details.joined_on).format("DD MMM, YYYY")}</span>
+							</div>
 						</div>
-						<div className="flex flex-col w-1/2 space-y-2 justify-center items-end">
-							<div className="flex space-x-2.5 justify-center items-center">
-								<FontAwesomeIcon className="primary-text" icon={faPhone} />
-								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openWhatsAppWeb()}>
-									{main.selectedAffiliate.details.phone_number}
-								</span>
+
+						<div className="flex flex-col w-1/3 space-y-2 justify-center items-start">
+							<div className={accountHolderNameWrapper}>
+								<span className="w-40 font-regular-11">Account Holder Name</span>
+								<span className="cursor-pointer font-semibold-12 primary-text">{main.selectedAffiliate.details.bank_account_holder_name}</span>
 							</div>
-							<div className="flex space-x-2.5 justify-center items-center">
-								<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
-								<span className="cursor-pointer font-regular-11 primary-text" onClick={() => openEmailClient()}>
-									{main.selectedAffiliate.details.email_address}
-								</span>
+
+							<div className={accountNumberWrapper}>
+								<span className="w-40 font-regular-11">Account Number</span>
+								<span className="cursor-pointer font-semibold-12 primary-text">{main.selectedAffiliate.details.bank_account_number}</span>
 							</div>
-							<div className="flex space-x-2.5 justify-center items-center primary-text">
-								<FontAwesomeIcon icon={faBank} />
-								<span className="font-regular-11">{main.selectedAffiliate.details.upi_id}</span>
+
+							<div className={ifscWrapper}>
+								<span className="w-40 font-regular-11">IFS Code</span>
+								<span className="font-semibold-12 primary-text">{main.selectedAffiliate.details.ifsc}</span>
+							</div>
+						</div>
+
+						<div className="flex flex-col w-1/3 space-y-2 justify-center items-start">
+							<div className={phoneNumberWrapper}>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-32 font-regular-11">Contact Number</span>
+									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openWhatsAppWeb()}>
+										{main.selectedAffiliate.details.phone_number}
+									</span>
+								</div>
+							</div>
+
+							<div className={emailAddressWrapper}>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-32 font-regular-11">Email Address</span>
+									<span className="cursor-pointer font-semibold-12 primary-text" onClick={() => openEmailClient()}>
+										{main.selectedAffiliate.details.email_address}
+									</span>
+								</div>
+							</div>
+
+							<div className={upiIdWrapper}>
+								<div className="flex w-fit justify-start items-center gray-text">
+									<span className="w-32 font-regular-11">UPI ID</span>
+									<span className="font-semibold-12 primary-text">{main.selectedAffiliate.details.upi_id}</span>
+								</div>
 							</div>
 						</div>
 					</div>

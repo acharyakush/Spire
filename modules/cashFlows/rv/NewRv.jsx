@@ -8,7 +8,6 @@ import jsPDF from "jspdf";
 import Tippy from "@tippyjs/react";
 import html2canvas from "html2canvas";
 import MyConstants from "@/utilities/constants";
-import NewRvPreview from "@/modals/rv/NewRvPreview";
 
 import { QRCode } from "react-qrcode-logo";
 import { useEffect, useState } from "react";
@@ -90,13 +89,17 @@ export default function NewRv({ project, reload, unmount }) {
 	});
 
 	const totalParticularsAmount = main.particulars.reduce((pv, cv) => pv + Number(cv.amount), 0);
-	const totalAmount = Number(main.particulars.at(0).amount) == quote ? totalParticularsAmount : quote;
+
+	const totalAmount = Number(main.particulars.at(0).amount) == quote ? totalParticularsAmount : Number(main.particulars.at(0).amount);
+
 	const totalPendingAmount = Math.abs(totalParticularsAmount - main.totalAmountReceived);
+
 	const finalPendingAmount = `${String.fromCharCode(8377)} ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
 
 	// Functions
 	async function addRv() {
 		try {
+			setLoading((s) => ({ ...s, downloadPdf: true }));
 			const customId = `${MyGlobal.GetInitials(main.firm.name)}/${main.financialYear}/${main.rvId}`;
 
 			const body = {
@@ -124,6 +127,7 @@ export default function NewRv({ project, reload, unmount }) {
 		} catch (error) {
 			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewRv);
 		} finally {
+			setLoading((s) => ({ ...s, downloadPdf: false }));
 			unmount();
 		}
 	}
@@ -155,72 +159,76 @@ export default function NewRv({ project, reload, unmount }) {
 	}
 
 	function downloadPdf() {
-		setLoading((s) => ({ ...s, downloadPdf: true }));
+		if (totalPendingAmount === 0) {
+			MyGlobal.ShowErrorToast("Cannot generate a reimbursement voucher of 0.");
+		} else {
+			setLoading((s) => ({ ...s, downloadPdf: true }));
 
-		const fileName = `${MyGlobal.GetInitials(main.firm.name)}_${main.financialYear}_${main.rvId}_${getCompanyDetails().name}`;
+			const fileName = `${MyGlobal.GetInitials(main.firm.name)}_${main.financialYear}_${main.rvId}_${getCompanyDetails().name}`;
 
-		const pdf = new jsPDF("p", "mm", "a4", true);
-		const rvBody = document.getElementById("rvBody");
-		const pageHeight = pdf.internal.pageSize.getHeight();
-		const marginBottom = 50;
+			const pdf = new jsPDF("p", "mm", "a4", true);
+			const rvBody = document.getElementById("rvBody");
+			const pageHeight = pdf.internal.pageSize.getHeight();
+			const marginBottom = 50;
 
-		const originalStyle = {
-			height: rvBody.style.height,
-			overflow: rvBody.style.overflow,
-		};
+			const originalStyle = {
+				height: rvBody.style.height,
+				overflow: rvBody.style.overflow,
+			};
 
-		rvBody.style.height = "auto";
-		rvBody.style.overflow = "visible";
+			rvBody.style.height = "auto";
+			rvBody.style.overflow = "visible";
 
-		html2canvas(rvBody, { scale: 2, scrollX: 0, scrollY: 0 })
-			.then((c) => {
-				const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
-				const imgHeight = (c.height * pdfWidth) / c.width;
+			html2canvas(rvBody, { scale: 2, scrollX: 0, scrollY: 0 })
+				.then((c) => {
+					const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
+					const imgHeight = (c.height * pdfWidth) / c.width;
 
-				let yPosition = 10;
-				let remainingHeight = imgHeight;
-				let sourceY = 0;
-				const canvasHeight = c.height;
+					let yPosition = 10;
+					let remainingHeight = imgHeight;
+					let sourceY = 0;
+					const canvasHeight = c.height;
 
-				while (remainingHeight > 0) {
-					const cropHeight = Math.min(pageHeight - marginBottom, remainingHeight);
+					while (remainingHeight > 0) {
+						const cropHeight = Math.min(pageHeight - marginBottom, remainingHeight);
 
-					const croppedCanvas = document.createElement("canvas");
-					croppedCanvas.width = c.width;
-					croppedCanvas.height = cropHeight * (c.width / pdfWidth);
+						const croppedCanvas = document.createElement("canvas");
+						croppedCanvas.width = c.width;
+						croppedCanvas.height = cropHeight * (c.width / pdfWidth);
 
-					const ctx = croppedCanvas.getContext("2d");
-					ctx.drawImage(c, 0, sourceY, c.width, croppedCanvas.height, 0, 0, croppedCanvas.width, croppedCanvas.height);
+						const ctx = croppedCanvas.getContext("2d");
+						ctx.drawImage(c, 0, sourceY, c.width, croppedCanvas.height, 0, 0, croppedCanvas.width, croppedCanvas.height);
 
-					const croppedImgData = croppedCanvas.toDataURL("image/png", 1);
-					pdf.addImage(croppedImgData, "PNG", 10, yPosition, pdfWidth, cropHeight, "", "FAST");
+						const croppedImgData = croppedCanvas.toDataURL("image/png", 1);
+						pdf.addImage(croppedImgData, "PNG", 10, yPosition, pdfWidth, cropHeight, "", "FAST");
 
-					remainingHeight -= cropHeight;
-					sourceY += cropHeight * (canvasHeight / imgHeight);
+						remainingHeight -= cropHeight;
+						sourceY += cropHeight * (canvasHeight / imgHeight);
 
-					if (remainingHeight > 0) {
-						pdf.addPage();
-						yPosition = 10;
+						if (remainingHeight > 0) {
+							pdf.addPage();
+							yPosition = 10;
+						}
 					}
-				}
 
-				pdf.save(`${fileName}.pdf`);
+					pdf.save(`${fileName}.pdf`);
 
-				const pdfBlob = pdf.output("blob");
-				const formData = new FormData();
-				formData.append("file", pdfBlob, `${project.id}.pdf`);
+					const pdfBlob = pdf.output("blob");
+					const formData = new FormData();
+					formData.append("file", pdfBlob, `${project.id}.pdf`);
 
-				return axios.post(MyConstants.ApiEndpoints.Rv.UploadRv, formData, {
-					headers: { "Content-Type": "multipart/form-data" },
+					return axios.post(MyConstants.ApiEndpoints.Rv.UploadRv, formData, {
+						headers: { "Content-Type": "multipart/form-data" },
+					});
+				})
+				.then(() => addRv())
+				.finally(() => {
+					rvBody.style.height = originalStyle.height;
+					rvBody.style.overflow = originalStyle.overflow;
+
+					setLoading((s) => ({ ...s, downloadPdf: false }));
 				});
-			})
-			.then(() => addRv())
-			.finally(() => {
-				rvBody.style.height = originalStyle.height;
-				rvBody.style.overflow = originalStyle.overflow;
-
-				setLoading((s) => ({ ...s, downloadPdf: false }));
-			});
+		}
 	}
 
 	function getCompanyDetails() {
@@ -369,18 +377,6 @@ export default function NewRv({ project, reload, unmount }) {
 			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewRv);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
-		}
-	}
-
-	function togglePreview(value) {
-		if (value) {
-			downloadPdf();
-		}
-
-		if (main.particulars.reduce((pv, cv) => pv + Number(cv.amount), 0) === 0) {
-			MyGlobal.ShowErrorToast("Cannot generate a reimbursement voucher of 0.");
-		} else {
-			setMounted((s) => ({ ...s, preview: !s.preview }));
 		}
 	}
 
@@ -819,12 +815,10 @@ export default function NewRv({ project, reload, unmount }) {
 				{uiRvSheet()}
 			</div>
 			<footer className="w-full dialog-footer">
-				<button className="primary-button-condensed" onClick={() => togglePreview()}>
-					Preview
+				<button className="primary-button-condensed" onClick={() => downloadPdf()}>
+					Generate & Download
 				</button>
 			</footer>
-
-			{mounted.preview && <NewRvPreview mount={mounted.preview} isGeneratingPdf={loading.downloadPdf} rv={uiRvSheet} unmount={togglePreview} />}
 		</div>
 	);
 }

@@ -1,6 +1,0 @@
-=====================
-Important Information
-=====================
-
-New Cash Flow => Affiliate
-1. Only affiliates mapped to any project will be shown in the "Affiliates" menu.

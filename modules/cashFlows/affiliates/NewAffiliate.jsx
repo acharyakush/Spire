@@ -10,8 +10,18 @@ import { MyGlobal } from "@/utilities/global";
 import { EmailAddress, TextInput } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGooglePay } from "@fortawesome/free-brands-svg-icons";
-import { Badge, Spinner, SpinnerBig } from "@/components/Elements";
-import { faChevronRight, faCircleMinus, faPhone, faPlusCircle, faTriangleExclamation, faUser } from "@fortawesome/free-solid-svg-icons";
+import { BadgeGreenLarge, Spinner, SpinnerBig } from "@/components/Elements";
+import {
+	faChevronRight,
+	faCircleMinus,
+	faCode,
+	faFont,
+	faHashtag,
+	faPhone,
+	faPlusCircle,
+	faTriangleExclamation,
+	faUser,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function NewAffiliate({ reload, unmount }) {
 	// Business Logic
@@ -20,7 +30,18 @@ export default function NewAffiliate({ reload, unmount }) {
 
 	const [main, setMain] = useState({
 		error: "",
-		group: [{ emailAddress: "", name: "", phoneNumber: "", upiId: "", rowId: 0 }],
+		group: [
+			{
+				bankAccountHolderName: "",
+				bankAccountNumber: "",
+				emailAddress: "",
+				ifsc: "",
+				name: "",
+				phoneNumber: "",
+				rowId: 0,
+				upiId: "",
+			},
+		],
 		hasMounted: false,
 		isLoading: false,
 	});
@@ -33,7 +54,7 @@ export default function NewAffiliate({ reload, unmount }) {
 
 	// Functions
 	async function addToDatabase() {
-		const revisedGroup = main.group.filter((f) => f.emailAddress && f.name && f.phoneNumber);
+		const revisedGroup = main.group.filter((f) => f.name && f.phoneNumber);
 
 		if (!revisedGroup.length) {
 			MyGlobal.ShowErrorToast("Please fill up all the fields.");
@@ -51,17 +72,15 @@ export default function NewAffiliate({ reload, unmount }) {
 				reload();
 
 				MyGlobal.AddActivity("Added affiliate(s).", MyConstants.Modules.Base.Affiliates);
-
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.AffiliateAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
-
-			unmount();
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "New Affiliate => Add Affiliates");
 		} finally {
 			setMain((s) => ({ ...s, isLoading: false, error: "" }));
+			unmount();
 		}
 	}
 
@@ -139,16 +158,73 @@ export default function NewAffiliate({ reload, unmount }) {
 		}
 	}
 
+	function uiBankAccountHolderName(object, rowId) {
+		return (
+			<TextInput
+				icon={faFont}
+				id={`bankAccountHolderName${rowId}`}
+				label="Bank Account Holder Name"
+				onChange={(e) => setInputs("bankAccountHolderName", rowId, e.target.value)}
+				onKeyPress={() => {}}
+				tabIndex={`${rowId}4`}
+				value={object.bankAccountHolderName}
+				width="w-full"
+			/>
+		);
+	}
+
+	function uiBankAccountNumber(object, rowId) {
+		return (
+			<TextInput
+				icon={faHashtag}
+				id={`bankAccountNumber${rowId}`}
+				label="Bank Account Number"
+				onChange={(e) => setInputs("bankAccountNumber", rowId, e.target.value)}
+				onKeyPress={() => {}}
+				tabIndex={`${rowId}5`}
+				value={object.bankAccountNumber}
+				width="w-full"
+			/>
+		);
+	}
+
 	function uiEmailAddress(object, rowId) {
 		return (
 			<EmailAddress
-				key={1}
 				label="Email Address"
 				onChange={(e) => setInputs("emailAddress", rowId, e.target.value)}
 				suffix=""
 				tabIndex={`${rowId}3`}
 				value={object.emailAddress}
-				width="w-1/4"
+				width="w-full"
+			/>
+		);
+	}
+
+	function uiEmailAddress1(object, rowId) {
+		return (
+			<EmailAddress
+				label="Email Address"
+				onChange={(e) => setInputs("emailAddress", rowId, e.target.value)}
+				suffix=""
+				tabIndex={`${rowId}3`}
+				value={object.emailAddress}
+				width="w-full invisible"
+			/>
+		);
+	}
+
+	function uiIfsc(object, rowId) {
+		return (
+			<TextInput
+				icon={faCode}
+				id={`ifsc${rowId}`}
+				label="IFS Code"
+				onChange={(e) => setInputs("ifsc", rowId, e.target.value)}
+				onKeyPress={() => {}}
+				tabIndex={`${rowId}6`}
+				value={object.ifsc}
+				width="w-full"
 			/>
 		);
 	}
@@ -163,7 +239,7 @@ export default function NewAffiliate({ reload, unmount }) {
 				onKeyPress={() => {}}
 				tabIndex={`${rowId}1`}
 				value={object.name}
-				width="w-1/4"
+				width="w-full"
 			/>
 		);
 	}
@@ -178,7 +254,7 @@ export default function NewAffiliate({ reload, unmount }) {
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
 				tabIndex={`${rowId}2`}
 				value={object.phoneNumber}
-				width="w-1/4"
+				width="w-full"
 			/>
 		);
 	}
@@ -189,12 +265,12 @@ export default function NewAffiliate({ reload, unmount }) {
 				icon={faGooglePay}
 				iconSize="2x"
 				id={`upiId${rowId}`}
-				label="UPI ID"
+				label="Unified Payment Interface ID"
 				onChange={(e) => setInputs("upiId", rowId, e.target.value)}
 				onKeyPress={() => {}}
-				tabIndex={`${rowId}4`}
+				tabIndex={`${rowId}7`}
 				value={object.upiId}
-				width="w-1/4"
+				width="w-full"
 			/>
 		);
 	}
@@ -211,19 +287,29 @@ export default function NewAffiliate({ reload, unmount }) {
 				const deleteButtonWrapper = `flex w-fit h-[55px] justify-center items-center ${showDeleteButton}`;
 
 				return (
-					<div className="flex w-full space-x-3 justify-between items-end" key={m.rowId}>
+					<div className="flex w-full space-x-3 justify-between items-center" key={m.rowId}>
 						<div className="flex w-fit h-[55px] justify-center items-center">
-							<Badge value={i + 1} />
+							<BadgeGreenLarge value={i + 1} />
 						</div>
-						{uiName(m, i)}
-						{uiPhoneNumber(m, i)}
-						{uiEmailAddress(m, i)}
-						{uiUpiId(m, i)}
+						<div className="flex flex-col w-full py-2 px-4 justify-between items-center rounded primary-background-transparent-005 full-border bottom-shadow">
+							<div className="flex w-full space-x-3 justify-between items-center">
+								{uiName(m, i)}
+								{uiPhoneNumber(m, i)}
+								{uiEmailAddress(m, i)}
+								{uiEmailAddress1(m, i)}
+							</div>
+							<div className="flex w-full space-x-3 justify-between items-center">
+								{uiBankAccountHolderName(m, i)}
+								{uiBankAccountNumber(m, i)}
+								{uiIfsc(m, i)}
+								{uiUpiId(m, i)}
+							</div>
+						</div>
 						<div className={addButtonWrapper}>
-							<FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => addToGroup()} size="lg" />
+							<FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => addToGroup()} size="2x" />
 						</div>
 						<div className={deleteButtonWrapper}>
-							<FontAwesomeIcon className="cursor-pointer red-text" icon={faCircleMinus} onClick={() => deleteFromGroup(m)} size="lg" />
+							<FontAwesomeIcon className="cursor-pointer red-text" icon={faCircleMinus} onClick={() => deleteFromGroup(m)} size="2x" />
 						</div>
 					</div>
 				);

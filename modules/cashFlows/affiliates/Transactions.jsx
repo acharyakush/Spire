@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 import NewTransaction from "@/modals/cashFlows/affiliates/NewTransaction";
+import EditTransaction from "@/modals/cashFlows/affiliates/EditTransaction";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -47,10 +48,13 @@ export default function Transactions({ project, reload, unmount }) {
 			date: { from: "", to: "" },
 			transaction: "",
 		},
-		hasMounted: false,
+		isEditTransactionsOpen: false,
 		isNewTransactionsOpen: false,
+		selectedTransaction: {},
 		sort: { column: "", isAscending: false },
 	});
+
+	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
 
@@ -157,17 +161,11 @@ export default function Transactions({ project, reload, unmount }) {
 		}
 	}
 
-	function getTotalAmountPaid() {
-		let total = 0;
-
-		for (const i of api.transactions.copy) {
-			total += Number(i.amount);
+	async function getSupportData(action) {
+		if (action && action === "reload-root-statistics") {
+			reload();
 		}
 
-		return total;
-	}
-
-	async function getSupportData() {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
@@ -175,8 +173,6 @@ export default function Transactions({ project, reload, unmount }) {
 				MyConstants.ApiEndpoints.Affiliates.GetTransactionsSupportData,
 				MyGlobal.GetHeaders({ projectId: project.project_id }),
 			);
-
-			console.log(project);
 
 			if (response.status === 200) {
 				const transactions = response.data.transactions.map((m) => {
@@ -221,8 +217,6 @@ export default function Transactions({ project, reload, unmount }) {
 						data: transactions,
 					},
 				});
-
-				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(
@@ -246,6 +240,14 @@ export default function Transactions({ project, reload, unmount }) {
 		if (header != headers.Date) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
+	}
+
+	function toggleEditTransaction(object) {
+		setOther((s) => ({
+			...s,
+			isEditTransactionsOpen: object ? true : false,
+			selectedTransaction: { ...object, project } ?? {},
+		}));
 	}
 
 	function toggleNewTransaction() {
@@ -334,7 +336,25 @@ export default function Transactions({ project, reload, unmount }) {
 	}
 
 	function uiRows(row, i) {
-		const style = "flex flex-wrap w-[11.11%] min-h-9 justify-center items-center text-center";
+		const background = () => {
+			if (isUserAdministrator) {
+				return "hovered-rows-2";
+			} else {
+				return "contrast-background";
+			}
+		};
+
+		const colour = () => {
+			if (isUserAdministrator) {
+				return "cursor-pointer";
+			} else {
+				return "cursor-default";
+			}
+		};
+
+		const style = `flex flex-wrap w-[11.11%] min-h-9 justify-center items-center text-center ${colour()}`;
+
+		const wrapper = `flex w-full justify-center items-center ${background()} bottom-border font-regular-10 black-text`;
 
 		const amount = MyGlobal.HighlightText(row.amount, other.find.transaction);
 		const entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.transaction);
@@ -346,7 +366,7 @@ export default function Transactions({ project, reload, unmount }) {
 		const remarks = MyGlobal.HighlightText(row.remarks, other.find.transaction);
 
 		return (
-			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
+			<div className={wrapper} key={i} onClick={() => toggleEditTransaction(row)}>
 				<span className={style}>{dayjs(row.entry_at).format("DD-MM-YYYY")}</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: firmName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: bankName }} />
@@ -425,17 +445,14 @@ export default function Transactions({ project, reload, unmount }) {
 	}
 
 	function uiTransactionsFooter() {
-		const totalAmountPaid = getTotalAmountPaid();
-		const totalPending = MyGlobal.ThousandSeparator(Number(project.total_fees) - totalAmountPaid);
-
 		return (
 			<span className="w-full space-x-5 text-center text-white font-regular-10">
 				<span>
-					Pending <b className="font-bold-10">{totalPending}</b>
+					Pending <b className="font-bold-10">{MyGlobal.ThousandSeparator(Number(project.pending_fees))}</b>
 				</span>
 				<span />
 				<span>
-					Paid <b className="font-bold-10">{MyGlobal.ThousandSeparator(totalAmountPaid)}</b>
+					Paid <b className="font-bold-10">{MyGlobal.ThousandSeparator(project.paid_fees)}</b>
 				</span>
 				<span />
 				<span>
@@ -460,10 +477,6 @@ export default function Transactions({ project, reload, unmount }) {
 	}, [other.find.date]);
 
 	// Main UI
-	if (!other.hasMounted) {
-		return;
-	}
-
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<div className="flex w-full px-5 py-2.5 justify-between items-center">
@@ -487,8 +500,18 @@ export default function Transactions({ project, reload, unmount }) {
 				</div>
 			</div>
 			<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiMain()}</div>
+
 			{other.isNewTransactionsOpen && (
 				<NewTransaction mount={other.isNewTransactionsOpen} project={project} reload={reload} unmount={toggleNewTransaction} />
+			)}
+
+			{other.isEditTransactionsOpen && (
+				<EditTransaction
+					mount={other.isEditTransactionsOpen}
+					transaction={other.selectedTransaction}
+					reload={getSupportData}
+					unmount={toggleEditTransaction}
+				/>
 			)}
 		</div>
 	);

@@ -13,7 +13,7 @@ import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { NewTransaction } from "@/modals/cashFlows/pettyCash/miscellaneous";
+import { EditTransaction, NewTransaction } from "@/modals/cashFlows/pettyCash/miscellaneous";
 import {
 	faCalendar,
 	faChevronRight,
@@ -47,12 +47,16 @@ export default function Transactions({ reload, unmount }) {
 			transaction: "",
 		},
 		hasMounted: false,
+		selectedTransaction: {},
 		sort: { column: "", isAscending: false },
 	});
 
 	const [mounted, setMounted] = useState({
+		editTransaction: false,
 		newTransaction: false,
 	});
+
+	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
 
@@ -171,7 +175,11 @@ export default function Transactions({ reload, unmount }) {
 		}
 	}
 
-	async function getSupportData() {
+	async function getSupportData(action) {
+		if (action && action === "reload-transactions") {
+			reload();
+		}
+
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
@@ -233,6 +241,11 @@ export default function Transactions({ reload, unmount }) {
 		if (header != headers.Date) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
+	}
+
+	function toggleEditTransaction(object) {
+		setOther((s) => ({ ...s, selectedTransaction: object ?? {} }));
+		setMounted((s) => ({ ...s, editTransaction: object ? true : false }));
 	}
 
 	function toggleNewTransaction() {
@@ -352,7 +365,25 @@ export default function Transactions({ reload, unmount }) {
 	}
 
 	function uiRows(row, i) {
+		const background = () => {
+			if (isUserAdministrator) {
+				return "hovered-rows-2";
+			} else {
+				return "contrast-background";
+			}
+		};
+
+		const cursor = () => {
+			if (isUserAdministrator) {
+				return "cursor-pointer";
+			} else {
+				return "cursor-default";
+			}
+		};
+
 		const style = "flex flex-wrap w-[12.50%] min-h-9 justify-center items-center text-center";
+
+		const wrapper = `flex w-full justify-center items-center ${cursor()} ${background()} bottom-border font-regular-10 black-text`;
 
 		const colour = Number(row.balance) < 1000 ? "orange-text font-bold-10" : "black-text";
 
@@ -378,7 +409,7 @@ export default function Transactions({ reload, unmount }) {
 		}
 
 		return (
-			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
+			<div className={wrapper} key={i} onClick={() => i > 0 && toggleEditTransaction(row)}>
 				<span className={style}>{dayjs(row.entry_at).format("DD-MM-YYYY")}</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: firmName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: paymentType }} />
@@ -497,8 +528,24 @@ export default function Transactions({ reload, unmount }) {
 				</div>
 			</div>
 			<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiMain()}</div>
+
+			{mounted.editTransaction && (
+				<EditTransaction
+					lastTransaction={api.transactions.copy.at(-1)}
+					mount={mounted.editTransaction}
+					reload={getSupportData}
+					transaction={other.selectedTransaction}
+					unmount={toggleEditTransaction}
+				/>
+			)}
+
 			{mounted.newTransaction && (
-				<NewTransaction lastTransaction={api.transactions.copy.at(-1)} mount={mounted.newTransaction} reload={reload} unmount={toggleNewTransaction} />
+				<NewTransaction
+					lastTransaction={api.transactions.copy.at(-1)}
+					mount={mounted.newTransaction}
+					reload={getSupportData}
+					unmount={toggleNewTransaction}
+				/>
 			)}
 		</div>
 	);

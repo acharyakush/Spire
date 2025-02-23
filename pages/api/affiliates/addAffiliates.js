@@ -17,19 +17,25 @@ export default async function handler(req, res) {
 		let successCount = 0;
 
 		for (let object of group) {
-			const { emailAddress, name, phoneNumber, upiId } = object;
+			const { bankAccountHolderName, bankAccountNumber, emailAddress, ifsc, name, phoneNumber, upiId } = object;
 
 			await query("CALL generate_id('AF', 'affiliates', @new_affiliate_id)", []);
 			const [response] = await query("SELECT @new_affiliate_id AS new_id;");
 
-			const result = await query(`INSERT INTO affiliates (id, name, email_address, phone_number, upi_id, entry_by_id) VALUES (?, ?, ?, ?, ?, ?)`, [
-				response.new_id,
-				name,
-				emailAddress,
-				phoneNumber,
-				upiId,
-				userId,
-			]);
+			const result = await query(
+				`INSERT INTO affiliates (id, name, email_address, phone_number, bank_account_holder_name, bank_account_number, ifsc, upi_id, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				[
+					response.new_id,
+					name,
+					emailAddress ?? "",
+					phoneNumber ?? "",
+					bankAccountHolderName ?? "",
+					bankAccountNumber ?? "",
+					ifsc ?? "",
+					upiId ?? "",
+					userId,
+				],
+			);
 
 			if (result && result.affectedRows > 0) {
 				successCount++;

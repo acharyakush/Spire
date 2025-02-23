@@ -53,6 +53,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	});
 
 	const [other, setOther] = useState({
+		errorText: "",
 		find: {
 			entryAt: { from: "", to: "" },
 			paymentSource: "",
@@ -267,9 +268,27 @@ export function Transactions({ mount, project, reload, unmount }) {
 				setMain((s) => ({ ...s, paymentSource: { id: "", name: "" } }));
 			}
 		} else if (key === "amountReceived") {
-			const hasError = Number(value) > totalAmountPending;
+			let hasError = false;
+			let errorText = "";
 
-			setOther((s) => ({ ...s, hasError }));
+			if (value) {
+				if (value == 0) {
+					hasError = true;
+					errorText = <span className="p-2 font-regular-11">Received amount cannot be 0</span>;
+				}
+
+				if (Number(value) > totalAmountPending) {
+					hasError = true;
+					errorText = (
+						<div className="p-2 space-x-1 font-regular-11">
+							<span>Received amount cannot be more than the Pending amount</span>
+							<span className="font-bold-11">{MyGlobal.ThousandSeparator(totalAmountPending)}</span>
+						</div>
+					);
+				}
+			}
+
+			setOther((s) => ({ ...s, errorText, hasError }));
 			setMain((s) => ({ ...s, amountReceived: value }));
 		} else {
 			setMain((s) => ({ ...s, [key]: value }));
@@ -302,16 +321,9 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiAmountReceived() {
-		const error = (
-			<div className="p-2 space-x-1 font-regular-11">
-				<span>Receiving amount cannot be more than the Pending amount</span>
-				<span className="font-bold-11">{MyGlobal.ThousandSeparator(totalAmountPending)}</span>
-			</div>
-		);
-
 		return (
 			<TextInput
-				errorText={error}
+				errorText={other.errorText}
 				hasError={other.hasError}
 				icon={faIndianRupee}
 				id="amountReceived"

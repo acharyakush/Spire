@@ -123,6 +123,7 @@
 	--primary-background: #f4f7fc;
 	--primary-border: #d6dee8;
 	--primary-light: #ecf1fa;
+	--primary-transparent-005: rgba(82, 95, 119, 0.05);
 	--primary-transparent-01: rgba(82, 95, 119, 0.1);
 	--primary-transparent-05: rgba(82, 95, 119, 0.5);
 
@@ -229,6 +230,10 @@ html {
 
 .primary-background-gradient {
 	background: linear-gradient(to bottom, var(--primary), #000);
+}
+
+.primary-background-transparent-005 {
+	@apply bg-[var(--primary-transparent-005)];
 }
 
 .primary-background-transparent-01 {

@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 import NewTransaction from "@/modals/cashFlows/vendors/NewTransaction";
+import EditTransaction from "@/modals/cashFlows/vendors/EditTransaction";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -41,6 +42,7 @@ export default function Transactions({ head, reload, unmount }) {
 	});
 
 	const [mounted, setMounted] = useState({
+		editTransaction: false,
 		newTransaction: false,
 	});
 
@@ -49,6 +51,7 @@ export default function Transactions({ head, reload, unmount }) {
 			date: { from: "", to: "" },
 			transaction: "",
 		},
+		selectedTransaction: {},
 		sort: { column: "", isAscending: false },
 	});
 
@@ -237,6 +240,11 @@ export default function Transactions({ head, reload, unmount }) {
 		if (header != headers.Date) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
+	}
+
+	function toggleEditTransaction(object) {
+		setOther((s) => ({ ...s, selectedTransaction: { ...object, head } ?? {} }));
+		setMounted((s) => ({ ...s, editTransaction: object ? true : false }));
 	}
 
 	function toggleNewTransaction() {
@@ -517,6 +525,14 @@ export default function Transactions({ head, reload, unmount }) {
 	return (
 		<>
 			{uiMain()}
+			{mounted.editTransaction && (
+				<EditTransaction
+					mount={mounted.editTransaction}
+					reload={getSupportData}
+					transaction={other.selectedTransaction}
+					unmount={toggleEditTransaction}
+				/>
+			)}
 			{mounted.newTransaction && <NewTransaction head={head} mount={mounted.newTransaction} reload={getSupportData} unmount={toggleNewTransaction} />}
 		</>
 	);

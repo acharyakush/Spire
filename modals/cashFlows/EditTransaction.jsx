@@ -45,8 +45,17 @@ export default function EditTransaction({ entity, mount, reload, transaction, un
 			firm: "",
 			paymentSource: "",
 		},
+		hasError: false,
 		isBoxMoved: false,
 	});
+
+	let totalHeadAmount = 0;
+
+	if (entity.head.amount === 0) {
+		totalHeadAmount = Number(entity.head.amount);
+	} else {
+		totalHeadAmount = entity.head.amountPending;
+	}
 
 	const isOfficeExpense = entity.module.id === MyConstants.Modules.Other.CashFlowModules.OfficeExpense.id;
 
@@ -97,7 +106,7 @@ export default function EditTransaction({ entity, mount, reload, transaction, un
 	}
 
 	function getEditButtonStyle() {
-		const disableEditButton = loading.editing ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+		const disableEditButton = !isAddEligible() ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 		return `primary-button-condensed ${disableEditButton}`;
 	}
 
@@ -199,6 +208,32 @@ export default function EditTransaction({ entity, mount, reload, transaction, un
 		}
 	}
 
+	function isAddEligible() {
+		if (isOfficeExpense) {
+			if (!main.amount || !main.particulars || !main.remarks) {
+				return false;
+			}
+		} else {
+			if (!main.amount || !main.particulars || !main.paymentType || !main.remarks) {
+				return false;
+			}
+		}
+
+		if (!main.paymentSource.id || !main.paymentSource.name) {
+			return false;
+		}
+
+		if (!main.firm.id || !main.firm.name || !main.bank.id || !main.bank.name) {
+			return false;
+		}
+
+		if (other.hasError || loading.editing) {
+			return false;
+		}
+
+		return true;
+	}
+
 	function setBoxDrag() {
 		setOther((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
 	}
@@ -230,13 +265,18 @@ export default function EditTransaction({ entity, mount, reload, transaction, un
 						bank: { ...s.bank, id: value.id, name: value.name },
 					}));
 				} else if (key === "entryAt") {
-					setMain((s) => ({ ...s, [key]: value }));
+					setMain((s) => ({ ...s, entryAt: value }));
 				} else if (key === "paymentSource") {
 					setMain((s) => ({
 						...s,
 						paymentSource: { id: value.id, name: value.name },
 					}));
 				}
+			} else if (key === "amount") {
+				const hasError = Number(value) > totalHeadAmount;
+
+				setOther((s) => ({ ...s, hasError }));
+				setMain((s) => ({ ...s, amount: value }));
 			} else {
 				setMain((s) => ({ ...s, [key]: value }));
 			}
@@ -263,8 +303,17 @@ export default function EditTransaction({ entity, mount, reload, transaction, un
 	}
 
 	function uiAmount() {
+		const error = (
+			<div className="p-2 space-x-1 font-regular-11">
+				<span>Amount cannot be more than the total pending amount</span>
+				<span className="font-bold-11">{MyGlobal.ThousandSeparator(totalHeadAmount)}</span>
+			</div>
+		);
+
 		return (
 			<TextInput
+				errorText={error}
+				hasError={other.hasError}
 				icon={faIndianRupee}
 				id="amount"
 				label="Amount"

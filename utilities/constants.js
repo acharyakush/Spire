@@ -6,6 +6,7 @@ const MyConstants = Object.freeze({
 		Affiliates: Object.freeze({
 			AddAffiliate: "api/affiliates/addAffiliates",
 			AddTransaction: "api/affiliates/addTransaction",
+			EditTransaction: "api/affiliates/editTransaction",
 			GetAffiliates: "api/affiliates/getAffiliates",
 			GetMappedAffiliates: "api/affiliates/getMappedAffiliates",
 			GetNewTransactionSupportData: "api/affiliates/getNewTransactionSupportData",
@@ -27,6 +28,7 @@ const MyConstants = Object.freeze({
 				GetNewTransactionSupportData: "api/cashFlows/modules/getNewTransactionSupportData",
 				PettyCash: Object.freeze({
 					AddTransaction: "api/cashFlows/modules/pettyCash/addTransaction",
+					EditTransaction: "api/cashFlows/modules/pettyCash/editTransaction",
 					GetTransactions: "api/cashFlows/modules/pettyCash/getTransactions",
 				}),
 				GetTransactions: "api/cashFlows/modules/getTransactions",
@@ -91,6 +93,7 @@ const MyConstants = Object.freeze({
 			AddHead: "api/vendors/addHead",
 			AddVendor: "api/vendors/addVendors",
 			AddTransaction: "api/vendors/addTransaction",
+			EditTransaction: "api/vendors/editTransaction",
 			GetHeads: "api/vendors/getHeads",
 			GetNewTransactionSupportData: "api/vendors/getNewTransactionSupportData",
 			GetTransactionsSupportData: "api/vendors/getTransactionsSupportData",

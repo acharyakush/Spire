@@ -60,7 +60,7 @@ export default function Invoices({ presetStatus, unmount }) {
 		transactions: false,
 	});
 
-	const today = dayjs();
+	const today = dayjs().startOf("day");
 	const allowNewInvoice = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInvoice);
 
 	const showFromDateClearIcon = main.filter.from ? "cursor-pointer primary-text" : "hidden";
@@ -167,7 +167,17 @@ export default function Invoices({ presetStatus, unmount }) {
 					return f;
 				}
 			} else if (query === "DUE") {
-				return dayjs(f.invoice_due_date).isBefore(today, "date");
+				const invoiceDateStr = f.invoice_due_date; // Example: "24/01/2025"
+				const today = new Date(); // Get today's date
+
+				// Convert "DD/MM/YYYY" to a Date object
+				const [day, month, year] = invoiceDateStr.split("/");
+				const dueDate = new Date(year, month - 1, day); // Month is 0-based in JS
+
+				// Compare the dates
+				if (dueDate < today) {
+					return f;
+				}
 			} else if (query === "GENERATED") {
 				return f.invoice_id && f.created_at;
 			} else if (query === "NOT GENERATED") {
@@ -443,10 +453,10 @@ export default function Invoices({ presetStatus, unmount }) {
 
 		return Object.values(headers).map((m, i) => {
 			return (
-				<span className="w-[11.11%] space-x-1 text-center text-white font-medium-10" key={i}>
-					<span>{i == 5 && MyGlobal.ThousandSeparator(totals.amount)}</span>
-					<span>{i == 6 && MyGlobal.ThousandSeparator(totals.received)}</span>
-					<span>{i == 7 && MyGlobal.ThousandSeparator(totals.pending)}</span>
+				<span className="flex w-[9.09%] space-x-2 justify-center items-center text-white font-semibold-12" key={i}>
+					<span>{i == 6 && MyGlobal.ThousandSeparator(totals.amount)}</span>
+					<span>{i == 7 && MyGlobal.ThousandSeparator(totals.received)}</span>
+					<span>{i == 8 && MyGlobal.ThousandSeparator(totals.pending)}</span>
 				</span>
 			);
 		});

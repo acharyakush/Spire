@@ -356,10 +356,12 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 					pettyCash.received.amount += Number(fe.amount_received);
 				});
 
+				pettyCash.received.amount += Number(response.data.openingBalance.at(0).balance);
+
 				otherIncome.pending.amount = otherIncome.total.amount - otherIncome.received.amount;
 				officeExpense.pending.amount = officeExpense.total.amount - officeExpense.paid.amount;
 				otherExpense.pending.amount = otherExpense.total.amount - otherExpense.paid.amount;
-				pettyCash.balance.amount = pettyCash.paid.amount - pettyCash.received.amount;
+				pettyCash.balance.amount = pettyCash.received.amount - pettyCash.paid.amount;
 
 				setMain((s) => ({
 					...s,
