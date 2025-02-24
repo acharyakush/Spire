@@ -8,12 +8,11 @@ import jsPDF from "jspdf";
 import Tippy from "@tippyjs/react";
 import html2canvas from "html2canvas";
 import MyConstants from "@/utilities/constants";
-import NewInvoicePreview from "@/modals/invoices/NewInvoicePreview";
 
 import { QRCode } from "react-qrcode-logo";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Tooltip } from "@/components/Elements";
+import { Badge, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
 import {
@@ -92,7 +91,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 		return pv + Number(cv.amount);
 	}, 0);
 
-	const totalAmount = Number(main.particulars.at(0).amount) == quote ? totalParticularsAmount : quote;
+	const totalAmount = totalParticularsAmount;
 
 	const totalPendingAmount = Math.abs(totalAmount - main.totalAmountReceived);
 
@@ -106,9 +105,12 @@ export default function NewInvoice({ project, reload, unmount }) {
 			const body = {
 				amount: totalAmount,
 				amountReceived: main.totalAmountReceived,
+				bankId: main.bank.id,
 				customId,
 				clientId: project.client_id,
+				dueDate: main.invoiceDueDate,
 				id: project.id,
+				particulars: main.particulars,
 				receiptDate: main.invoiceDate,
 			};
 
@@ -275,7 +277,9 @@ export default function NewInvoice({ project, reload, unmount }) {
 		const object = copy.filter((f) => f.rowId == rowId);
 
 		if (object.length) {
-			const _object = copy.at(rowId);
+			const index = copy.findIndex((f) => f.rowId === rowId);
+			const _object = copy.at(index);
+
 			_object[key] = key == "amount" ? Number(value) : value;
 
 			const revised = copy.filter((f) => f.rowId != rowId);
@@ -299,7 +303,14 @@ export default function NewInvoice({ project, reload, unmount }) {
 					termsConditions: "",
 				};
 
-				const bankObj = { id: "", name: "" };
+				const bankObj = {
+					accountNumber: "",
+					accountType: "",
+					id: "",
+					ifsc: "",
+					name: "",
+					upiId: "",
+				};
 
 				const firm = response.data.firms.find((f) => f.id == project.firm_id);
 
@@ -313,8 +324,12 @@ export default function NewInvoice({ project, reload, unmount }) {
 				const bank = response.data.banks.find((f) => f.firm_id == firmObj.id);
 
 				if (typeof bank === "object") {
+					bankObj.accountNumber = bank.account_number;
+					bankObj.accountType = bank.account_type;
 					bankObj.id = bank.id;
+					bankObj.ifsc = bank.ifsc;
 					bankObj.name = bank.name;
+					bankObj.upiId = bank.upi_id;
 				}
 
 				const getAmountReceived = response.data.transactions.filter((f) => f.project_id == project.id);
@@ -348,8 +363,12 @@ export default function NewInvoice({ project, reload, unmount }) {
 					...s,
 					bank: {
 						...s.bank,
+						accountNumber: bankObj.accountNumber,
+						accountType: bankObj.accountType,
 						id: bankObj.id,
+						ifsc: bankObj.ifsc,
 						name: bankObj.name,
+						upiId: bankObj.upiId,
 					},
 					invoiceId: MyGlobal.MakeNewInvoiceId(response.data.invoices),
 					transactions,
@@ -364,15 +383,11 @@ export default function NewInvoice({ project, reload, unmount }) {
 		}
 	}
 
-	function togglePreview(value) {
-		if (value) {
-			downloadPdf();
-		}
-
+	function generateAndDownload() {
 		if (totalPendingAmount === 0) {
 			MyGlobal.ShowErrorToast("Cannot generate an invoice of 0.");
 		} else {
-			setMounted((s) => ({ ...s, preview: !s.preview }));
+			downloadPdf();
 		}
 	}
 
@@ -416,7 +431,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 						{uiInputInvoiceDueDate()}
 					</div>
 					<div className="flex w-full px-5 space-x-5 justify-between items-center">{uiInputBank()}</div>
-					<div className="flex flex-col w-full px-5 justify-between items-center">{uiInputParticularsRows()}</div>
+					<div className="flex flex-col w-full px-7 justify-between items-center">{uiInputParticularsRows()}</div>
 					<div className="flex w-full px-5 justify-center items-center">{uiInputTermsConditions()}</div>
 				</div>
 			</div>
@@ -479,30 +494,30 @@ export default function NewInvoice({ project, reload, unmount }) {
 		);
 	}
 
-	function uiInputParticulars(object, rowId) {
+	function uiInputParticulars(object) {
 		return (
 			<TextInput
 				icon={faTasks}
-				id={`particulars${rowId + 1}`}
-				label={`Particulars #${rowId + 1}`}
-				onChange={(e) => setParticulars("particulars", rowId, e.target.value)}
+				id={`particulars${object.rowId}`}
+				label="Particulars"
+				onChange={(e) => setParticulars("particulars", object.rowId, e.target.value)}
 				onKeyPress={() => {}}
-				tabIndex={`${rowId}1`}
+				tabIndex={object.rowId}
 				value={object.particulars}
 				width="w-full"
 			/>
 		);
 	}
 
-	function uiInputAmount(object, rowId) {
+	function uiInputAmount(object) {
 		return (
 			<TextInput
 				icon={faIndianRupee}
-				id={`amount${rowId + 1}`}
-				label={`Amount #${rowId + 1}`}
-				onChange={(e) => setParticulars("amount", rowId, e.target.value)}
+				id={`amount${object.rowId}`}
+				label="Amount"
+				onChange={(e) => setParticulars("amount", object.rowId, e.target.value)}
 				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={`${rowId}2`}
+				tabIndex={object.rowId}
 				value={object.amount}
 				width="w-full"
 			/>
@@ -527,8 +542,11 @@ export default function NewInvoice({ project, reload, unmount }) {
 
 				return (
 					<div className="flex w-full space-x-3 justify-between items-end" key={m.rowId}>
-						{uiInputParticulars(m, i)}
-						{uiInputAmount(m, i)}
+						<div className="flex w-fit h-10 justify-center items-start">
+							<Badge value={i + 1} />
+						</div>
+						{uiInputParticulars(m)}
+						{uiInputAmount(m)}
 						<div className={buttonsWrapper}>
 							<div className={addButtonWrapper}>
 								<FontAwesomeIcon className="cursor-pointer green-text" icon={faPlusCircle} onClick={() => addRow()} size="lg" />
@@ -711,9 +729,9 @@ export default function NewInvoice({ project, reload, unmount }) {
 		return (
 			<div className="flex flex-col w-full justify-center items-start">
 				<div className="flex w-full h-8 justify-between items-center rounded-tr rounded-tl font-regular-10 text-white logo-green-background">
-					<span className="w-1/2 text-center">Professional Service</span>
-					<span className="w-1/4 text-center">Particulars</span>
-					<span className="w-1/4 text-center">Amount</span>
+					<span className="flex w-2/5 justify-center items-center">Professional Service</span>
+					<span className="flex w-2/5 justify-center items-center">Particulars</span>
+					<span className="flex w-1/5 justify-center items-center">Amount</span>
 				</div>
 			</div>
 		);
@@ -724,9 +742,9 @@ export default function NewInvoice({ project, reload, unmount }) {
 			return (
 				<div className="flex flex-col w-full justify-center items-start">
 					<div className="flex w-full justify-between items-center rounded-br rounded-bl font-regular-10 text-black full-border logo-green-background-transparent-01 no-top-border">
-						<span className="flex w-1/2 h-14 justify-center items-center">{m.professionalService}</span>
-						<span className="flex w-1/2 h-14 justify-center items-center">{m.particulars}</span>
-						<span className="flex w-1/4 h-14 justify-center items-center">{m.amount}</span>
+						<span className="flex w-2/5 h-14 justify-center items-center">{m.professionalService}</span>
+						<span className="flex w-2/5 h-14 justify-center items-center">{m.particulars}</span>
+						<span className="flex w-1/5 h-14 justify-center items-center">{m.amount}</span>
 					</div>
 				</div>
 			);
@@ -792,7 +810,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 			<div className="flex flex-col w-full justify-center items-center">
 				<div className="flex w-full pt-1 justify-between items-center font-medium-16">
 					<span className="w-1/2 text-left text-black">Professional Fees</span>
-					<span className="w-1/2 text-right black-text">{MyGlobal.ThousandSeparator(quote)}</span>
+					<span className="w-1/2 text-right black-text">{MyGlobal.ThousandSeparator(totalParticularsAmount)}</span>
 				</div>
 				<div className="flex w-full pt-1 justify-between items-center border-gray border-t-2 font-medium-12">
 					<span className="w-1/2 space-x-2.5 text-left text-black">
@@ -830,14 +848,10 @@ export default function NewInvoice({ project, reload, unmount }) {
 				{uiInvoiceSheet()}
 			</div>
 			<footer className="w-full dialog-footer">
-				<button className="primary-button-condensed" onClick={() => togglePreview()}>
-					Preview
+				<button className="primary-button-condensed" onClick={() => generateAndDownload()}>
+					Generate & Download
 				</button>
 			</footer>
-
-			{mounted.preview && (
-				<NewInvoicePreview mount={mounted.preview} invoice={uiInvoiceSheet} isGeneratingPdf={loading.downloadPdf} unmount={togglePreview} />
-			)}
 		</div>
 	);
 }

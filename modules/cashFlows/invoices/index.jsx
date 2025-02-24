@@ -60,7 +60,7 @@ export default function Invoices({ presetStatus, unmount }) {
 		transactions: false,
 	});
 
-	const today = dayjs().startOf("day");
+	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 	const allowNewInvoice = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInvoice);
 
 	const showFromDateClearIcon = main.filter.from ? "cursor-pointer primary-text" : "hidden";
@@ -301,6 +301,30 @@ export default function Invoices({ presetStatus, unmount }) {
 					let mainProjectName = "";
 					let subProjectName = "";
 
+					const invoice = response.data.invoices.find((f) => f.project_id == m.id);
+
+					let invoiceAmount = Number(m.invoice_fees);
+					let invoiceId = "";
+					let invoiceCreatedAt = "";
+					let invoiceCreatedAtTime = "";
+					let invoiceDueDate = "";
+					let invoiceDueDateTime = "";
+
+					if (typeof invoice === "object") {
+						invoiceAmount = Number(invoice.amount);
+						invoiceId = invoice.custom_id;
+						invoiceCreatedAt = dayjs(invoice.created_at).format("DD/MM/YYYY");
+						invoiceCreatedAtTime = dayjs(invoice.created_at).format("hh:mm:ss a");
+						invoiceDueDate = invoice.due_date ? dayjs(invoice.due_date).format("DD/MM/YYYY") : "";
+						invoiceDueDateTime = invoice.due_date ? dayjs(invoice.due_date).format("hh:mm:ss a") : "";
+					}
+
+					const company = response.data.companies.find((f) => f.id == m.company_id);
+
+					if (typeof company === "object") {
+						companyName = company.name;
+					}
+
 					const transactions = response.data.transactions.filter((f) => f.project_id == m.id);
 
 					if (Array.isArray(transactions) && transactions.length) {
@@ -310,31 +334,9 @@ export default function Invoices({ presetStatus, unmount }) {
 					}
 
 					if (amountReceived != 0) {
-						amountPending = Number(m.invoice_fees) - amountReceived;
+						amountPending = invoiceAmount - amountReceived;
 					} else {
-						amountPending = Number(m.invoice_fees);
-					}
-
-					const company = response.data.companies.find((f) => f.id == m.company_id);
-
-					if (typeof company === "object") {
-						companyName = company.name;
-					}
-
-					const invoice = response.data.invoices.find((f) => f.project_id == m.id);
-
-					let invoiceId = "";
-					let invoiceCreatedAt = "";
-					let invoiceCreatedAtTime = "";
-					let invoiceDueDate = "";
-					let invoiceDueDateTime = "";
-
-					if (typeof invoice === "object") {
-						invoiceId = invoice.custom_id;
-						invoiceCreatedAt = dayjs(invoice.created_at).format("DD/MM/YYYY");
-						invoiceCreatedAtTime = dayjs(invoice.created_at).format("hh:mm:ss a");
-						invoiceDueDate = invoice.due_date ? dayjs(invoice.due_date).format("DD/MM/YYYY") : "";
-						invoiceDueDateTime = invoice.due_date ? dayjs(invoice.due_date).format("hh:mm:ss a") : "";
+						amountPending = invoiceAmount;
 					}
 
 					const mainProject = response.data.mainProjects.find((f) => f.id == m.main_project_id);
@@ -351,12 +353,13 @@ export default function Invoices({ presetStatus, unmount }) {
 
 					return {
 						...m,
-						amount: Number(m.invoice_fees),
+						amount: invoiceAmount,
 						amount_pending: amountPending,
 						amount_received: amountReceived,
 						company_name: companyName,
 						created_at: invoiceCreatedAt,
 						created_at_time: invoiceCreatedAtTime,
+						invoice,
 						invoice_id: invoiceId,
 						invoice_due_date: invoiceDueDate,
 						invoice_due_date_time: invoiceDueDateTime,
@@ -505,7 +508,7 @@ export default function Invoices({ presetStatus, unmount }) {
 	}
 
 	function uiMain() {
-		if (!mounted.newInvoice) {
+		if (!mounted.newInvoice && !mounted.editInvoice) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-center">
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
@@ -535,9 +538,13 @@ export default function Invoices({ presetStatus, unmount }) {
 					)}
 				</div>
 			);
-		} else if (mounted.editInvoice) {
+		}
+
+		if (mounted.editInvoice) {
 			return <EditInvoice project={main.selectedProject} reload={setSupportData} unmount={toggleEditInvoice} />;
-		} else {
+		}
+
+		if (mounted.newInvoice) {
 			return <NewInvoice project={main.selectedProject} reload={setSupportData} unmount={toggleNewInvoice} />;
 		}
 	}
@@ -590,7 +597,17 @@ export default function Invoices({ presetStatus, unmount }) {
 					<span
 						className={`${style} cursor-pointer primary-text`}
 						dangerouslySetInnerHTML={{ __html: invoiceId }}
-						onClick={() => allowNewInvoice && toggleNewInvoice(row)}
+						onClick={() => {
+							if (row.invoice_id) {
+								if (isUserAdministrator) {
+									toggleEditInvoice(row);
+								}
+							} else {
+								if (allowNewInvoice) {
+									toggleNewInvoice(row);
+								}
+							}
+						}}
 					/>
 				</Tippy>
 				<span className={`${style} space-x-5`}>

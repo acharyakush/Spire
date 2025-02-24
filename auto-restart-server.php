@@ -1,30 +1,30 @@
 <?php
 
-date_default_timezone_set('Asia/Kolkata');
-
-// Function to get formatted timestamp
-function getFormattedTimestamp() {
-    return date('h:i:s A, d-m-Y');
+// Function to check if the server is listening on a specific port
+function isServerRunning($port) {
+    exec("netstat -tulnp | grep :$port", $output, $return_var);
+    return $return_var === 0;
 }
 
-// Path to the log file
+// Define server details
+$nodePath = '/home/fco1t1x9fsye/.nvm/versions/node/v21.7.1/bin/node';
+$serverScript = '/home/fco1t1x9fsye/public_html/crm.signiixadvisors.com/server.js';
 $logFilePath = '/home/fco1t1x9fsye/public_html/crm.signiixadvisors.com/cron_logs/logs.txt';
 
-// Check if the log file exists, if not create it
+// Ensure log file exists
 if (!file_exists($logFilePath)) {
-    touch($logFilePath); // Create the file
-    chmod($logFilePath, 0666); // Optional: Set permissions
+    touch($logFilePath);
+    chmod($logFilePath, 0666);
 }
 
-// Check if the UAT server is running
-exec("pgrep -f 'server.js'", $output, $return_var);
+// Port where the server should be running (change as needed)
+$serverPort = 3000;
 
-if ($return_var === 0) {
-    echo "[" . getFormattedTimestamp() . "] Server is running.\n";
+if (isServerRunning($serverPort)) {
+    echo "[" . date('h:i:s A, d-m-Y') . "] Server is running.\n";
 } else {
-    echo "[" . getFormattedTimestamp() . "] Server is not running. Starting now ...\n";
-
-    // Start the server.js using Node.js and append output to the log file
-    exec('/home/fco1t1x9fsye/.nvm/versions/node/v21.7.1/bin/node /home/fco1t1x9fsye/public_html/crm.signiixadvisors.com/server.js >> ' . escapeshellarg($logFilePath) . ' 2>&1 &');
+    echo "[" . date('h:i:s A, d-m-Y') . "] Server is not running. Starting now...\n";
+    exec("$nodePath $serverScript >> " . escapeshellarg($logFilePath) . " 2>&1 &");
 }
+
 ?>

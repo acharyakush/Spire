@@ -56,6 +56,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 			generated: { amount: 0, count: 0, label: "GENERATED" },
 			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
 		},
+		hasMounted: false,
 		isLoading: false,
 		module,
 		officeExpense: {
@@ -290,12 +291,13 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 				});
 
 				const rvProjectIds = new Set(response.data.reimburseVouchers.map((m) => m.project_id));
-				const notGeneratedRvs = response.data.projects.filter((f) => !rvProjectIds.has(f.id));
+				const notGeneratedRvs = response.data.tasks.filter((f) => !rvProjectIds.has(f.project_id));
 
-				notGeneratedRvs.forEach((fe, i) => {
-					_rv.notGenerated.amount += Number(fe.quote);
-					_rv.notGenerated.count = i + 1;
+				notGeneratedRvs.forEach((fe) => {
+					_rv.notGenerated.amount += Number(fe.expense);
 				});
+
+				_rv.notGenerated.count = notGeneratedRvs.length;
 
 				const allRvAmount = response.data.reimburseVouchers.reduce((pv, cv) => pv + Number(cv.amount), 0);
 				const totalRvAmount = allRvAmount + _rv.notGenerated.amount;
@@ -366,6 +368,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 				setMain((s) => ({
 					...s,
 					affiliates: affiliates,
+					hasMounted: true,
 					invoices: _invoices,
 					otherIncome: otherIncome,
 					officeExpense,
@@ -388,16 +391,18 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 	}
 
 	function toggleModule(module) {
-		if (module) {
-			setMain((s) => ({ ...s, module }));
-			clearData();
-		} else {
-			setMain((s) => ({ ...s, module: "" }));
+		if (main.hasMounted) {
+			if (module) {
+				setMain((s) => ({ ...s, module }));
+				clearData();
+			} else {
+				setMain((s) => ({ ...s, module: "" }));
 
-			setModuleProps(baseModules.Invoices, "");
-			setModuleProps(baseModules.Rv, "");
+				setModuleProps(baseModules.Invoices, "");
+				setModuleProps(baseModules.Rv, "");
 
-			getSupportData();
+				getSupportData();
+			}
 		}
 	}
 

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Configuration
-DB_USER="crm"
-DB_PASS="SigniixCrm@2024"
-DB_NAME="signiix_advisors"
+DB_USER="spire"
+DB_PASS="SpireCrmBySigniixAdvisors#2024"
+DB_NAME="spire"
 BACKUP_DIR="/home/fco1t1x9fsye/public_html/crm.signiixadvisors.com/backups"
 FULL_BACKUP_FILE="$BACKUP_DIR/full_backup.sql"
 LAST_BACKUP_CHECKSUM="$BACKUP_DIR/last_backup_checksum.txt"

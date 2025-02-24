@@ -226,6 +226,7 @@ const MyConstants = Object.freeze({
 			EditCompany: "Edit Company",
 			EditEmployee: "Edit Employee",
 			EditInquiry: "Edit Inquiry",
+			EditInvoice: "Edit Invoice",
 			EditFirm: "Edit Firm",
 			EditProject: "Edit Project",
 			EditReference: "Edit Reference",
