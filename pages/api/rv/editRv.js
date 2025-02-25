@@ -6,18 +6,27 @@ import { MyGlobal } from "@/utilities/global";
 import { query } from "@/utilities/dbConnection";
 
 export default async function handler(req, res) {
-	if (req.method !== "GET" || !MyGlobal.IsApiCallMethodValid(req)) {
+	if (req.method !== "POST" || !MyGlobal.IsApiCallMethodValid(req)) {
 		return res.status(405).send(MyConstants.Messages.ApiCallForbidden);
 	}
 
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const response = await query("SELECT * FROM rv_siblings WHERE project_id=?", [req.query.projectId]);
+		const { amount, amountPending, amountReceived, bankId, customId, clientId, dueDate, id, particulars, projectId, receiptDate } = req.body;
 
-		return res.status(200).json(response);
+		const response = await query(
+			"UPDATE rv SET custom_id=?, client_id=?, project_id=?, bank_id=?, particulars=?, amount=?, amount_received=?, amount_pending=?, due_date=?, receipt_date=? WHERE id=?",
+			[customId, clientId, projectId, bankId, JSON.stringify(particulars), amountPending, amountReceived, amountPending, dueDate, receiptDate, id],
+		);
+
+		if (response.affectedRows > 0) {
+			res.status(200).end();
+		} else {
+			res.status(400).end();
+		}
 	} catch (error) {
 		console.error(error);
-		return res.status(500).send("Internal Server Error");
+		return res.status(500).end(error.message);
 	}
 }

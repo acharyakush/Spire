@@ -32,6 +32,7 @@ import {
 	faSortAmountAsc,
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
+import EditRv from "./EditRv";
 
 export default function RV({ unmount }) {
 	// Business Logic
@@ -55,12 +56,14 @@ export default function RV({ unmount }) {
 	});
 
 	const [mounted, setMounted] = useState({
+		editRv: false,
 		history: false,
 		newRv: false,
 		rvList: false,
 		transactions: false,
 	});
 
+	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 	const allowNewRv = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewRv);
 
 	const showFromDateClearIcon = main.filter.from ? "cursor-pointer primary-text" : "hidden";
@@ -310,12 +313,6 @@ export default function RV({ unmount }) {
 
 					amountPending = amount - amountReceived;
 
-					const company = response.data.companies.find((f) => f.id == m.company_id);
-
-					if (typeof company === "object") {
-						companyName = company.name;
-					}
-
 					const rv = response.data.rv.find((f) => f.project_id == m.id);
 
 					let rvId = "";
@@ -326,6 +323,12 @@ export default function RV({ unmount }) {
 						rvId = rv.custom_id;
 						rvCreatedAt = dayjs(rv.created_at).format("DD/MM/YYYY");
 						rvCreatedAtTime = dayjs(rv.created_at).format("hh:mm:ss a");
+					}
+
+					const company = response.data.companies.find((f) => f.id == m.company_id);
+
+					if (typeof company === "object") {
+						companyName = company.name;
 					}
 
 					const mainProject = response.data.mainProjects.find((f) => f.id == m.main_project_id);
@@ -352,6 +355,7 @@ export default function RV({ unmount }) {
 						main_project_name: mainProjectName,
 						original_amount: originalAmount,
 						sub_project_name: subProjectName,
+						rv,
 						rv_id: rvId,
 					};
 				});
@@ -370,6 +374,11 @@ export default function RV({ unmount }) {
 		} finally {
 			setMain((s) => ({ ...s, isLoading: false }));
 		}
+	}
+
+	function toggleEditRv(object) {
+		setMain((s) => ({ ...s, selectedProject: object }));
+		setMounted((s) => ({ ...s, editRv: object ? true : false }));
 	}
 
 	function toggleNewRV(object) {
@@ -505,7 +514,7 @@ export default function RV({ unmount }) {
 	}
 
 	function uiMain() {
-		if (!mounted.newRv) {
+		if (!mounted.editRv && !mounted.newRv) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-center">
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
@@ -537,7 +546,13 @@ export default function RV({ unmount }) {
 					)}
 				</div>
 			);
-		} else {
+		}
+
+		if (mounted.editRv) {
+			return <EditRv project={main.selectedProject} reload={setSupportData} unmount={toggleEditRv} />;
+		}
+
+		if (mounted.newRv) {
 			return <NewRv project={main.selectedProject} reload={setSupportData} unmount={toggleNewRV} />;
 		}
 	}
@@ -560,8 +575,8 @@ export default function RV({ unmount }) {
 
 		let generateRvTooltip = "";
 
-		if (_rvId != "Generate") {
-			generateRvTooltip = "Download this RV";
+		if (rvId) {
+			generateRvTooltip = "Edit this RV";
 		} else if (!allowNewRv) {
 			generateRvTooltip = "You do not have permission to generate RV";
 		}
@@ -587,7 +602,17 @@ export default function RV({ unmount }) {
 					<span
 						className={`${style} cursor-pointer primary-text`}
 						dangerouslySetInnerHTML={{ __html: _rvId }}
-						onClick={() => allowNewRv && toggleNewRV(row)}
+						onClick={() => {
+							if (row.rv_id) {
+								if (isUserAdministrator) {
+									toggleEditRv(row);
+								}
+							} else {
+								if (allowNewRv) {
+									toggleNewRV(row);
+								}
+							}
+						}}
 					/>
 				</Tippy>
 				<span className={`${style} space-x-5`}>

@@ -82,7 +82,6 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 
 			if (response.status === 200) {
 				reload("reload-root-statistics");
-				resetFields();
 				getSupportData();
 
 				MyGlobal.AddActivity(`Added transaction for <b>${project.affiliate_id}</b>.`, MyConstants.Modules.Base.Affiliates);
@@ -95,6 +94,7 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 			MyGlobal.HandleErrors(error, "Cash Flow => Affiliates => Single Affiliate => New Transaction");
 		} finally {
 			setLoading((s) => ({ ...s, adding: false }));
+			unmount();
 		}
 	}
 

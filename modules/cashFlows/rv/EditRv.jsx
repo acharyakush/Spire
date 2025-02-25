@@ -28,7 +28,7 @@ import {
 	faTasks,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewRv({ project, reload, unmount }) {
+export default function EditRv({ project, reload, unmount }) {
 	// Business Logic
 	const financialYear = `${dayjs(new Date()).subtract(1, "y").format("YYYY")}-${dayjs(new Date()).format("YY")}`;
 
@@ -44,8 +44,8 @@ export default function NewRv({ project, reload, unmount }) {
 	});
 
 	const [loading, setLoading] = useState({
-		addRv: false,
 		downloadPdf: false,
+		editRv: false,
 		supportData: false,
 	});
 
@@ -97,7 +97,7 @@ export default function NewRv({ project, reload, unmount }) {
 	const finalPendingAmount = `${String.fromCharCode(8377)} ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
 
 	// Functions
-	async function addRv() {
+	async function editRv() {
 		try {
 			setLoading((s) => ({ ...s, downloadPdf: true }));
 			const customId = `${MyGlobal.GetInitials(main.firm.name)}/${main.financialYear}/${main.rvId}`;
@@ -110,24 +110,25 @@ export default function NewRv({ project, reload, unmount }) {
 				customId,
 				clientId: project.client_id,
 				dueDate: main.rvDueDate,
+				id: project.rv.id,
 				particulars: main.particulars,
 				projectId: project.id,
 				receiptDate: main.rvDate,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Rv.AddRv, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.Rv.EditRv, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Generated RV <b>${customId}</b> for <b>${project.id}</b>`, MyConstants.Modules.Derived.NewRv);
+				MyGlobal.AddActivity(`Edit RV <b>${customId}</b> of <b>${project.id}</b>`, MyConstants.Modules.Derived.EditRv);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.RvAdded);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.RvEdited);
 			} else {
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewRv);
+			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.EditRv);
 		} finally {
 			setLoading((s) => ({ ...s, downloadPdf: false }));
 			unmount();
@@ -223,7 +224,7 @@ export default function NewRv({ project, reload, unmount }) {
 						headers: { "Content-Type": "multipart/form-data" },
 					});
 				})
-				.then(() => addRv())
+				.then(() => editRv())
 				.finally(() => {
 					rvBody.style.height = originalStyle.height;
 					rvBody.style.overflow = originalStyle.overflow;
@@ -367,6 +368,8 @@ export default function NewRv({ project, reload, unmount }) {
 					companies: response.data.companies,
 				});
 
+				const customId = String(project.rv.custom_id).split("/");
+
 				setMain((s) => ({
 					...s,
 					bank: {
@@ -378,23 +381,19 @@ export default function NewRv({ project, reload, unmount }) {
 						name: bankObj.name,
 						upiId: bankObj.upiId,
 					},
+					financialYear: customId.at(1),
 					firm: firmObj,
-					particulars: [
-						{
-							amount: totalExpenses,
-							particulars: project.sub_project_name,
-							professionalService: project.main_project_name,
-							rowId: 0,
-						},
-					],
-					rvId: MyGlobal.MakeNewInvoiceId(response.data.rv),
+					rvDate: new Date(project.rv.created_at),
+					rvDueDate: new Date(project.rv.due_date),
+					rvId: customId.at(2),
+					particulars: JSON.parse(project.rv.particulars),
 					totalAmountReceived,
 					totalExpenses,
 					transactions,
 				}));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewRv);
+			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.EditRv);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -474,6 +473,7 @@ export default function NewRv({ project, reload, unmount }) {
 		return (
 			<TextInput
 				icon={faHashtag}
+				isReadOnly
 				label="ID"
 				maxLength={5}
 				onChange={(e) => setInputs("rvId", e.target.value)}
@@ -829,7 +829,7 @@ export default function NewRv({ project, reload, unmount }) {
 				<div className="flex w-full space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 					<div className="flex w-full justify-start items-center">
-						<span className="view-heading">New RV</span>
+						<span className="view-heading">Edit RV</span>
 					</div>
 				</div>
 			</div>
@@ -839,7 +839,7 @@ export default function NewRv({ project, reload, unmount }) {
 			</div>
 			<footer className="w-full dialog-footer">
 				<button className="primary-button-condensed" onClick={() => downloadPdf()}>
-					Generate & Download
+					Edit & Download
 				</button>
 			</footer>
 		</div>

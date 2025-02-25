@@ -163,7 +163,7 @@ export default function Transactions({ project, reload, unmount }) {
 
 	async function getSupportData(action) {
 		if (action && action === "reload-root-statistics") {
-			reload();
+			reload(action);
 		}
 
 		setLoading((s) => ({ ...s, supportData: true }));
@@ -448,15 +448,15 @@ export default function Transactions({ project, reload, unmount }) {
 		return (
 			<span className="w-full space-x-5 text-center text-white font-regular-10">
 				<span>
-					Pending <b className="font-bold-10">{MyGlobal.ThousandSeparator(Number(project.pending_fees))}</b>
+					Pending <b className="font-semibold-12">{MyGlobal.ThousandSeparator(project.pending_fees)}</b>
 				</span>
 				<span />
 				<span>
-					Paid <b className="font-bold-10">{MyGlobal.ThousandSeparator(project.paid_fees)}</b>
+					Paid <b className="font-semibold-12">{MyGlobal.ThousandSeparator(project.paid_fees)}</b>
 				</span>
 				<span />
 				<span>
-					Total <b className="font-bold-10">{MyGlobal.ThousandSeparator(project.total_fees)}</b>
+					Total <b className="font-semibold-12">{MyGlobal.ThousandSeparator(project.total_fees)}</b>
 				</span>
 			</span>
 		);
@@ -502,7 +502,7 @@ export default function Transactions({ project, reload, unmount }) {
 			<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiMain()}</div>
 
 			{other.isNewTransactionsOpen && (
-				<NewTransaction mount={other.isNewTransactionsOpen} project={project} reload={reload} unmount={toggleNewTransaction} />
+				<NewTransaction mount={other.isNewTransactionsOpen} project={project} reload={getSupportData} unmount={toggleNewTransaction} />
 			)}
 
 			{other.isEditTransactionsOpen && (

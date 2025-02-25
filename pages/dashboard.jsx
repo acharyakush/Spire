@@ -137,7 +137,9 @@ export default function Dashboard({ setModuleProps }) {
 					} else if (dueDate.isSame(today.add(1, "day"), "date")) {
 						tasksCount.tomorrow++;
 					} else if (dueDate.isAfter(today.add(1, "day"), "date")) {
-						tasksCount.upcoming++;
+						if (t.is_completed == 0) {
+							tasksCount.upcoming++;
+						}
 					}
 				}
 

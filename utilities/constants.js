@@ -76,6 +76,7 @@ const MyConstants = Object.freeze({
 		Rv: Object.freeze({
 			AddRv: "api/rv/addRv",
 			AddTransaction: "api/rv/addTransaction",
+			EditRv: "api/rv/editRv",
 			GetNewRvSupportData: "api/rv/getNewRvSupportData",
 			GetNewTransactionSupportData: "api/rv/getNewTransactionSupportData",
 			GetSupportData: "api/rv/getSupportData",
@@ -168,6 +169,7 @@ const MyConstants = Object.freeze({
 		ProjectStatusEdited: "Project status edited.",
 		QuoteEdited: "Quote edited.",
 		RvAdded: "New reimbursement voucher added.",
+		RvEdited: "Reimbursement voucher edited.",
 		SettingsEdited: "Settings edited.",
 		SomeErrorOccurred: "Something went wrong. Contact help desk.",
 		SpireDomainOnly: "Domain must exactly be spire.com.",

@@ -353,17 +353,17 @@ export default function EditInvoice({ project, reload, unmount }) {
 						upiId: bankObj.upiId,
 					},
 					financialYear: customId.at(1),
+					firm: firmObj,
 					invoiceDate: new Date(project.invoice.created_at),
 					invoiceDueDate: new Date(project.invoice.due_date),
 					invoiceId: customId.at(2),
-					firm: firmObj,
 					particulars: JSON.parse(project.invoice.particulars),
 					transactions,
 					totalAmountReceived,
 				}));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewInvoice);
+			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.EditInvoice);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -818,10 +818,6 @@ export default function EditInvoice({ project, reload, unmount }) {
 	useEffect(() => {
 		setSupportData();
 	}, []);
-
-	useEffect(() => {
-		console.log(main.particulars);
-	}, [main.particulars]);
 
 	// Main UI
 	return (
