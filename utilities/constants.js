@@ -33,6 +33,7 @@ const MyConstants = Object.freeze({
 				}),
 				GetTransactions: "api/cashFlows/modules/getTransactions",
 			}),
+			GetAllTransactions: "api/cashFlows/getAllTransactions",
 			GetSupportData: "api/cashFlows/getSupportData",
 		}),
 		Clients: Object.freeze({
@@ -387,6 +388,15 @@ const MyConstants = Object.freeze({
 			WrittenBy: "Written By",
 		}),
 		Transactions: Object.freeze({
+			All: Object.freeze({
+				Date: "Date",
+				Module: "Module",
+				AmountPaid: "Amount Paid",
+				AmountReceived: "Amount Received",
+				PaymentSource: "Payment Source",
+				PaymentType: "Payment Type",
+				EntryBy: "Entry By",
+			}),
 			General: Object.freeze({
 				Date: "Date",
 				Firm: "Firm",
@@ -432,8 +442,8 @@ const MyConstants = Object.freeze({
 	UserMenu: Object.freeze({
 		Activity: "Activities",
 		Employees: "Employees",
-		Profile: "Profile",
-		Settings: "Settings",
+		// Profile: "Profile",
+		// Settings: "Settings",
 		Logout: "Logout",
 	}),
 	UserType: Object.freeze({

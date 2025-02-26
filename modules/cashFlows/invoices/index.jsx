@@ -90,6 +90,8 @@ export default function Invoices({ presetStatus, unmount }) {
 		const maximumColumnWidth = 20;
 
 		const rowHeaders = Object.values(headers);
+		rowHeaders.pop();
+
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
@@ -99,10 +101,11 @@ export default function Invoices({ presetStatus, unmount }) {
 				fe.main_project_name,
 				fe.sub_project_name,
 				`${fe.created_at_time}\n${fe.created_at}`,
+				fe.invoice_due_date,
 				fe.amount,
 				fe.amount_received,
-				fe.status,
-				fe.file_url,
+				fe.amount_pending,
+				fe.invoice_id,
 			);
 		});
 

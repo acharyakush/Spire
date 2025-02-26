@@ -4,6 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
+import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
@@ -65,6 +66,82 @@ export default function Transactions({ reload, unmount }) {
 	const showFindClearButton = other.find.transaction ? "cursor-pointer primary-text" : "hidden";
 
 	// Functions
+	function doExcelExport() {
+		const records = [];
+		const _records = [];
+
+		const columnsWidth = [];
+		const dataHeaders = [];
+
+		const rowHeight = 34;
+		const maximumColumnWidth = 20;
+
+		const rowHeaders = Object.values(headers);
+
+		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
+
+		doSorting().forEach((fe) => {
+			records.push(
+				dayjs(fe.entry_at).format("DD-MM-YYYY"),
+				fe.firm_name,
+				fe.payment_type,
+				fe.particulars,
+				fe.remarks,
+				fe.amount_paid,
+				fe.amount_received,
+				fe.balance,
+				fe.entry_by_name,
+			);
+		});
+
+		records.forEach((fe) => {
+			_records.push({
+				align: "center",
+				alignVertical: "center",
+				color: "#000000",
+				height: rowHeight,
+				type: String,
+				value: String(fe),
+				wrap: true,
+			});
+		});
+
+		rowHeaders.forEach((fe) => {
+			dataHeaders.push({
+				align: "center",
+				alignVertical: "center",
+				fontWeight: "bold",
+				height: rowHeight,
+				value: fe,
+				width: maximumColumnWidth,
+			});
+
+			columnsWidth.push({ width: maximumColumnWidth });
+		});
+
+		const header = [
+			{
+				align: "center",
+				alignVertical: "center",
+				fontSize: 16,
+				fontWeight: "bold",
+				height: 44,
+				span: rowHeaders.length,
+				value: `${modules.PettyCash.name} (${api.transactions.data.length})`,
+			},
+		];
+
+		const finalData = [header, blankRows, dataHeaders];
+		MyGlobal.SeparateObjectsIntoArrays(_records, rowHeaders.length).forEach((fe) => finalData.push(fe));
+
+		writeXlsxFile(finalData, {
+			columns: columnsWidth,
+			fileName: `${modules.PettyCash.name}.xlsx`,
+			fontFamily: "Segoe UI",
+			fontSize: 9,
+		});
+	}
+
 	function doFiltering(type) {
 		const filtered = api.transactions.copy.filter((f) => {
 			if (type == "entryAt") {

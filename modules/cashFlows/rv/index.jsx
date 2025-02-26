@@ -93,6 +93,8 @@ export default function RV({ unmount }) {
 		const maximumColumnWidth = 20;
 
 		const rowHeaders = Object.values(headers);
+		rowHeaders.pop();
+
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
@@ -104,8 +106,8 @@ export default function RV({ unmount }) {
 				`${fe.created_at_time}\n${fe.created_at}`,
 				fe.amount,
 				fe.amount_received,
-				fe.status,
-				fe.file_url,
+				fe.amount_pending,
+				fe.rv_id,
 			);
 		});
 

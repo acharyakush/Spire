@@ -124,11 +124,10 @@ export default function Home() {
 				</span>
 
 				<EmailAddress
-					key={1}
 					onChange={(e) => handleInputs("emailAddress", e.target.value)}
 					reference={emailAddressReference}
 					suffix=""
-					tabIndex={1}
+					tabIndex="1"
 					value={userData.emailAddress}
 					width="w-full"
 				/>
@@ -139,6 +138,7 @@ export default function Home() {
 					key={2}
 					onChange={(e) => handleInputs("password", e.target.value)}
 					reference={passwordReference}
+					tabIndex="2"
 					toggleCharacters={togglePasswordCharacters}
 					type={passwordType}
 					value={userData.password}

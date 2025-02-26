@@ -438,10 +438,12 @@ export default function Home() {
 				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
 					<FontAwesomeIcon className="primary-text" icon={faUserCircle} size="lg" />
 				</MenuButton>
-				<MenuItems anchor="bottom" className="absolute w-max mt-2 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
-					<div className="flex flex-col p-2 font-medium-12">
+				<MenuItems
+					anchor="left start"
+					className="absolute w-max mt-2 left-5 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
+					<div className="flex flex-col p-3 font-semibold-16">
 						<span>{main.user.fullName}</span>
-						<span className="font-regular-8 gray-text">{main.user.designation}</span>
+						<span className="font-regular-10 gray-text">{main.user.designation}</span>
 					</div>
 					{/* <MenuItem
 						as="div"
@@ -469,7 +471,7 @@ export default function Home() {
 				return (
 					<MenuItem
 						as="div"
-						className="px-3 py-2 space-x-3 cursor-pointer border-y font-regular-10 black-text hovered-rows"
+						className="p-3 space-x-3 cursor-pointer border-y font-medium-12 black-text hovered-rows"
 						key={i}
 						onClick={() => getUserMenuClickAction(m)}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons(m)} />

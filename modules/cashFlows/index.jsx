@@ -10,6 +10,7 @@ import Vendors from "./vendors";
 import Invoices from "./invoices";
 import Affiliates from "./affiliates";
 import MyConstants from "@/utilities/constants";
+import AllTransactions from "./allTransactions";
 import Transactions from "./pettyCash/Transactions";
 
 import { useEffect, useState } from "react";
@@ -278,6 +279,8 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 
 				const _rv = Object.assign({}, main.rv);
 
+				const rvIds = [];
+
 				response.data.reimburseVouchers.forEach((fe) => {
 					if (dayjs(fe.due_date).isBefore(today)) {
 						_rv.due.amount += Number(fe.amount);
@@ -288,16 +291,22 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 						_rv.generated.amount += Number(fe.amount);
 						_rv.generated.count += 1;
 					}
+
+					rvIds.push(fe.project_id);
+				});
+
+				response.data.projects.forEach((fe) => {
+					if (!rvIds.includes(fe.id)) {
+						_rv.notGenerated.count += 1;
+					}
 				});
 
 				const rvProjectIds = new Set(response.data.reimburseVouchers.map((m) => m.project_id));
 				const notGeneratedRvs = response.data.tasks.filter((f) => !rvProjectIds.has(f.project_id));
 
-				notGeneratedRvs.forEach((fe) => {
+				notGeneratedRvs.forEach((fe, i) => {
 					_rv.notGenerated.amount += Number(fe.expense);
 				});
-
-				_rv.notGenerated.count = notGeneratedRvs.length;
 
 				const allRvAmount = response.data.reimburseVouchers.reduce((pv, cv) => pv + Number(cv.amount), 0);
 				const totalRvAmount = allRvAmount + _rv.notGenerated.amount;
@@ -737,7 +746,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 	function uiSelectedModule() {
 		return (
 			<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">
-				{main.selectedCategory == categories.Inward ? uiInward() : uiOutward()}
+				{main.selectedCategory == categories.All ? <AllTransactions /> : main.selectedCategory == categories.Inward ? uiInward() : uiOutward()}
 			</div>
 		);
 	}

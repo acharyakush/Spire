@@ -2,9 +2,6 @@
 Pending Points
 ==============
 
-1.	Cash Flows > Invoices > The "Invoice ID" column should open "Edit Invoice" if user is administrator.
-2.	Cash Flows > Petty Cash & Other Income => Export to Excel not working.
-
 Solved
 1.	Cash Flows > Invoices / RV > Transactions > Disallow 0 entry in Amount received field
 2.	Projects > Sort by latest
@@ -16,6 +13,8 @@ Solved
 	>	1st generated RV's amount is 1000 but clicking on + button, amount shows 50,000.
 	>	2nd generated RV with 8000 also shows 50,000 in RV Generated List but still shows 1000 in the main row. It should actually show 9000 as 1st generated RV's amount is 1000 + 2nd generated RV's amount is 8000
 7.	Dashboard > Invoices > Due > No information of Due invoices shown when navigated
+8.	Cash Flows > Invoices > The "Invoice ID" column should open "Edit Invoice" if user is administrator.
+9.	Cash Flows > Petty Cash & Other Income => Export to Excel not working.
 
 Next Week
 2.	Home > Add Profile & Settings modules

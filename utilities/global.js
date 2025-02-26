@@ -149,6 +149,22 @@ export const MyGlobal = Object.freeze({
 		}
 	},
 
+	GetBankName(id, list) {
+		let name = "";
+
+		if (Array.isArray(list) && list.length) {
+			const object = list.find((f) => f.id === id);
+
+			if (typeof object === "object") {
+				if ("name" in object) {
+					name = object.name;
+				}
+			}
+		}
+
+		return name;
+	},
+
 	GetChangedValues(obj1, obj2, path = "") {
 		const changes = [];
 

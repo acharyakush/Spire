@@ -4,6 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
+import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 import NewTransaction from "@/modals/cashFlows/vendors/NewTransaction";
@@ -62,6 +63,81 @@ export default function Transactions({ head, reload, unmount }) {
 	const findClearButtonStyle = other.find.transaction ? "cursor-pointer primary-text" : "hidden";
 
 	// Functions
+	function doExcelExport() {
+		const records = [];
+		const _records = [];
+
+		const columnsWidth = [];
+		const dataHeaders = [];
+
+		const rowHeight = 34;
+		const maximumColumnWidth = 20;
+
+		const rowHeaders = Object.values(headers);
+		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
+
+		doSorting().forEach((fe) => {
+			records.push(
+				dayjs(fe.entry_at).format("DD-MM-YYYY"),
+				fe.firm_name,
+				fe.bank_name,
+				fe.amount,
+				fe.particulars,
+				fe.bank_name,
+				fe.payment_type,
+				fe.remarks,
+				fe.entry_by_name,
+			);
+		});
+
+		records.forEach((fe) => {
+			_records.push({
+				align: "center",
+				alignVertical: "center",
+				color: "#000000",
+				height: rowHeight,
+				type: String,
+				value: String(fe),
+				wrap: true,
+			});
+		});
+
+		rowHeaders.forEach((fe) => {
+			dataHeaders.push({
+				align: "center",
+				alignVertical: "center",
+				fontWeight: "bold",
+				height: rowHeight,
+				value: fe,
+				width: maximumColumnWidth,
+			});
+
+			columnsWidth.push({ width: maximumColumnWidth });
+		});
+
+		const header = [
+			{
+				align: "center",
+				alignVertical: "center",
+				fontSize: 16,
+				fontWeight: "bold",
+				height: 44,
+				span: rowHeaders.length,
+				value: `${MyConstants.Modules.Base.Vendors} > ${head.purpose}'s Transactions (${api.transactions.data.length})`,
+			},
+		];
+
+		const finalData = [header, blankRows, dataHeaders];
+		MyGlobal.SeparateObjectsIntoArrays(_records, rowHeaders.length).forEach((fe) => finalData.push(fe));
+
+		writeXlsxFile(finalData, {
+			columns: columnsWidth,
+			fileName: `${MyConstants.Modules.Base.Vendors} > ${head.purpose}'s Transactions.xlsx`,
+			fontFamily: "Segoe UI",
+			fontSize: 9,
+		});
+	}
+
 	function doFiltering(type) {
 		const filtered = api.transactions.copy.filter((f) => {
 			if (type == "entryAt") {
@@ -525,6 +601,7 @@ export default function Transactions({ head, reload, unmount }) {
 	return (
 		<>
 			{uiMain()}
+
 			{mounted.editTransaction && (
 				<EditTransaction
 					mount={mounted.editTransaction}
@@ -533,6 +610,7 @@ export default function Transactions({ head, reload, unmount }) {
 					unmount={toggleEditTransaction}
 				/>
 			)}
+
 			{mounted.newTransaction && <NewTransaction head={head} mount={mounted.newTransaction} reload={getSupportData} unmount={toggleNewTransaction} />}
 		</>
 	);

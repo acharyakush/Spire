@@ -26,6 +26,7 @@ import {
 	faSortAmountAsc,
 	faSortAmountDesc,
 } from "@fortawesome/free-solid-svg-icons";
+import writeXlsxFile from "write-excel-file";
 
 export default function Transactions({ project, reload, unmount }) {
 	// Business Logic
@@ -63,6 +64,81 @@ export default function Transactions({ project, reload, unmount }) {
 	const showFindClearButton = other.find.transaction ? "cursor-pointer primary-text" : "hidden";
 
 	// Functions
+	function doExcelExport() {
+		const records = [];
+		const _records = [];
+
+		const columnsWidth = [];
+		const dataHeaders = [];
+
+		const rowHeight = 34;
+		const maximumColumnWidth = 20;
+
+		const rowHeaders = Object.values(headers);
+		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
+
+		doSorting().forEach((fe) => {
+			records.push(
+				dayjs(fe.entry_at).format("DD-MM-YYYY"),
+				fe.firm_name,
+				fe.bank_name,
+				fe.amount,
+				fe.particulars,
+				fe.bank_name,
+				fe.payment_type,
+				fe.remarks,
+				fe.entry_by_name,
+			);
+		});
+
+		records.forEach((fe) => {
+			_records.push({
+				align: "center",
+				alignVertical: "center",
+				color: "#000000",
+				height: rowHeight,
+				type: String,
+				value: String(fe),
+				wrap: true,
+			});
+		});
+
+		rowHeaders.forEach((fe) => {
+			dataHeaders.push({
+				align: "center",
+				alignVertical: "center",
+				fontWeight: "bold",
+				height: rowHeight,
+				value: fe,
+				width: maximumColumnWidth,
+			});
+
+			columnsWidth.push({ width: maximumColumnWidth });
+		});
+
+		const header = [
+			{
+				align: "center",
+				alignVertical: "center",
+				fontSize: 16,
+				fontWeight: "bold",
+				height: 44,
+				span: rowHeaders.length,
+				value: `${MyConstants.Modules.Base.Affiliates} > ${project.company_name}'s Transactions (${api.transactions.data.length})`,
+			},
+		];
+
+		const finalData = [header, blankRows, dataHeaders];
+		MyGlobal.SeparateObjectsIntoArrays(_records, rowHeaders.length).forEach((fe) => finalData.push(fe));
+
+		writeXlsxFile(finalData, {
+			columns: columnsWidth,
+			fileName: `${MyConstants.Modules.Base.Affiliates} > ${project.company_name}'s Transactions.xlsx`,
+			fontFamily: "Segoe UI",
+			fontSize: 9,
+		});
+	}
+
 	function doFiltering(type) {
 		const filtered = api.transactions.copy.filter((f) => {
 			if (type == "entryAt") {
@@ -372,7 +448,7 @@ export default function Transactions({ project, reload, unmount }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: bankName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: paymentSource }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: bankName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: paymentType }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: remarks }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: entryByName }} />
