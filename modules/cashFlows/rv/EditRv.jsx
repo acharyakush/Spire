@@ -36,8 +36,6 @@ export default function EditRv({ project, reload, unmount }) {
 	const rvDueDate = new Date(today);
 	rvDueDate.setDate(rvDueDate.getDate() + 7);
 
-	const quote = Number(project.quote);
-
 	const [api, setApi] = useState({
 		clients: [],
 		companies: [],
@@ -83,14 +81,7 @@ export default function EditRv({ project, reload, unmount }) {
 		transactions: [],
 	});
 
-	const [mounted, setMounted] = useState({
-		mainComponent: false,
-		preview: false,
-	});
-
 	const totalParticularsAmount = main.particulars.reduce((pv, cv) => pv + Number(cv.amount), 0);
-
-	const totalAmount = Number(main.particulars.at(0).amount) == quote ? totalParticularsAmount : Number(main.particulars.at(0).amount);
 
 	const totalPendingAmount = Math.abs(totalParticularsAmount - main.totalAmountReceived);
 
@@ -100,10 +91,11 @@ export default function EditRv({ project, reload, unmount }) {
 	async function editRv() {
 		try {
 			setLoading((s) => ({ ...s, downloadPdf: true }));
+
 			const customId = `${MyGlobal.GetInitials(main.firm.name)}/${main.financialYear}/${main.rvId}`;
 
 			const body = {
-				amount: totalAmount,
+				amount: totalParticularsAmount,
 				amountPending: totalPendingAmount,
 				amountReceived: main.totalAmountReceived,
 				bankId: main.bank.id,
@@ -228,8 +220,6 @@ export default function EditRv({ project, reload, unmount }) {
 				.finally(() => {
 					rvBody.style.height = originalStyle.height;
 					rvBody.style.overflow = originalStyle.overflow;
-
-					setLoading((s) => ({ ...s, downloadPdf: false }));
 				});
 		}
 	}

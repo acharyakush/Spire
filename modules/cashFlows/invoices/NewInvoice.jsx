@@ -82,18 +82,11 @@ export default function NewInvoice({ project, reload, unmount }) {
 		totalAmountReceived: 0,
 	});
 
-	const [mounted, setMounted] = useState({
-		mainComponent: false,
-		preview: false,
-	});
-
 	const totalParticularsAmount = main.particulars.reduce((pv, cv) => {
 		return pv + Number(cv.amount);
 	}, 0);
 
-	const totalAmount = totalParticularsAmount;
-
-	const totalPendingAmount = Math.abs(totalAmount - main.totalAmountReceived);
+	const totalPendingAmount = Math.abs(totalParticularsAmount - main.totalAmountReceived);
 
 	const finalPendingAmount = String.fromCharCode(8377) + ` ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
 
@@ -103,7 +96,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 			const customId = `${MyGlobal.GetInitials(main.firm.name)}/${main.financialYear}/${main.invoiceId}`;
 
 			const body = {
-				amount: totalAmount,
+				amount: totalParticularsAmount,
 				amountReceived: main.totalAmountReceived,
 				bankId: main.bank.id,
 				customId,
@@ -384,7 +377,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 	}
 
 	function generateAndDownload() {
-		if (totalPendingAmount === 0) {
+		if (totalPendingAmount === 0 && totalParticularsAmount === 0) {
 			MyGlobal.ShowErrorToast("Cannot generate an invoice of 0.");
 		} else {
 			downloadPdf();

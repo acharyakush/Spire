@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
 		const response = await query(
 			"UPDATE rv SET custom_id=?, client_id=?, project_id=?, bank_id=?, particulars=?, amount=?, amount_received=?, amount_pending=?, due_date=?, receipt_date=? WHERE id=?",
-			[customId, clientId, projectId, bankId, JSON.stringify(particulars), amountPending, amountReceived, amountPending, dueDate, receiptDate, id],
+			[customId, clientId, projectId, bankId, JSON.stringify(particulars), amount, amountReceived, amountPending, dueDate, receiptDate, id],
 		);
 
 		if (response.affectedRows > 0) {

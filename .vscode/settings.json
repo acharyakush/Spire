@@ -1,6 +1,6 @@
 {
 	"css.styleSheets": ["public/styles/globals.css"],
-	"debug.console.fontSize": 15,
+	"debug.console.fontSize": 16,
 	"editor.acceptSuggestionOnEnter": "smart",
 	"editor.autoClosingBrackets": "always",
 	"editor.autoClosingComments": "always",
@@ -17,7 +17,7 @@
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.fontFamily": "'Fira Code Retina', Consolas, 'Courier New', monospace",
 	"editor.fontLigatures": true,
-	"editor.fontSize": 14,
+	"editor.fontSize": 16,
 	"editor.formatOnSave": true,
 	"editor.formatOnSaveMode": "file",
 	"editor.formatOnType": true,
@@ -65,5 +65,5 @@
 	"search.exclude": {
 		"**/node_modules": true
 	},
-	"terminal.integrated.fontSize": 15
+	"terminal.integrated.fontSize": 16
 }

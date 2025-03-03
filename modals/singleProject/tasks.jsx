@@ -49,7 +49,7 @@ export function AddParticularRemark({ mount, reload, task, unmount }) {
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Added a particular and remark in <b>${task.task_id}</b> in <b>${task.project_id}</b>.`, MyConstants.Modules.Base.Tasks);
+				MyGlobal.AddActivity(`Added a particular and remark in <b>${task.id}</b> in <b>${task.project_id}</b>.`, MyConstants.Modules.Base.Tasks);
 
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskParticularRemarkAdded);
 			} else {

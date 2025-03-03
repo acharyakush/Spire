@@ -36,8 +36,6 @@ export default function NewRv({ project, reload, unmount }) {
 	const rvDueDate = new Date(today);
 	rvDueDate.setDate(rvDueDate.getDate() + 7);
 
-	const quote = Number(project.quote);
-
 	const [api, setApi] = useState({
 		clients: [],
 		companies: [],
@@ -83,14 +81,7 @@ export default function NewRv({ project, reload, unmount }) {
 		transactions: [],
 	});
 
-	const [mounted, setMounted] = useState({
-		mainComponent: false,
-		preview: false,
-	});
-
 	const totalParticularsAmount = main.particulars.reduce((pv, cv) => pv + Number(cv.amount), 0);
-
-	const totalAmount = Number(main.particulars.at(0).amount) == quote ? totalParticularsAmount : Number(main.particulars.at(0).amount);
 
 	const totalPendingAmount = Math.abs(totalParticularsAmount - main.totalAmountReceived);
 
@@ -99,11 +90,10 @@ export default function NewRv({ project, reload, unmount }) {
 	// Functions
 	async function addRv() {
 		try {
-			setLoading((s) => ({ ...s, downloadPdf: true }));
 			const customId = `${MyGlobal.GetInitials(main.firm.name)}/${main.financialYear}/${main.rvId}`;
 
 			const body = {
-				amount: totalAmount,
+				amount: totalParticularsAmount,
 				amountPending: totalPendingAmount,
 				amountReceived: main.totalAmountReceived,
 				bankId: main.bank.id,
@@ -161,7 +151,7 @@ export default function NewRv({ project, reload, unmount }) {
 	}
 
 	function downloadPdf() {
-		if (totalPendingAmount === 0) {
+		if (totalPendingAmount === 0 && totalParticularsAmount === 0 && main.totalAmountReceived === 0) {
 			MyGlobal.ShowErrorToast("Cannot generate a reimbursement voucher of 0.");
 		} else {
 			setLoading((s) => ({ ...s, downloadPdf: true }));
@@ -227,8 +217,6 @@ export default function NewRv({ project, reload, unmount }) {
 				.finally(() => {
 					rvBody.style.height = originalStyle.height;
 					rvBody.style.overflow = originalStyle.overflow;
-
-					setLoading((s) => ({ ...s, downloadPdf: false }));
 				});
 		}
 	}
@@ -367,6 +355,15 @@ export default function NewRv({ project, reload, unmount }) {
 					companies: response.data.companies,
 				});
 
+				const particulars = response.data.tasks.map((m, i) => {
+					return {
+						amount: Number(m.expense),
+						particulars: m.task,
+						professionalService: project.main_project_name,
+						rowId: i,
+					};
+				});
+
 				setMain((s) => ({
 					...s,
 					bank: {
@@ -379,14 +376,7 @@ export default function NewRv({ project, reload, unmount }) {
 						upiId: bankObj.upiId,
 					},
 					firm: firmObj,
-					particulars: [
-						{
-							amount: totalExpenses,
-							particulars: project.sub_project_name,
-							professionalService: project.main_project_name,
-							rowId: 0,
-						},
-					],
+					particulars,
 					rvId: MyGlobal.MakeNewInvoiceId(response.data.rv),
 					totalAmountReceived,
 					totalExpenses,
