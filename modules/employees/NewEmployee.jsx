@@ -10,20 +10,7 @@ import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox, ComboBox2, DatePicker, EmailAddress, Password, TextArea, TextInput } from "@/components/Inputs";
-import {
-	faBirthdayCake,
-	faBriefcase,
-	faCity,
-	faEye,
-	faEyeSlash,
-	faFont,
-	faHome,
-	faPhone,
-	faSquare,
-	faSquareCheck,
-	faUsers,
-	faVenusMars,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBirthdayCake, faBriefcase, faCity, faEye, faEyeSlash, faFont, faHome, faPhone, faSquare, faSquareCheck, faUsers, faVenusMars } from "@fortawesome/free-solid-svg-icons";
 
 export default function NewEmployee() {
 	// Business Logic
@@ -70,6 +57,7 @@ export default function NewEmployee() {
 
 		const body = {
 			...main,
+			password: MyGlobal.Encrypt(main.password),
 			permissions: main.permissions.map((m) => m.id).join(","),
 			userId: MyGlobal.GetUserId(),
 		};
@@ -178,45 +166,15 @@ export default function NewEmployee() {
 	}
 
 	function uiAddress() {
-		return (
-			<TextArea
-				icon={faHome}
-				label="Address"
-				onChange={(e) => setLightInputs("address", e.target.value)}
-				onKeyDown={() => {}}
-				rows={2}
-				tabIndex="11"
-				value={main.address}
-				width="w-full"
-			/>
-		);
+		return <TextArea icon={faHome} label="Address" onChange={(e) => setLightInputs("address", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex="11" value={main.address} width="w-full" />;
 	}
 
 	function uiBirthDate() {
-		return (
-			<DatePicker
-				icon={faBirthdayCake}
-				label="Birth Date"
-				onChange={(e) => setHeavyInputs("birthDate", e)}
-				tabIndex="5"
-				value={main.birthDate}
-				width="w-full"
-			/>
-		);
+		return <DatePicker icon={faBirthdayCake} label="Birth Date" onChange={(e) => setHeavyInputs("birthDate", e)} tabIndex="5" value={main.birthDate} width="w-full" />;
 	}
 
 	function uiCity() {
-		return (
-			<TextInput
-				icon={faCity}
-				label="City"
-				onChange={(e) => setLightInputs("city", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="12"
-				value={main.city}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faCity} label="City" onChange={(e) => setLightInputs("city", e.target.value)} onKeyPress={() => {}} tabIndex="12" value={main.city} width="w-full" />;
 	}
 
 	function uiDesignation() {
@@ -239,16 +197,7 @@ export default function NewEmployee() {
 	}
 
 	function uiEmailAddress() {
-		return (
-			<EmailAddress
-				autoComplete={false}
-				onChange={(e) => setLightInputs("emailAddress", e.target.value)}
-				suffix="spire.com"
-				tabIndex="5"
-				value={main.emailAddress}
-				width="w-full"
-			/>
-		);
+		return <EmailAddress autoComplete={false} onChange={(e) => setLightInputs("emailAddress", e.target.value)} suffix="spire.com" tabIndex="5" value={main.emailAddress} width="w-full" />;
 	}
 
 	function uiEmploymentType() {
@@ -279,31 +228,11 @@ export default function NewEmployee() {
 	}
 
 	function uiFirstName() {
-		return (
-			<TextInput
-				icon={faFont}
-				label="First Name"
-				onChange={(e) => setHeavyInputs("first", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="2"
-				value={main.name.first}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faFont} label="First Name" onChange={(e) => setHeavyInputs("first", e.target.value)} onKeyPress={() => {}} tabIndex="2" value={main.name.first} width="w-full" />;
 	}
 
 	function uiLastName() {
-		return (
-			<TextInput
-				icon={faFont}
-				label="Last Name"
-				onChange={(e) => setHeavyInputs("last", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="4"
-				value={main.name.last}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faFont} label="Last Name" onChange={(e) => setHeavyInputs("last", e.target.value)} onKeyPress={() => {}} tabIndex="4" value={main.name.last} width="w-full" />;
 	}
 
 	function uiGender() {
@@ -326,17 +255,7 @@ export default function NewEmployee() {
 	}
 
 	function uiMiddleName() {
-		return (
-			<TextInput
-				icon={faFont}
-				label="Middle Name"
-				onChange={(e) => setHeavyInputs("middle", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="3"
-				value={main.name.middle}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faFont} label="Middle Name" onChange={(e) => setHeavyInputs("middle", e.target.value)} onKeyPress={() => {}} tabIndex="3" value={main.name.middle} width="w-full" />;
 	}
 
 	function uiPassword() {
@@ -420,17 +339,7 @@ export default function NewEmployee() {
 	}
 
 	function uiState() {
-		return (
-			<TextInput
-				icon={faCity}
-				label="State"
-				onChange={(e) => setLightInputs("state", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="13"
-				value={main.state}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faCity} label="State" onChange={(e) => setLightInputs("state", e.target.value)} onKeyPress={() => {}} tabIndex="13" value={main.state} width="w-full" />;
 	}
 
 	// Hooks

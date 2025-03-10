@@ -18,10 +18,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
-import { faCheck, faChevronDown, faFileExcel, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
+	let findText = presetStatus ?? "";
+
+	if (presetStatus && presetStatus === "userId") {
+		findText = "";
+	}
+
 	const [api, setApi] = useState({
 		notes: [],
 		projects: { data: [], copy: [] },
@@ -30,7 +36,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const [main, setMain] = useState({
 		activeModule: { items: [], name: "All" },
 		dueDate: { from: "", to: "" },
-		findText: presetStatus ?? "",
+		findText,
 		isLoading: { selectedProject: false, supportData: false },
 		selectedClient: {},
 		selectedProject: {},
@@ -89,18 +95,26 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 			const status = String(f.status).toLowerCase();
 
-			return (
-				projectId.includes(findText) ||
-				governmentId.includes(findText) ||
-				clientId.includes(findText) ||
-				clientName.includes(findText) ||
-				companyName.includes(findText) ||
-				mainProjectName.includes(findText) ||
-				subProjectName.includes(findText) ||
-				teamNames.includes(findText) ||
-				teamNamesInitials.includes(findText) ||
-				status.includes(findText)
-			);
+			if (presetStatus && presetStatus === "userId") {
+				const userFullName = MyGlobal.GetUserFullName().toLowerCase();
+
+				if (teamNames.includes(userFullName)) {
+					return f;
+				}
+			} else {
+				return (
+					projectId.includes(findText) ||
+					governmentId.includes(findText) ||
+					clientId.includes(findText) ||
+					clientName.includes(findText) ||
+					companyName.includes(findText) ||
+					mainProjectName.includes(findText) ||
+					subProjectName.includes(findText) ||
+					teamNames.includes(findText) ||
+					teamNamesInitials.includes(findText) ||
+					status.includes(findText)
+				);
+			}
 		});
 
 		setApi((s) => ({ ...s, projects: { ...s.projects, data: filtered } }));
@@ -323,6 +337,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 						if (Object.values(statuses).includes(main.findText)) {
 							return f.status.includes(main.findText);
 						} else {
+							const userFullName = MyGlobal.GetUserFullName();
+
 							if (main.findText === "Overdue") {
 								return f.has_tasks_overdue;
 							} else if (main.findText === "Today") {
@@ -331,6 +347,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 								return f.has_tasks_due_tomorrow;
 							} else if (main.findText === "Upcoming") {
 								return f.has_tasks_upcoming;
+							} else if (presetStatus && presetStatus === "userId" && main.findText === userFullName) {
+								return String(f.team_names).toLowerCase().includes(userFullName.toLowerCase());
 							}
 						}
 					}
@@ -345,6 +363,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				}
 			}
 		}
+
+		console.log(source);
 
 		return source;
 	}
@@ -494,12 +514,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center">
 					<div className="flex flex-col w-full h-full justify-center items-start full-border">
 						<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-						<Virtuoso
-							className="w-full h-full overflow-y-auto bottom-border contrast-background"
-							data={doSorting()}
-							itemContent={(i, row) => uiRows(row, i)}
-							totalCount={api.projects.data.length}
-						/>
+						<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.data.length} />
 					</div>
 				</div>
 			</div>
@@ -571,7 +586,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 			return (
 				<button className={wrapper} key={i} onClick={() => setModule(m)}>
-					<span>{m.key}</span>
+					<span className="text-left">{m.key}</span>
 					{m.key != "All" && m.items.length && <span className="font-regular-10 gray-text">{m.items.length}</span>}
 				</button>
 			);
@@ -600,15 +615,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		} else if (mounted.editProject) {
 			return <EditProject project={main.selectedProject} reload={setSupportData} unmount={toggleEditProjectView} />;
 		} else if (mounted.singleProject) {
-			return (
-				<SingleProject
-					client={main.selectedClient}
-					project={main.selectedProject}
-					reload={setSupportData}
-					source="Single Project"
-					unmount={toggleSingleProjectView}
-				/>
-			);
+			return <SingleProject client={main.selectedClient} project={main.selectedProject} reload={setSupportData} source="Single Project" unmount={toggleSingleProjectView} />;
 		} else {
 			return uiBody();
 		}
@@ -628,12 +635,12 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 		const dueOn = dayjs(row.due_on).format("DD MMM, YYYY");
 
+		const background = row.status == statuses.Completed ? "green-background-transparent-01" : "contrast-background";
+
+		const wrapper = `flex w-full justify-center items-center ${background} bottom-border font-regular-11 black-text`;
+
 		return (
-			<div
-				className="flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text"
-				key={row.id}
-				onMouseEnter={() => setMouseEnter(row.id)}
-				onMouseLeave={() => setMouseLeave(row.id)}>
+			<div className={wrapper} key={row.id} onMouseEnter={() => setMouseEnter(row.id)} onMouseLeave={() => setMouseLeave(row.id)}>
 				<div className={`${style} cursor-help primary-text`}>{uiStartedOn(row)}</div>
 
 				<span className={`${style} ${governmentIdTextColour}`} dangerouslySetInnerHTML={{ __html: governmentId || "NA" }} />
@@ -695,19 +702,14 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		return (
 			<Menu as="div" className="flex w-24 justify-center items-center relative">
 				<MenuButton className={wrapper}>
+					{isCompleted && <FontAwesomeIcon className="green-text mr-1.5" icon={faCheckCircle} />}
 					<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.findText) }} />
 					{!isCompleted && <FontAwesomeIcon icon={faChevronDown} />}
 				</MenuButton>
 				{!isCompleted ? (
-					<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">
-						{uiStatusMenuList(row)}
-					</MenuItems>
+					<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>
 				) : (
-					isUserAdministrator && (
-						<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">
-							{uiStatusMenuList(row)}
-						</MenuItems>
-					)
+					isUserAdministrator && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>
 				)}
 			</Menu>
 		);
@@ -792,16 +794,20 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}, []);
 
 	useEffect(() => {
+		if (api.projects.copy.length) {
+			if (presetStatus && presetStatus === "userId") {
+				setMain((s) => ({ ...s, findText: MyGlobal.GetUserFullName() }));
+			}
+		}
+	}, [api.projects.copy]);
+
+	useEffect(() => {
 		if (mounted.mainComponent) {
 			doFiltering();
 		}
 	}, [main.findText]);
 
 	// Main UI
-	if (!mounted.mainComponent) {
-		return;
-	}
-
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<>
@@ -818,17 +824,11 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				{uiMain()}
 			</>
 
-			{mounted.deleteProject && (
-				<DeleteProject mount={mounted.deleteProject} projectId={main.selectedProject.id} reload={setSupportData} unmount={toggleDeleteProjectBox} />
-			)}
+			{mounted.deleteProject && <DeleteProject mount={mounted.deleteProject} projectId={main.selectedProject.id} reload={setSupportData} unmount={toggleDeleteProjectBox} />}
 
-			{mounted.editStatus && (
-				<EditStatus mount={mounted.editStatus} project={main.selectedProject} reload={setSupportData} unmount={toggleEditStatusBox} />
-			)}
+			{mounted.editStatus && <EditStatus mount={mounted.editStatus} project={main.selectedProject} reload={setSupportData} unmount={toggleEditStatusBox} />}
 
-			{mounted.projectStatus && (
-				<ProjectStatus mount={mounted.projectStatus} project={main.selectedProject} reload={setSupportData} unmount={toggleProjectStatusBox} />
-			)}
+			{mounted.projectStatus && <ProjectStatus mount={mounted.projectStatus} project={main.selectedProject} reload={setSupportData} unmount={toggleProjectStatusBox} />}
 		</div>
 	);
 }

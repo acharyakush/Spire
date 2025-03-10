@@ -123,14 +123,7 @@ export default function Home() {
 					<button onClick={autofill}>{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}</button>
 				</span>
 
-				<EmailAddress
-					onChange={(e) => handleInputs("emailAddress", e.target.value)}
-					reference={emailAddressReference}
-					suffix=""
-					tabIndex="1"
-					value={userData.emailAddress}
-					width="w-full"
-				/>
+				<EmailAddress onChange={(e) => handleInputs("emailAddress", e.target.value)} reference={emailAddressReference} suffix="" tabIndex="1" value={userData.emailAddress} width="w-full" />
 
 				<Password
 					eyeIconStyle={eyeIconStyle}

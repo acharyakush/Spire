@@ -15,7 +15,7 @@
 	"editor.cursorBlinking": "smooth",
 	"editor.cursorSmoothCaretAnimation": "on",
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.fontFamily": "'Fira Code Retina', Consolas, 'Courier New', monospace",
+	"editor.fontFamily": "Consolas, 'Courier New', monospace",
 	"editor.fontLigatures": true,
 	"editor.fontSize": 16,
 	"editor.formatOnSave": true,
@@ -55,7 +55,7 @@
 	"javascript.validate.enable": true,
 	"prettier.bracketSameLine": true,
 	"prettier.htmlWhitespaceSensitivity": "ignore",
-	"prettier.printWidth": 160,
+	"prettier.printWidth": 240,
 	"prettier.semi": true,
 	"prettier.singleAttributePerLine": false,
 	"prettier.singleQuote": false,
@@ -65,5 +65,7 @@
 	"search.exclude": {
 		"**/node_modules": true
 	},
-	"terminal.integrated.fontSize": 16
+	"terminal.integrated.fontSize": 16,
+	"window.autoDetectColorScheme": true,
+	"workbench.preferredLightColorTheme": "Default Light+"
 }

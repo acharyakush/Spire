@@ -175,12 +175,7 @@ export default function Notes({ inquiry, reload, unmount }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border">
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-					<Virtuoso
-						className="w-full h-full overflow-y-auto"
-						data={doSorting()}
-						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.notes.data.length}
-					/>
+					<Virtuoso className="w-full h-full overflow-y-auto" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.notes.data.length} />
 				</div>
 			);
 		}
@@ -245,7 +240,7 @@ export default function Notes({ inquiry, reload, unmount }) {
 	}
 
 	function uiRows(row, i) {
-		const style = "flex w-1/3 min-h-9 justify-center items-center text-center contrast-background";
+		const style = "flex w-1/3 min-h-9 justify-center items-center text-center";
 
 		const entryDate = dayjs(row.entry_date).format("DD MMM, YYYY");
 
@@ -253,7 +248,7 @@ export default function Notes({ inquiry, reload, unmount }) {
 		const entryBy = MyGlobal.HighlightText(row.entry_by, main.findText);
 
 		return (
-			<div className="flex w-full justify-center items-center bottom-border font-regular-10 black-text" key={i}>
+			<div className="flex w-full justify-center items-center bottom-border font-regular-10 black-text contrast-background" key={i}>
 				<span className={style}>{entryDate}</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: content }} />
 				<span className={style}>

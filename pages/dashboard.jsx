@@ -10,16 +10,7 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { BadgeLarge } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-	faCalendarCheck,
-	faCalendarPlus,
-	faCalendarWeek,
-	faCalendarXmark,
-	faCheckDouble,
-	faCirclePause,
-	faLock,
-	faUnlock,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowUpRightFromSquare, faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark, faCheckDouble, faCirclePause, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
 
 export default function Dashboard({ setModuleProps }) {
 	// Business Logic
@@ -257,9 +248,14 @@ export default function Dashboard({ setModuleProps }) {
 		return (
 			<div className="flex w-full p-5 space-x-10 justify-between items-center">
 				<div className="flex flex-col w-1/2 justify-between items-start">
-					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text">
+					<div
+						className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 cursor-pointer hover:underline hover:underline-offset-4 decoration-[--primary] primary-text"
+						onClick={() => setModuleProps("projectsOrTasks", "userId")}>
 						<span>{baseModules.Projects}</span>
 						<BadgeLarge value={main.projects.total} />
+						<span className="font-regular-10">
+							<FontAwesomeIcon className="gray-text" icon={faArrowUpRightFromSquare} />
+						</span>
 					</div>
 					<div className="w-4/5 pt-2.5 space-y-5 columns-2 gap-x-5">
 						{uiProjects(projectsStatus.Active)}
@@ -355,9 +351,14 @@ export default function Dashboard({ setModuleProps }) {
 	return (
 		<div className="w-full h-full p-5 space-y-1 overflow-y-auto">
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
+				<div
+					className="flex w-full space-x-2.5 justify-start items-center font-bold-24  cursor-pointer hover:underline hover:underline-offset-4 decoration-[--primary] primary-text"
+					onClick={() => setModuleProps(baseModules.Inquiries, "userId")}>
 					<span>{baseModules.Inquiries}</span>
 					<BadgeLarge value={main.inquiries.total} />
+					<span className="font-regular-10">
+						<FontAwesomeIcon className="gray-text" icon={faArrowUpRightFromSquare} />
+					</span>
 				</div>
 				<div className="flex w-full space-x-28 justify-between items-center">
 					{uiInquiries(inquiriesStatus.Open)}

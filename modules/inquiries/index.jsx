@@ -23,30 +23,29 @@ import { UpdateStatus } from "@/modals/inquiries/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmallWithBackground, Spinner, Tooltip, TooltipList } from "@/components/Elements";
-import {
-	faCalendar,
-	faChevronDown,
-	faCircleCheck,
-	faFileExcel,
-	faFilter,
-	faMultiply,
-	faPlusCircle,
-	faSearch,
-	faSortAmountAsc,
-	faSortAmountDesc,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronDown, faCircleCheck, faFileExcel, faFilter, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 export default function Inquiries({ presetStatus, setModuleProps }) {
 	// Business Logic
+	let findText = presetStatus ?? "";
+
+	if (presetStatus && presetStatus === "userId") {
+		findText = "";
+	}
+
 	const [api, setApi] = useState({
 		clients: [],
-		inquiries: { copy: [], data: [], mergedWithNotes: [] },
+		inquiries: {
+			copy: [],
+			data: [],
+			mergedWithNotes: [],
+		},
 		notes: [],
 	});
 
 	const [main, setMain] = useState({
 		filter: { from: "", to: "" },
-		findText: presetStatus ?? "",
+		findText,
 		isLoading: false,
 		selectedInquiryForNotes: {},
 		selectedInquiryForStatusChange: {},
@@ -69,9 +68,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	const thisView = MyConstants.Modules.Base.Inquiries;
 	const statuses = MyConstants.Statuses.Inquiries;
 
-	const newInquiryButton = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry)
-		? "block space-x-1.5 primary-button-transparent-background"
-		: "hidden";
+	const newInquiryButton = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry) ? "block space-x-1.5 primary-button-transparent-background" : "hidden";
 
 	const showFromDateClearButton = main.filter.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearButton = main.filter.to ? "cursor-pointer primary-text" : "hidden";
@@ -107,19 +104,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
-			records.push(
-				fe.entry_date,
-				fe.client_id_and_name,
-				fe.phone_number,
-				fe.main_project,
-				fe.sub_project,
-				fe.reference_id_and_name,
-				fe.follow_ups,
-				fe.quote,
-				fe.status,
-				getTotalNotesByInquiry(fe.id),
-				fe.entry_by_id_and_name,
-			);
+			records.push(fe.entry_date, fe.client_id_and_name, fe.phone_number, fe.main_project, fe.sub_project, fe.reference_id_and_name, fe.follow_ups, fe.quote, fe.status, getTotalNotesByInquiry(fe.id), fe.entry_by_id_and_name);
 		});
 
 		records.forEach((record) => {
@@ -183,21 +168,27 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			} else {
 				const findText = main.findText.toLowerCase();
 
-				return (
-					String(f.client_id).toLowerCase().includes(findText) ||
-					String(f.client_name).toLowerCase().includes(findText) ||
-					String(f.phone_number).includes(findText) ||
-					String(f.main_project).toLowerCase().includes(findText) ||
-					String(f.sub_project).toLowerCase().includes(findText) ||
-					String(f.reference_id).toLowerCase().includes(findText) ||
-					String(f.reference_name).toLowerCase().includes(findText) ||
-					String(f.follow_ups).toLowerCase().includes(findText) ||
-					String(f.follow_ups_initials).toLowerCase().includes(findText) ||
-					String(f.quote).includes(findText) ||
-					String(f.status).toLowerCase().includes(findText) ||
-					String(f.notes).toLowerCase().includes(findText) ||
-					String(f.entry_by_name).toLowerCase().includes(findText)
-				);
+				if (findText.length && presetStatus && presetStatus === "userId") {
+					const userFullName = MyGlobal.GetUserFullName().toLowerCase();
+
+					return String(f.follow_ups).toLowerCase().includes(userFullName) || String(f.entry_by_name).toLowerCase().includes(userFullName);
+				} else {
+					return (
+						String(f.client_id).toLowerCase().includes(findText) ||
+						String(f.client_name).toLowerCase().includes(findText) ||
+						String(f.phone_number).includes(findText) ||
+						String(f.main_project).toLowerCase().includes(findText) ||
+						String(f.sub_project).toLowerCase().includes(findText) ||
+						String(f.reference_id).toLowerCase().includes(findText) ||
+						String(f.reference_name).toLowerCase().includes(findText) ||
+						String(f.follow_ups).toLowerCase().includes(findText) ||
+						String(f.follow_ups_initials).toLowerCase().includes(findText) ||
+						String(f.quote).includes(findText) ||
+						String(f.status).toLowerCase().includes(findText) ||
+						String(f.notes).toLowerCase().includes(findText) ||
+						String(f.entry_by_name).toLowerCase().includes(findText)
+					);
+				}
 			}
 		});
 
@@ -326,7 +317,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					revised = array;
 				}
 
-				setApi((s) => ({ ...s, inquiries: { ...s.inquiries, copy: revisedCopy, data: revised } }));
+				setApi((s) => ({ ...s, inquiries: { ...s.inquiries, copy: revisedCopy, data: revised, mergedWithNotes: mergeInquiriesAndNotesById(revisedCopy) } }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get Inquiries");
@@ -413,12 +404,12 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		return MyGlobal.StripHtmlTags(result);
 	}
 
-	function mergeInquiriesAndNotesById() {
+	function mergeInquiriesAndNotesById(inquiries) {
 		const newArray = [];
 		const mergedObject = {};
 		const mergedArray = [];
 
-		api.inquiries.copy.forEach((fe) => {
+		inquiries.forEach((fe) => {
 			api.notes.forEach((_fe) => {
 				if (fe.id == _fe.inquiry_id) {
 					newArray.push({ id: _fe.inquiry_id, notes: _fe.content });
@@ -434,7 +425,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			}
 		});
 
-		api.inquiries.copy.forEach((fe) => {
+		inquiries.forEach((fe) => {
 			Object.values(mergedObject).forEach((_fe) => {
 				if (fe.id == _fe.id) {
 					mergedArray.push({ ...fe, notes: _fe.notes });
@@ -442,16 +433,16 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			});
 		});
 
-		const idsOfInquiries = api.inquiries.copy.map((m) => m.id);
+		const idsOfInquiries = inquiries.map((m) => m.id);
 		const idsOfMergedArray = mergedArray.map((m) => m.id);
 		const missingIds = idsOfInquiries.filter((f) => !idsOfMergedArray.includes(f));
 
 		missingIds.forEach((fe) => {
-			const missingObject = api.inquiries.copy.find((f) => f.id == fe);
+			const missingObject = inquiries.find((f) => f.id == fe);
 			mergedArray.push(missingObject);
 		});
 
-		setApi((s) => ({ ...s, inquiries: { ...s.inquiries, mergedWithNotes: mergedArray } }));
+		return mergedArray;
 	}
 
 	function openWhatsAppWeb(phoneNumber) {
@@ -535,12 +526,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border">
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-					<Virtuoso
-						className="w-full h-full overflow-y-auto bottom-border contrast-background"
-						data={doSorting()}
-						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.inquiries.data.length}
-					/>
+					<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.inquiries.data.length} />
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 				</div>
 			);
@@ -782,9 +768,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<MenuButton className="flex w-full justify-between items-center focus:outline-none relative z-40">
 					<FontAwesomeIcon className="text-white" icon={faFilter} size="sm" />
 				</MenuButton>
-				<MenuItems className="absolute w-fit right-0 origin-top-right rounded contrast-background shadow-md focus:outline-none z-50">
-					{uiStatusFilterMenu()}
-				</MenuItems>
+				<MenuItems className="absolute w-fit right-0 origin-top-right rounded contrast-background shadow-md focus:outline-none z-50">{uiStatusFilterMenu()}</MenuItems>
 			</Menu>
 		);
 	}
@@ -800,11 +784,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		return uniqueStatus.map((m, i) => {
 			return (
-				<MenuItem
-					as="div"
-					className="w-full p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text hovered-rows"
-					key={i}
-					onClick={() => setMain((s) => ({ ...s, findText: m }))}>
+				<MenuItem as="div" className="w-full p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text hovered-rows" key={i} onClick={() => setMain((s) => ({ ...s, findText: m }))}>
 					<span>{m}</span>
 				</MenuItem>
 			);
@@ -815,9 +795,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const isConfirmed = row.status == statuses.Confirmed;
 		const reverseIcon = isConfirmed ? "flex-row-reverse" : "";
 
-		const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none relative z-40 font-medium-10 ${getStatusSeverity(
-			row.status,
-		)} ${reverseIcon} !py-0`;
+		const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none relative z-40 font-medium-10 ${getStatusSeverity(row.status)} ${reverseIcon} !py-0`;
 
 		const icon = isConfirmed ? <FontAwesomeIcon icon={faCircleCheck} size="sm" /> : <FontAwesomeIcon icon={faChevronDown} size="sm" />;
 
@@ -828,11 +806,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						<span dangerouslySetInnerHTML={{ __html: highlightText(true, row.status) }} />
 						{icon}
 					</MenuButton>
-					{!isConfirmed && (
-						<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">
-							{uiStatusMenuList(row)}
-						</MenuItems>
-					)}
+					{!isConfirmed && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStatusMenuList(row)}</MenuItems>}
 				</Menu>
 			</Tippy>
 		);
@@ -852,11 +826,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				const label = m == statuses.Closed ? "Close" : m == statuses.Confirmed ? "Confirm" : m;
 
 				return (
-					<MenuItem
-						as="div"
-						className="p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text text-left hovered-rows"
-						key={i}
-						onClick={() => prepareInquiryStatusChangeData(row, m)}>
+					<MenuItem as="div" className="p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text text-left hovered-rows" key={i} onClick={() => prepareInquiryStatusChangeData(row, m)}>
 						<span>{label}</span>
 					</MenuItem>
 				);
@@ -902,7 +872,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	useEffect(() => {
 		if (api.inquiries.copy.length) {
-			mergeInquiriesAndNotesById();
+			if (presetStatus && presetStatus === "userId") {
+				setMain((s) => ({ ...s, findText: MyGlobal.GetUserFullName() }));
+			}
 		}
 	}, [api.inquiries.copy]);
 
@@ -930,9 +902,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		<div className="flex flex-col w-full h-full justify-start items-center primary-light-background">
 			{uiMain()}
 
-			{mounted.updateStatus && (
-				<UpdateStatus inquiry={main.selectedInquiryForStatusChange} mount={mounted.updateStatus} reload={setSupportData} unmount={toggleUpdateStatus} />
-			)}
+			{mounted.updateStatus && <UpdateStatus inquiry={main.selectedInquiryForStatusChange} mount={mounted.updateStatus} reload={setSupportData} unmount={toggleUpdateStatus} />}
 		</div>
 	);
 }
