@@ -4,6 +4,7 @@
 
 import axios from "axios";
 import Dashboard from "./dashboard";
+import Firms from "@/modules/firms";
 import Clients from "@/modules/clients";
 import Projects from "@/modules/projects";
 import Inquiries from "@/modules/inquiries";
@@ -47,6 +48,7 @@ export default function Home() {
 		},
 		singleProjectObject: {},
 		status: {
+			firms: "",
 			inquiries: "",
 			invoicesOrRv: { find: "", module: "" },
 			projectsOrTasks: "",
@@ -129,16 +131,18 @@ export default function Home() {
 
 	function getSequence(module) {
 		switch (module) {
-			case MyConstants.Modules.Base.CashFlow:
+			case baseModules.CashFlow:
 				return 6;
-			case MyConstants.Modules.Base.Clients:
+			case baseModules.Clients:
 				return 4;
-			case MyConstants.Modules.Base.Dashboard:
+			case baseModules.Dashboard:
 				return 0;
-			case MyConstants.Modules.Base.Inquiries:
+			case baseModules.Inquiries:
 				return 1;
-			case MyConstants.Modules.Base.Projects:
+			case baseModules.Projects:
 				return 2;
+			case baseModules.Firms:
+				return 7;
 			default:
 				return -1;
 		}
@@ -320,7 +324,7 @@ export default function Home() {
 
 	function uiModules() {
 		return api.modules
-			.filter((f) => f.name != baseModules.Affiliates && f.name != baseModules.Invoices && f.name != baseModules.Firms)
+			.filter((f) => f.name != baseModules.Affiliates && f.name != baseModules.Invoices)
 			.filter((f) => f.sequence >= 0)
 			.map((m, i) => {
 				const isSelected = i == main.selectedModule.index;
@@ -337,8 +341,7 @@ export default function Home() {
 	}
 
 	function uiOtherModules() {
-		const aesthetics =
-			main.selectedModule.index == -1 ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
+		const aesthetics = main.selectedModule.index == -1 ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
 		const wrapper = `py-2 font-regular-11 ${aesthetics}`;
 
 		return (
@@ -361,11 +364,7 @@ export default function Home() {
 				const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "gray-text";
 
 				return (
-					<MenuItem
-						as="div"
-						className={`p-2 space-x-2.5 cursor-pointer border-y ${aesthetics} font-regular-11 hovered-rows`}
-						key={i}
-						onClick={() => setModule(i, m)}>
+					<MenuItem as="div" className={`p-2 space-x-2.5 cursor-pointer border-y ${aesthetics} font-regular-11 hovered-rows`} key={i} onClick={() => setModule(i, m)}>
 						{isSelected && <FontAwesomeIcon icon={faCheck} />}
 						<span>{m.name}</span>
 					</MenuItem>
@@ -377,55 +376,43 @@ export default function Home() {
 		switch (main.selectedModule.name) {
 			case baseModules.Affiliates:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Affiliates}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Affiliates)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Affiliates}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Affiliates)} FallbackComponent={ErrorFallbackComponent}>
 						<Affiliates />
 					</ErrorBoundary>
 				);
 			case baseModules.CashFlow:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.CashFlow}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.CashFlow)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.CashFlow}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.CashFlow)} FallbackComponent={ErrorFallbackComponent}>
 						<CashFlows presetStatus={main.status.invoicesOrRv} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Clients:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Clients}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Clients)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Clients}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Clients)} FallbackComponent={ErrorFallbackComponent}>
 						<Clients />
 					</ErrorBoundary>
 				);
 			case baseModules.Dashboard:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Dashboard}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Dashboard)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Dashboard}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Dashboard)} FallbackComponent={ErrorFallbackComponent}>
 						<Dashboard setModuleProps={setModuleProps} />
+					</ErrorBoundary>
+				);
+			case baseModules.Firms:
+				return (
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Firms}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Firms)} FallbackComponent={ErrorFallbackComponent}>
+						<Firms presetStatus={main.status.firms} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Inquiries:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Inquiries}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Inquiries)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Inquiries}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Inquiries)} FallbackComponent={ErrorFallbackComponent}>
 						<Inquiries presetStatus={main.status.inquiries} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Projects:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Projects}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Projects)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Projects}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Projects)} FallbackComponent={ErrorFallbackComponent}>
 						<Projects presetStatus={main.status.projectsOrTasks} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
@@ -438,9 +425,7 @@ export default function Home() {
 				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
 					<FontAwesomeIcon className="primary-text" icon={faUserCircle} size="lg" />
 				</MenuButton>
-				<MenuItems
-					anchor="left start"
-					className="absolute w-max mt-2 left-5 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
+				<MenuItems anchor="left start" className="absolute w-max mt-2 left-5 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
 					<div className="flex flex-col p-3 font-semibold-16">
 						<span>{main.user.fullName}</span>
 						<span className="font-regular-10 gray-text">{main.user.designation}</span>
@@ -469,11 +454,7 @@ export default function Home() {
 			})
 			.map((m, i) => {
 				return (
-					<MenuItem
-						as="div"
-						className="p-3 space-x-3 cursor-pointer border-y font-medium-12 black-text hovered-rows"
-						key={i}
-						onClick={() => getUserMenuClickAction(m)}>
+					<MenuItem as="div" className="p-3 space-x-3 cursor-pointer border-y font-medium-12 black-text hovered-rows" key={i} onClick={() => getUserMenuClickAction(m)}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons(m)} />
 						<span>{m}</span>
 					</MenuItem>

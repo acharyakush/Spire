@@ -47,6 +47,11 @@ const MyConstants = Object.freeze({
 			GetSupportData: "api/employees/getSupportData",
 		}),
 		ErrorLogger: "api/errorLogger",
+		Firms: Object.freeze({
+			AddFirm: "api/firms/addFirm",
+			EditFirm: "api/firms/editFirm",
+			GetFirms: "api/firms/getFirms",
+		}),
 		Getter: "api/getter",
 		Inquiries: Object.freeze({
 			AddInquiry: "api/inquiries/addInquiry",

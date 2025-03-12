@@ -364,8 +364,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			}
 		}
 
-		console.log(source);
-
 		return source;
 	}
 
