@@ -10,7 +10,6 @@ import Notes from "./Notes";
 import Tippy from "@tippyjs/react";
 import NewInquiry from "./NewInquiry";
 import EditInquiry from "./EditInquiry";
-import MyInquiries from "./MyInquiries";
 import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
 import NewProject from "../projects/NewProject";
@@ -24,9 +23,9 @@ import { UpdateStatus } from "@/modals/inquiries/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmallWithBackground, Spinner, Tooltip, TooltipList } from "@/components/Elements";
-import { faCalendar, faChevronDown, faCircleCheck, faFileExcel, faFilter, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronDown, faChevronRight, faCircleCheck, faFileExcel, faFilter, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
-export default function Inquiries({ presetStatus, setModuleProps }) {
+export default function MyInquiries({ setModuleProps, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
 		clients: [],
@@ -40,7 +39,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	const [main, setMain] = useState({
 		filter: { from: "", to: "" },
-		findText: presetStatus ?? "",
+		findText: "",
 		isLoading: false,
 		selectedInquiryForNotes: {},
 		selectedInquiryForStatusChange: {},
@@ -51,7 +50,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		convertToProject: false,
 		editInquiry: false,
 		mainComponent: false,
-		myInquiries: presetStatus === "my-inquiries",
 		newInquiry: false,
 		newProject: false,
 		notes: false,
@@ -73,11 +71,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	const blankDataWrapper = "flex w-full h-full justify-center items-center font-regular-12 gray-text contrast-background full-border";
 
 	// Functions
-	function closeMyInquiries() {
-		setMain((s) => ({ ...s, findText: "" }));
-		setMounted((s) => ({ ...s, myInquiries: false }));
-	}
-
 	function closeNewProjectView() {
 		setMounted((s) => ({ ...s, newProject: false }));
 	}
@@ -259,7 +252,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetInquiries, MyGlobal.GetHeaders());
+			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetMyInquiries, MyGlobal.GetHeaders({ userId: MyGlobal.GetUserId() }));
 
 			if (response.status === 200) {
 				let revised = [];
@@ -302,15 +295,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					revised.push(data);
 					revisedCopy.push(data);
 				});
-
-				const status = String(presetStatus);
-
-				if (status.length && Object.values(statuses).includes(status)) {
-					const array = revised.filter((f) => f.status.includes(status));
-
-					revised.length = 0;
-					revised = array;
-				}
 
 				setApi((s) => ({ ...s, inquiries: { ...s.inquiries, copy: revisedCopy, data: revised, mergedWithNotes: mergeInquiriesAndNotesById(revisedCopy) } }));
 			}
@@ -655,11 +639,15 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			return (
 				<>
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
-						<div className="flex w-1/5 space-x-2 justify-start items-center">
-							<span className="view-heading">{thisView}</span>
+						<div className="flex w-1/2 space-x-2 justify-start items-center">
+							<span className="cursor-pointer hover:underline hover:underline-offset-8 view-heading" onClick={() => unmount()}>
+								All {thisView}
+							</span>
+							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
+							<span className="view-heading">My {thisView}</span>
 							{getIconOrBadge()}
 						</div>
-						<div className="flex w-4/5 space-x-2 justify-end items-center">
+						<div className="flex w-1/2 space-x-2 justify-end items-center">
 							<div className="flex w-1/2 space-x-2 justify-end items-center">
 								{uiFromDate()}
 								{uiToDate()}
@@ -885,9 +873,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		}
 	}, [main.selectedInquiryForStatusChange]);
 
-	return mounted.myInquiries ? (
-		<MyInquiries setModuleProps={setModuleProps} unmount={closeMyInquiries} />
-	) : (
+	return (
 		<div className="flex flex-col w-full h-full justify-start items-center primary-light-background">
 			{uiMain()}
 

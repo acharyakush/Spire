@@ -260,6 +260,18 @@ html {
 	@apply bg-[var(--red-transparent-01)];
 }
 
+.yellow-background {
+	@apply bg-[var(--yellow)];
+}
+
+.yellow-background-gradient {
+	background: linear-gradient(to bottom, var(--yellow), #000);
+}
+
+.yellow-background-transparent-01 {
+	@apply bg-[var(--yellow-transparent-01)];
+}
+
 /*******************/
 /*******************/
 /******Borders******/

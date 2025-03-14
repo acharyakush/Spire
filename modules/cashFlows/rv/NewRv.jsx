@@ -15,18 +15,7 @@ import { MyGlobal } from "@/utilities/global";
 import { Badge, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
-import {
-	faBank,
-	faCalendar,
-	faChevronLeft,
-	faCircleMinus,
-	faHashtag,
-	faIndianRupee,
-	faListCheck,
-	faMinusCircle,
-	faPlusCircle,
-	faTasks,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBank, faCalendar, faChevronLeft, faCircleMinus, faHashtag, faIndianRupee, faListCheck, faMinusCircle, faPlusCircle, faTasks } from "@fortawesome/free-solid-svg-icons";
 
 export default function NewRv({ project, reload, unmount }) {
 	// Business Logic
@@ -461,18 +450,7 @@ export default function NewRv({ project, reload, unmount }) {
 	}
 
 	function uiInputRvId() {
-		return (
-			<TextInput
-				icon={faHashtag}
-				label="ID"
-				maxLength={5}
-				onChange={(e) => setInputs("rvId", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={2}
-				value={main.rvId}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faHashtag} label="ID" maxLength={5} onChange={(e) => setInputs("rvId", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={main.rvId} width="w-full" />;
 	}
 
 	function uiInputParticulars(object) {
@@ -707,13 +685,19 @@ export default function NewRv({ project, reload, unmount }) {
 	}
 
 	function uiRvSheet() {
+		let imageSource = "../logo.png";
+
+		if (MyGlobal.GetInitials(main.firm.name) == "PS") {
+			imageSource = "../cs.png";
+		}
+
 		return (
 			<div className="flex w-1/2 h-full justify-center items-center" id="rvWrapper">
 				<div className="flex flex-col w-full h-full px-4 py-2 space-y-4 justify-start items-center overflow-y-auto bg-white" id="rvBody">
 					<div className="flex w-full justify-between items-center bg-white">
 						{uiRv()}
 						<div className="flex w-full justify-end items-center">
-							<img src="../logo.png" width="55" height="75" />
+							<img src={imageSource} width="55" height="75" />
 						</div>
 					</div>
 					<div className="flex w-full space-x-5 justify-between items-start">

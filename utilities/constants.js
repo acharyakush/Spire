@@ -57,6 +57,7 @@ const MyConstants = Object.freeze({
 			AddInquiry: "api/inquiries/addInquiry",
 			EditInquiry: "api/inquiries/editInquiry",
 			GetInquiries: "api/inquiries/getInquiries",
+			GetMyInquiries: "api/inquiries/getMyInquiries",
 			GetSupportData: "api/inquiries/getSupportData",
 		}),
 		Invoices: Object.freeze({
@@ -75,6 +76,7 @@ const MyConstants = Object.freeze({
 		Projects: Object.freeze({
 			AddProject: "api/projects/addProject",
 			EditProject: "api/projects/editProject",
+			GetMyProjects: "api/projects/getMyProjects",
 			GetProjects: "api/projects/getProjects",
 			GetStatus: "api/projects/getStatus",
 			GetSupportData: "api/projects/getSupportData",

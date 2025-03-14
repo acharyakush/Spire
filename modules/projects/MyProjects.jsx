@@ -5,7 +5,6 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
-import MyProjects from "./MyProjects";
 import EditProject from "./EditProject";
 import writeXlsxFile from "write-excel-file";
 import SingleProject from "../singleProject";
@@ -19,9 +18,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
-import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCheckCircle, faChevronDown, faChevronRight, faFileExcel, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
 
-export default function Projects({ presetStatus, setModuleProps }) {
+export default function MyProjects({ setModuleProps, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
 		notes: [],
@@ -31,7 +30,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const [main, setMain] = useState({
 		activeModule: { items: [], name: "All" },
 		dueDate: { from: "", to: "" },
-		findText: presetStatus ?? "",
+		findText: "",
 		isLoading: { selectedProject: false, supportData: false },
 		selectedClient: {},
 		selectedProject: {},
@@ -44,7 +43,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		editProject: false,
 		editStatus: false,
 		mainComponent: false,
-		myProjects: presetStatus === "my-projects",
 		projectStatus: false,
 		singleProject: false,
 	});
@@ -69,11 +67,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				document.getElementById("findBox").focus();
 				break;
 		}
-	}
-
-	function closeMyProjects() {
-		setMain((s) => ({ ...s, findText: "" }));
-		setMounted((s) => ({ ...s, myProjects: false }));
 	}
 
 	function doFiltering() {
@@ -386,7 +379,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		setMain((s) => ({ ...s, isLoading: { ...s.isLoading, supportData: true } }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetProjects, MyGlobal.GetHeaders());
+			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetMyProjects, MyGlobal.GetHeaders({ userId: MyGlobal.GetUserId() }));
 
 			if (response.status === 200) {
 				let revised = [];
@@ -787,15 +780,17 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}, [main.findText]);
 
 	// Main UI
-	return mounted.myProjects ? (
-		<MyProjects setModuleProps={setModuleProps} unmount={closeMyProjects} />
-	) : (
+	return (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<>
 				{!mounted.editProject && !mounted.singleProject && (
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
 						<div className="flex w-1/3 space-x-2 justify-start items-center">
-							<span className="view-heading">{thisView}</span>
+							<span className="cursor-pointer hover:underline hover:underline-offset-8 view-heading" onClick={() => unmount()}>
+								All {thisView}
+							</span>
+							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
+							<span className="view-heading">My {thisView}</span>
 							{getIconOrBadge()}
 						</div>
 						<div className="flex w-1/3 justify-center items-center">{uiFind()}</div>

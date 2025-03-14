@@ -10,13 +10,13 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { BadgeLarge } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUpRightFromSquare, faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark, faCheckDouble, faCirclePause, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
+import { faArrowUpRightFromSquare, faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark, faCheckDouble, faCirclePause, faFaceGrinStars, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
 
 export default function Dashboard({ setModuleProps }) {
 	// Business Logic
 
 	const [main, setMain] = useState({
-		inquiries: { closed: 0, confirmed: 0, hold: 0, open: 0, total: 0 },
+		inquiries: { closed: 0, confirmed: 0, hold: 0, my: 0, open: 0, total: 0 },
 		invoices: {
 			due: { amount: 0, count: 0, label: "DUE" },
 			generated: { amount: 0, count: 0, label: "GENERATED" },
@@ -24,7 +24,7 @@ export default function Dashboard({ setModuleProps }) {
 			total: 0,
 		},
 		isLoading: false,
-		projects: { active: 0, closed: 0, completed: 0, hold: 0, total: 0 },
+		projects: { active: 0, closed: 0, completed: 0, hold: 0, my: 0, total: 0 },
 		rv: {
 			due: { amount: 0, count: 0, label: "DUE" },
 			generated: { amount: 0, count: 0, label: "GENERATED" },
@@ -76,6 +76,10 @@ export default function Dashboard({ setModuleProps }) {
 				object.background = "red-background-gradient";
 				object.icon = faCalendarXmark;
 				break;
+			default:
+				object.background = "yellow-background-gradient";
+				object.icon = faFaceGrinStars;
+				break;
 		}
 
 		return object;
@@ -88,9 +92,9 @@ export default function Dashboard({ setModuleProps }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Dashboard, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const inquiriesCount = { closed: 0, confirmed: 0, hold: 0, open: 0, total: response.data.inquiries.length };
+				const inquiriesCount = { closed: 0, confirmed: 0, hold: 0, my: 0, open: 0, total: response.data.inquiries.length };
 
-				const projectsCount = { active: 0, closed: 0, completed: 0, hold: 0, total: response.data.projects.length };
+				const projectsCount = { active: 0, closed: 0, completed: 0, hold: 0, my: 0, total: response.data.projects.length };
 
 				const tasksCount = { overdue: 0, today: 0, tomorrow: 0, total: response.data.tasks.length, upcoming: 0 };
 
@@ -104,6 +108,10 @@ export default function Dashboard({ setModuleProps }) {
 					} else if (i.status == inquiriesStatus.Open) {
 						inquiriesCount.open++;
 					}
+
+					if (String(i.follow_ups).includes(MyGlobal.GetUserId())) {
+						inquiriesCount.my++;
+					}
 				}
 
 				for (const p of response.data.projects) {
@@ -115,6 +123,10 @@ export default function Dashboard({ setModuleProps }) {
 						projectsCount.completed++;
 					} else if (p.status == projectsStatus.Hold) {
 						projectsCount.hold++;
+					}
+
+					if (String(p.teams).includes(MyGlobal.GetUserId())) {
+						projectsCount.my++;
 					}
 				}
 
@@ -244,24 +256,56 @@ export default function Dashboard({ setModuleProps }) {
 		);
 	}
 
+	function uiMyInquiries() {
+		const aesthetics = getBackgroundAndIcon();
+
+		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+
+		return (
+			<div className={wrapper} onClick={() => setModuleProps(baseModules.Inquiries, "my-inquiries")}>
+				<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
+					<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
+				</div>
+				<div className="flex flex-col px-8 justify-center items-center">
+					<span className="tracking-widest uppercase font-medium-8 light-gray-text">Mine</span>
+					<span className="font-bold-28">{main.inquiries.my}</span>
+				</div>
+			</div>
+		);
+	}
+
+	function uiMyProjects() {
+		const aesthetics = getBackgroundAndIcon();
+
+		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+
+		return (
+			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", "my-projects")}>
+				<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
+					<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
+				</div>
+				<div className="flex flex-col px-8 justify-center items-center">
+					<span className="tracking-widest uppercase font-medium-8 light-gray-text">Mine</span>
+					<span className="font-bold-28">{main.projects.my}</span>
+				</div>
+			</div>
+		);
+	}
+
 	function uiProjectsAndTasks() {
 		return (
-			<div className="flex w-full p-5 space-x-10 justify-between items-center">
+			<div className="flex w-full p-5 justify-between items-center">
 				<div className="flex flex-col w-1/2 justify-between items-start">
-					<div
-						className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 cursor-pointer hover:underline hover:underline-offset-4 decoration-[--primary] primary-text"
-						onClick={() => setModuleProps("projectsOrTasks", "userId")}>
+					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text">
 						<span>{baseModules.Projects}</span>
 						<BadgeLarge value={main.projects.total} />
-						<span className="font-regular-10">
-							<FontAwesomeIcon className="gray-text" icon={faArrowUpRightFromSquare} />
-						</span>
 					</div>
-					<div className="w-4/5 pt-2.5 space-y-5 columns-2 gap-x-5">
+					<div className="w-4/5 pt-2.5 space-y-5 columns-3 gap-x-5">
 						{uiProjects(projectsStatus.Active)}
 						{uiProjects(projectsStatus.Closed)}
 						{uiProjects(projectsStatus.Completed)}
 						{uiProjects(projectsStatus.Hold)}
+						{uiMyProjects()}
 					</div>
 				</div>
 				<div className="flex flex-col w-1/2 justify-between items-end">
@@ -351,20 +395,16 @@ export default function Dashboard({ setModuleProps }) {
 	return (
 		<div className="w-full h-full p-5 space-y-1 overflow-y-auto">
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div
-					className="flex w-full space-x-2.5 justify-start items-center font-bold-24  cursor-pointer hover:underline hover:underline-offset-4 decoration-[--primary] primary-text"
-					onClick={() => setModuleProps(baseModules.Inquiries, "userId")}>
+				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
 					<span>{baseModules.Inquiries}</span>
 					<BadgeLarge value={main.inquiries.total} />
-					<span className="font-regular-10">
-						<FontAwesomeIcon className="gray-text" icon={faArrowUpRightFromSquare} />
-					</span>
 				</div>
-				<div className="flex w-full space-x-28 justify-between items-center">
+				<div className="flex w-full space-x-14 justify-between items-center">
 					{uiInquiries(inquiriesStatus.Open)}
 					{uiInquiries(inquiriesStatus.Closed)}
 					{uiInquiries(inquiriesStatus.Confirmed)}
 					{uiInquiries(inquiriesStatus.Hold)}
+					{uiMyInquiries()}
 				</div>
 			</div>
 			{uiProjectsAndTasks()}
