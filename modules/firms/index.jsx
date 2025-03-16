@@ -156,7 +156,7 @@ export default function Firms() {
 				<div className="flex w-1/2 justify-start items-center primary-text">
 					<div className="flex w-full space-x-5 justify-start items-center">
 						<span className="font-semibold-16">{company.name}</span>
-						<FontAwesomeIcon className="cursor-pointer" icon={faPencil} onClick={() => toggleEditView(true)} size="sm" />
+						{/* <FontAwesomeIcon className="cursor-pointer" icon={faPencil} onClick={() => toggleEditView(true)} size="sm" /> */}
 					</div>
 				</div>
 				<div className="flex w-full space-x-5 justify-between items-center">
@@ -194,7 +194,7 @@ export default function Firms() {
 							<span className="view-heading">Firms</span>
 							{data.firms.length > 0 && <Badge value={data.firms.length} />}
 						</div>
-						<div className="flex w-1/2 space-x-2 justify-end items-center">{uiNew()}</div>
+						<div className="flex w-1/2 space-x-2 justify-end items-center"></div>
 					</div>
 					<div className="flex w-full h-full justify-center items-start">{uiBody()}</div>
 				</>
