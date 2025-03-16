@@ -294,18 +294,18 @@ export default function Dashboard({ setModuleProps }) {
 
 	function uiProjectsAndTasks() {
 		return (
-			<div className="flex w-full p-5 justify-between items-center">
+			<div className="flex w-full p-5 justify-between items-start">
 				<div className="flex flex-col w-1/2 justify-between items-start">
 					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text">
 						<span>{baseModules.Projects}</span>
 						<BadgeLarge value={main.projects.total} />
 					</div>
-					<div className="w-4/5 pt-2.5 space-y-5 columns-3 gap-x-5">
+					<div className="w-4/5 pt-2.5 space-y-5 columns-2 gap-x-5">
 						{uiProjects(projectsStatus.Active)}
 						{uiProjects(projectsStatus.Closed)}
+						{uiMyProjects()}
 						{uiProjects(projectsStatus.Completed)}
 						{uiProjects(projectsStatus.Hold)}
-						{uiMyProjects()}
 					</div>
 				</div>
 				<div className="flex flex-col w-1/2 justify-between items-end">
@@ -413,7 +413,7 @@ export default function Dashboard({ setModuleProps }) {
 					<span>{baseModules.Invoices}</span>
 					<BadgeLarge value={main.projects.total} />
 				</div>
-				<div className="flex w-full space-x-48 justify-between items-center">
+				<div className="flex w-full space-x-24 justify-between items-center">
 					{uiInvoices(main.invoices.due.label)}
 					{uiInvoices(main.invoices.generated.label)}
 					{uiInvoices(main.invoices.notGenerated.label)}
@@ -424,7 +424,7 @@ export default function Dashboard({ setModuleProps }) {
 					<span>{baseModules.Rv}</span>
 					<BadgeLarge value={main.projects.total} />
 				</div>
-				<div className="flex w-full space-x-48 justify-between items-center">
+				<div className="flex w-full space-x-24 justify-between items-center">
 					{uiRv(main.rv.due.label)}
 					{uiRv(main.rv.generated.label)}
 					{uiRv(main.rv.notGenerated.label)}

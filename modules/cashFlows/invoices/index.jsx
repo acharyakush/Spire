@@ -21,17 +21,7 @@ import { TextInputNative } from "@/components/Inputs";
 import { Badge, Spinner, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Transactions } from "../../../modals/invoices/Transactions";
-import {
-	faCalendar,
-	faChevronRight,
-	faCoins,
-	faFileDownload,
-	faFileExcel,
-	faMultiply,
-	faSearch,
-	faSortAmountAsc,
-	faSortAmountDesc,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronRight, faCoins, faFileDownload, faFileExcel, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 export default function Invoices({ presetStatus, unmount }) {
 	// Business Logic
@@ -95,18 +85,7 @@ export default function Invoices({ presetStatus, unmount }) {
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
-			records.push(
-				fe.id,
-				fe.company_name,
-				fe.main_project_name,
-				fe.sub_project_name,
-				`${fe.created_at_time}\n${fe.created_at}`,
-				fe.invoice_due_date,
-				fe.amount,
-				fe.amount_received,
-				fe.amount_pending,
-				fe.invoice_id,
-			);
+			records.push(fe.id, fe.company_name, fe.main_project_name, fe.sub_project_name, `${fe.created_at_time}\n${fe.created_at}`, fe.invoice_due_date, fe.amount, fe.amount_received, fe.amount_pending, fe.invoice_id);
 		});
 
 		records.forEach((fe) => {
@@ -414,12 +393,7 @@ export default function Invoices({ presetStatus, unmount }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border">
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-					<Virtuoso
-						className="w-full h-full overflow-y-auto bottom-border contrast-background"
-						data={doSorting()}
-						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.projects.length}
-					/>
+					<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.length} />
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 				</div>
 			);
@@ -499,10 +473,7 @@ export default function Invoices({ presetStatus, unmount }) {
 			const showSortArrow = m == main.sort.column ? "block" : "hidden";
 
 			return (
-				<span
-					className="flex w-[9.09%] space-x-2 justify-center items-center cursor-pointer text-white font-medium-10"
-					key={i}
-					onClick={() => setSort(m)}>
+				<span className="flex w-[9.09%] space-x-2 justify-center items-center cursor-pointer text-white font-medium-10" key={i} onClick={() => setSort(m)}>
 					<span>{m}</span>
 					<span className={showSortArrow}>{uiSortArrows(m)}</span>
 				</span>
@@ -515,17 +486,15 @@ export default function Invoices({ presetStatus, unmount }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-center">
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
-						<div className="flex w-1/5 space-x-2 justify-start items-center">
-							<span
-								className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
-								onClick={() => unmount()}>
+						<div className="flex w-1/2 space-x-2 justify-start items-center">
+							<span className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading" onClick={() => unmount()}>
 								{MyConstants.Modules.Base.CashFlow}
 							</span>
 							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
 							<span className="view-heading">{MyConstants.Modules.Base.Invoices}</span>
 							{getIconOrBadge()}
 						</div>
-						<div className="flex w-4/5 space-x-2 justify-end items-center">
+						<div className="flex w-1/2 space-x-2 justify-end items-center">
 							<div className="flex w-1/2 space-x-2 justify-end items-center">
 								{uiFromDate()}
 								{uiToDate()}
@@ -536,9 +505,7 @@ export default function Invoices({ presetStatus, unmount }) {
 					</div>
 					<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
 
-					{mounted.transactions && (
-						<Transactions mount={mounted.transactions} project={main.selectedProject} reload={setSupportData} unmount={toggleTransactions} />
-					)}
+					{mounted.transactions && <Transactions mount={mounted.transactions} project={main.selectedProject} reload={setSupportData} unmount={toggleTransactions} />}
 				</div>
 			);
 		}

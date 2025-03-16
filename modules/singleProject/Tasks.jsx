@@ -14,32 +14,8 @@ import { MyGlobal } from "@/utilities/global";
 import { useEffect, useRef, useState } from "react";
 import { SpinnerBig, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-	AddParticularRemark,
-	AddTask,
-	DeleteParticularRemark,
-	DeleteTask,
-	EditParticularRemark,
-	EditTask,
-	EditTaskStatus,
-	MarkSubTaskCompleted,
-} from "@/modals/singleProject/tasks";
-import {
-	faBan,
-	faBolt,
-	faCheckCircle,
-	faCircleCheck,
-	faCircleExclamation,
-	faClipboardCheck,
-	faClock,
-	faIndianRupee,
-	faPencil,
-	faPlusCircle,
-	faSortAmountAsc,
-	faSortAmountDesc,
-	faStopwatch,
-	faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { AddParticularRemark, AddTask, DeleteParticularRemark, DeleteTask, EditParticularRemark, EditTask, EditTaskStatus, MarkSubTaskCompleted } from "@/modals/singleProject/tasks";
+import { faBan, faBolt, faCheckCircle, faCircleCheck, faCircleExclamation, faClipboardCheck, faClock, faIndianRupee, faPencil, faPlusCircle, faSortAmountAsc, faSortAmountDesc, faStopwatch, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Tasks({ project }) {
 	// Business Logic
@@ -133,10 +109,7 @@ export default function Tasks({ project }) {
 		try {
 			const tasks = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ projectId: project.id, type: "get-tasks" }));
 
-			const tasksDetails = await axios.get(
-				MyConstants.ApiEndpoints.Getter,
-				MyGlobal.GetHeaders({ projectId: project.id, type: "get-tasks-particulars-remarks" }),
-			);
+			const tasksDetails = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ projectId: project.id, type: "get-tasks-particulars-remarks" }));
 
 			const _tasks = tasks.data.map((m) => {
 				const details = tasksDetails.data.filter((f) => f.task_id == m.id && f.project_id == m.project_id);
@@ -347,18 +320,12 @@ export default function Tasks({ project }) {
 					<div className="flex flex-col w-full h-full justify-between items-center">
 						<div className="flex w-full h-full justify-start items-center">
 							<div className="flex flex-col w-[15%] h-full px-2.5 pb-5 space-y-2.5 justify-between items-center">
-								{allowNewTask && project.status != MyConstants.Statuses.Projects.Completed && (
-									<FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleAddTaskBox()} size="xl" />
-								)}
-								<div className="flex flex-col w-full h-[calc(100vh-265px)] px-5 space-y-2.5 justify-start items-center overflow-y-auto scrollbar-gutter">
-									{uiTaskList()}
-								</div>
+								{allowNewTask && project.status != MyConstants.Statuses.Projects.Completed && <FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleAddTaskBox()} size="xl" />}
+								<div className="flex flex-col w-full h-[calc(100vh-265px)] px-5 space-y-2.5 justify-start items-center overflow-y-auto scrollbar-gutter">{uiTaskList()}</div>
 								{uiNotesButton()}
 								{uiRemarksButton()}
 							</div>
-							<div className="flex flex-col w-[85%] h-full mr-5 space-y-2 justify-start items-center rounded shadow contrast-background">
-								{uiSelectedModuleDataContainer()}
-							</div>
+							<div className="flex flex-col w-[85%] h-full mr-5 space-y-2 justify-start items-center rounded shadow contrast-background">{uiSelectedModuleDataContainer()}</div>
 						</div>
 					</div>
 				</>
@@ -399,11 +366,7 @@ export default function Tasks({ project }) {
 		}
 
 		if (!api.remarks.copy.length && main.selectedModuleId === 1) {
-			return (
-				<span className="flex flex-col w-full h-full space-y-2 justify-center items-center rounded shadow font-medium-12 gray-text contrast-background">
-					No sub tasks found
-				</span>
-			);
+			return <span className="flex flex-col w-full h-full space-y-2 justify-center items-center rounded shadow font-medium-12 gray-text contrast-background">No sub tasks found</span>;
 		}
 
 		if (main.selectedModuleId === -1) {
@@ -442,8 +405,7 @@ export default function Tasks({ project }) {
 	function uiNotesButton() {
 		const showTotalNotes = api.notes.data.length > 0 ? "font-regular-10 gray-text" : "hidden";
 
-		const selectedAesthetics =
-			main.selectedModuleId == -1 ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+		const selectedAesthetics = main.selectedModuleId == -1 ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
 		const wrapper = `flex w-full h-10 px-5 justify-between items-center rounded shadow ${selectedAesthetics} font-regular-11 hovered-rows`;
 
@@ -460,10 +422,7 @@ export default function Tasks({ project }) {
 			const showSortArrow = m == main.sortNotes.column ? "visible" : "invisible";
 
 			return (
-				<span
-					className="flex w-1/3 h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11"
-					onClick={() => setNotesSorting(m)}
-					key={i}>
+				<span className="flex w-1/3 h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11" onClick={() => setNotesSorting(m)} key={i}>
 					<span>{m}</span>
 					<span className={showSortArrow}>{uiNotesHeadersSortArrows(m)}</span>
 				</span>
@@ -510,8 +469,7 @@ export default function Tasks({ project }) {
 	function uiRemarksButton() {
 		const showTotalRemarks = api.remarks.data.length > 0 ? "font-regular-10 gray-text" : "hidden";
 
-		const selectedAesthetics =
-			main.selectedModuleId == 1 ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+		const selectedAesthetics = main.selectedModuleId == 1 ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
 		const wrapper = `flex w-full h-10 px-5 justify-between items-center rounded shadow ${selectedAesthetics} font-regular-11 hovered-rows`;
 
@@ -528,10 +486,7 @@ export default function Tasks({ project }) {
 			const showSortArrow = m == main.sortRemarks.column ? "visible" : "invisible";
 
 			return (
-				<span
-					className="flex w-1/4 h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11"
-					onClick={() => setRemarksSorting(m)}
-					key={i}>
+				<span className="flex w-1/4 h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11" onClick={() => setRemarksSorting(m)} key={i}>
 					<span>{m}</span>
 					<span className={showSortArrow}>{uiRemarksHeadersSortArrows(m)}</span>
 				</span>
@@ -589,65 +544,60 @@ export default function Tasks({ project }) {
 		);
 	}
 
-	function uiTaskActions(task) {
-		const style = "flex w-full py-2 space-x-2.5 justify-start items-center cursor-pointer border-y hovered-rows";
+	function uiTaskActions(isCompleted, task) {
+		if (!isCompleted || isUserAdministrator) {
+			const style = "flex w-full py-2 space-x-2.5 justify-start items-center cursor-pointer border-y hovered-rows";
 
-		const noClickAndHalfOpacity = "pointer-events-none opacity-25";
-		const clickAndFullOpacity = "pointer-events-auto opacity-100";
+			const noClickAndHalfOpacity = "pointer-events-none opacity-25";
+			const clickAndFullOpacity = "pointer-events-auto opacity-100";
 
-		const editTaskStyle = allowEditingTask && (task.is_disabled == 1 || task.is_completed == 1) ? noClickAndHalfOpacity : clickAndFullOpacity;
+			const editTaskStyle = isUserAdministrator ? clickAndFullOpacity : allowEditingTask && (task.is_disabled == 1 || task.is_completed == 1) ? noClickAndHalfOpacity : clickAndFullOpacity;
 
-		const deleteTaskStyle = allowDeletingTask ? clickAndFullOpacity : noClickAndHalfOpacity;
+			const deleteTaskStyle = isUserAdministrator ? clickAndFullOpacity : allowDeletingTask ? clickAndFullOpacity : noClickAndHalfOpacity;
 
-		const enableTaskStyle = allowEnablingTask && task.is_disabled == 1 ? clickAndFullOpacity : noClickAndHalfOpacity;
+			const enableTaskStyle = isUserAdministrator ? clickAndFullOpacity : allowEnablingTask && task.is_disabled == 1 ? clickAndFullOpacity : noClickAndHalfOpacity;
 
-		const disableTaskStyle = allowDisablingTask && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
+			const disableTaskStyle = isUserAdministrator ? clickAndFullOpacity : allowDisablingTask && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
 
-		const markTaskCompletedStyle =
-			isUserAdministrator && allowMarkingTaskCompleted && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
+			const markTaskCompletedStyle = isUserAdministrator && allowMarkingTaskCompleted && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
 
-		return (
-			<Tippy
-				animation="shift-away"
-				className="relative z-40"
-				content={
-					<div className="flex flex-col justify-center items-center">
-						<div className={`${style} ${editTaskStyle}`} onClick={() => handleTaskActionClicks(() => toggleEditTaskBox(task))}>
-							<FontAwesomeIcon className="w-5 primary-text" icon={faPencil} />
-							<span>Edit</span>
+			return (
+				<Tippy
+					animation="shift-away"
+					className="relative z-40"
+					content={
+						<div className="flex flex-col justify-center items-center">
+							<div className={`${style} ${editTaskStyle}`} onClick={() => handleTaskActionClicks(() => toggleEditTaskBox(task))}>
+								<FontAwesomeIcon className="w-5 primary-text" icon={faPencil} />
+								<span>Edit</span>
+							</div>
+							<div className={`${style} ${deleteTaskStyle}`} onClick={() => handleTaskActionClicks(() => toggleDeleteTaskBox(task))}>
+								<FontAwesomeIcon className="w-5 red-text" icon={faTrash} />
+								<span>Delete</span>
+							</div>
+							<div className={`${style} ${enableTaskStyle}`} onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Enable }))}>
+								<FontAwesomeIcon className="w-5 green-text" icon={faCheckCircle} />
+								<span>Enable</span>
+							</div>
+							<div className={`${style} ${disableTaskStyle}`} onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Disable }))}>
+								<FontAwesomeIcon className="w-5 red-text" icon={faBan} />
+								<span>Disable</span>
+							</div>
+							<div className={`${style} ${markTaskCompletedStyle}`} onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Completed }))}>
+								<FontAwesomeIcon className="w-5 green-text" icon={faClipboardCheck} />
+								<span>Mark Task Completed</span>
+							</div>
 						</div>
-						<div className={`${style} ${deleteTaskStyle}`} onClick={() => handleTaskActionClicks(() => toggleDeleteTaskBox(task))}>
-							<FontAwesomeIcon className="w-5 red-text" icon={faTrash} />
-							<span>Delete</span>
-						</div>
-						<div
-							className={`${style} ${enableTaskStyle}`}
-							onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Enable }))}>
-							<FontAwesomeIcon className="w-5 green-text" icon={faCheckCircle} />
-							<span>Enable</span>
-						</div>
-						<div
-							className={`${style} ${disableTaskStyle}`}
-							onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Disable }))}>
-							<FontAwesomeIcon className="w-5 red-text" icon={faBan} />
-							<span>Disable</span>
-						</div>
-						<div
-							className={`${style} ${markTaskCompletedStyle}`}
-							onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Completed }))}>
-							<FontAwesomeIcon className="w-5 green-text" icon={faClipboardCheck} />
-							<span>Mark Task Completed</span>
-						</div>
-					</div>
-				}
-				interactive
-				onCreate={(i) => (tippyReference.current = i)}
-				placement="bottom"
-				theme="light"
-				trigger="click">
-				<FontAwesomeIcon className="cursor-pointer font-regular-11 green-text" icon={faBolt} />
-			</Tippy>
-		);
+					}
+					interactive
+					onCreate={(i) => (tippyReference.current = i)}
+					placement="bottom"
+					theme="light"
+					trigger="click">
+					<FontAwesomeIcon className="cursor-pointer font-regular-11 green-text" icon={faBolt} />
+				</Tippy>
+			);
+		}
 	}
 
 	function uiTaskHeaders() {
@@ -684,17 +634,9 @@ export default function Tasks({ project }) {
 
 			const iconColour = m.is_completed == 1 ? "green-text" : "red-text";
 
-			const icon =
-				m.is_completed == 1 ? (
-					<FontAwesomeIcon className={iconColour} icon={faCircleCheck} size="lg" />
-				) : m.is_disabled == 1 ? (
-					<FontAwesomeIcon className={iconColour} icon={faBan} size="lg" />
-				) : (
-					""
-				);
+			const icon = m.is_completed == 1 ? <FontAwesomeIcon className={iconColour} icon={faCircleCheck} size="lg" /> : m.is_disabled == 1 ? <FontAwesomeIcon className={iconColour} icon={faBan} size="lg" /> : "";
 
-			const selectedTaskStyle =
-				m.id == main.selectedTask?.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+			const selectedTaskStyle = m.id == main.selectedTask?.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
 			const wrapper = `flex w-full h-10 pl-5 pr-3 justify-between items-center rounded shadow ${selectedTaskStyle} font-regular-11 hovered-rows`;
 
@@ -729,7 +671,7 @@ export default function Tasks({ project }) {
 			<div className="flex w-full px-4 py-2 justify-between items-center bottom-border">
 				<div className="flex space-x-2.5 justify-center items-center font-medium-14">
 					<span>{task}</span>
-					{!isCompleted && uiTaskActions(main.selectedTask)}
+					{uiTaskActions(isCompleted, main.selectedTask)}
 				</div>
 				<div className="flex space-x-2.5 justify-between items-center">
 					<div className="flex !px-2 space-x-2 justify-between items-center green-tag-transparent-02">
@@ -752,13 +694,11 @@ export default function Tasks({ project }) {
 	function uiTaskRows(row, i) {
 		const style = "flex w-1/3 justify-center items-center whitespace-pre-wrap";
 
-		const deleteSubTaskStyle =
-			allowDeletingParticularRemark && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+		const deleteSubTaskStyle = allowDeletingParticularRemark && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
 		const editSubTaskStyle = allowEditingSubTask && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
-		const markSubTaskCompletedStyle =
-			allowMarkingSubTaskCompleted && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
+		const markSubTaskCompletedStyle = allowMarkingSubTaskCompleted && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
 		return (
 			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background border-y font-regular-11" key={i}>
@@ -794,46 +734,21 @@ export default function Tasks({ project }) {
 		<>
 			{uiMain()}
 
-			{mounted.addParticularRemark && (
-				<AddParticularRemark mount={mounted.addParticularRemark} reload={getTasks} task={main.selectedTask} unmount={toggleAddParticularRemarkBox} />
-			)}
+			{mounted.addParticularRemark && <AddParticularRemark mount={mounted.addParticularRemark} reload={getTasks} task={main.selectedTask} unmount={toggleAddParticularRemarkBox} />}
 
 			{mounted.addTask && <AddTask mount={mounted.addTask} reload={getTasks} project={project} tasks={api.tasks.copy} unmount={toggleAddTaskBox} />}
 
-			{mounted.deleteParticularRemark && (
-				<DeleteParticularRemark
-					mount={mounted.deleteParticularRemark}
-					reload={getTasks}
-					task={main.selectedRemark}
-					unmount={toggleDeleteParticularRemarkBox}
-				/>
-			)}
+			{mounted.deleteParticularRemark && <DeleteParticularRemark mount={mounted.deleteParticularRemark} reload={getTasks} task={main.selectedRemark} unmount={toggleDeleteParticularRemarkBox} />}
 
 			{mounted.deleteTask && <DeleteTask mount={mounted.deleteTask} reload={getTasks} task={main.selectedTaskForActions} unmount={toggleDeleteTaskBox} />}
 
-			{mounted.editParticularRemark && (
-				<EditParticularRemark
-					mount={mounted.editParticularRemark}
-					reload={getTasks}
-					task={main.selectedRemark}
-					unmount={toggleEditParticularRemarkBox}
-				/>
-			)}
+			{mounted.editParticularRemark && <EditParticularRemark mount={mounted.editParticularRemark} reload={getTasks} task={main.selectedRemark} unmount={toggleEditParticularRemarkBox} />}
 
 			{mounted.editTask && <EditTask mount={mounted.editTask} reload={getTasks} task={main.selectedTaskForActions} unmount={toggleEditTaskBox} />}
 
-			{mounted.editTaskStatus && (
-				<EditTaskStatus mount={mounted.editTaskStatus} reload={getTasks} task={main.selectedTaskForActions} unmount={toggleEditTaskStatusBox} />
-			)}
+			{mounted.editTaskStatus && <EditTaskStatus mount={mounted.editTaskStatus} reload={getTasks} task={main.selectedTaskForActions} unmount={toggleEditTaskStatusBox} />}
 
-			{mounted.markSubTaskCompleted && (
-				<MarkSubTaskCompleted
-					mount={mounted.markSubTaskCompleted}
-					reload={getTasks}
-					remark={main.selectedRemark}
-					unmount={toggleMarkSubTaskCompletedBox}
-				/>
-			)}
+			{mounted.markSubTaskCompleted && <MarkSubTaskCompleted mount={mounted.markSubTaskCompleted} reload={getTasks} remark={main.selectedRemark} unmount={toggleMarkSubTaskCompletedBox} />}
 		</>
 	);
 }
