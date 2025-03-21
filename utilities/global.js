@@ -336,7 +336,9 @@ export const MyGlobal = Object.freeze({
 				}
 
 				if (message.length) {
-					MyGlobal.ShowToasts(MyConstants.ToastTypes.Error, message);
+					if (source != "Single Client => Set Uploaded Files") {
+						MyGlobal.ShowToasts(MyConstants.ToastTypes.Error, message);
+					}
 				}
 
 				if (source) {

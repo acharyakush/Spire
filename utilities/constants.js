@@ -37,9 +37,11 @@ const MyConstants = Object.freeze({
 			GetSupportData: "api/cashFlows/getSupportData",
 		}),
 		Clients: Object.freeze({
+			DeleteFile: "api/clients/deleteFile",
 			GetClients: "api/clients/getClients",
+			GetFiles: "api/clients/getFiles",
 			GetSupportData: "api/clients/getSupportData",
-			GetUploadedFiles: "api/clients/getUploadedFiles",
+			UploadFiles: "api/clients/uploadFiles",
 		}),
 		Dashboard: "api/dashboard/getSupportData",
 		Employees: Object.freeze({
@@ -270,6 +272,10 @@ const MyConstants = Object.freeze({
 			}),
 			Employees: Object.freeze({
 				Edit: "Edit",
+				New: "New",
+			}),
+			Files: Object.freeze({
+				Existing: "Existing",
 				New: "New",
 			}),
 			SingleClient: "Single Client",

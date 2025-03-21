@@ -4,6 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
+import Files from "./Files";
 import Tippy from "@tippyjs/react";
 import writeXlsxFile from "write-excel-file";
 import SingleProject from "../singleProject";
@@ -18,20 +19,7 @@ import { TextInputNative } from "@/components/Inputs";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SpinnerSmall, Tooltip, UsersTooltipList } from "@/components/Elements";
-import {
-	faCalendar,
-	faChevronLeft,
-	faCloudUpload,
-	faEnvelope,
-	faFileExcel,
-	faIdBadge,
-	faMultiply,
-	faPencil,
-	faSearch,
-	faSortAmountAsc,
-	faSortAmountDesc,
-	faUserTag,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronLeft, faCloudUpload, faEnvelope, faFileExcel, faIdBadge, faMultiply, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faUserTag } from "@fortawesome/free-solid-svg-icons";
 
 export default function SingleClient({ client, unmount }) {
 	// Business Logic
@@ -472,7 +460,7 @@ export default function SingleClient({ client, unmount }) {
 		setLoading((s) => ({ ...s, uploadedFiles: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetUploadedFiles, MyGlobal.GetHeaders({ clientId: client.id }));
+			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetFiles, MyGlobal.GetHeaders({ clientId: client.id }));
 
 			if (response.status === 200) {
 				setApi((s) => ({ ...s, uploadedFiles: response.data }));
@@ -489,7 +477,7 @@ export default function SingleClient({ client, unmount }) {
 	}
 
 	function toggleFilesView() {
-		setMounted((s) => ({ ...s, files: !s.files }));
+		setMounted((s) => ({ ...s, uploadedFiles: !s.uploadedFiles }));
 	}
 
 	function toggleSingleProjectView(object) {
@@ -501,7 +489,13 @@ export default function SingleClient({ client, unmount }) {
 	function uiClientDetails() {
 		const wrapper = "flex h-6 space-x-2 justify-center items-center cursor-pointer relative primary-tag-transparent-01";
 
-		const uploadedFilesIcon = loading.uploadedFiles ? <SpinnerSmall /> : <FontAwesomeIcon className="primary-text" icon={faCloudUpload} />;
+		const uploadedFilesIcon = loading.uploadedFiles ? (
+			<span className="px-2">
+				<SpinnerSmall />
+			</span>
+		) : (
+			<FontAwesomeIcon className="primary-text" icon={faCloudUpload} />
+		);
 
 		return (
 			<div className="flex w-full justify-between items-center">
@@ -542,8 +536,7 @@ export default function SingleClient({ client, unmount }) {
 		companies.unshift({ id: 0, name: "All" });
 
 		return companies.map((m, i) => {
-			const selectedCompanyStyle =
-				i == main.selectedCompany.index ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+			const selectedCompanyStyle = i == main.selectedCompany.index ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
 			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedCompanyStyle} font-regular-10 hovered-rows`;
 
@@ -675,12 +668,7 @@ export default function SingleClient({ client, unmount }) {
 							<div className="flex flex-col w-[10%] space-y-2.5 justify-start items-center">{uiCompanies()}</div>
 							<div className="flex flex-col w-[90%] h-full justify-start items-center">
 								<div className="flex w-full primary-background">{uiHeaders()}</div>
-								<Virtuoso
-									className="w-full h-full overflow-y-auto bottom-border contrast-background"
-									data={doSorting()}
-									itemContent={(i, row) => uiRows(row, i)}
-									totalCount={api.projects.data.length}
-								/>
+								<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.data.length} />
 							</div>
 						</div>
 					</div>
@@ -708,16 +696,10 @@ export default function SingleClient({ client, unmount }) {
 				</Tippy>
 
 				<Tippy content={<Tooltip text={row.main_project_name} />} placement="bottom">
-					<span
-						className={`${tooltipStyle} cursor-pointer`}
-						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.sub_project_name, main.filter.find) }}
-						onClick={() => toggleSingleProjectView(row)}
-					/>
+					<span className={`${tooltipStyle} cursor-pointer`} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.sub_project_name, main.filter.find) }} onClick={() => toggleSingleProjectView(row)} />
 				</Tippy>
 
-				{main.selectedCompany.id == 0 && (
-					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.company_name, main.filter.find) }} />
-				)}
+				{main.selectedCompany.id == 0 && <span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.company_name, main.filter.find) }} />}
 
 				<Tippy content={<UsersTooltipList list={row.teams} />} placement="bottom">
 					<span className={`${style} space-x-1 cursor-help primary-text`}>{row.teams.length}</span>
@@ -797,7 +779,7 @@ export default function SingleClient({ client, unmount }) {
 	// Hooks
 	useEffect(() => {
 		setSupportData();
-		//getUploadedFiles();
+		setUploadedFiles();
 	}, []);
 
 	useEffect(() => {
@@ -819,19 +801,11 @@ export default function SingleClient({ client, unmount }) {
 		<>
 			{uiMain()}
 
-			{mounted.editCompany && (
-				<EditCompany company={main.selectedCompany} mount={mounted.editCompany} reload={setSupportData} unmount={toggleEditCompanyBox} />
-			)}
+			{mounted.editCompany && <EditCompany company={main.selectedCompany} mount={mounted.editCompany} reload={setSupportData} unmount={toggleEditCompanyBox} />}
 
-			{mounted.singleProject && (
-				<SingleProject
-					client={client}
-					project={main.selectedProject}
-					reload={setSupportData}
-					source="Single Client => Single Project"
-					unmount={toggleSingleProjectView}
-				/>
-			)}
+			{mounted.uploadedFiles && <Files close={toggleFilesView} files={api.uploadedFiles} refresh={setUploadedFiles} thisClient={client} />}
+
+			{mounted.singleProject && <SingleProject client={client} project={main.selectedProject} reload={setSupportData} source="Single Client => Single Project" unmount={toggleSingleProjectView} />}
 		</>
 	);
 }
