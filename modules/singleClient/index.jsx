@@ -249,7 +249,7 @@ export default function SingleClient({ client, unmount }) {
 			totalFees: 0,
 		};
 
-		for (const i of api.projects.data) {
+		for (const i of main.projects) {
 			total.amountPending += Number(i.amount_pending);
 			total.amountReceived += Number(i.amount_received);
 			total.invoiceFees += Number(i.invoice_fees);
@@ -575,19 +575,27 @@ export default function SingleClient({ client, unmount }) {
 				return f;
 			})
 			.map((m, i) => {
-				const showTotalValues = i > 5 && i < 11 ? "visible" : "invisible";
-				const width = main.selectedCompany.id != 0 ? "w-[14.28%]" : "w-[8.33%]";
-				const wrapper = `${width} space-x-1.5 text-center text-white font-medium-10 ${showTotalValues}`;
-
-				return (
-					<span className={wrapper} key={i}>
-						<span>{i == 6 && totalValues.invoiceFees}</span>
-						<span>{i == 7 && totalValues.reimburseVoucher}</span>
-						<span>{i == 8 && totalValues.amountReceived}</span>
-						<span>{i == 9 && totalValues.amountPending}</span>
-						<span>{i == 10 && totalValues.totalFees}</span>
-					</span>
-				);
+				if (main.selectedCompany.id != 0) {
+					return (
+						<span className="flex w-[9.09%] justify-center items-center text-white font-medium-12" key={i}>
+							<span>{i == 5 && totalValues.invoiceFees}</span>
+							<span>{i == 6 && totalValues.reimburseVoucher}</span>
+							<span>{i == 7 && totalValues.amountReceived}</span>
+							<span>{i == 8 && totalValues.amountPending}</span>
+							<span>{i == 9 && totalValues.totalFees}</span>
+						</span>
+					);
+				} else {
+					return (
+						<span className="flex w-[8.33%] justify-center items-center text-white font-medium-12" key={i}>
+							<span>{i == 6 && totalValues.invoiceFees}</span>
+							<span>{i == 7 && totalValues.reimburseVoucher}</span>
+							<span>{i == 8 && totalValues.amountReceived}</span>
+							<span>{i == 9 && totalValues.amountPending}</span>
+							<span>{i == 10 && totalValues.totalFees}</span>
+						</span>
+					);
+				}
 			});
 	}
 
@@ -669,10 +677,10 @@ export default function SingleClient({ client, unmount }) {
 							<div className="flex flex-col w-[90%] h-full justify-start items-center">
 								<div className="flex w-full primary-background">{uiHeaders()}</div>
 								<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.data.length} />
+								<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 							</div>
 						</div>
 					</div>
-					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 				</>
 			);
 		}
