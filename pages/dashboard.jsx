@@ -4,13 +4,14 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
+import SlotCounter from "react-slot-counter";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { BadgeLarge } from "@/components/Elements";
+import { BadgeLarge2 } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUpRightFromSquare, faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark, faCheckDouble, faCirclePause, faFaceGrinStars, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark, faCheckDouble, faCirclePause, faFaceGrinStars, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
 
 export default function Dashboard({ setModuleProps }) {
 	// Business Logic
@@ -45,39 +46,39 @@ export default function Dashboard({ setModuleProps }) {
 
 		switch (true) {
 			case status == inquiriesStatus.Closed || status == projectsStatus.Closed:
-				object.background = "primary-background-gradient";
+				object.background = "blue-background";
 				object.icon = faLock;
 				break;
 			case status == inquiriesStatus.Open || status == main.invoices.notGenerated.label || status == projectsStatus.Active:
-				object.background = "orange-background-gradient";
+				object.background = "orange-background";
 				object.icon = faUnlock;
 				break;
 			case status == inquiriesStatus.Confirmed || status == main.invoices.generated.label || status == projectsStatus.Completed:
-				object.background = "green-background-gradient";
+				object.background = "green-background";
 				object.icon = faCheckDouble;
 				break;
 			case status == inquiriesStatus.Hold || status == main.invoices.due.label || status == projectsStatus.Hold:
-				object.background = "red-background-gradient";
+				object.background = "red-background";
 				object.icon = faCirclePause;
 				break;
 			case status == "Tomorrow":
-				object.background = "primary-background-gradient";
+				object.background = "blue-background";
 				object.icon = faCalendarWeek;
 				break;
 			case status == "Today":
-				object.background = "orange-background-gradient";
+				object.background = "orange-background";
 				object.icon = faCalendarCheck;
 				break;
 			case status == "Upcoming":
-				object.background = "green-background-gradient";
+				object.background = "green-background";
 				object.icon = faCalendarPlus;
 				break;
 			case status == "Overdue":
-				object.background = "red-background-gradient";
+				object.background = "red-background";
 				object.icon = faCalendarXmark;
 				break;
 			default:
-				object.background = "yellow-background-gradient";
+				object.background = "yellow-background";
 				object.icon = faFaceGrinStars;
 				break;
 		}
@@ -219,16 +220,37 @@ export default function Dashboard({ setModuleProps }) {
 		const _key = String(key).toLowerCase();
 		const value = main.inquiries[_key];
 
-		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		let effect = "";
+		let zoomRotate = "";
+
+		if (key === inquiriesStatus.Open) {
+			effect = "animate__animated animate__fadeInTopLeft";
+			zoomRotate = "zoom-rotate-right";
+		} else if (key === inquiriesStatus.Closed) {
+			effect = "animate__animated animate__fadeInTopLeft";
+			zoomRotate = "zoom-rotate-left";
+		} else if (key === inquiriesStatus.Hold) {
+			effect = "animate__animated animate__fadeInTopRight";
+			zoomRotate = "zoom-rotate-right";
+		} else {
+			effect = "animate__animated animate__fadeInDown";
+			zoomRotate = "shrink";
+		}
+
+		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Inquiries, key)}>
-				<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-					<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
-				</div>
-				<div className="flex flex-col px-8 justify-center items-center">
-					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-28">{value}</span>
+				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
+						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
+					</div>
+					<div className="flex flex-col px-8 justify-center items-center">
+						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
+						<span className="font-bold-28">
+							<SlotCounter value={value} />
+						</span>
+					</div>
 				</div>
 			</div>
 		);
@@ -243,14 +265,31 @@ export default function Dashboard({ setModuleProps }) {
 
 		const count = key == main.invoices.notGenerated.label ? main.invoices.notGenerated.count : main.invoices[_key]?.count;
 
-		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		let effect = "";
+		let zoomRotate = "shrink";
+
+		if (key === main.invoices.due.label) {
+			effect = "animate__animated animate__fadeInDown";
+			zoomRotate = "zoom-rotate-right";
+		} else if (key === main.invoices.notGenerated.label) {
+			effect = "animate__animated animate__fadeInUp";
+			zoomRotate = "zoom-rotate-left";
+		} else {
+			effect = "animate__animated animate__zoomIn";
+		}
+
+		const wrapper = `flex w-full text-white cursor-pointer`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Invoices, key)}>
-				<div className="py-4 px-8 rounded-r-full shadow-2xl font-semibold-24 text-white gray-background-transparent-02">{count}</div>
-				<div className="flex flex-col px-8 justify-center items-center">
-					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-28">{MyGlobal.FormatCurrency(amount)}</span>
+				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+					<div className="py-4 px-8 rounded-r-full shadow-2xl font-semibold-24 text-white gray-background-transparent-02">{count}</div>
+					<div className="flex flex-col px-8 justify-center items-center">
+						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
+						<span className="font-bold-28">
+							<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={MyGlobal.FormatCurrency(amount)} />
+						</span>
+					</div>
 				</div>
 			</div>
 		);
@@ -258,17 +297,20 @@ export default function Dashboard({ setModuleProps }) {
 
 	function uiMyInquiries() {
 		const aesthetics = getBackgroundAndIcon();
-
-		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		const wrapper = `flex w-full text-white cursor-pointer animate__animated animate__fadeInTopRight`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Inquiries, "my-inquiries")}>
-				<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-					<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
-				</div>
-				<div className="flex flex-col px-8 justify-center items-center">
-					<span className="tracking-widest uppercase font-medium-8 light-gray-text">Mine</span>
-					<span className="font-bold-28">{main.inquiries.my}</span>
+				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl zoom-rotate-left ${aesthetics.background}`}>
+					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
+						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
+					</div>
+					<div className="flex flex-col px-8 justify-center items-center">
+						<span className="tracking-widest uppercase font-medium-8 light-gray-text">Mine</span>
+						<span className="font-bold-28">
+							<SlotCounter value={main.inquiries.my} />
+						</span>
+					</div>
 				</div>
 			</div>
 		);
@@ -276,17 +318,20 @@ export default function Dashboard({ setModuleProps }) {
 
 	function uiMyProjects() {
 		const aesthetics = getBackgroundAndIcon();
-
-		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		const wrapper = `flex w-full text-white cursor-pointer animate__animated animate__fadeInBottomLeft`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", "my-projects")}>
-				<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-					<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
-				</div>
-				<div className="flex flex-col px-8 justify-center items-center">
-					<span className="tracking-widest uppercase font-medium-8 light-gray-text">Mine</span>
-					<span className="font-bold-28">{main.projects.my}</span>
+				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl shrink ${aesthetics.background}`}>
+					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
+						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
+					</div>
+					<div className="flex flex-col px-8 justify-center items-center">
+						<span className="tracking-widest uppercase font-medium-8 light-gray-text">Mine</span>
+						<span className="font-bold-28">
+							<SlotCounter value={main.projects.my} />
+						</span>
+					</div>
 				</div>
 			</div>
 		);
@@ -296,22 +341,30 @@ export default function Dashboard({ setModuleProps }) {
 		return (
 			<div className="flex w-full p-5 justify-between items-start">
 				<div className="flex flex-col w-1/2 justify-between items-start">
-					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text">
+					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
 						<span>{baseModules.Projects}</span>
-						<BadgeLarge value={main.projects.total} />
+						<BadgeLarge2>
+							<SlotCounter value={main.projects.total} />
+						</BadgeLarge2>
 					</div>
-					<div className="w-4/5 pt-2.5 space-y-5 columns-2 gap-x-5">
-						{uiProjects(projectsStatus.Active)}
-						{uiProjects(projectsStatus.Closed)}
-						{uiMyProjects()}
-						{uiProjects(projectsStatus.Completed)}
-						{uiProjects(projectsStatus.Hold)}
+					<div className="w-4/5 pt-2.5 grid grid-cols-2 gap-5">
+						<div className="flex flex-col space-y-5 justify-start items-start">
+							{uiProjects(projectsStatus.Active)}
+							{uiProjects(projectsStatus.Closed)}
+							{uiMyProjects()}
+						</div>
+						<div className="flex flex-col space-y-5 justify-start items-start">
+							{uiProjects(projectsStatus.Completed)}
+							{uiProjects(projectsStatus.Hold)}
+						</div>
 					</div>
 				</div>
 				<div className="flex flex-col w-1/2 justify-between items-end">
-					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text">
+					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
 						<span>{baseModules.Tasks}</span>
-						<BadgeLarge value={main.tasks.total} />
+						<BadgeLarge2>
+							<SlotCounter value={main.tasks.total} />
+						</BadgeLarge2>
 					</div>
 					<div className="w-4/5 pt-2.5 space-y-5 columns-2 gap-x-5">
 						{uiTasks("Overdue")}
@@ -330,16 +383,39 @@ export default function Dashboard({ setModuleProps }) {
 		const _key = String(key).toLowerCase();
 		const value = main.projects[_key];
 
-		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		let effect = "";
+		let zoomRotate = "";
+
+		if (key === projectsStatus.Active) {
+			effect = "animate__animated animate__fadeInTopLeft";
+			zoomRotate = "zoom-rotate-right";
+		} else if (key === projectsStatus.Closed) {
+			effect = "animate__animated animate__fadeInLeft";
+			zoomRotate = "zoom-rotate-left";
+		} else if (key === projectsStatus.Hold) {
+			effect = "animate__animated animate__fadeInBottomRight";
+			zoomRotate = "zoom-rotate-right";
+		} else if (key === projectsStatus.Completed) {
+			effect = "animate__animated animate__fadeInTopRight";
+			zoomRotate = "zoom-rotate-left";
+		} else {
+			effect = "animate__animated animate__fadeInBottomRight";
+		}
+
+		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
-				<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-					<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
-				</div>
-				<div className="flex flex-col px-8 justify-center items-center">
-					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-28">{value}</span>
+				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
+						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
+					</div>
+					<div className="flex flex-col px-8 justify-center items-center">
+						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
+						<span className="font-bold-28">
+							<SlotCounter value={value} />
+						</span>
+					</div>
 				</div>
 			</div>
 		);
@@ -353,14 +429,31 @@ export default function Dashboard({ setModuleProps }) {
 		const amount = key == main.rv.notGenerated.label ? main.rv.notGenerated.amount : main.rv[_key]?.amount;
 		const count = key == main.rv.notGenerated.label ? main.rv.notGenerated.count : main.rv[_key]?.count;
 
-		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		let effect = "";
+		let zoomRotate = "shrink";
+
+		if (key === main.rv.due.label) {
+			effect = "animate__animated animate__fadeInDown";
+			zoomRotate = "zoom-rotate-right";
+		} else if (key === main.rv.notGenerated.label) {
+			effect = "animate__animated animate__fadeInUp";
+			zoomRotate = "zoom-rotate-left";
+		} else {
+			effect = "animate__animated animate__zoomIn";
+		}
+
+		const wrapper = `flex w-full text-white cursor-pointer`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Rv, key)}>
-				<div className="py-4 px-8 rounded-r-full shadow-2xl font-semibold-24 text-white gray-background-transparent-02">{count}</div>
-				<div className="flex flex-col px-8 justify-center items-center">
-					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-28">{MyGlobal.FormatCurrency(amount)}</span>
+				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+					<div className="py-4 px-8 rounded-r-full shadow-2xl font-semibold-24 text-white gray-background-transparent-02">{count}</div>
+					<div className="flex flex-col px-8 justify-center items-center">
+						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
+						<span className="font-bold-28">
+							<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -50px 0px" }} value={MyGlobal.FormatCurrency(amount)} />
+						</span>
+					</div>
 				</div>
 			</div>
 		);
@@ -372,16 +465,37 @@ export default function Dashboard({ setModuleProps }) {
 		const _key = String(key).toLowerCase();
 		const value = main.tasks[_key];
 
-		const wrapper = `flex w-full py-6 justify-between items-center rounded shadow-xl text-white cursor-pointer ${aesthetics.background}`;
+		let effect = "";
+		let zoomRotate = "";
+
+		if (key === "Overdue") {
+			effect = "animate__animated animate__fadeInTopLeft";
+			zoomRotate = "zoom-rotate-right";
+		} else if (key === "Today") {
+			effect = "animate__animated animate__fadeInBottomLeft";
+			zoomRotate = "zoom-rotate-left";
+		} else if (key === "Tomorrow") {
+			effect = "animate__animated animate__fadeInTopRight";
+			zoomRotate = "zoom-rotate-left";
+		} else {
+			effect = "animate__animated animate__fadeInBottomRight";
+			zoomRotate = "zoom-rotate-right";
+		}
+
+		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
-				<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-					<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
-				</div>
-				<div className="flex flex-col px-8 justify-center items-center">
-					<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-					<span className="font-bold-28">{value}</span>
+				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
+						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
+					</div>
+					<div className="flex flex-col px-8 justify-center items-center">
+						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
+						<span className="font-bold-28">
+							<SlotCounter value={value} />
+						</span>
+					</div>
 				</div>
 			</div>
 		);
@@ -393,11 +507,13 @@ export default function Dashboard({ setModuleProps }) {
 	}, []);
 
 	return (
-		<div className="w-full h-full p-5 space-y-1 overflow-y-auto">
+		<div className="w-full h-full p-5 space-y-1 overflow-x-hidden overflow-y-auto">
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
+				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
 					<span>{baseModules.Inquiries}</span>
-					<BadgeLarge value={main.inquiries.total} />
+					<BadgeLarge2>
+						<SlotCounter value={main.inquiries.total} />
+					</BadgeLarge2>
 				</div>
 				<div className="flex w-full space-x-14 justify-between items-center">
 					{uiInquiries(inquiriesStatus.Open)}
@@ -411,7 +527,9 @@ export default function Dashboard({ setModuleProps }) {
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
 					<span>{baseModules.Invoices}</span>
-					<BadgeLarge value={main.projects.total} />
+					<BadgeLarge2>
+						<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={main.projects.total} />
+					</BadgeLarge2>
 				</div>
 				<div className="flex w-full space-x-24 justify-between items-center">
 					{uiInvoices(main.invoices.due.label)}
@@ -422,7 +540,9 @@ export default function Dashboard({ setModuleProps }) {
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
 					<span>{baseModules.Rv}</span>
-					<BadgeLarge value={main.projects.total} />
+					<BadgeLarge2>
+						<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -50px 0px" }} value={main.projects.total} />
+					</BadgeLarge2>
 				</div>
 				<div className="flex w-full space-x-24 justify-between items-center">
 					{uiRv(main.rv.due.label)}

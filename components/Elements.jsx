@@ -3,9 +3,7 @@
 export const Badge = ({ value }) => {
 	return (
 		<div className="relative inline-block">
-			<span className="flex min-w-[1.5rem] w-max h-6 px-2 justify-center items-center rounded-full text-white font-semibold-10 primary-background">
-				{value}
-			</span>
+			<span className="flex min-w-[1.5rem] w-max h-6 px-2 justify-center items-center rounded-full text-white font-semibold-10 primary-background">{value}</span>
 		</div>
 	);
 };
@@ -13,9 +11,7 @@ export const Badge = ({ value }) => {
 export const BadgeGreenLarge = ({ value }) => {
 	return (
 		<div className="relative inline-block">
-			<span className="flex min-w-11 w-max px-2.5 justify-center items-center rounded-full shadow text-white font-semibold-30 green-background">
-				{value}
-			</span>
+			<span className="flex min-w-11 w-max px-2.5 justify-center items-center rounded-full shadow text-white font-semibold-30 green-background">{value}</span>
 		</div>
 	);
 };
@@ -28,28 +24,24 @@ export const BadgeLarge = ({ value }) => {
 	);
 };
 
-export const BadgeSmall = ({ value }) => {
+export const BadgeLarge2 = ({ children }) => {
 	return (
-		<span className="flex h-5 px-2 justify-center items-center rounded-full font-regular-9 primary-text primary-border primary-background-transparent-01">
-			{value}
-		</span>
+		<div className="relative inline-block">
+			<span className="flex min-w-9 w-max px-2.5 justify-center items-center rounded-full text-white font-semibold-20 primary-background">{children}</span>
+		</div>
 	);
+};
+
+export const BadgeSmall = ({ value }) => {
+	return <span className="flex h-5 px-2 justify-center items-center rounded-full font-regular-9 primary-text primary-border primary-background-transparent-01">{value}</span>;
 };
 
 export const BadgeSmallGreen = ({ value }) => {
-	return (
-		<span className="flex h-5 px-1 justify-center items-center rounded-full font-regular-7 green-text green-border green-background-transparent-01">
-			{value}
-		</span>
-	);
+	return <span className="flex h-5 px-1 justify-center items-center rounded-full font-regular-7 green-text green-border green-background-transparent-01">{value}</span>;
 };
 
 export const BadgeSmallWithBackground = ({ style, value }) => {
-	return (
-		<span className={`flex h-5 px-1.5 justify-center items-center rounded-full font-regular-10 ${style.text} ${style.border} ${style.background}`}>
-			{value}
-		</span>
-	);
+	return <span className={`flex h-5 px-1.5 justify-center items-center rounded-full font-regular-10 ${style.text} ${style.border} ${style.background}`}>{value}</span>;
 };
 
 export const Spinner = () => {

@@ -981,3 +981,28 @@ input[type="radio"]:checked + label {
 	display: block;
 	transition: transform 0.25s ease-out, width 0.25s ease-out;
 }
+
+.shrink {
+	transition: all 0.3s ease;
+}
+
+.shrink:hover {
+	transform: scale(0.8); /* Shrinks the card to 80% of its original size */
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.zoom-rotate-left {
+	transition: transform 0.2s ease-in-out !important;
+}
+
+.zoom-rotate-left:hover {
+	transform: scale(1.25) rotate(-5deg) !important;
+}
+
+.zoom-rotate-right {
+	transition: transform 0.2s ease-in-out !important;
+}
+
+.zoom-rotate-right:hover {
+	transform: scale(1.25) rotate(5deg) !important;
+}
