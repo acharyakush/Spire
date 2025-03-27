@@ -44,6 +44,7 @@ const MyConstants = Object.freeze({
 			UploadFiles: "api/clients/uploadFiles",
 		}),
 		Dashboard: "api/dashboard/getSupportData",
+		GetMySpace: "api/dashboard/getMySpaceData",
 		Employees: Object.freeze({
 			AddEmployee: "api/employees/addEmployee",
 			GetSupportData: "api/employees/getSupportData",
@@ -209,6 +210,7 @@ const MyConstants = Object.freeze({
 			Employees: "Employees",
 			Inquiries: "Inquiries",
 			Invoices: "Invoices",
+			MySpace: "My Space",
 			Notes: "Notes",
 			Firms: "Firms",
 			Projects: "Projects",
@@ -392,6 +394,7 @@ const MyConstants = Object.freeze({
 		Tasks: Object.freeze({
 			Particulars: "Particulars",
 			Remark: "Remark",
+			DueDate: "Due Date",
 			Actions: "Actions",
 		}),
 		TasksRemarks: Object.freeze({

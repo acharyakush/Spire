@@ -3,6 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
+import MySpace from "./mySpace";
 import Dashboard from "./dashboard";
 import Firms from "@/modules/firms";
 import Clients from "@/modules/clients";
@@ -132,17 +133,19 @@ export default function Home() {
 	function getSequence(module) {
 		switch (module) {
 			case baseModules.CashFlow:
-				return 6;
+				return 7;
 			case baseModules.Clients:
-				return 4;
+				return 5;
 			case baseModules.Dashboard:
 				return 0;
 			case baseModules.Inquiries:
-				return 1;
-			case baseModules.Projects:
 				return 2;
+			case baseModules.Projects:
+				return 3;
 			case baseModules.Firms:
-				return 7;
+				return 8;
+			case baseModules.MySpace:
+				return 1;
 			default:
 				return -1;
 		}
@@ -398,6 +401,12 @@ export default function Home() {
 						<Dashboard setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
+			case baseModules.MySpace:
+				return (
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.MySpace}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.MySpace)} FallbackComponent={ErrorFallbackComponent}>
+						<MySpace setModuleProps={setModuleProps} />
+					</ErrorBoundary>
+				);
 			case baseModules.Firms:
 				return (
 					<ErrorBoundary key={`ErrorBoundary_${baseModules.Firms}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Firms)} FallbackComponent={ErrorFallbackComponent}>
@@ -508,11 +517,11 @@ export default function Home() {
 
 	useEffect(() => {
 		if (main.status.inquiries) {
-			setModule(1, { name: baseModules.Inquiries });
+			setModule(2, { name: baseModules.Inquiries });
 		} else if (main.status.invoicesOrRv.find && main.status.invoicesOrRv.module) {
-			setModule(4, { name: baseModules.CashFlow });
+			setModule(5, { name: baseModules.CashFlow });
 		} else if (main.status.projectsOrTasks) {
-			setModule(2, { name: baseModules.Projects });
+			setModule(3, { name: baseModules.Projects });
 		}
 	}, [main.status]);
 

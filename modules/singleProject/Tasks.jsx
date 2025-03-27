@@ -40,7 +40,7 @@ export default function Tasks({ project }) {
 		selectedTaskForActions: {},
 		sortNotes: { column: remarksHeaders.Date, isAscending: false },
 		sortRemarks: { column: remarksHeaders.Date, isAscending: false },
-		sortTasks: { column: taskHeaders.Particulars, isAscending: true },
+		sortTasks: { column: taskHeaders.Particulars, isAscending: false },
 	});
 
 	const [mounted, setMounted] = useState({
@@ -89,7 +89,7 @@ export default function Tasks({ project }) {
 		setLoading((s) => ({ ...s, notes: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ projectId: project.id, type: "get-tasks-notes" }));
+			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ inquiryId: project.inquiry_id, type: "get-tasks-notes" }));
 
 			const notes = response.data.map((m) => {
 				return { ...m, entry_by_name: MyGlobal.GetAnyDataFromId(m.entry_by_id, "full_name") };
@@ -235,6 +235,9 @@ export default function Tasks({ project }) {
 		return getSelectedTask()
 			.at(0)
 			?.particulars_remarks?.sort((a, b) => {
+				const aDueDate = new Date(a.due_date);
+				const bDueDate = new Date(b.due_date);
+
 				const { column, isAscending } = main.sortTasks;
 
 				if (column == taskHeaders.Particulars && isAscending) {
@@ -245,6 +248,10 @@ export default function Tasks({ project }) {
 					return a.remark.localeCompare(b.remark);
 				} else if (column == taskHeaders.Remark && !isAscending) {
 					return b.remark.localeCompare(a.remark);
+				} else if (column == taskHeaders.DueDate && isAscending) {
+					return aDueDate - bDueDate;
+				} else if (column == taskHeaders.DueDate && !isAscending) {
+					return bDueDate - aDueDate;
 				}
 			});
 	}
@@ -603,7 +610,7 @@ export default function Tasks({ project }) {
 	function uiTaskHeaders() {
 		return Object.values(taskHeaders).map((m, i) => {
 			const showSortArrow = m == main.sortTasks.column && m != taskHeaders.Actions ? "visible" : "invisible";
-			const wrapper = `flex w-1/3 h-10 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11`;
+			const wrapper = `flex w-1/4 h-10 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11`;
 
 			return (
 				<span className={wrapper} onClick={() => setTaskSorting(m)} key={i}>
@@ -692,7 +699,7 @@ export default function Tasks({ project }) {
 	}
 
 	function uiTaskRows(row, i) {
-		const style = "flex w-1/3 justify-center items-center whitespace-pre-wrap";
+		const style = "flex w-1/4 justify-center items-center whitespace-pre-wrap";
 
 		const deleteSubTaskStyle = allowDeletingParticularRemark && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
@@ -705,6 +712,8 @@ export default function Tasks({ project }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.particular, main.findText) }} />
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.remark, main.findText) }} />
+
+				<span className={style}>{row.due_date ? dayjs(row.due_date).format("DD-MM-YYYY") : "NA"}</span>
 
 				<span className={style}>
 					<div className="flex space-x-5 justify-center items-center">

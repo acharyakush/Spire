@@ -69,5 +69,5 @@
 	"terminal.integrated.fontFamily": "'Droid Sans Mono', Consolas, 'Courier New', monospace",
 	"terminal.integrated.fontSize": 14,
 	"window.autoDetectColorScheme": true,
-	"workbench.preferredLightColorTheme": "Default Light+"
+	"workbench.preferredLightColorTheme": "Default Dark+"
 }
