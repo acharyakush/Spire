@@ -93,9 +93,8 @@ export default function Home() {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-permissions" }));
 
-			MyGlobal.SetPermission(response.data);
-
 			const modules = [];
+			const myPermissions = [];
 			const userData = MyGlobal.GetUserData();
 
 			response.data
@@ -103,14 +102,31 @@ export default function Home() {
 				.filter((f) => {
 					if (userData.permissions != -1) {
 						const permissions = String(userData.permissions).split(",");
+						const id = String(f.id);
 
-						if (permissions.includes(f.id)) {
+						if (permissions.includes(id)) {
 							modules.push({ ...f, sequence: getSequence(f.module) });
 						}
 					} else {
 						modules.push({ ...f, sequence: getSequence(f.module) });
 					}
 				});
+
+			response.data.filter((f) => {
+				if (userData.permissions != -1) {
+					const permissions = String(userData.permissions).split(",");
+					const id = String(f.id);
+
+					if (permissions.includes(id)) {
+						myPermissions.push(f);
+					}
+				} else {
+					// modules.push({ ...f, sequence: getSequence(f.module) });
+					myPermissions.push(f);
+				}
+			});
+
+			MyGlobal.SetPermission(myPermissions);
 
 			modules.sort((a, b) => a.sequence - b.sequence);
 
@@ -329,6 +345,12 @@ export default function Home() {
 		return api.modules
 			.filter((f) => f.name != baseModules.Affiliates && f.name != baseModules.Invoices)
 			.filter((f) => f.sequence >= 0)
+			.filter((f) => {
+				if (!MyGlobal.IsUserAdministrator()) {
+					return f.name != baseModules.Firms;
+				}
+				return f;
+			})
 			.map((m, i) => {
 				const isSelected = i == main.selectedModule.index;
 
@@ -455,7 +477,7 @@ export default function Home() {
 	function uiUserMenuList() {
 		return Object.values(MyConstants.UserMenu)
 			.filter((f) => {
-				if (main.user.role == MyConstants.UserType.Employees) {
+				if (MyGlobal.GetUserId().startsWith("EP")) {
 					return ![MyConstants.UserMenu.Activity, MyConstants.UserMenu.Employees, MyConstants.UserMenu.Storage].includes(f);
 				} else {
 					return f;

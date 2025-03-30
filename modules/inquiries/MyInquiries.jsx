@@ -25,7 +25,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmallWithBackground, Spinner, Tooltip, TooltipList } from "@/components/Elements";
 import { faCalendar, faChevronDown, faChevronRight, faCircleCheck, faFileExcel, faFilter, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
-export default function MyInquiries({ setModuleProps, unmount }) {
+export default function MyInquiries({ presetStatus, setModuleProps, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
 		clients: [],
@@ -295,6 +295,23 @@ export default function MyInquiries({ setModuleProps, unmount }) {
 					revised.push(data);
 					revisedCopy.push(data);
 				});
+
+				if (String(presetStatus).includes("MySpace")) {
+					const status = String(presetStatus).replace("MySpace", "");
+
+					if (status.length && Object.values(statuses).includes(status)) {
+						const array = revised.filter((f) => {
+							const a = f.follow_ups_data?.filter((_f) => _f.id === MyGlobal.GetUserId());
+
+							if (a.length && f.status.includes(status)) {
+								return f;
+							}
+						});
+
+						revised.length = 0;
+						revised = array;
+					}
+				}
 
 				setApi((s) => ({ ...s, inquiries: { ...s.inquiries, copy: revisedCopy, data: revised, mergedWithNotes: mergeInquiriesAndNotesById(revisedCopy) } }));
 			}

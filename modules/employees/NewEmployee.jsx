@@ -89,7 +89,9 @@ export default function NewEmployee() {
 				const administrators = [];
 
 				MyGlobal.GetAllUsers().forEach((fe) => {
-					administrators.push({ ...fe, name: fe.full_name });
+					if (String(fe.id).startsWith("A")) {
+						administrators.push({ ...fe, name: fe.full_name });
+					}
 				});
 
 				setApi((s) => ({ ...s, administrators, permissions: response.data.permissions }));

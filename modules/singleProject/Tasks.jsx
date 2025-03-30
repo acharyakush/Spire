@@ -2,12 +2,14 @@
 
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
+import "dragula/dist/dragula.css";
 import "tippy.js/themes/light.css";
 import "tippy.js/animations/shift-away.css";
 
 import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
+import dynamic from "next/dynamic";
 import MyConstants from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
@@ -15,7 +17,25 @@ import { useEffect, useRef, useState } from "react";
 import { SpinnerBig, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AddParticularRemark, AddTask, DeleteParticularRemark, DeleteTask, EditParticularRemark, EditTask, EditTaskStatus, MarkSubTaskCompleted } from "@/modals/singleProject/tasks";
-import { faBan, faBolt, faCheckCircle, faCircleCheck, faCircleExclamation, faClipboardCheck, faClock, faIndianRupee, faPencil, faPlusCircle, faSortAmountAsc, faSortAmountDesc, faStopwatch, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+	faBan,
+	faBars,
+	faBolt,
+	faCheckCircle,
+	faCircleCheck,
+	faCircleExclamation,
+	faClipboardCheck,
+	faClock,
+	faIndianRupee,
+	faPencil,
+	faPlusCircle,
+	faSortAmountAsc,
+	faSortAmountDesc,
+	faStopwatch,
+	faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+
+const Dragula = dynamic(() => import("dragula"), { ssr: false });
 
 export default function Tasks({ project }) {
 	// Business Logic
@@ -25,6 +45,7 @@ export default function Tasks({ project }) {
 	const taskHeaders = MyConstants.TableHeaders.Tasks;
 
 	const tippyReference = useRef(null);
+	const tasksReference = useRef(null);
 
 	const [api, setApi] = useState({
 		notes: { copy: [], data: [] },
@@ -40,7 +61,7 @@ export default function Tasks({ project }) {
 		selectedTaskForActions: {},
 		sortNotes: { column: remarksHeaders.Date, isAscending: false },
 		sortRemarks: { column: remarksHeaders.Date, isAscending: false },
-		sortTasks: { column: taskHeaders.Particulars, isAscending: false },
+		sortTasks: { column: "", isAscending: false },
 	});
 
 	const [mounted, setMounted] = useState({
@@ -57,6 +78,7 @@ export default function Tasks({ project }) {
 
 	const [loading, setLoading] = useState({
 		notes: false,
+		sort: false,
 		tasks: false,
 	});
 
@@ -71,6 +93,24 @@ export default function Tasks({ project }) {
 	const allowMarkingSubTaskCompleted = MyGlobal.HasPermission(MyConstants.Modules.Derived.MarkSubTaskCompleted);
 
 	// Functions
+	async function updateTaskOrder(updatedOrder) {
+		setLoading((s) => ({ ...s, sort: true }));
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Tasks.SortTasks, MyGlobal.GetHeaders({ updatedOrder }));
+
+			if (response.status === 200) {
+				setMain((s) => ({ ...s, sortTasks: { ...s.sortTasks, column: "" } }));
+				getTasks();
+				MyGlobal.ShowSuccessToast("Sorted successfully.");
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Sort Tasks");
+		} finally {
+			setLoading((s) => ({ ...s, sort: false }));
+		}
+	}
+
 	function getSelectedTask() {
 		let array = [];
 
@@ -232,6 +272,11 @@ export default function Tasks({ project }) {
 	}
 
 	function sortTasks() {
+		if (!main.sortTasks.column)
+			return getSelectedTask()
+				.at(0)
+				?.particulars_remarks?.sort((a, b) => Number(a.sequence) - Number(b.sequence));
+
 		return getSelectedTask()
 			.at(0)
 			?.particulars_remarks?.sort((a, b) => {
@@ -541,7 +586,9 @@ export default function Tasks({ project }) {
 				) : (
 					<div className="flex flex-col w-full h-full relative contrast-background">
 						<div className="flex w-full px-4 justify-center items-center primary-background">{uiTaskHeaders()}</div>
-						<div className="flex flex-col w-full h-[calc(100vh-195px)] overflow-y-auto">{sortTasks().map((m, i) => uiTaskRows(m, i))}</div>
+						<div className="flex flex-col w-full h-[calc(100vh-195px)] overflow-y-auto" ref={tasksReference}>
+							{sortTasks().map((m, i) => uiTaskRows(m, i))}
+						</div>
 						<div className={addSubTaskButton} onClick={() => toggleAddParticularRemarkBox()}>
 							<FontAwesomeIcon className="primary-text" icon={faPlusCircle} size="3x" />
 						</div>
@@ -708,7 +755,11 @@ export default function Tasks({ project }) {
 		const markSubTaskCompletedStyle = allowMarkingSubTaskCompleted && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
 		return (
-			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background border-y font-regular-11" key={i}>
+			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background border-y font-regular-11" key={row.id} data-id={row.id}>
+				<span className="drag-handle cursor-grab px-2">
+					<FontAwesomeIcon icon={faBars} className="text-gray-500" />
+				</span>
+
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.particular, main.findText) }} />
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.remark, main.findText) }} />
@@ -737,6 +788,30 @@ export default function Tasks({ project }) {
 		getNotes();
 		getTasks("mount");
 	}, []);
+
+	useEffect(() => {
+		if (api.tasks.data.length && tasksReference.current) {
+			requestAnimationFrame(() => {
+				const drake = dragula([tasksReference.current]);
+
+				drake.on("drop", (el, target, source, sibling) => {
+					const reorderedTasks = Array.from(tasksReference.current.children).map((i) => i.getAttribute("data-id"));
+
+					const newTasks = reorderedTasks.map((m, i) => {
+						const exists = sortTasks().filter((t) => t.id === Number(m));
+
+						if (exists.length) {
+							return { ...exists.at(0), sequence: i + 1 };
+						}
+					});
+
+					updateTaskOrder(newTasks);
+				});
+
+				return () => drake.destroy();
+			});
+		}
+	}, [getSelectedTask()]);
 
 	// Main UI
 	return (

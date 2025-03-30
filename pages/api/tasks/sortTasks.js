@@ -6,22 +6,22 @@ import { MyGlobal } from "@/utilities/global";
 import { query } from "@/utilities/dbConnection";
 
 export default async function handler(req, res) {
-	if (req.method !== "GET" || !MyGlobal.IsApiCallMethodValid(req)) {
+	if (req.method !== "POST" || !MyGlobal.IsApiCallMethodValid(req)) {
 		return res.status(405).send(MyConstants.Messages.ApiCallForbidden);
 	}
 
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const [inquiries, projects, tasks] = await Promise.all([
-			query("SELECT * FROM inquiries WHERE FIND_IN_SET(?, follow_ups) > 0 ORDER BY id DESC", [req.query.userId]), // Queries
-			query("SELECT * FROM projects WHERE FIND_IN_SET(?, teams) > 0 ORDER BY id DESC", [req.query.userId]),
-			query("SELECT * FROM tasks WHERE entry_by_id=?", [req.query.userId]),
-		]);
+		const updates = req.body.params.updatedOrder.map(async (m) => {
+			await query("UPDATE sub_tasks SET sequence = ? WHERE id = ? AND task_id = ?", [m.sequence, m.id, m.task_id]);
+		});
 
-		return res.status(200).json({ inquiries, projects, tasks });
+		await Promise.all(updates);
+
+		return res.status(200).end();
 	} catch (error) {
 		console.error(error);
-		return res.status(500).send("Internal Server Error");
+		return res.status(500).end(error.message);
 	}
 }

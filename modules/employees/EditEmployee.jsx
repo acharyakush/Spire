@@ -60,17 +60,17 @@ export default function EditEmployee() {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Employees.AddEmployee, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.Employees.EditEmployee, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				MyGlobal.AddActivity(`Added employee <b>${response.data}</b>.`, MyConstants.Modules.Base.Employees);
+				MyGlobal.AddActivity(`Edited employee <b>${main.employee.name} (${main.employee.id})</b>.`, MyConstants.Modules.Base.Employees);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.EmployeeAdded);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.EmployeeEdited);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "Employees => New Employee => Do Addition");
+			MyGlobal.HandleErrors(error, "Employees => New Employee => Do Editing");
 		} finally {
 			setLoading((s) => ({ ...s, editing: false }));
 		}
@@ -87,7 +87,9 @@ export default function EditEmployee() {
 				const employees = [];
 
 				MyGlobal.GetAllUsers().forEach((fe) => {
-					administrators.push({ ...fe, name: fe.full_name });
+					if (String(fe.id).startsWith("A")) {
+						administrators.push({ ...fe, name: fe.full_name });
+					}
 				});
 
 				response.data.employees.forEach((fe) => {

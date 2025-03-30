@@ -18,20 +18,8 @@ export default function MySpace({ setModuleProps }) {
 
 	const [main, setMain] = useState({
 		inquiries: { closed: 0, confirmed: 0, hold: 0, my: 0, open: 0, total: 0 },
-		invoices: {
-			due: { amount: 0, count: 0, label: "DUE" },
-			generated: { amount: 0, count: 0, label: "GENERATED" },
-			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
-			total: 0,
-		},
 		isLoading: false,
 		projects: { active: 0, closed: 0, completed: 0, hold: 0, my: 0, total: 0 },
-		rv: {
-			due: { amount: 0, count: 0, label: "DUE" },
-			generated: { amount: 0, count: 0, label: "GENERATED" },
-			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
-			total: 0,
-		},
 		tasks: { overdue: 0, today: 0, tomorrow: 0, total: 0, upcoming: 0 },
 	});
 
@@ -49,15 +37,15 @@ export default function MySpace({ setModuleProps }) {
 				object.background = "blue-background";
 				object.icon = faLock;
 				break;
-			case status == inquiriesStatus.Open || status == main.invoices.notGenerated.label || status == projectsStatus.Active:
+			case status == inquiriesStatus.Open || status == projectsStatus.Active:
 				object.background = "orange-background";
 				object.icon = faUnlock;
 				break;
-			case status == inquiriesStatus.Confirmed || status == main.invoices.generated.label || status == projectsStatus.Completed:
+			case status == inquiriesStatus.Confirmed || status == projectsStatus.Completed:
 				object.background = "green-background";
 				object.icon = faCheckDouble;
 				break;
-			case status == inquiriesStatus.Hold || status == main.invoices.due.label || status == projectsStatus.Hold:
+			case status == inquiriesStatus.Hold || status == projectsStatus.Hold:
 				object.background = "red-background";
 				object.icon = faCirclePause;
 				break;
@@ -147,62 +135,10 @@ export default function MySpace({ setModuleProps }) {
 					}
 				}
 
-				// Invoices
-				const invoicesObj = Object.assign({}, main.invoices);
-
-				response.data.invoices.forEach((fe) => {
-					if (dayjs(fe.due_date).isBefore(today)) {
-						invoicesObj.due.amount += Number(fe.amount);
-						invoicesObj.due.count += 1;
-					}
-
-					if (fe.custom_id) {
-						invoicesObj.generated.amount += Number(fe.amount);
-						invoicesObj.generated.count += 1;
-					}
-				});
-
-				const invoiceProjectIds = new Set(response.data.invoices.map((m) => m.project_id));
-				const isNotGenerated = response.data.projects.filter((f) => !invoiceProjectIds.has(f.id));
-
-				isNotGenerated.forEach((fe, i) => {
-					invoicesObj.notGenerated.amount += Number(fe.quote);
-					invoicesObj.notGenerated.count = i + 1;
-				});
-
-				invoicesObj.total = response.data.invoices.length;
-
-				// Reimbursement Voucher
-				const rvObj = Object.assign({}, main.rv);
-
-				response.data.rv.forEach((fe) => {
-					if (dayjs(fe.due_date).isBefore(today)) {
-						rvObj.due.amount += Number(fe.amount);
-						rvObj.due.count += 1;
-					}
-
-					if (fe.custom_id) {
-						rvObj.generated.amount += Number(fe.amount);
-						rvObj.generated.count += 1;
-					}
-				});
-
-				const rvProjectIds = new Set(response.data.rv.map((m) => m.project_id));
-				const notGeneratedRv = response.data.projects.filter((f) => !rvProjectIds.has(f.id));
-
-				notGeneratedRv.forEach((fe, i) => {
-					rvObj.notGenerated.amount += Number(fe.quote);
-					rvObj.notGenerated.count = i + 1;
-				});
-
-				rvObj.total = response.data.rv.length;
-
 				setMain((s) => ({
 					...s,
-					invoices: invoicesObj,
 					inquiries: inquiriesCount,
 					projects: projectsCount,
-					rv: rvObj,
 					tasks: tasksCount,
 				}));
 			}
@@ -231,16 +167,16 @@ export default function MySpace({ setModuleProps }) {
 			zoomRotate = "zoom-rotate-left";
 		} else if (key === inquiriesStatus.Hold) {
 			effect = "animate__animated animate__fadeInTopRight";
-			zoomRotate = "zoom-rotate-right";
+			zoomRotate = "zoom-rotate-left";
 		} else {
 			effect = "animate__animated animate__fadeInTopRight";
-			zoomRotate = "shrink";
+			zoomRotate = "zoom-rotate-right";
 		}
 
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div className={wrapper} onClick={() => setModuleProps(baseModules.Inquiries, key)}>
+			<div className={wrapper} onClick={() => setModuleProps(baseModules.Inquiries, `MySpace${key}`)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
 						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
@@ -249,45 +185,6 @@ export default function MySpace({ setModuleProps }) {
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
 						<span className="font-bold-28">
 							<SlotCounter value={value} />
-						</span>
-					</div>
-				</div>
-			</div>
-		);
-	}
-
-	function uiInvoices(key) {
-		const aesthetics = getBackgroundAndIcon(key);
-
-		const _key = MyGlobal.TrimInnerSpace(key).toLowerCase();
-
-		const amount = key == main.invoices.notGenerated.label ? main.invoices.notGenerated.amount : main.invoices[_key]?.amount;
-
-		const count = key == main.invoices.notGenerated.label ? main.invoices.notGenerated.count : main.invoices[_key]?.count;
-
-		let effect = "";
-		let zoomRotate = "shrink";
-
-		if (key === main.invoices.due.label) {
-			effect = "animate__animated animate__fadeInDown";
-			zoomRotate = "zoom-rotate-right";
-		} else if (key === main.invoices.notGenerated.label) {
-			effect = "animate__animated animate__fadeInUp";
-			zoomRotate = "zoom-rotate-left";
-		} else {
-			effect = "animate__animated animate__zoomIn";
-		}
-
-		const wrapper = `flex w-full text-white cursor-pointer`;
-
-		return (
-			<div className={wrapper} onClick={() => setModuleProps(baseModules.Invoices, key)}>
-				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
-					<div className="py-4 px-8 rounded-r-full shadow-2xl font-semibold-24 text-white gray-background-transparent-02">{count}</div>
-					<div className="flex flex-col px-8 justify-center items-center">
-						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-						<span className="font-bold-28">
-							<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={MyGlobal.FormatCurrency(amount)} />
 						</span>
 					</div>
 				</div>
@@ -362,7 +259,7 @@ export default function MySpace({ setModuleProps }) {
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
+			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", `MySpace${key}`)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
 						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
@@ -371,44 +268,6 @@ export default function MySpace({ setModuleProps }) {
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
 						<span className="font-bold-28">
 							<SlotCounter value={value} />
-						</span>
-					</div>
-				</div>
-			</div>
-		);
-	}
-
-	function uiRv(key) {
-		const aesthetics = getBackgroundAndIcon(key);
-
-		const _key = MyGlobal.TrimInnerSpace(key).toLowerCase();
-
-		const amount = key == main.rv.notGenerated.label ? main.rv.notGenerated.amount : main.rv[_key]?.amount;
-		const count = key == main.rv.notGenerated.label ? main.rv.notGenerated.count : main.rv[_key]?.count;
-
-		let effect = "";
-		let zoomRotate = "shrink";
-
-		if (key === main.rv.due.label) {
-			effect = "animate__animated animate__fadeInDown";
-			zoomRotate = "zoom-rotate-right";
-		} else if (key === main.rv.notGenerated.label) {
-			effect = "animate__animated animate__fadeInUp";
-			zoomRotate = "zoom-rotate-left";
-		} else {
-			effect = "animate__animated animate__zoomIn";
-		}
-
-		const wrapper = `flex w-full text-white cursor-pointer`;
-
-		return (
-			<div className={wrapper} onClick={() => setModuleProps(baseModules.Rv, key)}>
-				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
-					<div className="py-4 px-8 rounded-r-full shadow-2xl font-semibold-24 text-white gray-background-transparent-02">{count}</div>
-					<div className="flex flex-col px-8 justify-center items-center">
-						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-						<span className="font-bold-28">
-							<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -50px 0px" }} value={MyGlobal.FormatCurrency(amount)} />
 						</span>
 					</div>
 				</div>
@@ -442,7 +301,7 @@ export default function MySpace({ setModuleProps }) {
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
+			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", `MySpace${key}`)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
 						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
@@ -480,32 +339,6 @@ export default function MySpace({ setModuleProps }) {
 				</div>
 			</div>
 			{uiProjectsAndTasks()}
-			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
-					<span>{baseModules.Invoices}</span>
-					<BadgeLarge2>
-						<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={main.projects.total} />
-					</BadgeLarge2>
-				</div>
-				<div className="flex w-full space-x-24 justify-between items-center">
-					{uiInvoices(main.invoices.due.label)}
-					{uiInvoices(main.invoices.generated.label)}
-					{uiInvoices(main.invoices.notGenerated.label)}
-				</div>
-			</div>
-			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
-					<span>{baseModules.Rv}</span>
-					<BadgeLarge2>
-						<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -50px 0px" }} value={main.projects.total} />
-					</BadgeLarge2>
-				</div>
-				<div className="flex w-full space-x-24 justify-between items-center">
-					{uiRv(main.rv.due.label)}
-					{uiRv(main.rv.generated.label)}
-					{uiRv(main.rv.notGenerated.label)}
-				</div>
-			</div>
 		</div>
 	);
 }

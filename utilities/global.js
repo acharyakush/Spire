@@ -363,7 +363,11 @@ export const MyGlobal = Object.freeze({
 	},
 
 	HasPermission: (permission) => {
-		return permissions.filter((object) => object.name == permission).length > 0;
+		const has = permissions.filter((f) => f.name == permission);
+		const has_ = has.length;
+		const has__ = has_ > 0;
+
+		return has__;
 	},
 
 	HighlightText: (payload, searchString) => {
@@ -417,8 +421,8 @@ export const MyGlobal = Object.freeze({
 		allUsers = allUsersArray;
 	},
 
-	SetPermission: (permission) => {
-		permissions = permission;
+	SetPermission: (_permission) => {
+		permissions = _permission;
 	},
 
 	SetUserData: () => {

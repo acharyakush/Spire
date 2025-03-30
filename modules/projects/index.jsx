@@ -31,8 +31,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const [main, setMain] = useState({
 		activeModule: { items: [], name: "All" },
 		dueDate: { from: "", to: "" },
+		filter: "",
 		findText: presetStatus ?? "",
 		isLoading: { selectedProject: false, supportData: false },
+		revisedStatuses: [],
 		selectedClient: {},
 		selectedProject: {},
 		showIconButton: { deleteProject: 0, editProject: 0 },
@@ -44,7 +46,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		editProject: false,
 		editStatus: false,
 		mainComponent: false,
-		myProjects: presetStatus === "my-projects",
+		myProjects: presetStatus === "my-projects" || String(presetStatus).includes("MySpace"),
 		projectStatus: false,
 		singleProject: false,
 	});
@@ -78,36 +80,40 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	function doFiltering() {
 		const filtered = getSelectedProjectData().filter((f) => {
-			const findText = main.findText.toLowerCase();
+			if (main.filter) {
+				return String(f.status) === main.filter;
+			} else {
+				const findText = main.findText.toLowerCase();
 
-			const projectId = String(f.id).toLowerCase();
-			const governmentId = String(f.government_id).toLowerCase();
+				const projectId = String(f.id).toLowerCase();
+				const governmentId = String(f.government_id).toLowerCase();
 
-			const clientId = String(f.client_id).toLowerCase();
-			const clientName = String(f.client_name).toLowerCase();
+				const clientId = String(f.client_id).toLowerCase();
+				const clientName = String(f.client_name).toLowerCase();
 
-			const companyName = String(f.company_name).toLowerCase();
+				const companyName = String(f.company_name).toLowerCase();
 
-			const mainProjectName = String(f.main_project_name).toLowerCase();
-			const subProjectName = String(f.sub_project_name).toLowerCase();
+				const mainProjectName = String(f.main_project_name).toLowerCase();
+				const subProjectName = String(f.sub_project_name).toLowerCase();
 
-			const teamNames = String(f.team_names).toLowerCase();
-			const teamNamesInitials = String(f.team_names_initials).toLowerCase();
+				const teamNames = String(f.team_names).toLowerCase();
+				const teamNamesInitials = String(f.team_names_initials).toLowerCase();
 
-			const status = String(f.status).toLowerCase();
+				const status = String(f.status).toLowerCase();
 
-			return (
-				projectId.includes(findText) ||
-				governmentId.includes(findText) ||
-				clientId.includes(findText) ||
-				clientName.includes(findText) ||
-				companyName.includes(findText) ||
-				mainProjectName.includes(findText) ||
-				subProjectName.includes(findText) ||
-				teamNames.includes(findText) ||
-				teamNamesInitials.includes(findText) ||
-				status.includes(findText)
-			);
+				return (
+					projectId.includes(findText) ||
+					governmentId.includes(findText) ||
+					clientId.includes(findText) ||
+					clientName.includes(findText) ||
+					companyName.includes(findText) ||
+					mainProjectName.includes(findText) ||
+					subProjectName.includes(findText) ||
+					teamNames.includes(findText) ||
+					teamNamesInitials.includes(findText) ||
+					status.includes(findText)
+				);
+			}
 		});
 
 		setApi((s) => ({ ...s, projects: { ...s.projects, data: filtered } }));
@@ -340,6 +346,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 								return f.has_tasks_upcoming;
 							}
 						}
+					} else if (main.filter.length) {
+						return f.status === main.filter;
 					}
 
 					return f;
@@ -354,6 +362,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		}
 
 		return source;
+	}
+
+	function setFilter(value) {
+		setMain((s) => ({ ...s, filter: value }));
 	}
 
 	function setInputs(key, value) {
@@ -458,6 +470,23 @@ export default function Projects({ presetStatus, setModuleProps }) {
 					setMain((s) => ({ ...s, selectedProject: updateSelectedProject }));
 				}
 
+				const revisedStatuses = { [statuses.Active]: 0, [statuses.Cancelled]: 0, [statuses.Closed]: 0, [statuses.Completed]: 0, [statuses.Hold]: 0 };
+
+				revised.forEach((fe) => {
+					if (fe.status === statuses.Active) {
+						revisedStatuses.Active++;
+					} else if (fe.status === statuses.Cancelled) {
+						revisedStatuses.Cancelled++;
+					} else if (fe.status === statuses.Closed) {
+						revisedStatuses.Closed++;
+					} else if (fe.status === statuses.Completed) {
+						revisedStatuses.Completed++;
+					} else if (fe.status === statuses.Hold) {
+						revisedStatuses.Hold++;
+					}
+				});
+
+				setMain((s) => ({ ...s, revisedStatuses }));
 				setMounted((s) => ({ ...s, mainComponent: true }));
 			}
 		} catch (error) {
@@ -530,6 +559,37 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				</button>
 			);
 		}
+	}
+
+	function uiFilter() {
+		const wrapper = "flex w-full h-[30px] px-2 justify-between items-center font-regular-10 gray-text";
+
+		return (
+			<Menu as="div" className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
+				<MenuButton className={wrapper}>
+					<span>{main.filter || "Status"}</span>
+					<FontAwesomeIcon icon={faChevronDown} />
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded z-50 contrast-background bottom-shadow full-border">{uiFilterMenuList()}</MenuItems>
+			</Menu>
+		);
+	}
+
+	function uiFilterMenuList() {
+		return Object.entries(main.revisedStatuses).map(([key, value], i) => {
+			const isSelected = key == main.filter;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
+
+			return (
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setFilter(key)}>
+					<span className="flex w-full justify-between items-center font-regular-11">
+						<span>{key}</span>
+						{value > 0 && <BadgeSmall value={value} />}
+					</span>
+				</MenuItem>
+			);
+		});
 	}
 
 	function uiFind() {
@@ -660,14 +720,18 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	function uiStartedOn(row) {
 		const actionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text";
 
+		const allowDeletingProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteProject);
+
 		return (
 			<Tippy
 				content={
 					<div className="flex flex-col py-1 justify-start items-center">
-						<div className={actionButtonStyle} onClick={() => toggleDeleteProjectBox(row)}>
-							<FontAwesomeIcon icon={faTrash} />
-							<span>Delete Project</span>
-						</div>
+						{allowDeletingProject && (
+							<div className={actionButtonStyle} onClick={() => toggleDeleteProjectBox(row)}>
+								<FontAwesomeIcon icon={faTrash} />
+								<span>Delete Project</span>
+							</div>
+						)}
 						<div className={actionButtonStyle} onClick={() => toggleEditProjectView(row)}>
 							<FontAwesomeIcon icon={faPencil} />
 							<span>Edit Project</span>
@@ -784,11 +848,11 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		if (mounted.mainComponent) {
 			doFiltering();
 		}
-	}, [main.findText]);
+	}, [main.findText, main.filter]);
 
 	// Main UI
 	return mounted.myProjects ? (
-		<MyProjects setModuleProps={setModuleProps} unmount={closeMyProjects} />
+		<MyProjects presetStatus={presetStatus} setModuleProps={setModuleProps} unmount={closeMyProjects} />
 	) : (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<>
@@ -798,7 +862,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							<span className="view-heading">{thisView}</span>
 							{getIconOrBadge()}
 						</div>
-						<div className="flex w-1/3 justify-center items-center">{uiFind()}</div>
+						<div className="flex w-1/3 space-x-5 justify-center items-center">
+							{uiFind()}
+							{uiFilter()}
+						</div>
 						<div className="flex w-1/3 justify-end items-center">{uiExport()}</div>
 					</div>
 				)}

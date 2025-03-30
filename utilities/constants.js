@@ -47,6 +47,7 @@ const MyConstants = Object.freeze({
 		GetMySpace: "api/dashboard/getMySpaceData",
 		Employees: Object.freeze({
 			AddEmployee: "api/employees/addEmployee",
+			EditEmployee: "api/employees/editEmployee",
 			GetSupportData: "api/employees/getSupportData",
 		}),
 		ErrorLogger: "api/errorLogger",
@@ -100,6 +101,7 @@ const MyConstants = Object.freeze({
 		}),
 		Tasks: Object.freeze({
 			AddTask: "api/tasks/addTask",
+			SortTasks: "api/tasks/sortTasks",
 		}),
 		Vendors: Object.freeze({
 			AddHead: "api/vendors/addHead",

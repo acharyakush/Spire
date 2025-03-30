@@ -51,7 +51,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		convertToProject: false,
 		editInquiry: false,
 		mainComponent: false,
-		myInquiries: presetStatus === "my-inquiries",
+		myInquiries: presetStatus === "my-inquiries" || String(presetStatus).startsWith("MySpace"),
 		newInquiry: false,
 		newProject: false,
 		notes: false,
@@ -886,7 +886,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}, [main.selectedInquiryForStatusChange]);
 
 	return mounted.myInquiries ? (
-		<MyInquiries setModuleProps={setModuleProps} unmount={closeMyInquiries} />
+		<MyInquiries presetStatus={presetStatus} setModuleProps={setModuleProps} unmount={closeMyInquiries} />
 	) : (
 		<div className="flex flex-col w-full h-full justify-start items-center primary-light-background">
 			{uiMain()}
