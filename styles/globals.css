@@ -164,8 +164,28 @@ html {
 /*******************/
 /*******************/
 
-.contrast-background {
-	@apply bg-[var(--contrast)];
+.dashboard-blue-1 {
+	@apply bg-[#11224D];
+}
+
+.dashboard-blue-2 {
+	@apply bg-[#193A6F];
+}
+
+.dashboard-blue-3 {
+	@apply bg-[#2C599D];
+}
+
+.dashboard-blue-4 {
+	@apply bg-[#5B84C4];
+}
+
+.dashboard-orange-1 {
+	@apply bg-[#F98125];
+}
+
+.dashboard-orange-2 {
+	@apply bg-[#FB9B50];
 }
 
 .blue-background {
@@ -174,6 +194,10 @@ html {
 
 .blue-background-transparent-01 {
 	@apply bg-[var(--blue-transparent-01)];
+}
+
+.contrast-background {
+	@apply bg-[var(--contrast)];
 }
 
 .gray-background {

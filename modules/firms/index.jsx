@@ -3,6 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
+import EditFirm from "./EditFirm";
 import Tippy from "@tippyjs/react";
 import MyConstants from "@/utilities/constants";
 
@@ -42,7 +43,6 @@ export default function Firms() {
 
 					response.data.firms.forEach((fe) => {
 						const banks = response.data.banks.filter((f) => f.firm_id === fe.id);
-
 						firms.push({ ...fe, banks });
 					});
 
@@ -149,34 +149,40 @@ export default function Firms() {
 	};
 
 	const uiCompanyCard = (company) => {
-		const termsConditions = String(company.terms_conditions).replace(new RegExp("nnn.", "g"), "\n");
+		let termsConditions = "";
+		let termsConditionsLength = "";
+
+		if (typeof company.terms_conditions === "string") {
+			termsConditions = String(company.terms_conditions).replace(/\\n/g, "\n");
+			termsConditionsLength = termsConditions.split("\n").length;
+		}
 
 		return (
 			<div className="flex flex-col w-full px-6 py-3 space-y-1 justify-center items-start font-regular-11 black-text">
 				<div className="flex w-1/2 justify-start items-center primary-text">
-					<div className="flex w-full space-x-5 justify-start items-center">
+					<div className="flex w-full space-x-2.5 justify-start items-center">
 						<span className="font-semibold-16">{company.name}</span>
-						{/* <FontAwesomeIcon className="cursor-pointer" icon={faPencil} onClick={() => toggleEditView(true)} size="sm" /> */}
+						<FontAwesomeIcon className="cursor-pointer" icon={faPencil} onClick={() => toggleEditView(true)} />
 					</div>
 				</div>
 				<div className="flex w-full space-x-5 justify-between items-center">
 					<Tippy content={<Tooltip text="Open this contact on WhatsApp Web" />}>
-						<span className="w-full cursor-pointer" onClick={() => openWhatsApp(company.phone)}>
-							<TextInput icon={faWhatsapp} isNew={false} isReadOnly label="Phone Number" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={company.phone} width="w-full" />
+						<span className="w-full cursor-pointer" onClick={() => openWhatsApp(company.phone_number)}>
+							<TextInput icon={faWhatsapp} isNew={false} isReadOnly label="Phone Number" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={company.phone_number} width="w-full" />
 						</span>
 					</Tippy>
 					<Tippy content={<Tooltip text="Send an email to this address" />}>
-						<span className="w-full cursor-pointer" onClick={() => openEmailClient(company.email)}>
-							<TextInput icon={faAt} isNew={false} isReadOnly label="Email Address" onChange={() => {}} onKeyPress={() => {}} tabIndex={2} value={company.email} width="w-full" />
+						<span className="w-full cursor-pointer" onClick={() => openEmailClient(company.email_address)}>
+							<TextInput icon={faAt} isNew={false} isReadOnly label="Email Address" onChange={() => {}} onKeyPress={() => {}} tabIndex={2} value={company.email_address} width="w-full" />
 						</span>
 					</Tippy>
 					<TextInput icon={faIdCard} isNew={false} isReadOnly label="PAN" onChange={() => {}} onKeyPress={() => {}} tabIndex={3} value={company.pan} width="w-full" />
-					<TextInput icon={faFileInvoice} isNew={false} isReadOnly label="GSTIN" onChange={() => {}} onKeyPress={() => {}} tabIndex={4} value={company.gst} width="w-full" />
+					<TextInput icon={faFileInvoice} isNew={false} isReadOnly label="GSTIN" onChange={() => {}} onKeyPress={() => {}} tabIndex={4} value={company.gstin} width="w-full" />
 				</div>
 
 				<TextArea icon={faHome} isNew={false} isReadOnly label="Address" onChange={() => {}} onKeyDown={() => {}} rows={2} tabIndex={5} value={company.address} width="w-full" />
 
-				<TextArea icon={faFileLines} isNew={false} isReadOnly label="Terms & Conditions" onChange={() => {}} onKeyDown={() => {}} rows={2} tabIndex={6} value={termsConditions} width="w-full" />
+				<TextArea icon={faFileLines} isNew={false} isReadOnly label="Terms & Conditions" onChange={() => {}} onKeyDown={() => {}} rows={termsConditionsLength} tabIndex={6} value={termsConditions} width="w-full" />
 			</div>
 		);
 	};
@@ -185,7 +191,7 @@ export default function Firms() {
 		if (data.isAddViewOpen) {
 			return <NewCompany close={toggleAddView} open={data.isAddViewOpen} refreshAdminCompanies={getFirms} />;
 		} else if (data.isEditViewOpen) {
-			return <EditCompany close={toggleEditView} refreshAdminCompanies={getFirms} thisAdminCompany={data.activeTab.details} />;
+			return <EditFirm close={toggleEditView} refreshAdminCompanies={getFirms} thisAdminCompany={data.activeTab.details} />;
 		} else {
 			return (
 				<>

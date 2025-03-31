@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { BadgeLarge2 } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark, faCheckDouble, faCirclePause, faFaceGrinStars, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark, faCheckDouble, faCirclePause, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
 
 export default function Dashboard({ setModuleProps }) {
 	// Business Logic
@@ -46,40 +46,37 @@ export default function Dashboard({ setModuleProps }) {
 
 		switch (true) {
 			case status == inquiriesStatus.Closed || status == projectsStatus.Closed:
-				object.background = "blue-background";
+				object.background = "dashboard-blue-2";
 				object.icon = faLock;
 				break;
 			case status == inquiriesStatus.Open || status == main.invoices.notGenerated.label || status == projectsStatus.Active:
-				object.background = "orange-background";
+				object.background = "dashboard-orange-1";
 				object.icon = faUnlock;
 				break;
+
 			case status == inquiriesStatus.Confirmed || status == main.invoices.generated.label || status == projectsStatus.Completed:
-				object.background = "green-background";
+				object.background = "dashboard-blue-3";
 				object.icon = faCheckDouble;
 				break;
 			case status == inquiriesStatus.Hold || status == main.invoices.due.label || status == projectsStatus.Hold:
-				object.background = "red-background";
+				object.background = "dashboard-blue-4";
 				object.icon = faCirclePause;
 				break;
 			case status == "Tomorrow":
-				object.background = "blue-background";
+				object.background = "dashboard-blue-2";
 				object.icon = faCalendarWeek;
 				break;
 			case status == "Today":
-				object.background = "orange-background";
+				object.background = "dashboard-orange-2";
 				object.icon = faCalendarCheck;
 				break;
 			case status == "Upcoming":
-				object.background = "green-background";
+				object.background = "dashboard-blue-4";
 				object.icon = faCalendarPlus;
 				break;
 			case status == "Overdue":
-				object.background = "red-background";
+				object.background = "dashboard-orange-1";
 				object.icon = faCalendarXmark;
-				break;
-			default:
-				object.background = "yellow-background";
-				object.icon = faFaceGrinStars;
 				break;
 		}
 
@@ -231,10 +228,10 @@ export default function Dashboard({ setModuleProps }) {
 			zoomRotate = "zoom-rotate-left";
 		} else if (key === inquiriesStatus.Hold) {
 			effect = "animate__animated animate__fadeInTopRight";
-			zoomRotate = "zoom-rotate-right";
+			zoomRotate = "zoom-rotate-left";
 		} else {
 			effect = "animate__animated animate__fadeInDown";
-			zoomRotate = "shrink";
+			zoomRotate = "zoom-rotate-right";
 		}
 
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
@@ -295,48 +292,6 @@ export default function Dashboard({ setModuleProps }) {
 		);
 	}
 
-	function uiMyInquiries() {
-		const aesthetics = getBackgroundAndIcon();
-		const wrapper = `flex w-full text-white cursor-pointer animate__animated animate__fadeInTopRight`;
-
-		return (
-			<div className={wrapper} onClick={() => setModuleProps(baseModules.Inquiries, "my-inquiries")}>
-				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl zoom-rotate-left ${aesthetics.background}`}>
-					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
-					</div>
-					<div className="flex flex-col px-8 justify-center items-center">
-						<span className="tracking-widest uppercase font-medium-8 light-gray-text">Mine</span>
-						<span className="font-bold-28">
-							<SlotCounter value={main.inquiries.my} />
-						</span>
-					</div>
-				</div>
-			</div>
-		);
-	}
-
-	function uiMyProjects() {
-		const aesthetics = getBackgroundAndIcon();
-		const wrapper = `flex w-full text-white cursor-pointer animate__animated animate__fadeInBottomLeft`;
-
-		return (
-			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", "my-projects")}>
-				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl shrink ${aesthetics.background}`}>
-					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
-					</div>
-					<div className="flex flex-col px-8 justify-center items-center">
-						<span className="tracking-widest uppercase font-medium-8 light-gray-text">Mine</span>
-						<span className="font-bold-28">
-							<SlotCounter value={main.projects.my} />
-						</span>
-					</div>
-				</div>
-			</div>
-		);
-	}
-
 	function uiProjectsAndTasks() {
 		return (
 			<div className="flex w-full p-5 justify-between items-start">
@@ -351,7 +306,6 @@ export default function Dashboard({ setModuleProps }) {
 						<div className="flex flex-col space-y-5 justify-start items-start">
 							{uiProjects(projectsStatus.Active)}
 							{uiProjects(projectsStatus.Closed)}
-							{uiMyProjects()}
 						</div>
 						<div className="flex flex-col space-y-5 justify-start items-start">
 							{uiProjects(projectsStatus.Completed)}
@@ -520,7 +474,6 @@ export default function Dashboard({ setModuleProps }) {
 					{uiInquiries(inquiriesStatus.Closed)}
 					{uiInquiries(inquiriesStatus.Confirmed)}
 					{uiInquiries(inquiriesStatus.Hold)}
-					{uiMyInquiries()}
 				</div>
 			</div>
 			{uiProjectsAndTasks()}
