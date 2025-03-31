@@ -13,76 +13,11 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { client, company, phoneNumber, dueOn, id, invoiceFees, invoiceFirmId, mainProjectId, quote, reimburseVoucher, subProject, teams, userId } =
-			req.body;
+		const { address, id, email, gst, name, pan, phone, termsAndConditions } = req.body;
 
-		// New Client ID
-		let newClientId = client.id;
+		const response = await query(`UPDATE firms SET name=?, address=?, phone_number=?, email_address=?, pan=?, gstin=?, terms_conditions=? WHERE id=?`, [name, address, phone, email, pan, gst, termsAndConditions, id]);
 
-		if (client.id == 0) {
-			await query("CALL generate_id('CN', 'clients', @new_client_id)", []);
-			const [storedProcedureResult] = await query("SELECT @new_client_id AS new_id;", []);
-
-			newClientId = storedProcedureResult.new_id;
-
-			const queryResult = await query("INSERT INTO clients (id, name, phone_number) VALUES (?, ?, ?)", [newClientId, client.name, phoneNumber]);
-
-			if (queryResult.affectedRows == 0) {
-				return res.status(400).send("Could not add Client.");
-			}
-		}
-
-		// New Company ID
-		let newCompanyId = company.id;
-
-		if (company.id == 0) {
-			await query("CALL generate_id('CP', 'companies', @new_company_id)", []);
-			const [storedProcedureResult] = await query("SELECT @new_company_id AS new_id;", []);
-
-			newCompanyId = storedProcedureResult.new_id;
-
-			const queryResult = await query(`INSERT INTO companies (id, client_id, name, entry_by_id) VALUES (?, ?, ?, ?)`, [
-				newCompanyId,
-				newClientId,
-				company.name,
-				userId,
-			]);
-
-			if (queryResult.affectedRows == 0) {
-				res.status(400).send("Could not add Company.");
-			}
-		}
-
-		// New Sub Project ID
-		let newSubProjectId = subProject.id;
-
-		if (subProject.id == 0) {
-			await query("CALL generate_id('SP', 'sub_projects', @new_sub_project_id)", []);
-			const [storedProcedureResult] = await query("SELECT @new_sub_project_id AS new_id;", []);
-
-			newSubProjectId = storedProcedureResult.new_id;
-
-			const queryResult = await query("INSERT INTO sub_projects (id, name, entry_by_id) VALUES (?, ?, ?)", [newSubProjectId, subProject.name, userId]);
-
-			if (queryResult.affectedRows == 0) {
-				res.status(400).send("Could not add Sub Project.");
-			}
-		}
-
-		const projectQueryResult = await query(
-			"UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, quote=?, due_on=?, invoice_fees=?, firm_id=?, teams=? WHERE id=?",
-			[newClientId, newCompanyId, mainProjectId, newSubProjectId, quote, dueOn, invoiceFees, invoiceFirmId, teams, id],
-		);
-
-		if (client.id == 0) {
-			const queryResult = await query(`UPDATE clients SET company_id=?, is_confirmed=1 WHERE id=?`, [newCompanyId, newClientId]);
-
-			if (queryResult.affectedRows == 0) {
-				res.status(400).send("Could not add Client.");
-			}
-		}
-
-		if (projectQueryResult.affectedRows > 0) {
+		if (response.affectedRows > 0) {
 			res.status(200).end();
 		} else {
 			res.status(400).end();

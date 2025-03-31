@@ -282,6 +282,10 @@ const MyConstants = Object.freeze({
 				Existing: "Existing",
 				New: "New",
 			}),
+			Firms: Object.freeze({
+				Edit: "Edit",
+				// New: "New",
+			}),
 			SingleClient: "Single Client",
 			SingleProject: "Single Project",
 		}),
