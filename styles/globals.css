@@ -892,6 +892,10 @@ html {
 	opacity: 1;
 }
 
+.wrap-text {
+	overflow-wrap: anywhere;
+}
+
 /*****************/
 /*****************/
 /****3rd Party****/

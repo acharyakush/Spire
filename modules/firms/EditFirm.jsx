@@ -3,6 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
+import EditBank from "./EditBank";
 import MyConstants from "@/utilities/constants";
 
 import { useState } from "react";
@@ -10,12 +11,12 @@ import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { EmailAddress, TextArea, TextInput } from "@/components/Inputs";
-import { faChevronLeft, faFileInvoice, faFileLines, faFont, faIdCard, faLocationDot, faPencil, faPhone, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faBank, faChevronLeft, faFileInvoice, faFileLines, faFont, faIdCard, faLocationDot, faPencil, faPhone } from "@fortawesome/free-solid-svg-icons";
 
 export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompany }) {
 	// Business Logic
 	const [data, setData] = useState({
-		activeTab: MyConstants.Modules.Other.Firms.Edit,
+		activeTab: MyConstants.Modules.Other.Firms.EditFirm,
 		company: {
 			address: thisAdminCompany?.address,
 			email: thisAdminCompany?.email_address,
@@ -29,6 +30,7 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 	});
 
 	const editButtonStyle = `space-x-1 primary-button-condensed`;
+	const bankObject = thisAdminCompany?.banks?.filter((f) => f?.firm_id === thisAdminCompany?.id);
 
 	// Functions
 	const edit = () => {
@@ -170,7 +172,7 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 
 	const uiTabs = () => {
 		return Object.values(MyConstants.Modules.Other.Firms).map((m, i) => {
-			const icon = i == 0 ? faPlusCircle : faPencil;
+			const icon = i == 0 ? faBank : faPencil;
 			const aesthetics = m == data.activeTab ? "primary-background-transparent-01 primary-text" : "bg-transparent gray-text";
 			const wrapper = `w-full p-2 space-x-2.5 text-left font-medium-11 ${aesthetics}`;
 
@@ -183,6 +185,8 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 		});
 	};
 
+	const height = data.activeTab === MyConstants.Modules.Other.Firms.EditFirm ? 148 : 102;
+
 	// Main UI
 	return (
 		<>
@@ -194,15 +198,19 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 					</div>
 				</div>
 			</div>
-			<div className="flex w-full h-[calc(100vh-102px)] justify-center items-center contrast-background">
+			<div className="flex w-full h-[calc(100vh-98px)] justify-center items-center contrast-background">
 				<div className="flex flex-col w-1/6 h-full py-4 space-y-1.5 justify-center items-center">{uiTabs()}</div>
-				<div className="w-5/6 h-[calc(100vh-148px)] overflow-y-auto left-border">{uiCompany()}</div>
+				<div className={`w-5/6 h-[calc(100vh-${height}px)] overflow-y-auto left-border`}>
+					{data.activeTab === MyConstants.Modules.Other.Firms.EditBanks ? <EditBank bank={bankObject} reload={refreshAdminCompanies} /> : uiCompany()}
+				</div>
 			</div>
-			<footer className="w-full dialog-footer">
-				<button className={editButtonStyle} onClick={() => edit()}>
-					{uiEdit()}
-				</button>
-			</footer>
+			{data.activeTab === MyConstants.Modules.Other.Firms.EditFirm && (
+				<footer className="w-full dialog-footer">
+					<button className={editButtonStyle} onClick={() => edit()}>
+						{uiEdit()}
+					</button>
+				</footer>
+			)}
 		</>
 	);
 }

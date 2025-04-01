@@ -669,7 +669,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}
 
 	function uiRows(row) {
-		const style = `flex flex-wrap w-[12.5%] min-h-9 justify-center items-center text-center`;
+		const style = `flex w-[12.5%] min-h-9 justify-center items-center text-center`;
 
 		const governmentId = MyGlobal.HighlightText(row.government_id ?? "", main.findText);
 		const governmentIdTextColour = !row.government_id ? "gray-text" : "primary-text";
@@ -690,7 +690,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			<div className={wrapper} key={row.id} onMouseEnter={() => setMouseEnter(row.id)} onMouseLeave={() => setMouseLeave(row.id)}>
 				<div className={`${style} cursor-help primary-text`}>{uiStartedOn(row)}</div>
 
-				<span className={`${style} ${governmentIdTextColour}`} dangerouslySetInnerHTML={{ __html: governmentId || "NA" }} />
+				<span className={`${style} wrap-text ${governmentIdTextColour}`} dangerouslySetInnerHTML={{ __html: governmentId || "NA" }} />
 
 				<span className={`${style} space-x-5 cursor-pointer relative primary-text`}>{uiClientName(row, clientIdAndName)}</span>
 

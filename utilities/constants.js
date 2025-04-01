@@ -53,6 +53,7 @@ const MyConstants = Object.freeze({
 		ErrorLogger: "api/errorLogger",
 		Firms: Object.freeze({
 			AddFirm: "api/firms/addFirm",
+			EditBank: "api/firms/editBank",
 			EditFirm: "api/firms/editFirm",
 			GetFirms: "api/firms/getFirms",
 		}),
@@ -146,6 +147,7 @@ const MyConstants = Object.freeze({
 		AllSubTasksMarkedCompleted: "All sub tasks marked completed.",
 		ApiCallForbidden: "Invalid API method.",
 		BadRequest: "Incompatible request sent.",
+		BankEdited: "Bank edited.",
 		CardAdded: "Card added.",
 		CashFlowAdded: "Cash Flow added.",
 		CashFlowEdited: "Cash Flow edited.",
@@ -283,8 +285,8 @@ const MyConstants = Object.freeze({
 				New: "New",
 			}),
 			Firms: Object.freeze({
-				Edit: "Edit",
-				// New: "New",
+				EditBanks: "Edit Bank",
+				EditFirm: "Edit Firm",
 			}),
 			SingleClient: "Single Client",
 			SingleProject: "Single Project",

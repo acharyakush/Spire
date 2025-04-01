@@ -103,15 +103,13 @@ export default function Firms() {
 					</div>
 				</div>
 				<div className="flex w-full space-x-5 justify-between items-center">
-					<TextInput icon={faHashtag} isNew={false} isReadOnly label="Account Number" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={bank.accountNumber} width="w-1/5" />
+					<TextInput icon={faHashtag} isNew={false} isReadOnly label="Account Number" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={bank.account_number} width="w-1/5" />
 
-					<TextInput icon={faList} isNew={false} isReadOnly label="Account Type" onChange={() => {}} onKeyPress={() => {}} tabIndex={2} value={bank.accountType} width="w-1/5" />
+					<TextInput icon={faList} isNew={false} isReadOnly label="Account Type" onChange={() => {}} onKeyPress={() => {}} tabIndex={2} value={bank.account_type} width="w-1/5" />
 
 					<TextInput icon={faFileInvoice} isNew={false} isReadOnly label="IFSC" maxLength={11} onChange={() => {}} onKeyPress={() => {}} tabIndex={3} value={bank.ifsc} width="w-1/5" />
 
-					<TextInput icon={faGooglePay} isNew={false} isReadOnly label="UPI ID" onChange={() => {}} onKeyPress={() => {}} tabIndex={4} value={bank.upiId} width="w-1/5" />
-
-					<TextInput icon={faPhone} isNew={false} isReadOnly label="Phone Number" onChange={() => {}} onKeyPress={() => {}} tabIndex={5} value={bank.phone} width="w-1/5" />
+					<TextInput icon={faGooglePay} isNew={false} isReadOnly label="UPI ID" onChange={() => {}} onKeyPress={() => {}} tabIndex={4} value={bank.upi_id} width="w-1/5" />
 				</div>
 
 				<TextArea icon={faHome} isNew={false} isReadOnly label="Address" onChange={() => {}} onKeyDown={() => {}} rows={2} tabIndex={6} value={bank.address} width="w-full" />
