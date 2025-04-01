@@ -9,10 +9,13 @@ import MyConstants from "@/utilities/constants";
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
+import { MyGlobal } from "@/utilities/global";
+import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { EmailAddress, TextArea, TextInput } from "@/components/Inputs";
 import { faBank, faChevronLeft, faFileInvoice, faFileLines, faFont, faIdCard, faLocationDot, faPencil, faPhone } from "@fortawesome/free-solid-svg-icons";
 
+export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompany }) {
 export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompany }) {
 	// Business Logic
 	const [data, setData] = useState({
@@ -21,8 +24,12 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 			address: thisAdminCompany?.address,
 			email: thisAdminCompany?.email_address,
 			gst: thisAdminCompany?.gstin,
+			email: thisAdminCompany?.email_address,
+			gst: thisAdminCompany?.gstin,
 			name: thisAdminCompany?.name,
 			pan: thisAdminCompany?.pan,
+			phone: thisAdminCompany?.phone_number,
+			termsAndConditions: thisAdminCompany?.terms_conditions,
 			phone: thisAdminCompany?.phone_number,
 			termsAndConditions: thisAdminCompany?.terms_conditions,
 		},
@@ -38,18 +45,24 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 
 		const termsConditions = data.company.termsAndConditions.replace(/\n/g, "\\n");
 		const body = { id: thisAdminCompany.id, ...data.company, termsAndConditions: termsConditions };
+		const termsConditions = data.company.termsAndConditions.replace(/\n/g, "\\n");
+		const body = { id: thisAdminCompany.id, ...data.company, termsAndConditions: termsConditions };
 
 		axios
+			.post(MyConstants.ApiEndpoints.Firms.EditFirm, body, MyGlobal.GetHeaders())
 			.post(MyConstants.ApiEndpoints.Firms.EditFirm, body, MyGlobal.GetHeaders())
 			.then((response) => {
 				if (response.status == 200) {
 					refreshAdminCompanies();
 					MyGlobal.ShowSuccessToast(MyConstants.Messages.FirmEdited);
+					MyGlobal.ShowSuccessToast(MyConstants.Messages.FirmEdited);
 					close();
 				} else {
 					MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+					MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 				}
 			})
+			.catch((error) => MyGlobal.HandleErrors(error, "Edit Firm"))
 			.catch((error) => MyGlobal.HandleErrors(error, "Edit Firm"))
 			.finally(() => setData((s) => ({ ...s, pendingResult: false })));
 	};
@@ -73,6 +86,19 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 	};
 
 	const uiCompanyGstNumber = () => {
+		return (
+			<TextInput
+				icon={faFileInvoice}
+				isNew={false}
+				label="GST"
+				maxLength={15}
+				onChange={(e) => handleCompanyInputs("gst", String(e.target.value).toUpperCase())}
+				onKeyPress={() => {}}
+				tabIndex={6}
+				value={data.company.gst}
+				width="w-1/2"
+			/>
+		);
 		return (
 			<TextInput
 				icon={faFileInvoice}
@@ -114,6 +140,9 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 		return (
 			<TextInput icon={faIdCard} isNew={false} label="PAN" maxLength={10} onChange={(e) => handleCompanyInputs("pan", String(e.target.value).toUpperCase())} onKeyPress={() => {}} tabIndex={5} value={data.company.pan} width="w-1/2" />
 		);
+		return (
+			<TextInput icon={faIdCard} isNew={false} label="PAN" maxLength={10} onChange={(e) => handleCompanyInputs("pan", String(e.target.value).toUpperCase())} onKeyPress={() => {}} tabIndex={5} value={data.company.pan} width="w-1/2" />
+		);
 	};
 
 	const uiCompanyPhoneNumber = () => {
@@ -131,6 +160,28 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 			/>
 		);
 	};
+			<TextInput
+				icon={faPhone}
+				isNew={false}
+				label="Phone Number"
+				maxLength={10}
+				onChange={(e) => handleCompanyInputs("phone", e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
+				tabIndex={2}
+				value={data.company.phone}
+				width="w-1/3"
+			/>
+		);
+	};
+
+	const uiCompanyTermsAndConditions = () => {
+		let termsConditions = "";
+		let termsConditionsLength = "";
+
+		if (typeof data.company.termsAndConditions === "string") {
+			termsConditions = data.company.termsAndConditions.replace(/\\n/g, "\n");
+			termsConditionsLength = termsConditions.split("\n").length;
+		}
 
 	const uiCompanyTermsAndConditions = () => {
 		let termsConditions = "";
@@ -155,6 +206,19 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 				width="w-full"
 			/>
 		);
+			<TextArea
+				icon={faFileLines}
+				isNew={false}
+				key={14}
+				label="Terms & Conditions"
+				onChange={(e) => handleCompanyInputs("termsAndConditions", e.target.value)}
+				onKeyDown={() => {}}
+				rows={termsConditionsLength}
+				tabIndex={14}
+				value={termsConditions}
+				width="w-full"
+			/>
+		);
 	};
 
 	// Miscellaneous UI
@@ -163,9 +227,11 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 			return (
 				<span className="px-3.5">
 					<Spinner />
+					<Spinner />
 				</span>
 			);
 		} else {
+			return <span>Edit</span>;
 			return <span>Edit</span>;
 		}
 	};
@@ -178,7 +244,9 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 
 			return (
 				<button key={i} className={wrapper} onClick={() => handleTab(m)}>
+				<button key={i} className={wrapper} onClick={() => handleTab(m)}>
 					<FontAwesomeIcon icon={icon} />
+					<span>{m}</span>
 					<span>{m}</span>
 				</button>
 			);
@@ -191,9 +259,11 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 	return (
 		<>
 			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border contrast-background">
+			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border contrast-background">
 				<div className="flex w-full space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => close()} />
 					<div className="flex w-full justify-start items-center">
+						<span className="view-heading">Edit {thisAdminCompany.name}</span>
 						<span className="view-heading">Edit {thisAdminCompany.name}</span>
 					</div>
 				</div>
