@@ -13,8 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { client, company, phoneNumber, dueOn, id, invoiceFees, invoiceFirmId, mainProjectId, quote, reimburseVoucher, subProject, teams, userId } =
-			req.body;
+		const { client, company, phoneNumber, remarks, id, invoiceFees, invoiceFirmId, mainProjectId, quote, reimburseVoucher, subProject, teams, userId } = req.body;
 
 		// New Client ID
 		let newClientId = client.id;
@@ -41,12 +40,7 @@ export default async function handler(req, res) {
 
 			newCompanyId = storedProcedureResult.new_id;
 
-			const queryResult = await query(`INSERT INTO companies (id, client_id, name, entry_by_id) VALUES (?, ?, ?, ?)`, [
-				newCompanyId,
-				newClientId,
-				company.name,
-				userId,
-			]);
+			const queryResult = await query(`INSERT INTO companies (id, client_id, name, entry_by_id) VALUES (?, ?, ?, ?)`, [newCompanyId, newClientId, company.name, userId]);
 
 			if (queryResult.affectedRows == 0) {
 				res.status(400).send("Could not add Company.");
@@ -69,10 +63,18 @@ export default async function handler(req, res) {
 			}
 		}
 
-		const projectQueryResult = await query(
-			"UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, quote=?, due_on=?, invoice_fees=?, firm_id=?, teams=? WHERE id=?",
-			[newClientId, newCompanyId, mainProjectId, newSubProjectId, quote, dueOn, invoiceFees, invoiceFirmId, teams, id],
-		);
+		const projectQueryResult = await query("UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, quote=?, remarks=?, invoice_fees=?, firm_id=?, teams=? WHERE id=?", [
+			newClientId,
+			newCompanyId,
+			mainProjectId,
+			newSubProjectId,
+			quote,
+			remarks,
+			invoiceFees,
+			invoiceFirmId,
+			teams,
+			id,
+		]);
 
 		if (client.id == 0) {
 			const queryResult = await query(`UPDATE clients SET company_id=?, is_confirmed=1 WHERE id=?`, [newCompanyId, newClientId]);

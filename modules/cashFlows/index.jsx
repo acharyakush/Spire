@@ -446,9 +446,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 	function uiBody() {
 		return (
 			<div className="flex flex-col w-full h-full mx-5 justify-center items-start">
-				<div className="flex flex-col w-full h-[calc(100vh-105px)] justify-start items-center rounded shadow overflow-y-auto scrollbar-gutter contrast-background">
-					{uiSelectedModule()}
-				</div>
+				<div className="flex flex-col w-full h-[calc(100vh-105px)] justify-start items-center rounded shadow overflow-y-auto scrollbar-gutter contrast-background">{uiSelectedModule()}</div>
 			</div>
 		);
 	}
@@ -457,15 +455,14 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 		return Object.values(categories).map((m, i) => {
 			const icon = m == categories.Inward ? faTurnDown : m == categories.Outward ? faTurnUp : faStar;
 
-			const selectedStyle =
-				m == main.selectedCategory ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+			const selectedStyle = m == main.selectedCategory ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
 			const wrapper = `flex w-fit px-4 py-1 space-x-2 justify-between items-center rounded shadow ${selectedStyle} font-medium-10 hovered-rows`;
 
 			return (
 				<button className={wrapper} key={i} onClick={() => setCategory(m)}>
-					<span>{m}</span>
 					<FontAwesomeIcon icon={icon} size="sm" />
+					<span>{m}</span>
 				</button>
 			);
 		});
@@ -481,9 +478,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 		}
 
 		return (
-			<div
-				className="flex w-fit space-x-2.5 justify-center items-center cursor-pointer hover:underline hover:underline-offset-4 decoration-[--primary] blue-text"
-				onClick={() => toggleModule(category)}>
+			<div className="flex w-fit space-x-2.5 justify-center items-center cursor-pointer hover:underline hover:underline-offset-4 decoration-[--primary] blue-text" onClick={() => toggleModule(category)}>
 				<span className="view-heading">{heading}</span>
 				<FontAwesomeIcon icon={faArrowUpRightFromSquare} />
 			</div>
@@ -567,28 +562,19 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 		} else if (main.module) {
 			if (main.module == baseModules.Affiliates) {
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Affiliates}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Affiliates)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Affiliates}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Affiliates)} FallbackComponent={ErrorFallbackComponent}>
 						<Affiliates reload={getSupportData} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
 			} else if (main.module == baseModules.Invoices) {
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Invoices}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Invoices)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Invoices}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Invoices)} FallbackComponent={ErrorFallbackComponent}>
 						<Invoices presetStatus={presetStatus} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
 			} else if (main.module == baseModules.Vendors) {
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Vendors}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Vendors)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Vendors}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Vendors)} FallbackComponent={ErrorFallbackComponent}>
 						<Vendors reload={getSupportData} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
@@ -596,19 +582,13 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 				return <Transactions reload={getSupportData} unmount={toggleModule} />;
 			} else if (main.module == baseModules.Rv) {
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Rv}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Rv)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Rv}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Rv)} FallbackComponent={ErrorFallbackComponent}>
 						<RV reload={getSupportData} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
 			} else {
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${module}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, module)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${module}`} onError={(e) => MyGlobal.LogErrors(e.message, module)} FallbackComponent={ErrorFallbackComponent}>
 						<Others module={main.module} unmount={toggleModule} />
 					</ErrorBoundary>
 				);

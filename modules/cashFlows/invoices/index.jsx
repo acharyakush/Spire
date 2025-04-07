@@ -149,17 +149,11 @@ export default function Invoices({ presetStatus, unmount }) {
 					return f;
 				}
 			} else if (query === "DUE") {
-				const invoiceDateStr = f.invoice_due_date; // Example: "24/01/2025"
-				const today = new Date(); // Get today's date
-
-				// Convert "DD/MM/YYYY" to a Date object
-				const [day, month, year] = invoiceDateStr.split("/");
-				const dueDate = new Date(year, month - 1, day); // Month is 0-based in JS
-
-				// Compare the dates
-				if (dueDate < today) {
-					return f;
-				}
+				return f.invoice?.some((fe) => {
+					if (!fe?.due_date) return false;
+					const dueDate = dayjs(fe.due_date);
+					return dueDate.isBefore(dayjs(), "day");
+				});
 			} else if (query === "GENERATED") {
 				return f.invoice_id && f.created_at;
 			} else if (query === "NOT GENERATED") {
@@ -283,22 +277,22 @@ export default function Invoices({ presetStatus, unmount }) {
 					let mainProjectName = "";
 					let subProjectName = "";
 
-					const invoice = response.data.invoices.find((f) => f.project_id == m.id);
+					const invoice = response.data.invoices.filter((f) => f.project_id == m.id);
 
-					let invoiceAmount = Number(m.invoice_fees);
+					let invoiceAmount = "";
 					let invoiceId = "";
 					let invoiceCreatedAt = "";
 					let invoiceCreatedAtTime = "";
 					let invoiceDueDate = "";
 					let invoiceDueDateTime = "";
 
-					if (typeof invoice === "object") {
-						invoiceAmount = Number(invoice.amount);
-						invoiceId = invoice.custom_id;
-						invoiceCreatedAt = dayjs(invoice.created_at).format("DD/MM/YYYY");
-						invoiceCreatedAtTime = dayjs(invoice.created_at).format("hh:mm:ss a");
-						invoiceDueDate = invoice.due_date ? dayjs(invoice.due_date).format("DD/MM/YYYY") : "";
-						invoiceDueDateTime = invoice.due_date ? dayjs(invoice.due_date).format("hh:mm:ss a") : "";
+					if (Array.isArray(invoice) && invoice.length) {
+						invoiceAmount = invoice.reduce((total, i) => total + Number(i.amount), 0);
+						invoiceId = invoice.map((m) => m.custom_id).at(0);
+						invoiceCreatedAt = invoice.map((m) => dayjs(m.created_at).format("DD/MM/YYYY")).at(0);
+						invoiceCreatedAtTime = invoice.map((m) => dayjs(m.created_at).format("hh:mm:ss a")).at(0);
+						invoiceDueDate = invoice.map((m) => (m.due_date ? dayjs(m.due_date).format("DD/MM/YYYY") : "")).at(0);
+						invoiceDueDateTime = invoice.map((m) => (m.due_date ? dayjs(m.due_date).format("hh:mm:ss a") : "")).at(0);
 					}
 
 					const company = response.data.companies.find((f) => f.id == m.company_id);

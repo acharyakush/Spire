@@ -680,8 +680,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		const mainProjectName = MyGlobal.HighlightText(row.main_project_name, main.findText);
 		const subProjectName = MyGlobal.HighlightText(row.sub_project_name, main.findText);
 
-		const dueOn = dayjs(row.due_on).format("DD MMM, YYYY");
-
 		const background = row.status == statuses.Completed ? "green-background-transparent-01" : "contrast-background";
 
 		const wrapper = `flex w-full justify-center items-center ${background} bottom-border font-regular-11 black-text`;
@@ -697,7 +695,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: companyName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
 
-				<Tippy content={<Tooltip text={`Due On ${dueOn}`} />} placement="bottom">
+				<Tippy content={<Tooltip text={`Remarks ${row.remarks}`} />} placement="bottom">
 					<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
 				</Tippy>
 

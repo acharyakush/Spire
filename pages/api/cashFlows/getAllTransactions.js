@@ -24,6 +24,7 @@ export default async function handler(req, res) {
 			affiliates_transactions: "affiliates",
 			banks: "banks",
 			cash_flows_transactions: "cashFlows",
+			firms: "firms",
 			invoices_transactions: "invoices",
 			petty_cash_transactions: "pettyCash",
 			rv_transactions: "rv",

@@ -10,8 +10,8 @@ import { MyGlobal } from "@/utilities/global";
 import { useEffect, useRef, useState } from "react";
 import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ComboBox2, ComboBoxWithChips, DatePicker, TextInput } from "@/components/Inputs";
-import { faBriefcase, faCalendar, faChevronLeft, faFile, faIndianRupee, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { ComboBox2, ComboBoxWithChips, TextInput } from "@/components/Inputs";
+import { faBriefcase, faChevronLeft, faExclamationCircle, faFile, faIndianRupee, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 export default function EditProject({ project, reload, unmount }) {
 	// Business Logic
@@ -28,13 +28,13 @@ export default function EditProject({ project, reload, unmount }) {
 	const [main, setMain] = useState({
 		client: { id: 0, name: "" },
 		company: { id: 0, name: "" },
-		dueOn: "",
 		invoiceFees: 0,
 		invoiceFirm: { id: 0, name: "" },
 		mainProject: { id: 0, name: "" },
 		phoneNumber: 0,
 		quote: 0,
 		reimburseVoucher: 0,
+		remarks: "",
 		subProject: { id: 0, name: "" },
 		teams: [],
 	});
@@ -51,9 +51,7 @@ export default function EditProject({ project, reload, unmount }) {
 		supportData: false,
 	});
 
-	const showTeamsMenu = mounted.teamsMenu
-		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border"
-		: "hidden";
+	const showTeamsMenu = mounted.teamsMenu ? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border" : "hidden";
 
 	const disableAddButton = other.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
@@ -107,7 +105,7 @@ export default function EditProject({ project, reload, unmount }) {
 			const body = {
 				client: main.client,
 				company: main.company,
-				dueOn: main.dueOn,
+				remarks: main.remarks,
 				id: project.id,
 				invoiceFees: MyGlobal.GetNumbers(main.invoiceFees),
 				invoiceFirmId: main.invoiceFirm.id,
@@ -209,7 +207,7 @@ export default function EditProject({ project, reload, unmount }) {
 						name: project.company_name,
 					},
 					phoneNumber: inquiry.phone_number,
-					dueOn: new Date(project.due_on),
+					remarks: new Date(project.remarks),
 					invoiceFees: Number(project.invoice_fees),
 					invoiceFirm: {
 						id: invoiceFirm.id,
@@ -270,7 +268,7 @@ export default function EditProject({ project, reload, unmount }) {
 
 	function setInputs(key, value) {
 		if (value) {
-			if (key == "dueOn" || key == "invoiceFees" || key == "reimburseVoucher" || key == "note") {
+			if (key == "remarks" || key == "invoiceFees" || key == "reimburseVoucher" || key == "note") {
 				setMain((s) => ({ ...s, [key]: value }));
 			} else {
 				setFind(key, "");
@@ -307,19 +305,7 @@ export default function EditProject({ project, reload, unmount }) {
 
 	// UI Components
 	function uiClient() {
-		return (
-			<TextInput
-				icon={faUser}
-				id="editProjectClientName"
-				isReadOnly
-				label="Client"
-				onChange={() => {}}
-				onKeyPress={() => {}}
-				tabIndex={1}
-				value={main.client.name}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faUser} id="editProjectClientName" isReadOnly label="Client" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={main.client.name} width="w-full" />;
 	}
 
 	function uiCompany() {
@@ -346,8 +332,8 @@ export default function EditProject({ project, reload, unmount }) {
 		);
 	}
 
-	function uiDueOn() {
-		return <DatePicker icon={faCalendar} label="Due On" onChange={(e) => setInputs("dueOn", e)} tabIndex={6} value={main.dueOn} width="w-full" />;
+	function uiRemarks() {
+		return <TextInput icon={faExclamationCircle} label="Remarks" onChange={(e) => setInputs("remarks", e)} tabIndex={6} value={main.remarks} width="w-full" />;
 	}
 
 	function uiInvoiceFees() {
@@ -414,18 +400,7 @@ export default function EditProject({ project, reload, unmount }) {
 	}
 
 	function uiPhoneNumber() {
-		return (
-			<TextInput
-				icon={faPhone}
-				isReadOnly
-				label="Phone Number"
-				onChange={() => {}}
-				onKeyPress={() => {}}
-				tabIndex={3}
-				value={main.phoneNumber}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faPhone} isReadOnly label="Phone Number" onChange={() => {}} onKeyPress={() => {}} tabIndex={3} value={main.phoneNumber} width="w-full" />;
 	}
 
 	function uiPreview() {
@@ -441,18 +416,7 @@ export default function EditProject({ project, reload, unmount }) {
 	}
 
 	function uiQuote() {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				isReadOnly
-				label={`Quote (Original ${project.quote})`}
-				onChange={() => {}}
-				onKeyPress={() => {}}
-				tabIndex={9}
-				value={MyGlobal.ThousandSeparator(main.quote)}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} isReadOnly label={`Quote (Original ${project.quote})`} onChange={() => {}} onKeyPress={() => {}} tabIndex={9} value={MyGlobal.ThousandSeparator(main.quote)} width="w-full" />;
 	}
 
 	function uiReimburseVoucher() {
@@ -565,7 +529,7 @@ export default function EditProject({ project, reload, unmount }) {
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
 							{uiMainProjects()}
 							{uiSubProjects()}
-							{uiDueOn()}
+							{uiRemarks()}
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
 							{uiInvoiceFees()}
@@ -582,9 +546,7 @@ export default function EditProject({ project, reload, unmount }) {
 					</button>
 				</footer>
 
-				{mounted.preview && (
-					<EditProjectPreview mount={mounted.preview} newProject={main} oldProject={other.originalProject} unmount={togglePreviewBox} />
-				)}
+				{mounted.preview && <EditProjectPreview mount={mounted.preview} newProject={main} oldProject={other.originalProject} unmount={togglePreviewBox} />}
 			</>
 		);
 	}

@@ -14,7 +14,8 @@ import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendar, faExclamationTriangle, faFileExcel, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
+import { faCalendar, faCheck, faExclamationTriangle, faFileExcel, faIndustry, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 export default function AllTransactions() {
 	// Business Logic
@@ -25,9 +26,9 @@ export default function AllTransactions() {
 
 	const [api, setApi] = useState({
 		allTransactions: { copy: [], data: [] },
+		firms: [],
 		totalAmountPaid: 0,
 		totalAmountReceived: 0,
-		totalBalance: 0,
 	});
 
 	const [loading, setLoading] = useState({
@@ -39,6 +40,7 @@ export default function AllTransactions() {
 			date: { from: "", to: "" },
 			term: "",
 		},
+		company: {},
 		sort: { column: "", isAscending: false },
 	});
 
@@ -65,7 +67,7 @@ export default function AllTransactions() {
 		doSorting().forEach((fe) => {
 			const entryAt = dayjs(fe.entry_at).format("DD-MM-YYYY");
 
-			records.push(entryAt, fe.module, fe.amount_paid, fe.amount_received, fe.payment_source, fe.payment_type, fe.entry_by_name);
+			records.push(entryAt, fe.module, fe.bank_name, fe.amount_paid, fe.amount_received, fe.particulars, fe.payment_source, fe.payment_type, fe.remarks, fe.entry_by_name);
 		});
 
 		records.forEach((fe) => {
@@ -128,18 +130,24 @@ export default function AllTransactions() {
 				const findTerm = other.find.term.toLowerCase();
 
 				const module = String(f.module).toLowerCase();
+				const bankName = String(f.bank_name).toLowerCase();
 				const amountPaid = String(f.amount_paid).toLowerCase();
 				const amountReceived = String(f.amount_received).toLowerCase();
+				const particulars = String(f.particulars).toLowerCase();
 				const paymentSource = String(f.payment_source).toLowerCase();
 				const paymentType = String(f.payment_type).toLowerCase();
+				const remarks = String(f.remarks).toLowerCase();
 				const entryBy = String(f.entry_by_name).toLowerCase();
 
 				return (
 					module.includes(findTerm) ||
+					bankName.includes(findTerm) ||
 					amountPaid.includes(findTerm) ||
 					amountReceived.includes(findTerm) ||
+					particulars.includes(findTerm) ||
 					paymentSource.includes(findTerm) ||
 					paymentType.includes(findTerm) ||
+					remarks.includes(findTerm) ||
 					entryBy.includes(findTerm)
 				);
 			}
@@ -164,6 +172,10 @@ export default function AllTransactions() {
 					return a.module.localeCompare(b.module);
 				} else if (column == headers.Module && !isAscending) {
 					return b.module.localeCompare(a.module);
+				} else if (column == headers.BankName && isAscending) {
+					return a.bank_name.localeCompare(b.bank_name);
+				} else if (column == headers.BankName && !isAscending) {
+					return b.bank_name.localeCompare(a.bank_name);
 				} else if (column == headers.AmountPaid && isAscending) {
 					return a.amount_paid - b.amount_paid;
 				} else if (column == headers.AmountPaid && !isAscending) {
@@ -172,6 +184,10 @@ export default function AllTransactions() {
 					return a.amount_received - b.amount_received;
 				} else if (column == headers.AmountReceived && !isAscending) {
 					return b.amount_received - a.amount_received;
+				} else if (column == headers.Particulars && isAscending) {
+					return a.particulars.localeCompare(b.particulars);
+				} else if (column == headers.Particulars && !isAscending) {
+					return b.particulars.localeCompare(a.particulars);
 				} else if (column == headers.PaymentSource && isAscending) {
 					return a.payment_source.localeCompare(b.payment_source);
 				} else if (column == headers.PaymentSource && !isAscending) {
@@ -180,6 +196,10 @@ export default function AllTransactions() {
 					return a.payment_type.localeCompare(b.payment_type);
 				} else if (column == headers.PaymentType && !isAscending) {
 					return b.payment_type.localeCompare(a.payment_type);
+				} else if (column == headers.Remarks && isAscending) {
+					return a.remarks.localeCompare(b.remarks);
+				} else if (column == headers.Remarks && !isAscending) {
+					return b.remarks.localeCompare(a.remarks);
 				} else if (column == headers.EntryBy && isAscending) {
 					return a.entry_by_name.localeCompare(b.entry_by_name);
 				} else if (column == headers.EntryBy && !isAscending) {
@@ -268,11 +288,14 @@ export default function AllTransactions() {
 							transactions.push({
 								amount_paid: amountPaid,
 								amount_received: amountReceived,
+								bank_name: paymentSource,
 								entry_at: fe.entry_at,
 								entry_by_name: MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name"),
 								module: moduleName,
+								particulars: fe.particulars,
 								payment_source: paymentSource,
 								payment_type: paymentType,
+								remarks: fe.remarks,
 							});
 						});
 					}
@@ -288,6 +311,7 @@ export default function AllTransactions() {
 						copy: transactions,
 						data: transactions,
 					},
+					firms: response.data.firms,
 					totalAmountPaid,
 					totalAmountReceived,
 				});
@@ -307,6 +331,10 @@ export default function AllTransactions() {
 		}
 	}
 
+	function setCompany(value) {
+		setOther((s) => ({ ...s, company: value }));
+	}
+
 	function setSort(header) {
 		if (header != headers.Date) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
@@ -314,6 +342,35 @@ export default function AllTransactions() {
 	}
 
 	// UI Components
+	function uiCompanies() {
+		const wrapper = "flex max-w-full min-w-36 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+
+		return (
+			<Menu as="div" className="flex max-w-full min-w-36 justify-center items-center relative">
+				<MenuButton className={wrapper}>
+					<FontAwesomeIcon className="primary-text" icon={faIndustry} size="sm" />
+					<span className="gray-text">{other.company?.name || "Select Company"}</span>
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiCompaniesList()}</MenuItems>
+			</Menu>
+		);
+	}
+
+	function uiCompaniesList() {
+		return api.firms.map((m, i) => {
+			const isSelected = m.id == other.company?.id;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+
+			return (
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setCompany(m)}>
+					{m.name}
+					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
+				</MenuItem>
+			);
+		});
+	}
+
 	function uiExport() {
 		if (api.allTransactions.data.length && api.allTransactions.copy.length) {
 			return (
@@ -343,9 +400,9 @@ export default function AllTransactions() {
 	function uiFooter() {
 		return Object.values(headers).map((m, i) => {
 			return (
-				<div className="w-[14.28%] space-x-1 text-center text-white font-semibold-12" key={i}>
-					{i === 2 && MyGlobal.ThousandSeparator(api.totalAmountPaid)}
-					{i === 3 && MyGlobal.ThousandSeparator(api.totalAmountReceived)}
+				<div className="w-[10%] space-x-1 text-center text-white font-semibold-12" key={i}>
+					{i === 3 && MyGlobal.ThousandSeparator(api.totalAmountPaid)}
+					{i === 4 && MyGlobal.ThousandSeparator(api.totalAmountReceived)}
 				</div>
 			);
 		});
@@ -380,7 +437,7 @@ export default function AllTransactions() {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
-				<span className="flex w-[14.28%] justify-center items-center cursor-pointer font-medium-12" key={i}>
+				<span className="flex w-[10%] justify-center items-center cursor-pointer font-medium-12" key={i}>
 					<div className="flex w-full space-x-2 justify-center items-center text-center text-white" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
@@ -426,26 +483,32 @@ export default function AllTransactions() {
 	}
 
 	function uiRows(row, i) {
-		const style = "flex flex-wrap w-[14.28%] min-h-9 justify-center items-center text-center";
+		const style = "flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center";
 
 		const wrapper = `flex w-full justify-center items-center contrast-background bottom-border font-regular-12 black-text`;
 
 		const entryAt = dayjs(row.entry_at).format("DD-MM-YYYY");
 		const module = MyGlobal.HighlightText(row.module, other.find.term);
+		const bankName = MyGlobal.HighlightText(row.bank_name, other.find.term);
 		const amountPaid = MyGlobal.HighlightText(row.amount_paid, other.find.term);
 		const amountReceived = MyGlobal.HighlightText(row.amount_received, other.find.term);
+		const particulars = MyGlobal.HighlightText(row.particulars, other.find.term);
 		const paymentSource = MyGlobal.HighlightText(row.payment_source, other.find.term);
 		const paymentType = MyGlobal.HighlightText(row.payment_type, other.find.term);
+		const remarks = MyGlobal.HighlightText(row.remarks, other.find.term);
 		const entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.term);
 
 		return (
 			<div className={wrapper} key={i}>
 				<span className={style}>{entryAt}</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: module }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: bankName }} />
 				<span className={`${style} red-text`} dangerouslySetInnerHTML={{ __html: amountPaid || "" }} />
 				<span className={`${style} green-text`} dangerouslySetInnerHTML={{ __html: amountReceived || "" }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: paymentSource }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: paymentType }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: remarks }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: entryByName }} />
 			</div>
 		);
@@ -514,6 +577,7 @@ export default function AllTransactions() {
 				</div>
 				<div className="flex w-1/2 space-x-2 justify-end items-center">
 					<div className="flex w-full space-x-2 justify-end items-center">
+						{uiCompanies()}
 						{uiFromDate()}
 						{uiToDate()}
 					</div>

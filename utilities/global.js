@@ -212,7 +212,10 @@ export const MyGlobal = Object.freeze({
 			.split(",")
 			.forEach((fe) => {
 				const names = fe.trim().split(" ");
-				const initials = names.map((m) => m.charAt(0)).join("");
+				const initials = names
+					.map((m) => m.charAt(0))
+					.join("")
+					.replace(/[^A-Za-z0-9]/g, "");
 
 				result.push(initials);
 			});

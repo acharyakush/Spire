@@ -34,35 +34,35 @@ export default function MySpace({ setModuleProps }) {
 
 		switch (true) {
 			case status == inquiriesStatus.Closed || status == projectsStatus.Closed:
-				object.background = "blue-background";
+				object.background = "dashboard-blue-2";
 				object.icon = faLock;
 				break;
 			case status == inquiriesStatus.Open || status == projectsStatus.Active:
-				object.background = "orange-background";
+				object.background = "dashboard-orange-1";
 				object.icon = faUnlock;
 				break;
 			case status == inquiriesStatus.Confirmed || status == projectsStatus.Completed:
-				object.background = "green-background";
+				object.background = "dashboard-blue-3";
 				object.icon = faCheckDouble;
 				break;
 			case status == inquiriesStatus.Hold || status == projectsStatus.Hold:
-				object.background = "red-background";
+				object.background = "dashboard-blue-4";
 				object.icon = faCirclePause;
 				break;
 			case status == "Tomorrow":
-				object.background = "blue-background";
+				object.background = "dashboard-blue-2";
 				object.icon = faCalendarWeek;
 				break;
 			case status == "Today":
-				object.background = "orange-background";
+				object.background = "dashboard-orange-2";
 				object.icon = faCalendarCheck;
 				break;
 			case status == "Upcoming":
-				object.background = "green-background";
+				object.background = "dashboard-blue-3";
 				object.icon = faCalendarPlus;
 				break;
 			case status == "Overdue":
-				object.background = "red-background";
+				object.background = "dashboard-orange-1";
 				object.icon = faCalendarXmark;
 				break;
 			default:

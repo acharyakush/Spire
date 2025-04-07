@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { clientId, company, dueOn, inquiryId, invoiceFees, invoiceFirm, mainProject, note, quote, subProject, teams, userId } = req.body;
+		const { clientId, company, remarks, inquiryId, invoiceFees, invoiceFirm, mainProject, note, quote, subProject, teams, userId } = req.body;
 
 		// New Project ID
 		await query("CALL generate_id('PJ', 'projects', @new_project_id)", []);
@@ -28,12 +28,7 @@ export default async function handler(req, res) {
 
 			newCompanyId = companyResponse.new_id;
 
-			const response = await query(`INSERT INTO companies (id, client_id, name, entry_by_id) VALUES (?, ?, ?, ?)`, [
-				newCompanyId,
-				clientId,
-				company.name,
-				userId,
-			]);
+			const response = await query(`INSERT INTO companies (id, client_id, name, entry_by_id) VALUES (?, ?, ?, ?)`, [newCompanyId, clientId, company.name, userId]);
 
 			if (response.affectedRows == 0) {
 				res.status(400).send("Could not add Company.");
@@ -57,22 +52,8 @@ export default async function handler(req, res) {
 		}
 
 		const response = await query(
-			`INSERT INTO projects (id, client_id, company_id, inquiry_id, firm_id, main_project_id, sub_project_id, quote, due_on, invoice_fees, teams, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			[
-				projectResponse.new_id,
-				clientId,
-				newCompanyId,
-				inquiryId,
-				invoiceFirm.id,
-				mainProject.id,
-				newSubProjectId,
-				quote,
-				dueOn,
-				invoiceFees,
-				teams,
-				MyConstants.Statuses.Projects.Active,
-				userId,
-			],
+			`INSERT INTO projects (id, client_id, company_id, inquiry_id, firm_id, main_project_id, sub_project_id, quote, remarks, invoice_fees, teams, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			[projectResponse.new_id, clientId, newCompanyId, inquiryId, invoiceFirm.id, mainProject.id, newSubProjectId, quote, remarks, invoiceFees, teams, MyConstants.Statuses.Projects.Active, userId],
 		);
 
 		const clientQuery = `UPDATE clients SET company_id=?, is_confirmed=1 WHERE id=?`;
@@ -84,11 +65,7 @@ export default async function handler(req, res) {
 		const noteQuery = `INSERT INTO notes (inquiry_id, project_id, original_entry_by_id, entry_by_id, content, source) VALUES (?, ?, ?, ?, ?, ?)`;
 		const noteParameters = [inquiryId, projectResponse.new_id, userId, userId, MyGlobal.EscapeString(note), MyConstants.Modules.Base.Projects];
 
-		const [clientRows, inquiryRows, noteRows] = await Promise.all([
-			query(clientQuery, clientParameters),
-			query(inquiryQuery, inquiryParameters),
-			query(noteQuery, noteParameters),
-		]);
+		const [clientRows, inquiryRows, noteRows] = await Promise.all([query(clientQuery, clientParameters), query(inquiryQuery, inquiryParameters), query(noteQuery, noteParameters)]);
 
 		if (response.affectedRows > 0 || clientRows.affectedRows > 0 || inquiryRows.affectedRows > 0 || noteRows.affectedRows > 0) {
 			res.status(200).send(projectResponse.new_id);

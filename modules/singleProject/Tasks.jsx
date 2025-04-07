@@ -9,7 +9,6 @@ import "tippy.js/animations/shift-away.css";
 import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
-import dynamic from "next/dynamic";
 import MyConstants from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
@@ -34,8 +33,7 @@ import {
 	faStopwatch,
 	faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-
-const Dragula = dynamic(() => import("dragula"), { ssr: false });
+import dragula from "dragula";
 
 export default function Tasks({ project }) {
 	// Business Logic
@@ -792,23 +790,25 @@ export default function Tasks({ project }) {
 	useEffect(() => {
 		if (api.tasks.data.length && tasksReference.current) {
 			requestAnimationFrame(() => {
-				const drake = dragula([tasksReference.current]);
+				if (dragula) {
+					const drake = dragula([tasksReference.current]);
 
-				drake.on("drop", (el, target, source, sibling) => {
-					const reorderedTasks = Array.from(tasksReference.current.children).map((i) => i.getAttribute("data-id"));
+					drake.on("drop", (el, target, source, sibling) => {
+						const reorderedTasks = Array.from(tasksReference.current.children).map((i) => i.getAttribute("data-id"));
 
-					const newTasks = reorderedTasks.map((m, i) => {
-						const exists = sortTasks().filter((t) => t.id === Number(m));
+						const newTasks = reorderedTasks.map((m, i) => {
+							const exists = sortTasks().filter((t) => t.id === Number(m));
 
-						if (exists.length) {
-							return { ...exists.at(0), sequence: i + 1 };
-						}
+							if (exists.length) {
+								return { ...exists.at(0), sequence: i + 1 };
+							}
+						});
+
+						updateTaskOrder(newTasks);
 					});
 
-					updateTaskOrder(newTasks);
-				});
-
-				return () => drake.destroy();
+					return () => drake.destroy();
+				}
 			});
 		}
 	}, [getSelectedTask()]);

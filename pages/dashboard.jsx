@@ -53,7 +53,6 @@ export default function Dashboard({ setModuleProps }) {
 				object.background = "dashboard-orange-1";
 				object.icon = faUnlock;
 				break;
-
 			case status == inquiriesStatus.Confirmed || status == main.invoices.generated.label || status == projectsStatus.Completed:
 				object.background = "dashboard-blue-3";
 				object.icon = faCheckDouble;
@@ -148,9 +147,11 @@ export default function Dashboard({ setModuleProps }) {
 				const invoicesObj = Object.assign({}, main.invoices);
 
 				response.data.invoices.forEach((fe) => {
-					if (dayjs(fe.due_date).isBefore(today)) {
-						invoicesObj.due.amount += Number(fe.amount);
-						invoicesObj.due.count += 1;
+					if (fe.due_date) {
+						if (dayjs(fe.due_date).isBefore(today, "day")) {
+							invoicesObj.due.amount += Number(fe.amount);
+							invoicesObj.due.count += 1;
+						}
 					}
 
 					if (fe.custom_id) {

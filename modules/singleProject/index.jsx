@@ -15,21 +15,7 @@ import { SpinnerBig, TooltipList } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { EditQuote, ManageGovernmentId, ManageAffiliates } from "@/modals/singleProject/project";
-import {
-	faBars,
-	faBriefcase,
-	faCalendarXmark,
-	faChevronLeft,
-	faCopy,
-	faEnvelope,
-	faFile,
-	faFileExcel,
-	faIdBadge,
-	faIdCardClip,
-	faIndianRupeeSign,
-	faStopwatch,
-	faUserGroup,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBars, faBriefcase, faCalendarXmark, faChevronLeft, faCopy, faEnvelope, faFile, faFileExcel, faIdBadge, faIdCardClip, faIndianRupeeSign, faStopwatch, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 export default function SingleProject({ client, project, reload, source, unmount }) {
 	// Business Logic
@@ -86,9 +72,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 								const affiliate = response.data.affiliates.find((f) => f.id == m);
 
 								if (typeof affiliate === "object") {
-									const affiliateProject = response.data.affiliatesProjects.filter(
-										(f) => f.affiliate_id == affiliate.id && f.project_id == project.id,
-									);
+									const affiliateProject = response.data.affiliatesProjects.filter((f) => f.affiliate_id == affiliate.id && f.project_id == project.id);
 
 									if (Array.isArray(affiliateProject) && affiliateProject.length) {
 										const totalFees = affiliateProject.reduce((pv, cv) => pv + Number(cv.total_fees), 0);
@@ -212,7 +196,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 
 		const columnWrapper = "flex flex-col justify-center items-center cursor-pointer primary-tag-transparent-01";
 
-		const redColumnWrapper = "flex flex-col justify-center items-center cursor-pointer font-normal red-tag-transparent-01";
+		const redColumnWrapper = project.status === MyConstants.Statuses.Projects.Completed ? "hidden" : "flex flex-col justify-center items-center cursor-pointer font-normal red-tag-transparent-01";
 
 		const dueOnTimeLeft = dayjs(project.due_on).format("DD-MM-YYYY") == dayjs().format("DD-MM-YYYY") ? "Today" : dayjs(project.due_on).fromNow();
 
@@ -260,10 +244,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 						</span>
 					</div>
 					<div className={columnWrapper}>
-						<Tippy
-							content={Object.keys(main.affiliates.tooltip).length && <TooltipList payload={main.affiliates.tooltip} />}
-							disabled={!Object.keys(main.affiliates.tooltip).length}
-							placement="top">
+						<Tippy content={Object.keys(main.affiliates.tooltip).length && <TooltipList payload={main.affiliates.tooltip} />} disabled={!Object.keys(main.affiliates.tooltip).length} placement="top">
 							<span className={wrapperSansAesthetics}>
 								<FontAwesomeIcon className="w-4 primary-text" icon={faBriefcase} />
 								<span>{main.affiliates.initials || "No affiliates mapped"}</span>
@@ -310,9 +291,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 
 				{mounted.governmentId && <ManageGovernmentId mount={mounted.governmentId} project={project} reload={reload} unmount={toggleGovernmentId} />}
 
-				{mounted.manageAffiliates && (
-					<ManageAffiliates mount={mounted.manageAffiliates} project={project} reload={reload} unmount={toggleManageAffiliates} />
-				)}
+				{mounted.manageAffiliates && <ManageAffiliates mount={mounted.manageAffiliates} project={project} reload={reload} unmount={toggleManageAffiliates} />}
 
 				{mounted.updateQuote && <EditQuote mount={mounted.updateQuote} project={project} reload={reload} unmount={toggleUpdateQuote} />}
 			</>

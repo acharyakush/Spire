@@ -415,10 +415,13 @@ const MyConstants = Object.freeze({
 			All: Object.freeze({
 				Date: "Date",
 				Module: "Module",
+				BankName: "Bank Name",
 				AmountPaid: "Amount Paid",
 				AmountReceived: "Amount Received",
+				Particulars: "Particulars",
 				PaymentSource: "Payment Source",
 				PaymentType: "Payment Type",
+				Remarks: "Remarks",
 				EntryBy: "Entry By",
 			}),
 			General: Object.freeze({
