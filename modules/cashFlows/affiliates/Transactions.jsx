@@ -4,6 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
+import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 import NewTransaction from "@/modals/cashFlows/affiliates/NewTransaction";
@@ -15,18 +16,7 @@ import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-	faCalendar,
-	faChevronRight,
-	faExclamationTriangle,
-	faFileExcel,
-	faMultiply,
-	faPlusCircle,
-	faSearch,
-	faSortAmountAsc,
-	faSortAmountDesc,
-} from "@fortawesome/free-solid-svg-icons";
-import writeXlsxFile from "write-excel-file";
+import { faCalendar, faChevronRight, faExclamationTriangle, faFileExcel, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 export default function Transactions({ project, reload, unmount }) {
 	// Business Logic
@@ -78,17 +68,7 @@ export default function Transactions({ project, reload, unmount }) {
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
-			records.push(
-				dayjs(fe.entry_at).format("DD-MM-YYYY"),
-				fe.firm_name,
-				fe.bank_name,
-				fe.amount,
-				fe.particulars,
-				fe.bank_name,
-				fe.payment_type,
-				fe.remarks,
-				fe.entry_by_name,
-			);
+			records.push(dayjs(fe.entry_at).format("DD-MM-YYYY"), fe.firm_name, fe.bank_name, fe.amount, fe.particulars, fe.bank_name, fe.payment_type, fe.remarks, fe.entry_by_name);
 		});
 
 		records.forEach((fe) => {
@@ -245,10 +225,7 @@ export default function Transactions({ project, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(
-				MyConstants.ApiEndpoints.Affiliates.GetTransactionsSupportData,
-				MyGlobal.GetHeaders({ projectId: project.project_id }),
-			);
+			const response = await axios.get(MyConstants.ApiEndpoints.Affiliates.GetTransactionsSupportData, MyGlobal.GetHeaders({ projectId: project.project_id }));
 
 			if (response.status === 200) {
 				const transactions = response.data.transactions.map((m) => {
@@ -295,10 +272,7 @@ export default function Transactions({ project, reload, unmount }) {
 				});
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(
-				error,
-				`${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Base.Affiliates} => ${MyConstants.Modules.Derived.NewAffiliate} => Add Transaction`,
-			);
+			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Base.Affiliates} => ${MyConstants.Modules.Derived.NewAffiliate} => Add Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -508,12 +482,7 @@ export default function Transactions({ project, reload, unmount }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start">
 					<div className="flex w-full h-9 justify-center items-center primary-background primary-border">{uiHeaders()}</div>
-					<Virtuoso
-						className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background"
-						data={doSorting()}
-						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.transactions.copy.length}
-					/>
+					<Virtuoso className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.transactions.copy.length} />
 					<div className="flex w-full h-9 justify-center items-center primary-border primary-background">{uiTransactionsFooter()}</div>
 				</div>
 			);
@@ -577,18 +546,9 @@ export default function Transactions({ project, reload, unmount }) {
 			</div>
 			<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiMain()}</div>
 
-			{other.isNewTransactionsOpen && (
-				<NewTransaction mount={other.isNewTransactionsOpen} project={project} reload={getSupportData} unmount={toggleNewTransaction} />
-			)}
+			{other.isNewTransactionsOpen && <NewTransaction mount={other.isNewTransactionsOpen} project={project} reload={getSupportData} unmount={toggleNewTransaction} />}
 
-			{other.isEditTransactionsOpen && (
-				<EditTransaction
-					mount={other.isEditTransactionsOpen}
-					transaction={other.selectedTransaction}
-					reload={getSupportData}
-					unmount={toggleEditTransaction}
-				/>
-			)}
+			{other.isEditTransactionsOpen && <EditTransaction mount={other.isEditTransactionsOpen} transaction={other.selectedTransaction} reload={getSupportData} unmount={toggleEditTransaction} />}
 		</div>
 	);
 }

@@ -186,10 +186,10 @@ export default function Dashboard({ setModuleProps }) {
 				});
 
 				const rvProjectIds = new Set(response.data.rv.map((m) => m.project_id));
-				const notGeneratedRv = response.data.projects.filter((f) => !rvProjectIds.has(f.id));
+				const notGeneratedRv = response.data.tasks.filter((f) => !rvProjectIds.has(f.project_id));
 
 				notGeneratedRv.forEach((fe, i) => {
-					rvObj.notGenerated.amount += Number(fe.quote);
+					rvObj.notGenerated.amount += Number(fe.expense);
 					rvObj.notGenerated.count = i + 1;
 				});
 

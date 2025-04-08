@@ -9,6 +9,7 @@ import "tippy.js/animations/shift-away.css";
 import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
+import dynamic from "next/dynamic";
 import MyConstants from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
@@ -33,7 +34,8 @@ import {
 	faStopwatch,
 	faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import dragula from "dragula";
+
+const Dragula = dynamic(() => import("dragula"), { ssr: false });
 
 export default function Tasks({ project }) {
 	// Business Logic

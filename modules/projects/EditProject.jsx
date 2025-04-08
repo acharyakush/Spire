@@ -207,7 +207,7 @@ export default function EditProject({ project, reload, unmount }) {
 						name: project.company_name,
 					},
 					phoneNumber: inquiry.phone_number,
-					remarks: new Date(project.remarks),
+					remarks: project.remarks,
 					invoiceFees: Number(project.invoice_fees),
 					invoiceFirm: {
 						id: invoiceFirm.id,
@@ -274,6 +274,10 @@ export default function EditProject({ project, reload, unmount }) {
 				setFind(key, "");
 				setMain((s) => ({ ...s, [key]: { id: value.id, name: value.name } }));
 			}
+		} else {
+			if (key == "remarks" || key == "invoiceFees" || key == "reimburseVoucher" || key == "note") {
+				setMain((s) => ({ ...s, [key]: "" }));
+			}
 		}
 	}
 
@@ -333,7 +337,7 @@ export default function EditProject({ project, reload, unmount }) {
 	}
 
 	function uiRemarks() {
-		return <TextInput icon={faExclamationCircle} label="Remarks" onChange={(e) => setInputs("remarks", e)} tabIndex={6} value={main.remarks} width="w-full" />;
+		return <TextInput icon={faExclamationCircle} label="Remarks" onChange={(e) => setInputs("remarks", e.target.value)} tabIndex={6} value={main.remarks} width="w-full" />;
 	}
 
 	function uiInvoiceFees() {

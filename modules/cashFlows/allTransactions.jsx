@@ -46,6 +46,7 @@ export default function AllTransactions() {
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
 
+	const showClearCompanyButton = Object.values(other.company).length ? "cursor-pointer primary-text" : "hidden";
 	const showFromDateClearButton = other.find.date.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearButton = other.find.date.to ? "cursor-pointer primary-text" : "hidden";
 	const showFindClearButton = other.find.term ? "cursor-pointer primary-text" : "hidden";
@@ -127,6 +128,10 @@ export default function AllTransactions() {
 					return f;
 				}
 			} else {
+				if (Object.values(other.company).length) {
+					return f.firm_id === other.company?.id;
+				}
+
 				const findTerm = other.find.term.toLowerCase();
 
 				const module = String(f.module).toLowerCase();
@@ -256,6 +261,7 @@ export default function AllTransactions() {
 
 					let amountPaid = 0;
 					let amountReceived = 0;
+					let firmId = "";
 					let paymentSource = "";
 					let paymentType = "";
 
@@ -265,6 +271,7 @@ export default function AllTransactions() {
 								amountReceived = Number(fe.amount);
 							} else {
 								paymentType = fe.payment_type;
+								firmId = fe.firm_id;
 
 								if (moduleName === modules.PettyCash.name) {
 									amountPaid = Number(fe.amount_paid);
@@ -291,6 +298,7 @@ export default function AllTransactions() {
 								bank_name: paymentSource,
 								entry_at: fe.entry_at,
 								entry_by_name: MyGlobal.GetAnyDataFromId(fe.entry_by_id, "full_name"),
+								firm_id: firmId,
 								module: moduleName,
 								particulars: fe.particulars,
 								payment_source: paymentSource,
@@ -350,6 +358,7 @@ export default function AllTransactions() {
 				<MenuButton className={wrapper}>
 					<FontAwesomeIcon className="primary-text" icon={faIndustry} size="sm" />
 					<span className="gray-text">{other.company?.name || "Select Company"}</span>
+					<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setCompany({})} icon={faMultiply} />
 				</MenuButton>
 				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiCompaniesList()}</MenuItems>
 			</Menu>
@@ -400,9 +409,9 @@ export default function AllTransactions() {
 	function uiFooter() {
 		return Object.values(headers).map((m, i) => {
 			return (
-				<div className="w-[10%] space-x-1 text-center text-white font-semibold-12" key={i}>
-					{i === 3 && MyGlobal.ThousandSeparator(api.totalAmountPaid)}
-					{i === 4 && MyGlobal.ThousandSeparator(api.totalAmountReceived)}
+				<div className="w-[10%] space-x-1 text-center text-white font-semibold-16" key={i}>
+					{i === 3 && api.totalAmountPaid > 0 && MyGlobal.ThousandSeparator(api.totalAmountPaid)}
+					{i === 4 && api.totalAmountReceived > 0 && MyGlobal.ThousandSeparator(api.totalAmountReceived)}
 				</div>
 			);
 		});
@@ -437,7 +446,7 @@ export default function AllTransactions() {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
-				<span className="flex w-[10%] justify-center items-center cursor-pointer font-medium-12" key={i}>
+				<span className="flex w-[10%] justify-center items-center cursor-pointer font-medium-10" key={i}>
 					<div className="flex w-full space-x-2 justify-center items-center text-center text-white" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
@@ -485,7 +494,7 @@ export default function AllTransactions() {
 	function uiRows(row, i) {
 		const style = "flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center";
 
-		const wrapper = `flex w-full justify-center items-center contrast-background bottom-border font-regular-12 black-text`;
+		const wrapper = `flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text`;
 
 		const entryAt = dayjs(row.entry_at).format("DD-MM-YYYY");
 		const module = MyGlobal.HighlightText(row.module, other.find.term);
@@ -555,7 +564,7 @@ export default function AllTransactions() {
 
 	useEffect(() => {
 		doFiltering("");
-	}, [other.find.term]);
+	}, [other.find.term, other.company]);
 
 	useEffect(() => {
 		if (other.find.date.from && other.find.date.to) {
