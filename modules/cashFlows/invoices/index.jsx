@@ -243,8 +243,8 @@ export default function Invoices({ presetStatus, unmount }) {
 		let total = { amount: 0, pending: 0, received: 0 };
 
 		for (const i of api.projects) {
-			total.amount += i.amount;
-			total.pending += i.amount_pending;
+			total.amount += Number(i.amount);
+			total.pending += Number(i.amount_pending);
 			total.received += i.amount_received;
 		}
 
@@ -584,6 +584,7 @@ export default function Invoices({ presetStatus, unmount }) {
 
 								link.href = `/invoices/${row.id}.pdf`;
 								link.download = `${row.id}.pdf`;
+
 								link.click();
 							}}
 							size="lg"

@@ -193,6 +193,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				pdf.save(`${fileName}.pdf`);
 
 				const pdfBlob = pdf.output("blob");
+
 				const formData = new FormData();
 				formData.append("file", pdfBlob, `${project.id}.pdf`);
 

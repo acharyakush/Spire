@@ -88,7 +88,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 				dueDate: main.invoiceDueDate,
 				particulars: main.particulars,
 				receiptDate: main.invoiceDate,
-				rowId: project.invoice.id,
+				rowId: project.invoice?.at(0)?.id,
 			};
 
 			const response = await axios.post(MyConstants.ApiEndpoints.Invoices.EditInvoice, body, MyGlobal.GetHeaders());
@@ -186,8 +186,17 @@ export default function EditInvoice({ project, reload, unmount }) {
 				}
 
 				pdf.save(`${fileName}.pdf`);
-				editInvoice();
+
+				const pdfBlob = pdf.output("blob");
+
+				const formData = new FormData();
+				formData.append("file", pdfBlob, `${project.id}.pdf`);
+
+				return axios.post(MyConstants.ApiEndpoints.Invoices.UploadInvoice, formData, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
 			})
+			.then(() => editInvoice())
 			.finally(() => {
 				invoiceBody.style.height = originalStyle.height;
 				invoiceBody.style.overflow = originalStyle.overflow;
@@ -328,7 +337,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 					companies: response.data.companies,
 				});
 
-				const customId = String(project.invoice.custom_id).split("/");
+				const customId = String(project.invoice?.at(0)?.custom_id).split("/");
 
 				setMain((s) => ({
 					...s,
@@ -343,10 +352,10 @@ export default function EditInvoice({ project, reload, unmount }) {
 					},
 					financialYear: customId.at(1),
 					firm: firmObj,
-					invoiceDate: new Date(project.invoice.created_at),
-					invoiceDueDate: new Date(project.invoice.due_date),
+					invoiceDate: new Date(project.invoice?.at(0)?.created_at),
+					invoiceDueDate: new Date(project.invoice?.at(0)?.due_date),
 					invoiceId: customId.at(2),
-					particulars: JSON.parse(project.invoice.particulars),
+					particulars: JSON.parse(project.invoice?.at(0)?.particulars),
 					transactions,
 					totalAmountReceived,
 				}));
