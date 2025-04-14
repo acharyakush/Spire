@@ -724,6 +724,11 @@ html {
 	text-decoration: none;
 }
 
+.red-button-transparent-background {
+	@apply bg-[var(--red-transparent-01)] border flex red-border h-7 items-center justify-center outline-none px-2 rounded select-none space-x-2.5 text-sm text-[var(--red)];
+	font-family: var(--medium);
+}
+
 /*********************/
 /*********************/
 /****Miscellaneous****/

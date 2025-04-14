@@ -28,19 +28,19 @@ export default async function handler(req, res) {
 
 		busboy.on("file", async (fieldname, file, filename) => {
 			try {
-				const baseName = path.parse(filename).name;
-				const extension = path.parse(filename).ext;
+				// const baseName = path.parse(filename).name;
+				// const extension = path.parse(filename).ext;
 
 				// Handle duplicate filenames like projectId_(1).pdf
-				let finalFileName = filename;
-				let counter = 1;
+				const finalFileName = filename;
+				// let counter = 1;
 
-				const existingFiles = await readdir(rvDir);
+				// const existingFiles = await readdir(rvDir);
 
-				while (existingFiles.includes(finalFileName)) {
-					finalFileName = `${baseName}_(${counter})${extension}`;
-					counter++;
-				}
+				// while (existingFiles.includes(finalFileName)) {
+				// 	finalFileName = `${baseName}_(${counter})${extension}`;
+				// 	counter++;
+				// }
 
 				const filePath = path.join(rvDir, finalFileName);
 

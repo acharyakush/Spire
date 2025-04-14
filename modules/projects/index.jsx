@@ -19,7 +19,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
-import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilterCircleXmark, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -71,6 +71,28 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				document.getElementById("findBox").focus();
 				break;
 		}
+	}
+
+	function clearFilter() {
+		const revisedStatuses = { [statuses.Active]: 0, [statuses.Cancelled]: 0, [statuses.Closed]: 0, [statuses.Completed]: 0, [statuses.Hold]: 0 };
+
+		const source = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items;
+
+		source.forEach((fe) => {
+			if (fe.status === statuses.Active) {
+				revisedStatuses.Active++;
+			} else if (fe.status === statuses.Cancelled) {
+				revisedStatuses.Cancelled++;
+			} else if (fe.status === statuses.Closed) {
+				revisedStatuses.Closed++;
+			} else if (fe.status === statuses.Completed) {
+				revisedStatuses.Completed++;
+			} else if (fe.status === statuses.Hold) {
+				revisedStatuses.Hold++;
+			}
+		});
+
+		setMain((s) => ({ ...s, filter: "", revisedStatuses }));
 	}
 
 	function closeMyProjects() {
@@ -356,7 +378,27 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				const items = getAggregatedProjects().find((f) => f.key == main.activeModule.name).items;
 
 				if (Array.isArray(items) && items.length) {
-					source = items;
+					source = items.filter((f) => {
+						if (main.findText.length) {
+							if (Object.values(statuses).includes(main.findText)) {
+								return f.status.includes(main.findText);
+							} else {
+								if (main.findText === "Overdue") {
+									return f.has_tasks_overdue;
+								} else if (main.findText === "Today") {
+									return f.has_tasks_due_today;
+								} else if (main.findText === "Tomorrow") {
+									return f.has_tasks_due_tomorrow;
+								} else if (main.findText === "Upcoming") {
+									return f.has_tasks_upcoming;
+								}
+							}
+						} else if (main.filter.length) {
+							return f.status === main.filter;
+						}
+
+						return f;
+					});
 				}
 			}
 		}
@@ -373,7 +415,25 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}
 
 	function setModule(module) {
-		setMain((s) => ({ ...s, activeModule: { items: module.items, name: module.key } }));
+		const revisedStatuses = { [statuses.Active]: 0, [statuses.Cancelled]: 0, [statuses.Closed]: 0, [statuses.Completed]: 0, [statuses.Hold]: 0 };
+
+		const source = module.key === "All" ? api.projects.copy : module.items;
+
+		source.forEach((fe) => {
+			if (fe.status === statuses.Active) {
+				revisedStatuses.Active++;
+			} else if (fe.status === statuses.Cancelled) {
+				revisedStatuses.Cancelled++;
+			} else if (fe.status === statuses.Closed) {
+				revisedStatuses.Closed++;
+			} else if (fe.status === statuses.Completed) {
+				revisedStatuses.Completed++;
+			} else if (fe.status === statuses.Hold) {
+				revisedStatuses.Hold++;
+			}
+		});
+
+		setMain((s) => ({ ...s, activeModule: { items: module.items, name: module.key }, filter: "", revisedStatuses }));
 	}
 
 	function setMouseEnter(projectId) {
@@ -535,6 +595,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				</div>
 			</div>
 		);
+	}
+
+	function uiClearFilter() {
+		return <FontAwesomeIcon className="cursor-pointer outline-none focus:outline-none red-text" icon={faFilterCircleXmark} onClick={() => clearFilter()} />;
 	}
 
 	function uiClientName(row, tooltipText) {
@@ -863,6 +927,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 						<div className="flex w-1/3 space-x-5 justify-center items-center">
 							{uiFind()}
 							{uiFilter()}
+
+							<Tippy content={<Tooltip text={`Clear filters of ${main.activeModule.name}`} />} placement="bottom">
+								{uiClearFilter()}
+							</Tippy>
 						</div>
 						<div className="flex w-1/3 justify-end items-center">{uiExport()}</div>
 					</div>
