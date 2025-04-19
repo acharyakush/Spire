@@ -22,6 +22,7 @@ export default function Activities({ unmount }) {
 
 	const [api, setApi] = useState({
 		activities: { copy: [], data: [] },
+		staff: [],
 	});
 
 	const [main, setMain] = useState({
@@ -30,7 +31,7 @@ export default function Activities({ unmount }) {
 			text: "",
 		},
 		modules: { list: [], selected: "" },
-		selectedEntity: 0,
+		selectedStaff: 0,
 		sort: { column: tableHeaders.EntryAt, isAscending: false },
 	});
 
@@ -41,34 +42,42 @@ export default function Activities({ unmount }) {
 	const blankContainerStyle = "flex w-full h-full justify-center items-center font-regular-12 gray-text contrast-background full-border";
 
 	const showFindClearButton = main.find.text.length ? "cursor-pointer primary-text" : "hidden";
-
 	const showFromDateClearButton = main.find.date.from ? "cursor-pointer primary-text" : "hidden";
-
 	const showToDateClearButton = main.find.date.to ? "cursor-pointer primary-text" : "hidden";
 
 	// Functions
 	function doFiltering(type) {
-		const filtered = api.activities.copy.filter((f) => {
-			if (type == "entryAt") {
-				const checkDate = new Date(f.entry_at);
-				const startDate = main.find.date.from;
-				const endDate = main.find.date.to;
-
-				if (checkDate >= startDate && checkDate <= endDate) {
+		const filtered = api.activities.copy
+			.filter((f) => {
+				if (main.selectedStaff != 0) {
+					if (f.entry_by_id == main.selectedStaff) {
+						return f;
+					}
+				} else {
 					return f;
 				}
-			} else if (type == "module") {
-				return f.module == main.modules.selected;
-			} else {
-				const findText = main.find.text.toLowerCase();
+			})
+			.filter((f) => {
+				if (type == "entryAt") {
+					const checkDate = new Date(f.entry_at);
+					const startDate = main.find.date.from;
+					const endDate = main.find.date.to;
 
-				const activity = String(f.activity).toLowerCase();
-				const entryBy = String(f.entry_by_name).toLowerCase();
-				const module = String(f.module).toLowerCase();
+					if (checkDate >= startDate && checkDate <= endDate) {
+						return f;
+					}
+				} else if (type == "module") {
+					return f.module == main.modules.selected;
+				} else {
+					const findText = main.find.text.toLowerCase();
 
-				return activity.includes(findText) || entryBy.includes(findText) || module.includes(findText);
-			}
-		});
+					const activity = String(f.activity).toLowerCase();
+					const entryBy = String(f.entry_by_name).toLowerCase();
+					const module = String(f.module).toLowerCase();
+
+					return activity.includes(findText) || entryBy.includes(findText) || module.includes(findText);
+				}
+			});
 
 		setApi((s) => ({ ...s, activities: { ...s.activities, data: filtered } }));
 	}
@@ -118,21 +127,35 @@ export default function Activities({ unmount }) {
 					};
 				});
 
+				const staff = [];
+
+				MyGlobal.GetAllUsers().forEach((fe) => {
+					const count = revised.filter((f) => f.entry_by_id === fe.id).length;
+					staff.push({ ...fe, count });
+				});
+
+				staff.unshift({ id: 0, count: 0, full_name: "All" });
+
 				setApi((s) => ({
 					...s,
 					activities: {
 						copy: revised,
 						data: revised,
 					},
+					staff,
 				}));
 
-				const modules = [];
+				const moduleMap = new Map();
 
-				response.data.forEach((fe) => {
-					if (!modules.includes(fe.module)) {
-						modules.push(fe.module);
+				response.data.forEach(({ module }) => {
+					if (moduleMap.has(module)) {
+						moduleMap.set(module, moduleMap.get(module) + 1);
+					} else {
+						moduleMap.set(module, 1);
 					}
 				});
+
+				const modules = Array.from(moduleMap, ([name, count]) => ({ name, count }));
 
 				setMain((s) => ({
 					...s,
@@ -161,7 +184,7 @@ export default function Activities({ unmount }) {
 		if (key == "from" || key == "to") {
 			setMain((s) => ({ ...s, find: { ...s.find, date: { ...s.find.date, [key]: value } } }));
 		} else if (key == "module") {
-			setMain((s) => ({ ...s, modules: { ...s.modules, selected: value } }));
+			setMain((s) => ({ ...s, modules: { ...s.modules, selected: value.name } }));
 		} else {
 			setMain((s) => ({ ...s, find: { ...s.find, [key]: value } }));
 		}
@@ -171,20 +194,43 @@ export default function Activities({ unmount }) {
 		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
 	}
 
+	function setStaff(object) {
+		if (object.id != main.selectedStaff) {
+			const moduleMap = new Map();
+
+			api.activities.copy
+				.filter((f) => {
+					if (object.id != 0) {
+						if (f.entry_by_id == object.id) {
+							return f;
+						}
+					} else {
+						return f;
+					}
+				})
+				.forEach(({ module }) => {
+					if (moduleMap.has(module)) {
+						moduleMap.set(module, moduleMap.get(module) + 1);
+					} else {
+						moduleMap.set(module, 1);
+					}
+				});
+
+			const modules = Array.from(moduleMap, ([name, count]) => ({ name, count }));
+
+			setMain((s) => ({ ...s, modules: { list: modules, selected: "" }, selectedStaff: object.id }));
+		}
+	}
+
 	// UI Components
 	function uiBody() {
 		return (
 			<div className="flex w-full h-full justify-center items-start">
-				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center"></div>
-				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center">
+				<div className="flex flex-col w-[15%] space-y-2.5 mx-5 justify-start items-center">{uiStaff()}</div>
+				<div className="flex flex-col w-[85%] h-full mr-5 justify-start items-center">
 					<div className="flex flex-col w-full h-full justify-center items-start full-border">
 						<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-						<Virtuoso
-							className="w-full h-full overflow-y-auto bottom-border contrast-background"
-							data={doSorting()}
-							itemContent={(i, row) => uiRows(row, i)}
-							totalCount={api.activities.data.length}
-						/>
+						<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.activities.data.length} />
 					</div>
 				</div>
 			</div>
@@ -273,8 +319,7 @@ export default function Activities({ unmount }) {
 	}
 
 	function uiModulesMenu() {
-		const wrapper =
-			"flex w-36 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+		const wrapper = "flex w-36 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
 
 		return (
 			<Menu as="div" className="flex w-36 justify-center items-center relative">
@@ -282,9 +327,7 @@ export default function Activities({ unmount }) {
 					<FontAwesomeIcon className="primary-text" icon={faFilter} size="sm" />
 					<span className="gray-text">{main.modules.selected || "Module"}</span>
 				</MenuButton>
-				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">
-					{uiModulesMenuList()}
-				</MenuItems>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiModulesMenuList()}</MenuItems>
 			</Menu>
 		);
 	}
@@ -292,12 +335,9 @@ export default function Activities({ unmount }) {
 	function uiModulesMenuList() {
 		return main.modules.list.map((m, i) => {
 			return (
-				<MenuItem
-					as="div"
-					className="p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text text-left hovered-rows"
-					key={i}
-					onClick={() => setInputs("module", m)}>
-					{m}
+				<MenuItem as="div" className="flex w-full justify-between items-center p-2 cursor-pointer border-y font-regular-9 black-text hovered-rows" key={i} onClick={() => setInputs("module", m)}>
+					<span className="text-left">{m.name}</span>
+					<span className="font-regular-9 gray-text">{m.count}</span>
 				</MenuItem>
 			);
 		});
@@ -331,6 +371,23 @@ export default function Activities({ unmount }) {
 				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} />;
 			}
 		}
+	}
+
+	function uiStaff() {
+		return api.staff.map((m, i) => {
+			const style = m.id == main.selectedStaff ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+
+			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${style} font-regular-10 hovered-rows`;
+
+			const name = m.id != 0 ? `${m.first_name} ${String(m.last_name).charAt(0)}.` : "All";
+
+			return (
+				<button className={wrapper} key={i} onClick={() => setStaff(m)}>
+					<span className="text-left">{name}</span>
+					{m.id != 0 && m.count > 0 && <span className="font-regular-9 gray-text">{m.count}</span>}
+				</button>
+			);
+		});
 	}
 
 	function uiToDate() {
@@ -371,6 +428,10 @@ export default function Activities({ unmount }) {
 	useEffect(() => {
 		doFiltering("module");
 	}, [main.modules.selected]);
+
+	useEffect(() => {
+		doFiltering("");
+	}, [main.selectedStaff]);
 
 	useEffect(() => {
 		if (main.find.date.from && main.find.date.to) {

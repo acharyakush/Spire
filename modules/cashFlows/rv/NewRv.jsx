@@ -71,10 +71,11 @@ export default function NewRv({ project, reload, unmount }) {
 	});
 
 	const totalParticularsAmount = main.particulars.reduce((pv, cv) => pv + Number(cv.amount), 0);
-
 	const totalPendingAmount = Math.abs(totalParticularsAmount - main.totalAmountReceived);
-
 	const finalPendingAmount = `${String.fromCharCode(8377)} ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
+
+	const generateButtonStyle = loading.downloadPdf ? "opacity-50 pointer-events-none" : "opacity-100 pointerss-events-auto";
+	const generateButton = `primary-button-condensed ${generateButtonStyle}`;
 
 	// Functions
 	async function addRv() {
@@ -812,8 +813,8 @@ export default function NewRv({ project, reload, unmount }) {
 				{uiRvSheet()}
 			</div>
 			<footer className="w-full dialog-footer">
-				<button className="primary-button-condensed" onClick={() => downloadPdf()}>
-					Generate & Download
+				<button className={generateButton} onClick={() => downloadPdf()}>
+					Generate
 				</button>
 			</footer>
 		</div>

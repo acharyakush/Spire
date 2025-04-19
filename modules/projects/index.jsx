@@ -417,7 +417,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	function setModule(module) {
 		const revisedStatuses = { [statuses.Active]: 0, [statuses.Cancelled]: 0, [statuses.Closed]: 0, [statuses.Completed]: 0, [statuses.Hold]: 0 };
 
-		const source = module.key === "All" ? api.projects.copy : module.items;
+		const source = module.key === "All" ? api.projects.copy : module?.items;
 
 		source.forEach((fe) => {
 			if (fe.status === statuses.Active) {
@@ -433,7 +433,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			}
 		});
 
-		setMain((s) => ({ ...s, activeModule: { items: module.items, name: module.key }, filter: "", revisedStatuses }));
+		setMain((s) => ({ ...s, activeModule: { items: module?.items, name: module?.key }, filter: "", revisedStatuses }));
 	}
 
 	function setMouseEnter(projectId) {
@@ -582,7 +582,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}
 
 	// UI Components
-
 	function uiBody() {
 		return (
 			<div className="flex w-full h-full justify-center items-start">
@@ -698,7 +697,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			return (
 				<button className={wrapper} key={i} onClick={() => setModule(m)}>
 					<span className="text-left">{m.key}</span>
-					{m.key != "All" && m.items.length && <span className="font-regular-10 gray-text">{m.items.length}</span>}
+					{m.key != "All" && m?.items.length && <span className="font-regular-10 gray-text">{m?.items.length}</span>}
 				</button>
 			);
 		});

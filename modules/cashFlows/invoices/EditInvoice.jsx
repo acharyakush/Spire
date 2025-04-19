@@ -69,10 +69,11 @@ export default function EditInvoice({ project, reload, unmount }) {
 	}, 0);
 
 	const totalAmount = totalParticularsAmount;
-
 	const totalPendingAmount = Math.abs(totalAmount - main.totalAmountReceived);
-
 	const finalPendingAmount = String.fromCharCode(8377) + ` ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
+
+	const generateButtonStyle = loading.downloadPdf ? "opacity-50 pointer-events-none" : "opacity-100 pointerss-events-auto";
+	const generateButton = `primary-button-condensed ${generateButtonStyle}`;
 
 	// Functions
 	async function editInvoice() {
@@ -821,8 +822,8 @@ export default function EditInvoice({ project, reload, unmount }) {
 				{uiInvoiceSheet()}
 			</div>
 			<footer className="w-full dialog-footer">
-				<button className="primary-button-condensed" onClick={() => editAndDownload()}>
-					Edit & Download
+				<button className={generateButton} onClick={() => editAndDownload()}>
+					Edit
 				</button>
 			</footer>
 		</div>

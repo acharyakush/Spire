@@ -188,27 +188,23 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 				<button key={i} className={wrapper} onClick={() => handleTab(m)}>
 					<FontAwesomeIcon icon={icon} />
 					<span>{m}</span>
-					<span>{m}</span>
 				</button>
 			);
 		});
 	};
 
-	const height = data.activeTab === MyConstants.Modules.Other.Firms.EditFirm ? 148 : 102;
+	const height = data.activeTab === MyConstants.Modules.Other.Firms.EditFirm ? 148 : 110;
 
 	// Main UI
 	return (
-		<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border contrast-background">
-			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border contrast-background">
-				<div className="flex w-full space-x-2.5 justify-start items-center">
-					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => close()} />
-					<div className="flex w-full justify-start items-center">
-						<span className="view-heading">Edit {thisAdminCompany.name}</span>
-						<span className="view-heading">Edit {thisAdminCompany.name}</span>
-					</div>
+		<div className="flex flex-col w-full px-5 py-2.5 justify-between items-center bottom-border contrast-background">
+			<div className="flex w-full space-x-2.5 justify-start items-center">
+				<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => close()} />
+				<div className="flex w-full justify-start items-center">
+					<span className="view-heading">Edit {thisAdminCompany.name}</span>
 				</div>
 			</div>
-			<div className="flex w-full h-[calc(100vh-98px)] justify-center items-center contrast-background">
+			<div className="flex w-full h-[calc(100vh-137px)] justify-center items-center contrast-background">
 				<div className="flex flex-col w-1/6 h-full py-4 space-y-1.5 justify-center items-center">{uiTabs()}</div>
 				<div className={`w-5/6 h-[calc(100vh-${height}px)] overflow-y-auto left-border`}>
 					{data.activeTab === MyConstants.Modules.Other.Firms.EditBanks ? <EditBank bank={bankObject} reload={refreshAdminCompanies} /> : uiCompany()}

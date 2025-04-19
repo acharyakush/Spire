@@ -9,12 +9,12 @@ import "tippy.js/animations/shift-away.css";
 import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
-import dynamic from "next/dynamic";
 import MyConstants from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { useEffect, useRef, useState } from "react";
 import { SpinnerBig, Tooltip } from "@/components/Elements";
+import { useDragAndDrop } from "@/utilities/useDragAndDrop";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AddParticularRemark, AddTask, DeleteParticularRemark, DeleteTask, EditParticularRemark, EditTask, EditTaskStatus, MarkSubTaskCompleted } from "@/modals/singleProject/tasks";
 import {
@@ -35,8 +35,6 @@ import {
 	faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
-const Dragula = dynamic(() => import("dragula"), { ssr: false });
-
 export default function Tasks({ project }) {
 	// Business Logic
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
@@ -45,7 +43,6 @@ export default function Tasks({ project }) {
 	const taskHeaders = MyConstants.TableHeaders.Tasks;
 
 	const tippyReference = useRef(null);
-	const tasksReference = useRef(null);
 
 	const [api, setApi] = useState({
 		notes: { copy: [], data: [] },
@@ -82,6 +79,20 @@ export default function Tasks({ project }) {
 		tasks: false,
 	});
 
+	const handleDrop = (newOrder) => {
+		const updated = newOrder.map((item, index) => ({
+			...item,
+			sequence: index + 1,
+		}));
+
+		updateTaskOrder(updated); // API call or local update
+	};
+
+	const { containerRef, draggedItem, handleDragStart, handleDragEnd } = useDragAndDrop({
+		items: sortTasks(),
+		onDrop: handleDrop,
+	});
+
 	const allowDeletingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteTask);
 	const allowDisablingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.DisableTask);
 	const allowEditingTask = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditTask);
@@ -94,6 +105,17 @@ export default function Tasks({ project }) {
 
 	// Functions
 	async function updateTaskOrder(updatedOrder) {
+		const currentOrder = sortTasks().map((task) => task.id);
+		const newOrder = updatedOrder.map((task) => task.id);
+
+		// 🌶 1. Check if order is really different
+		const isSameOrder = currentOrder.every((id, index) => id === newOrder[index]);
+
+		if (isSameOrder) {
+			MyGlobal.ShowSuccessToast("Already sorted.");
+			return;
+		}
+
 		setLoading((s) => ({ ...s, sort: true }));
 
 		try {
@@ -586,7 +608,7 @@ export default function Tasks({ project }) {
 				) : (
 					<div className="flex flex-col w-full h-full relative contrast-background">
 						<div className="flex w-full px-4 justify-center items-center primary-background">{uiTaskHeaders()}</div>
-						<div className="flex flex-col w-full h-[calc(100vh-195px)] overflow-y-auto" ref={tasksReference}>
+						<div className="flex flex-col w-full h-[calc(100vh-195px)] overflow-y-auto" ref={containerRef}>
 							{sortTasks().map((m, i) => uiTaskRows(m, i))}
 						</div>
 						<div className={addSubTaskButton} onClick={() => toggleAddParticularRemarkBox()}>
@@ -755,7 +777,7 @@ export default function Tasks({ project }) {
 		const markSubTaskCompletedStyle = allowMarkingSubTaskCompleted && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
 		return (
-			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background border-y font-regular-11" key={row.id} data-id={row.id}>
+			<div className={`flex w-full px-4 py-2 justify-center items-center contrast-background border-y font-regular-11 transition-all duration-200 `} key={row.id} data-id={row.id}>
 				<span className="drag-handle cursor-grab px-2">
 					<FontAwesomeIcon icon={faBars} className="text-gray-500" />
 				</span>
@@ -788,32 +810,6 @@ export default function Tasks({ project }) {
 		getNotes();
 		getTasks("mount");
 	}, []);
-
-	useEffect(() => {
-		if (api.tasks.data.length && tasksReference.current) {
-			requestAnimationFrame(() => {
-				if (dragula) {
-					const drake = dragula([tasksReference.current]);
-
-					drake.on("drop", (el, target, source, sibling) => {
-						const reorderedTasks = Array.from(tasksReference.current.children).map((i) => i.getAttribute("data-id"));
-
-						const newTasks = reorderedTasks.map((m, i) => {
-							const exists = sortTasks().filter((t) => t.id === Number(m));
-
-							if (exists.length) {
-								return { ...exists.at(0), sequence: i + 1 };
-							}
-						});
-
-						updateTaskOrder(newTasks);
-					});
-
-					return () => drake.destroy();
-				}
-			});
-		}
-	}, [getSelectedTask()]);
 
 	// Main UI
 	return (

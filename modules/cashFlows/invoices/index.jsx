@@ -21,7 +21,8 @@ import { TextInputNative } from "@/components/Inputs";
 import { Badge, Spinner, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Transactions } from "../../../modals/invoices/Transactions";
-import { faCalendar, faChevronRight, faCoins, faFileDownload, faFileExcel, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
+import { faCalendar, faCheck, faChevronRight, faCoins, faFileDownload, faFileExcel, faIndustry, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 export default function Invoices({ presetStatus, unmount }) {
 	// Business Logic
@@ -29,12 +30,14 @@ export default function Invoices({ presetStatus, unmount }) {
 	const thisView = MyConstants.Modules.Base.Invoices;
 
 	const [api, setApi] = useState({
+		firms: [],
 		projects: [],
 		projectsCopy: [],
 		uploadedFiles: [],
 	});
 
 	const [main, setMain] = useState({
+		company: {},
 		filter: {
 			date: { from: "", to: "" },
 			find: "",
@@ -53,9 +56,10 @@ export default function Invoices({ presetStatus, unmount }) {
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 	const allowNewInvoice = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInvoice);
 
-	const showFromDateClearIcon = main.filter.from ? "cursor-pointer primary-text" : "hidden";
-	const showToDateClearIcon = main.filter.to ? "cursor-pointer primary-text" : "hidden";
-	const showFindClearIcon = main.filter.find ? "cursor-pointer primary-text" : "hidden";
+	const showClearCompanyButton = Object.values(main.company).length ? "cursor-pointer primary-text visible" : "invisible";
+	const showFromDateClearIcon = main.filter.from ? "cursor-pointer primary-text visible" : "invisible";
+	const showToDateClearIcon = main.filter.to ? "cursor-pointer primary-text visible" : "invisible";
+	const showFindClearIcon = main.filter.find ? "cursor-pointer primary-text visible" : "invisible";
 
 	const blankDataWrapper = "flex w-full h-full justify-center items-center font-regular-12 gray-text contrast-background full-border";
 
@@ -159,6 +163,10 @@ export default function Invoices({ presetStatus, unmount }) {
 			} else if (query === "NOT GENERATED") {
 				return !f.invoice_id;
 			} else {
+				if (Object.values(main.company).length) {
+					return f.firm_id === main.company?.id;
+				}
+
 				return (
 					String(f.id).toLowerCase().includes(findText) ||
 					String(f.company_name).toLowerCase().includes(findText) ||
@@ -249,6 +257,10 @@ export default function Invoices({ presetStatus, unmount }) {
 		}
 
 		return total;
+	}
+
+	function setCompany(value) {
+		setMain((s) => ({ ...s, company: value }));
 	}
 
 	function setInputs(key, value) {
@@ -344,8 +356,16 @@ export default function Invoices({ presetStatus, unmount }) {
 					};
 				});
 
+				const firms = [];
+
+				response.data.firms.forEach((fe) => {
+					const count = revised.filter((f) => f.firm_id === fe.id).length;
+					firms.push({ ...fe, count });
+				});
+
 				setApi((s) => ({
 					...s,
+					firms,
 					projects: revised,
 					projectsCopy: revised,
 				}));
@@ -387,21 +407,56 @@ export default function Invoices({ presetStatus, unmount }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border">
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-					<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.length} />
+					<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background scrollbar-gutter" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.length} />
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 				</div>
 			);
 		}
 	}
 
-	function uiExport() {
-		if (api.projects.length && api.projectsCopy.length) {
+	function uiCompanies() {
+		const wrapper = "flex w-60 h-[30px] px-2.5 justify-between items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+
+		return (
+			<Menu as="div" className="flex w-60 justify-center items-center relative">
+				<MenuButton className={wrapper}>
+					<div className="flex w-full space-x-2.5 justify-start items-center">
+						<FontAwesomeIcon className="primary-text" icon={faIndustry} size="sm" />
+						<span className="gray-text">{main.company?.name || "Select Company"}</span>
+					</div>
+					<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setCompany({})} icon={faMultiply} />
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiCompaniesList()}</MenuItems>
+			</Menu>
+		);
+	}
+
+	function uiCompaniesList() {
+		return api.firms.map((m, i) => {
+			const isSelected = m.id == main.company?.id;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+
 			return (
-				<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
-					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
-				</button>
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setCompany(m)}>
+					<div className="flex w-full space-x-2 justify-start items-center">
+						<span>{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}</span>
+						<span>{m.name}</span>
+					</div>
+					<span className="gray-text">{m.count > 0 && m.count}</span>
+				</MenuItem>
 			);
-		}
+		});
+	}
+
+	function uiExport() {
+		const style = `primary-button-transparent-background ${api.projects.length && api.projectsCopy.length ? "visible" : "invisible"}`;
+
+		return (
+			<button className={style} onClick={() => doExcelExport()}>
+				<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
+			</button>
+		);
 	}
 
 	function uiFind() {
@@ -490,6 +545,7 @@ export default function Invoices({ presetStatus, unmount }) {
 						</div>
 						<div className="flex w-1/2 space-x-2 justify-end items-center">
 							<div className="flex w-1/2 space-x-2 justify-end items-center">
+								{uiCompanies()}
 								{uiFromDate()}
 								{uiToDate()}
 							</div>
@@ -660,7 +716,7 @@ export default function Invoices({ presetStatus, unmount }) {
 
 	useEffect(() => {
 		doFiltering();
-	}, [main.filter.find]);
+	}, [main.filter.find, main.company]);
 
 	// Main UI
 	return uiMain();

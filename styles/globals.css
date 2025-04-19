@@ -1039,3 +1039,69 @@ input[type="radio"]:checked + label {
 .zoom-rotate-right:hover {
 	transform: scale(1.25) rotate(5deg) !important;
 }
+
+/* Put in your CSS file or use Tailwind plugins if you prefer */
+
+.bounce-animate {
+	transition: transform 0.25s ease;
+}
+
+.bounce-up {
+	animation: bounceUp 0.25s ease;
+}
+
+.bounce-down {
+	animation: bounceDown 0.25s ease;
+}
+
+@keyframes bounceUp {
+	0% {
+		transform: translateY(10px);
+	}
+	50% {
+		transform: translateY(-5px);
+	}
+	100% {
+		transform: translateY(0);
+	}
+}
+
+@keyframes bounceDown {
+	0% {
+		transform: translateY(-10px);
+	}
+	50% {
+		transform: translateY(5px);
+	}
+	100% {
+		transform: translateY(0);
+	}
+}
+
+/* Bounce effect on row change */
+/* Bounce effect */
+@keyframes bounce {
+	0% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-5px);
+	}
+	100% {
+		transform: translateY(0);
+	}
+}
+
+.bounce-effect {
+	animation: bounce 0.3s ease-out;
+}
+
+/* Transition effect for moved rows */
+.transition-transform {
+	transition: transform 0.2s ease-out;
+}
+
+/* Optionally, you can also apply a smooth effect when dragging */
+.dragged {
+	opacity: 0.5;
+}

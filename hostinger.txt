@@ -1,0 +1,43 @@
+Hostinger
+=========
+GoDaddy Domain Transfer Code
+T^O855@:^$3846DC
+
+Root Password
+SpireCrmBySigniixAdvisors#2024
+
+SSH VPS Access
+ssh root@145.223.23.76
+
+Hostname
+srv797550.hstgr.cloud
+
+IPv4
+Address:		145.223.23.76
+Reverse DNS:	srv797550.hstgr.cloud
+
+IPv6
+Address:		2a02:4780:12:f2d9::1
+Reverse DNS:	srv797550.hstgr.cloud
+
+admin@signiixadvisors.com
+Signiix@Advisors$Admin#2024
+
+Storage per email account:						10.00 GB
+Messages per email account:						100000 emails
+Daily message sending:							1000 / in 24 hours
+Outgoing email size:							35 MB
+Email attachment size:							25 MB
+Recipients per message (To, Cc and Bcc):		100 recipients
+Aliases per email account:						50 aliases
+Forward rules per email account:				10 forwarders
+
+EasyPanel
+Username:		admin
+Password:		Cpanel@Signiix@Advisors@Admin#2024
+Email Address:	admin@srv797550.hstgr.cloud
+
+Web Admin password:		ino4uvSjNEcjMNRl
+
+ssh-ed25519 255 ZhxYMHA7Oh/cPoLR8LUgYl0IdsoqGd6rnStNquQk16E
+ssh-ed25519 255 33:13:b3:f3:97:28:5a:51:8c:ab:3e:58:ba:67:4c:fb

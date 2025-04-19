@@ -403,15 +403,33 @@ export const MyGlobal = Object.freeze({
 		}
 	},
 
-	MakeNewInvoiceId: (payload) => {
+	MakeNewInvoiceId: (firmName, payload) => {
 		if (payload.length) {
-			const getLatestId = [...payload].sort((a, b) => b.id - a.id).at(0).id;
+			const initials = MyGlobal.GetInitials(firmName).at(0);
 
-			if (!getLatestId) {
+			const target = [...payload].filter((f) => {
+				const customIdInitials = String(f.custom_id).split("/").at(0);
+
+				if (String(initials).startsWith(customIdInitials)) {
+					return f;
+				}
+			});
+
+			if (!target.length) {
 				return "00001";
 			} else {
-				const incrementedId = (parseInt(getLatestId, 10) + 1).toString();
-				const newId = incrementedId.padStart(String(getLatestId).length, "0");
+				const extractedIds = [];
+
+				target.forEach((m) => {
+					const getLastUsedId = String(m.custom_id).split("/").at(2);
+					const extractNumber = +getLastUsedId.match(/\d+$/)[0].replace(/0/g, "");
+
+					extractedIds.push(extractNumber);
+				});
+
+				const latestId = extractedIds.sort((a, b) => b - a).at(0);
+				const incrementedId = (parseInt(latestId, 10) + 1).toString();
+				const newId = incrementedId.padStart(String(latestId).length, "0");
 
 				return String(newId).padStart(5, "0");
 			}

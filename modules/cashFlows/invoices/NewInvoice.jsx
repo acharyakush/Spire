@@ -79,6 +79,9 @@ export default function NewInvoice({ project, reload, unmount }) {
 
 	const finalPendingAmount = String.fromCharCode(8377) + ` ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
 
+	const generateButtonStyle = loading.downloadPdf ? "opacity-50 pointer-events-none" : "opacity-100 pointerss-events-auto";
+	const generateButton = `primary-button-condensed ${generateButtonStyle}`;
+
 	// Functions
 	async function addInvoice() {
 		try {
@@ -353,7 +356,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 						name: bankObj.name,
 						upiId: bankObj.upiId,
 					},
-					invoiceId: MyGlobal.MakeNewInvoiceId(response.data.invoices),
+					invoiceId: MyGlobal.MakeNewInvoiceId(firmObj.name, response.data.invoices),
 					transactions,
 					firm: firmObj,
 					totalAmountReceived,
@@ -819,8 +822,8 @@ export default function NewInvoice({ project, reload, unmount }) {
 				{uiInvoiceSheet()}
 			</div>
 			<footer className="w-full dialog-footer">
-				<button className="primary-button-condensed" onClick={() => generateAndDownload()}>
-					Generate & Download
+				<button className={generateButton} onClick={() => generateAndDownload()}>
+					Generate
 				</button>
 			</footer>
 		</div>
