@@ -291,7 +291,7 @@ export default function Invoices({ presetStatus, unmount }) {
 
 					const invoice = response.data.invoices.filter((f) => f.project_id == m.id);
 
-					let invoiceAmount = "";
+					let invoiceAmount = Number(m.invoice_fees);
 					let invoiceId = "";
 					let invoiceCreatedAt = "";
 					let invoiceCreatedAtTime = "";
@@ -362,6 +362,8 @@ export default function Invoices({ presetStatus, unmount }) {
 					const count = revised.filter((f) => f.firm_id === fe.id).length;
 					firms.push({ ...fe, count });
 				});
+
+				console.log(revised);
 
 				setApi((s) => ({
 					...s,

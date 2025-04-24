@@ -225,11 +225,13 @@ export default function EditProject({ project, reload, unmount }) {
 					teams: project.teams_data,
 				};
 
+				const clientsCompanies = response.data.companies.filter((f) => f.client_id === project.client_id);
+
 				setApi({
 					clients: response.data.clients,
 					clientsCompanies: {
-						copy: response.data.companies,
-						data: response.data.companies,
+						copy: clientsCompanies,
+						data: clientsCompanies,
 					},
 					mainProjects: {
 						copy: response.data.mainProjects,

@@ -594,7 +594,7 @@ export default function EditRv({ project, reload, unmount }) {
 
 		return (
 			<div className="flex flex-col w-full h-[135px] p-3 justify-start items-center rounded logo-green-border logo-green-background-transparent-01 text-black">
-				<span className="w-full text-left font-medium-12 logo-green-text">Billed By</span>
+				<span className="w-full text-left font-medium-12 logo-green-text">Raised By</span>
 				<span className="w-full text-left font-medium-14">{name}</span>
 				<span className="w-full text-left font-regular-10">
 					<Tippy content={<Tooltip text={address} />} placement="bottom">
@@ -616,7 +616,7 @@ export default function EditRv({ project, reload, unmount }) {
 
 		return (
 			<div className="flex flex-col w-full h-[135px] p-3 justify-start items-center rounded logo-green-border logo-green-background-transparent-01">
-				<span className="w-full text-left font-medium-12 logo-green-text">Billed To</span>
+				<span className="w-full text-left font-medium-12 logo-green-text">Reimbursing Party</span>
 				<span className="w-full text-left font-medium-14">{name === "null" ? "" : name}</span>
 				<span className="w-full text-left font-regular-10">
 					<Tippy content={<Tooltip text={_address} />} placement="bottom">

@@ -4,6 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
+import dynamic from "next/dynamic";
 import SlotCounter from "react-slot-counter";
 import MyConstants from "@/utilities/constants";
 
@@ -13,11 +14,13 @@ import { BadgeLarge2 } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark, faCheckDouble, faCirclePause, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
 
+const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
+
 export default function Dashboard({ setModuleProps }) {
 	// Business Logic
 
 	const [main, setMain] = useState({
-		inquiries: { closed: 0, confirmed: 0, hold: 0, my: 0, open: 0, total: 0 },
+		inquiries: { api: [], closed: 0, confirmed: 0, hold: 0, my: 0, open: 0, total: 0, totalAmount: 0 },
 		invoices: {
 			due: { amount: 0, count: 0, label: "DUE" },
 			generated: { amount: 0, count: 0, label: "GENERATED" },
@@ -25,7 +28,7 @@ export default function Dashboard({ setModuleProps }) {
 			total: 0,
 		},
 		isLoading: false,
-		projects: { active: 0, closed: 0, completed: 0, hold: 0, my: 0, total: 0 },
+		projects: { active: 0, api: [], closed: 0, completed: 0, hold: 0, my: 0, total: 0, totalAmount: 0 },
 		rv: {
 			due: { amount: 0, count: 0, label: "DUE" },
 			generated: { amount: 0, count: 0, label: "GENERATED" },
@@ -89,9 +92,9 @@ export default function Dashboard({ setModuleProps }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Dashboard, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const inquiriesCount = { closed: 0, confirmed: 0, hold: 0, my: 0, open: 0, total: response.data.inquiries.length };
+				const inquiriesCount = { api: [], closed: 0, confirmed: 0, hold: 0, my: 0, open: 0, total: response.data.inquiries.length, totalAmount: 0 };
 
-				const projectsCount = { active: 0, closed: 0, completed: 0, hold: 0, my: 0, total: response.data.projects.length };
+				const projectsCount = { active: 0, api: [], closed: 0, completed: 0, hold: 0, my: 0, total: response.data.projects.length, totalAmount: 0 };
 
 				const tasksCount = { overdue: 0, today: 0, tomorrow: 0, total: response.data.tasks.length, upcoming: 0 };
 
@@ -109,7 +112,11 @@ export default function Dashboard({ setModuleProps }) {
 					if (String(i.follow_ups).includes(MyGlobal.GetUserId())) {
 						inquiriesCount.my++;
 					}
+
+					inquiriesCount.totalAmount += Number(i.quote);
 				}
+
+				inquiriesCount.api = response.data.inquiries;
 
 				for (const p of response.data.projects) {
 					if (p.status == projectsStatus.Active) {
@@ -125,7 +132,11 @@ export default function Dashboard({ setModuleProps }) {
 					if (String(p.teams).includes(MyGlobal.GetUserId())) {
 						projectsCount.my++;
 					}
+
+					projectsCount.totalAmount += Number(p.invoice_fees);
 				}
+
+				projectsCount.api = response.data.projects;
 
 				for (const t of response.data.tasks) {
 					const dueDate = dayjs(t.due_on);
@@ -212,6 +223,110 @@ export default function Dashboard({ setModuleProps }) {
 	}
 
 	// UI Components
+	function uiCompletedProjects() {
+		const months = [];
+		const seriesData = [];
+
+		const categories = main.projects.api.reduce((group, project) => {
+			const month = dayjs(project.started_on).format("MMM YYYY");
+
+			if (!group[month]) {
+				group[month] = [];
+			}
+
+			group[month].push(project);
+
+			return group;
+		}, {});
+
+		Object.entries(categories).forEach(([month, object]) => {
+			if (!months.includes(month)) {
+				months.push(month);
+			}
+
+			const totalRevenues = object.reduce((total, project) => total + Number(project.invoice_fees), 0);
+			seriesData.push(totalRevenues);
+		});
+
+		return (
+			<div className="flex flex-col w-1/3 px-5 space-y-2 justify-between items-center">
+				<span className="flex w-full justify-start items-center font-bold-24 green-text">Confirmed Projects</span>
+				<div className="flex flex-col w-full p-4 justify-between items-center rounded-2xl shadow-xl full-border contrast-background">
+					<div className="flex w-full p-2 justify-between items-center">
+						<span className="font-semibold-40">{MyGlobal.FormatCurrency(main.projects.totalAmount)}</span>
+						<button className="primary-button-transparent-background">Filter</button>
+					</div>
+					<div className="w-full">
+						<div id="chart">
+							<ReactApexChart
+								options={{
+									chart: {
+										width: "100%",
+										type: "line",
+										zoom: {
+											enabled: true,
+										},
+										fontFamily: "Tahoma, sans-serif",
+										redrawOnParentResize: true,
+										toolbar: {
+											show: false,
+										},
+										events: {
+											mounted: (c) => c.windowResizeHandler(),
+										},
+									},
+									dataLabels: {
+										enabled: true,
+										formatter: (value) => {
+											const _value = Math.trunc(Number(value));
+											return MyGlobal.FormatCurrency(_value);
+										},
+										style: {
+											fontSize: "12px",
+										},
+									},
+									stroke: {
+										curve: "smooth",
+									},
+									markers: {
+										hover: {
+											sizeOffset: 4,
+										},
+										size: 1,
+									},
+									tooltip: {
+										y: {
+											formatter: (val) => MyGlobal.FormatCurrency(val),
+										},
+									},
+									grid: {
+										row: {
+											colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+											opacity: 0.5,
+										},
+									},
+									xaxis: {
+										categories: months,
+									},
+								}}
+								series={[
+									{
+										name: "Prices",
+										data: seriesData,
+									},
+								]}
+								height={160}
+								type="line"
+								width="100%"
+							/>
+						</div>
+						<div id="html-dist"></div>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
 	function uiInquiries(key) {
 		const aesthetics = getBackgroundAndIcon(key);
 
@@ -239,15 +354,122 @@ export default function Dashboard({ setModuleProps }) {
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Inquiries, key)}>
-				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
-					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
-					</div>
+				<div className={`flex w-full py-6 justify-center items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="flex flex-col px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-						<span className="font-bold-28">
+						<span className="font-bold-32">
 							<SlotCounter value={value} />
 						</span>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	function uiInquiryAmount() {
+		const months = [];
+		const seriesData = [];
+
+		const categories = main.inquiries.api.reduce((group, inquiry) => {
+			const month = dayjs(inquiry.entry_date).format("MMM YYYY");
+
+			if (!group[month]) {
+				group[month] = [];
+			}
+
+			group[month].push(inquiry);
+			return group;
+		}, {});
+
+		const sortedData = Object.keys(categories)
+			.sort((a, b) => new Date(a) - new Date(b))
+			.reduce((acc, key) => {
+				acc[key] = categories[key];
+				return acc;
+			}, {});
+
+		Object.entries(sortedData).forEach(([month, object]) => {
+			if (!months.includes(month)) {
+				months.push(month);
+			}
+
+			const totalAmount = object.reduce((total, inquiry) => total + Number(inquiry.quote), 0);
+			seriesData.push(totalAmount);
+		});
+
+		return (
+			<div className="flex flex-col w-1/2 px-5 space-y-2 justify-between items-center">
+				<span className="flex w-full justify-start items-center font-bold-24 green-text">Inquiry Amount</span>
+				<div className="flex flex-col w-full p-4 justify-between items-center rounded-2xl shadow-xl full-border contrast-background">
+					<div className="flex w-full p-2 justify-between items-center">
+						<span className="font-semibold-40">{MyGlobal.FormatCurrency(main.inquiries.totalAmount)}</span>
+						<button className="primary-button-transparent-background">Filter</button>
+					</div>
+					<div className="w-full">
+						<div id="chart">
+							<ReactApexChart
+								options={{
+									chart: {
+										width: "100%",
+										type: "line",
+										zoom: {
+											enabled: true,
+										},
+										fontFamily: "Tahoma, sans-serif",
+										redrawOnParentResize: true,
+										toolbar: {
+											show: false,
+										},
+										events: {
+											mounted: (c) => c.windowResizeHandler(),
+										},
+									},
+									dataLabels: {
+										enabled: true,
+										formatter: (value) => {
+											const _value = Math.trunc(Number(value));
+											return MyGlobal.FormatCurrency(_value);
+										},
+										style: {
+											fontSize: "12px",
+										},
+									},
+									stroke: {
+										curve: "smooth",
+									},
+									markers: {
+										hover: {
+											sizeOffset: 4,
+										},
+										size: 1,
+									},
+									tooltip: {
+										y: {
+											formatter: (val) => MyGlobal.FormatCurrency(val),
+										},
+									},
+									grid: {
+										row: {
+											colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+											opacity: 0.5,
+										},
+									},
+									xaxis: {
+										categories: months,
+									},
+								}}
+								series={[
+									{
+										name: "Prices",
+										data: seriesData,
+									},
+								]}
+								height={160}
+								type="line"
+								width="100%"
+							/>
+						</div>
+						<div id="html-dist"></div>
 					</div>
 				</div>
 			</div>
@@ -295,15 +517,15 @@ export default function Dashboard({ setModuleProps }) {
 
 	function uiProjectsAndTasks() {
 		return (
-			<div className="flex w-full p-5 justify-between items-start">
-				<div className="flex flex-col w-1/2 justify-between items-start">
-					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
+			<div className="flex w-full p-5 space-x-5 justify-between items-start">
+				<div className="flex flex-col w-1/3 justify-between items-start">
+					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
 						<span>{baseModules.Projects}</span>
 						<BadgeLarge2>
 							<SlotCounter value={main.projects.total} />
 						</BadgeLarge2>
 					</div>
-					<div className="w-4/5 pt-2.5 grid grid-cols-2 gap-5">
+					<div className="w-full pt-2.5 grid grid-cols-2 gap-5">
 						<div className="flex flex-col space-y-5 justify-start items-start">
 							{uiProjects(projectsStatus.Active)}
 							{uiProjects(projectsStatus.Closed)}
@@ -314,14 +536,15 @@ export default function Dashboard({ setModuleProps }) {
 						</div>
 					</div>
 				</div>
-				<div className="flex flex-col w-1/2 justify-between items-end">
-					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
+				{uiCompletedProjects()}
+				<div className="flex flex-col w-1/3 justify-between items-end">
+					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
 						<span>{baseModules.Tasks}</span>
 						<BadgeLarge2>
 							<SlotCounter value={main.tasks.total} />
 						</BadgeLarge2>
 					</div>
-					<div className="w-4/5 pt-2.5 space-y-5 columns-2 gap-x-5">
+					<div className="w-full pt-2.5 space-y-5 columns-2 gap-x-5">
 						{uiTasks("Overdue")}
 						{uiTasks("Today")}
 						{uiTasks("Tomorrow")}
@@ -361,13 +584,10 @@ export default function Dashboard({ setModuleProps }) {
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
-				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
-					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
-					</div>
-					<div className="flex flex-col px-8 justify-center items-center">
+				<div className={`flex w-full py-6 justify-center items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+					<div className="flex flex-col justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-						<span className="font-bold-28">
+						<span className="font-bold-32">
 							<SlotCounter value={value} />
 						</span>
 					</div>
@@ -441,13 +661,10 @@ export default function Dashboard({ setModuleProps }) {
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
-				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
-					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
-					</div>
-					<div className="flex flex-col px-8 justify-center items-center">
+				<div className={`flex w-full py-6 justify-center items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+					<div className="flex flex-col justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-						<span className="font-bold-28">
+						<span className="font-bold-32">
 							<SlotCounter value={value} />
 						</span>
 					</div>
@@ -463,21 +680,28 @@ export default function Dashboard({ setModuleProps }) {
 
 	return (
 		<div className="w-full h-full p-5 space-y-1 overflow-x-hidden overflow-y-auto">
-			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
-					<span>{baseModules.Inquiries}</span>
-					<BadgeLarge2>
-						<SlotCounter value={main.inquiries.total} />
-					</BadgeLarge2>
-				</div>
-				<div className="flex w-full space-x-14 justify-between items-center">
-					{uiInquiries(inquiriesStatus.Open)}
-					{uiInquiries(inquiriesStatus.Closed)}
-					{uiInquiries(inquiriesStatus.Confirmed)}
-					{uiInquiries(inquiriesStatus.Hold)}
-				</div>
-			</div>
 			{uiProjectsAndTasks()}
+			<div className="flex w-full p-5 space-x-2.5 justify-between items-center">
+				<div className="flex flex-col w-1/2 justify-between items-start">
+					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
+						<span>{baseModules.Inquiries}</span>
+						<BadgeLarge2>
+							<SlotCounter value={main.inquiries.total} />
+						</BadgeLarge2>
+					</div>
+					<div className="w-full pt-2.5 grid grid-cols-2 gap-5">
+						<div className="flex flex-col space-y-5 justify-start items-start">
+							{uiInquiries(inquiriesStatus.Open)}
+							{uiInquiries(inquiriesStatus.Closed)}
+						</div>
+						<div className="flex flex-col space-y-5 justify-start items-start">
+							{uiInquiries(inquiriesStatus.Confirmed)}
+							{uiInquiries(inquiriesStatus.Hold)}
+						</div>
+					</div>
+				</div>
+				{uiInquiryAmount()}
+			</div>
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
 					<span>{baseModules.Invoices}</span>

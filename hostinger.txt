@@ -20,9 +20,6 @@ IPv6
 Address:		2a02:4780:12:f2d9::1
 Reverse DNS:	srv797550.hstgr.cloud
 
-admin@signiixadvisors.com
-Signiix@Advisors$Admin#2024
-
 Storage per email account:						10.00 GB
 Messages per email account:						100000 emails
 Daily message sending:							1000 / in 24 hours
@@ -32,12 +29,27 @@ Recipients per message (To, Cc and Bcc):		100 recipients
 Aliases per email account:						50 aliases
 Forward rules per email account:				10 forwarders
 
-EasyPanel
+OpenLiteSpeed Panel
 Username:		admin
-Password:		Cpanel@Signiix@Advisors@Admin#2024
-Email Address:	admin@srv797550.hstgr.cloud
-
-Web Admin password:		ino4uvSjNEcjMNRl
+Password:		ino4uvSjNEcjMNRl
 
 ssh-ed25519 255 ZhxYMHA7Oh/cPoLR8LUgYl0IdsoqGd6rnStNquQk16E
 ssh-ed25519 255 33:13:b3:f3:97:28:5a:51:8c:ab:3e:58:ba:67:4c:fb
+
+
+Email Accounts
+
+admin@signiixadvisors.com
+Signiix@Advisors$Admin#2024
+
+abhishek@signiixadvisors.com
+Sa@Abhishek@1993
+
+drashti@signiixadvisors.com
+Sa@Drashti@1993
+
+ops@signiixadvisors.com
+Sa@Operations@2024
+
+connect@signiixadvisors.com
+Sa@Connect@2024

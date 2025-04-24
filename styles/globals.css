@@ -483,6 +483,16 @@ html {
 	font-family: var(--bold);
 }
 
+.font-bold-30 {
+	@apply text-[30pt] font-bold;
+	font-family: var(--bold);
+}
+
+.font-bold-32 {
+	@apply text-[32pt] font-bold;
+	font-family: var(--bold);
+}
+
 .font-general-11 {
 	@apply text-[11pt];
 	font-family: var(--regular);
@@ -635,6 +645,11 @@ html {
 
 .font-semibold-30 {
 	@apply text-[30px] font-semibold;
+	font-family: var(--semibold);
+}
+
+.font-semibold-40 {
+	@apply text-[40px] font-semibold;
 	font-family: var(--semibold);
 }
 
