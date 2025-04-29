@@ -28,8 +28,12 @@ export default function EditProject({ project, reload, unmount }) {
 	const [main, setMain] = useState({
 		client: { id: 0, name: "" },
 		company: { id: 0, name: "" },
+		generatedInvoice: {},
+		generatedInvoiceTransaction: {},
 		invoiceFees: 0,
 		invoiceFirm: { id: 0, name: "" },
+		isInvoiceGenerated: false,
+		isInvoiceTransactionDone: false,
 		mainProject: { id: 0, name: "" },
 		phoneNumber: 0,
 		quote: 0,
@@ -109,9 +113,11 @@ export default function EditProject({ project, reload, unmount }) {
 				id: project.id,
 				invoiceFees: MyGlobal.GetNumbers(main.invoiceFees),
 				invoiceFirmId: main.invoiceFirm.id,
+				isInvoiceGenerated: main.isInvoiceGenerated,
+				isInvoiceTransactionDone: main.isInvoiceGenerated,
 				mainProjectId: main.mainProject.id,
 				phoneNumber: main.phoneNumber,
-				quote: MyGlobal.GetNumbers(main.quote),
+				quote: MyGlobal.GetNumbers(main.invoiceFees),
 				reimburseVoucher: MyGlobal.GetNumbers(main.reimburseVoucher),
 				subProject: main.subProject,
 				teams: getTeamsIds(),
@@ -124,6 +130,15 @@ export default function EditProject({ project, reload, unmount }) {
 				reload();
 
 				MyGlobal.AddActivity(`Edited <b>${project.id}</b>.`, MyConstants.Modules.Base.Projects);
+
+				if (main.isInvoiceGenerated) {
+					MyGlobal.AddActivity(`Edited already generated invoices amount of <b>${project.id}</b> from <b>${main.generatedInvoice?.amount}</b> to <b>${main.invoiceFees}</b>.`, MyConstants.Modules.Base.Projects);
+				}
+
+				if (main.isInvoiceTransactionDone) {
+					MyGlobal.AddActivity(`Edited invoices transactions amount of <b>${project.id}</b> from <b>${main.generatedInvoiceTransaction?.amount}</b> to <b>${main.invoiceFees}</b>.`, MyConstants.Modules.Base.Projects);
+				}
+
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectEdited);
 
 				unmount();
@@ -196,6 +211,8 @@ export default function EditProject({ project, reload, unmount }) {
 
 				const inquiry = response.data.inquiries.find((f) => f.id == project.inquiry_id);
 				const invoiceFirm = firms.find((f) => f.id == project.firm_id);
+				const isInvoiceGenerated = response.data.invoices.find((f) => f.project_id == project.id);
+				const isInvoiceTransactionDone = response.data.invoicesTransactions.find((f) => f.project_id == project.id);
 
 				const object = {
 					client: {
@@ -208,11 +225,15 @@ export default function EditProject({ project, reload, unmount }) {
 					},
 					phoneNumber: inquiry.phone_number,
 					remarks: project.remarks,
+					generatedInvoice: isInvoiceGenerated,
+					generatedInvoiceTransaction: isInvoiceTransactionDone,
 					invoiceFees: Number(project.invoice_fees),
 					invoiceFirm: {
 						id: invoiceFirm.id,
 						name: invoiceFirm.name,
 					},
+					isInvoiceGenerated: typeof isInvoiceGenerated === "object",
+					isInvoiceTransactionDone: typeof isInvoiceTransactionDone === "object",
 					mainProject: {
 						id: project.main_project_id,
 						name: project.main_project_name,

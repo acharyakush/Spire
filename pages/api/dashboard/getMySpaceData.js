@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 	try {
 		const [inquiries, projects, tasks] = await Promise.all([
 			query("SELECT * FROM inquiries WHERE FIND_IN_SET(?, follow_ups) > 0 ORDER BY id DESC", [req.query.userId]), // Queries
-			query("SELECT * FROM projects WHERE FIND_IN_SET(?, teams) > 0 ORDER BY id DESC", [req.query.userId]),
+			query("SELECT * FROM projects WHERE FIND_IN_SET(?, teams) > 0 AND is_deleted=0 ORDER BY id DESC", [req.query.userId]),
 			query("SELECT * FROM tasks WHERE entry_by_id=?", [req.query.userId]),
 		]);
 

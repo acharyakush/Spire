@@ -363,8 +363,6 @@ export default function Invoices({ presetStatus, unmount }) {
 					firms.push({ ...fe, count });
 				});
 
-				console.log(revised);
-
 				setApi((s) => ({
 					...s,
 					firms,
@@ -621,6 +619,7 @@ export default function Invoices({ presetStatus, unmount }) {
 						dangerouslySetInnerHTML={{ __html: invoiceId }}
 						onClick={() => {
 							if (row.invoice_id) {
+								console.log(row);
 								if (isUserAdministrator) {
 									toggleEditInvoice(row);
 								}

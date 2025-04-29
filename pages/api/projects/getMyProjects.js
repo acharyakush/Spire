@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 			query("SELECT * FROM companies", []),
 			query("SELECT * FROM main_projects", []),
 			query("SELECT * FROM notes", []),
-			query("SELECT * FROM projects WHERE FIND_IN_SET(?, teams) > 0 ORDER BY id DESC", [req.query.userId]),
+			query("SELECT * FROM projects WHERE FIND_IN_SET(?, teams) > 0 AND is_deleted=0 ORDER BY id DESC", [req.query.userId]),
 			query("SELECT * FROM sub_projects", []),
 			query("SELECT * FROM tasks", []),
 		]);

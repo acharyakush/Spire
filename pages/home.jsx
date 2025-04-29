@@ -557,7 +557,7 @@ export default function Home() {
 			<div className="flex w-full h-11 px-5 justify-between items-center relative shadow contrast-background">
 				<div className="flex w-full justify-start items-center">
 					<span className="cursor-pointer uppercase dashboard-heading" onClick={() => setModule(0, { name: baseModules.Dashboard })}>
-						{applicationName}
+						<img src="./logo.svg" alt="Logo" class="mx-auto w-48 h-16" />
 					</span>
 				</div>
 				<div className="flex w-full justify-center items-center">

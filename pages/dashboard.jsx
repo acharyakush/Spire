@@ -11,7 +11,6 @@ import MyConstants from "@/utilities/constants";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { BadgeLarge2 } from "@/components/Elements";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark, faCheckDouble, faCirclePause, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
@@ -23,8 +22,10 @@ export default function Dashboard({ setModuleProps }) {
 		inquiries: { api: [], closed: 0, confirmed: 0, hold: 0, my: 0, open: 0, total: 0, totalAmount: 0 },
 		invoices: {
 			due: { amount: 0, count: 0, label: "DUE" },
+			overdue: { amount: 0, count: 0, label: "OVERDUE" },
 			generated: { amount: 0, count: 0, label: "GENERATED" },
 			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
+			pending: [],
 			total: 0,
 		},
 		isLoading: false,
@@ -117,6 +118,7 @@ export default function Dashboard({ setModuleProps }) {
 				}
 
 				inquiriesCount.api = response.data.inquiries;
+				const pending = [];
 
 				for (const p of response.data.projects) {
 					if (p.status == projectsStatus.Active) {
@@ -134,6 +136,36 @@ export default function Dashboard({ setModuleProps }) {
 					}
 
 					projectsCount.totalAmount += Number(p.invoice_fees);
+
+					let amountPending = 0;
+					let amountReceived = 0;
+					let companyName = "";
+
+					const invoice = response.data.invoices.filter((f) => f.project_id == p.id);
+
+					let invoiceAmount = Number(p.invoice_fees);
+
+					if (Array.isArray(invoice) && invoice.length) {
+						invoiceAmount = invoice.reduce((total, i) => total + Number(i.amount), 0);
+					}
+
+					const company = response.data.companies.find((f) => f.id == p.company_id);
+
+					if (typeof company === "object") {
+						companyName = company.name;
+					}
+
+					const transactions = response.data.transactions.filter((f) => f.project_id == p.id);
+
+					if (Array.isArray(transactions) && transactions.length) {
+						amountReceived = transactions.reduce((pv, cv) => {
+							return pv + Number(cv.amount);
+						}, 0);
+					}
+
+					amountPending = invoiceAmount - amountReceived;
+
+					pending.push({ ...p, amount: invoiceAmount, amount_pending: amountPending, amount_received: amountReceived, company_name: companyName });
 				}
 
 				projectsCount.api = response.data.projects;
@@ -179,6 +211,9 @@ export default function Dashboard({ setModuleProps }) {
 					invoicesObj.notGenerated.count = i + 1;
 				});
 
+				console.log(pending);
+
+				invoicesObj.pending = pending;
 				invoicesObj.total = response.data.invoices.length;
 
 				// Reimbursement Voucher
@@ -249,11 +284,11 @@ export default function Dashboard({ setModuleProps }) {
 		});
 
 		return (
-			<div className="flex flex-col w-1/3 px-5 space-y-2 justify-between items-center">
-				<span className="flex w-full justify-start items-center font-bold-24 green-text">Confirmed Projects</span>
-				<div className="flex flex-col w-full p-4 justify-between items-center rounded-2xl shadow-xl full-border contrast-background">
+			<div className="flex flex-col w-1/4 px-5 space-y-2 justify-between items-center animate__animated animate__zoomIn">
+				<span className="flex w-full justify-start items-center font-bold-20 primary-text">Confirmed Projects</span>
+				<div className="flex flex-col w-full p-4 justify-between items-center rounded shadow-xl full-border contrast-background">
 					<div className="flex w-full p-2 justify-between items-center">
-						<span className="font-semibold-40">{MyGlobal.FormatCurrency(main.projects.totalAmount)}</span>
+						<span className="font-bold-20">{MyGlobal.FormatCurrency(main.projects.totalAmount)}</span>
 						<button className="primary-button-transparent-background">Filter</button>
 					</div>
 					<div className="w-full">
@@ -315,7 +350,7 @@ export default function Dashboard({ setModuleProps }) {
 										data: seriesData,
 									},
 								]}
-								height={160}
+								height={172}
 								type="line"
 								width="100%"
 							/>
@@ -325,6 +360,16 @@ export default function Dashboard({ setModuleProps }) {
 				</div>
 			</div>
 		);
+	}
+
+	function uiHeaders() {
+		return ["#", "Name", "Amount"].map((m, i) => {
+			return (
+				<span className="flex w-1/3 pr-2.5 space-x-2 justify-center items-center text-white font-medium-8" key={i}>
+					<span>{m}</span>
+				</span>
+			);
+		});
 	}
 
 	function uiInquiries(key) {
@@ -354,10 +399,10 @@ export default function Dashboard({ setModuleProps }) {
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Inquiries, key)}>
-				<div className={`flex w-full py-6 justify-center items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+				<div className={`flex w-full py-6 justify-center items-center rounded shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="flex flex-col px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-						<span className="font-bold-32">
+						<span className="font-bold-30">
 							<SlotCounter value={value} />
 						</span>
 					</div>
@@ -398,11 +443,11 @@ export default function Dashboard({ setModuleProps }) {
 		});
 
 		return (
-			<div className="flex flex-col w-1/2 px-5 space-y-2 justify-between items-center">
-				<span className="flex w-full justify-start items-center font-bold-24 green-text">Inquiry Amount</span>
-				<div className="flex flex-col w-full p-4 justify-between items-center rounded-2xl shadow-xl full-border contrast-background">
+			<div className="flex flex-col w-1/2 px-5 space-y-2 justify-between items-center animate__animated animate__zoomIn">
+				<span className="flex w-full justify-start items-center font-bold-20 primary-text">Inquiry Amount</span>
+				<div className="flex flex-col w-full p-4 justify-between items-center rounded shadow-xl full-border contrast-background">
 					<div className="flex w-full p-2 justify-between items-center">
-						<span className="font-semibold-40">{MyGlobal.FormatCurrency(main.inquiries.totalAmount)}</span>
+						<span className="font-bold-20">{MyGlobal.FormatCurrency(main.inquiries.totalAmount)}</span>
 						<button className="primary-button-transparent-background">Filter</button>
 					</div>
 					<div className="w-full">
@@ -464,7 +509,7 @@ export default function Dashboard({ setModuleProps }) {
 										data: seriesData,
 									},
 								]}
-								height={160}
+								height={175}
 								type="line"
 								width="100%"
 							/>
@@ -502,11 +547,11 @@ export default function Dashboard({ setModuleProps }) {
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Invoices, key)}>
-				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
-					<div className="py-4 px-8 rounded-r-full shadow-2xl font-semibold-24 text-white gray-background-transparent-02">{count}</div>
+				<div className={`flex w-full py-6 justify-between items-center rounded shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+					<div className="py-4 px-8 rounded-r-full shadow-2xl font-bold-20 text-white gray-background-transparent-02">{count}</div>
 					<div className="flex flex-col px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-						<span className="font-bold-28">
+						<span className="font-bold-30">
 							<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={MyGlobal.FormatCurrency(amount)} />
 						</span>
 					</div>
@@ -515,11 +560,54 @@ export default function Dashboard({ setModuleProps }) {
 		);
 	}
 
+	function uiPendingInvoice() {
+		const total = main.invoices.pending.reduce((p, c) => p + Number(c.amount_pending), 0);
+
+		return (
+			<div className="flex flex-col w-1/4 px-5 space-y-2 justify-between items-center animate__animated animate__zoomIn">
+				<div className="flex w-full justify-between items-center font-bold-18 primary-text">
+					<span>Pending Invoices</span>
+					<BadgeLarge2>
+						<span>{MyGlobal.ThousandSeparator(total)}</span>
+					</BadgeLarge2>
+				</div>
+				<div className="flex flex-col w-full p-4 justify-between items-center rounded shadow-xl full-border contrast-background">
+					<div className="flex flex-col w-full h-full justify-center items-start full-border">
+						<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
+						<div className="flex flex-col w-full h-[210px] overflow-y-auto">{uiPendingInvoiceRows()}</div>
+						{/* <Virtuoso
+							className="w-full h-full overflow-y-auto bottom-border contrast-background scrollbar-gutter"
+							data={main.invoices.pending}
+							itemContent={(i, row) => console.log(row)}
+							totalCount={main.invoices.pending.length}
+						/> */}
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	function uiPendingInvoiceRows() {
+		return main.invoices.pending
+			.sort((a, b) => b.amount_pending - a.amount_pending)
+			.map((m, i) => {
+				const style = `flex flex-wrap w-1/3 min-h-9 justify-center items-center text-center`;
+
+				return (
+					<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-8 black-text" key={i}>
+						<span className={style}>{i + 1}</span>
+						<span className={style}>{m.company_name}</span>
+						<span className={style}>{MyGlobal.FormatCurrency(m.amount_pending)}</span>
+					</div>
+				);
+			});
+	}
+
 	function uiProjectsAndTasks() {
 		return (
 			<div className="flex w-full p-5 space-x-5 justify-between items-start">
-				<div className="flex flex-col w-1/3 justify-between items-start">
-					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
+				<div className="flex flex-col w-1/4 justify-between items-start">
+					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text animate__animated animate__slideInDown">
 						<span>{baseModules.Projects}</span>
 						<BadgeLarge2>
 							<SlotCounter value={main.projects.total} />
@@ -537,8 +625,8 @@ export default function Dashboard({ setModuleProps }) {
 					</div>
 				</div>
 				{uiCompletedProjects()}
-				<div className="flex flex-col w-1/3 justify-between items-end">
-					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
+				<div className="flex flex-col w-1/4 justify-between items-end">
+					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text animate__animated animate__slideInDown">
 						<span>{baseModules.Tasks}</span>
 						<BadgeLarge2>
 							<SlotCounter value={main.tasks.total} />
@@ -551,6 +639,7 @@ export default function Dashboard({ setModuleProps }) {
 						{uiTasks("Upcoming")}
 					</div>
 				</div>
+				{uiPendingInvoice()}
 			</div>
 		);
 	}
@@ -584,10 +673,10 @@ export default function Dashboard({ setModuleProps }) {
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
-				<div className={`flex w-full py-6 justify-center items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+				<div className={`flex w-full py-6 justify-center items-center rounded shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="flex flex-col justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-						<span className="font-bold-32">
+						<span className="font-bold-30">
 							<SlotCounter value={value} />
 						</span>
 					</div>
@@ -621,11 +710,11 @@ export default function Dashboard({ setModuleProps }) {
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Rv, key)}>
-				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
-					<div className="py-4 px-8 rounded-r-full shadow-2xl font-semibold-24 text-white gray-background-transparent-02">{count}</div>
+				<div className={`flex w-full py-6 justify-between items-center rounded shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+					<div className="py-4 px-8 rounded-r-full shadow-2xl font-bold-20 text-white gray-background-transparent-02">{count}</div>
 					<div className="flex flex-col px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-						<span className="font-bold-28">
+						<span className="font-bold-30">
 							<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -50px 0px" }} value={MyGlobal.FormatCurrency(amount)} />
 						</span>
 					</div>
@@ -661,10 +750,10 @@ export default function Dashboard({ setModuleProps }) {
 
 		return (
 			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
-				<div className={`flex w-full py-6 justify-center items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
+				<div className={`flex w-full py-6 justify-center items-center rounded shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="flex flex-col justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
-						<span className="font-bold-32">
+						<span className="font-bold-30">
 							<SlotCounter value={value} />
 						</span>
 					</div>
@@ -683,7 +772,7 @@ export default function Dashboard({ setModuleProps }) {
 			{uiProjectsAndTasks()}
 			<div className="flex w-full p-5 space-x-2.5 justify-between items-center">
 				<div className="flex flex-col w-1/2 justify-between items-start">
-					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
+					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text animate__animated animate__slideInDown">
 						<span>{baseModules.Inquiries}</span>
 						<BadgeLarge2>
 							<SlotCounter value={main.inquiries.total} />
@@ -703,7 +792,7 @@ export default function Dashboard({ setModuleProps }) {
 				{uiInquiryAmount()}
 			</div>
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
+				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text">
 					<span>{baseModules.Invoices}</span>
 					<BadgeLarge2>
 						<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={main.projects.total} />
@@ -716,7 +805,7 @@ export default function Dashboard({ setModuleProps }) {
 				</div>
 			</div>
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text">
+				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text">
 					<span>{baseModules.Rv}</span>
 					<BadgeLarge2>
 						<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -50px 0px" }} value={main.projects.total} />

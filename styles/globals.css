@@ -463,6 +463,11 @@ html {
 	font-family: var(--bold);
 }
 
+.font-bold-18 {
+	@apply text-[18pt] font-bold;
+	font-family: var(--bold);
+}
+
 .font-bold-20 {
 	@apply text-[20pt] font-bold;
 	font-family: var(--bold);
@@ -634,17 +639,17 @@ html {
 }
 
 .font-semibold-20 {
-	@apply text-[20px] font-semibold;
+	@apply text-[20pt] font-semibold;
 	font-family: var(--semibold);
 }
 
 .font-semibold-24 {
-	@apply text-[24px] font-semibold;
+	@apply text-[24pt] font-semibold;
 	font-family: var(--semibold);
 }
 
 .font-semibold-30 {
-	@apply text-[30px] font-semibold;
+	@apply text-[30pt] font-semibold;
 	font-family: var(--semibold);
 }
 

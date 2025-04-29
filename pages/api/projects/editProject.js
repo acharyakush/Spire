@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { client, company, phoneNumber, remarks, id, invoiceFees, invoiceFirmId, mainProjectId, quote, reimburseVoucher, subProject, teams, userId } = req.body;
+		const { client, company, phoneNumber, remarks, id, invoiceFees, invoiceFirmId, isInvoiceGenerated, isInvoiceTransactionDone, mainProjectId, quote, reimburseVoucher, subProject, teams, userId } = req.body;
 
 		// New Client ID
 		let newClientId = client.id;
@@ -82,6 +82,14 @@ export default async function handler(req, res) {
 			if (queryResult.affectedRows == 0) {
 				res.status(400).send("Could not add Client.");
 			}
+		}
+
+		if (isInvoiceGenerated) {
+			await query(`UPDATE invoices SET amount=? WHERE project_id=?`, [invoiceFees, id]);
+		}
+
+		if (isInvoiceTransactionDone) {
+			await query(`UPDATE invoices_transactions SET amount=? WHERE project_id=?`, [invoiceFees, id]);
 		}
 
 		if (projectQueryResult.affectedRows > 0) {

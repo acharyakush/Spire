@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 			query("SELECT * FROM invoices_transactions", []),
 			query("SELECT * FROM main_projects", []),
 			query("SELECT * FROM firms", []),
-			query("SELECT * FROM projects", []),
+			query("SELECT * FROM projects WHERE is_deleted=0", []),
 			query("SELECT * FROM sub_projects", []),
 			query("SELECT * FROM tasks WHERE client_id=?", [clientId]),
 			query("SELECT * FROM the_references WHERE client_id=?", [clientId]),

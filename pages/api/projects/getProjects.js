@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 			query("SELECT * FROM companies", []),
 			query("SELECT * FROM main_projects", []),
 			query("SELECT * FROM notes", []),
-			query("SELECT * FROM projects ORDER BY id DESC", []),
+			query("SELECT * FROM projects WHERE is_deleted=0 ORDER BY id DESC", []),
 			query("SELECT * FROM sub_projects", []),
 			query("SELECT * FROM tasks", []),
 		]);

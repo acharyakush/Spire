@@ -27,7 +27,7 @@ export const BadgeLarge = ({ value }) => {
 export const BadgeLarge2 = ({ children }) => {
 	return (
 		<div className="relative inline-block">
-			<span className="flex min-w-9 w-max px-2.5 justify-center items-center rounded-full text-white font-semibold-20 primary-background">{children}</span>
+			<span className="flex min-w-9 w-max px-2.5 justify-center items-center rounded-full text-white font-bold-12 primary-background">{children}</span>
 		</div>
 	);
 };

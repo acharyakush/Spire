@@ -46,7 +46,8 @@ export default async function handler(req, res) {
 		// Fetch data for each table
 		const results = {};
 		for (const table of tableNames) {
-			results[tableMapping[table]] = await query(`SELECT * FROM ${table}`, []);
+			const _query = table == "projects" ? "SELECT * FROM projects WHERE is_deleted=0" : `SELECT * FROM ${table}`;
+			results[tableMapping[table]] = await query(_query, []);
 		}
 
 		return res.status(200).json(results);

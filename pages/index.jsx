@@ -120,7 +120,8 @@ export default function Home() {
 		<div className="flex flex-col min-w-full min-h-screen space-y-4 justify-center items-center">
 			<main className="flex flex-col min-w-max w-1/5 px-10 py-5 space-y-2.5 justify-center items-center rounded shadow bg-white full-border">
 				<span className="login-heading">
-					<button onClick={autofill}>{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}</button>
+					<img onClick={autofill} src="./logo.svg" alt="Logo" className="mx-auto w-60" />
+					{/* <button onClick={autofill}>{process.env.NEXT_PUBLIC_APPLICATION_NAME.toUpperCase()}</button> */}
 				</span>
 
 				<EmailAddress onChange={(e) => handleInputs("emailAddress", e.target.value)} reference={emailAddressReference} suffix="" tabIndex="1" value={userData.emailAddress} width="w-full" />
