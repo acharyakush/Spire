@@ -110,6 +110,7 @@ export default function EditProject({ project, reload, unmount }) {
 				client: main.client,
 				company: main.company,
 				remarks: main.remarks,
+				generatedInvoice: main.generatedInvoice,
 				id: project.id,
 				invoiceFees: MyGlobal.GetNumbers(main.invoiceFees),
 				invoiceFirmId: main.invoiceFirm.id,

@@ -284,7 +284,7 @@ export default function Dashboard({ setModuleProps }) {
 		});
 
 		return (
-			<div className="flex flex-col w-1/4 px-5 space-y-2 justify-between items-center animate__animated animate__zoomIn">
+			<div className="flex flex-col w-1/2 px-5 space-y-2 justify-between items-center animate__animated animate__zoomIn">
 				<span className="flex w-full justify-start items-center font-bold-20 primary-text">Confirmed Projects</span>
 				<div className="flex flex-col w-full p-4 justify-between items-center rounded shadow-xl full-border contrast-background">
 					<div className="flex w-full p-2 justify-between items-center">
@@ -350,7 +350,7 @@ export default function Dashboard({ setModuleProps }) {
 										data: seriesData,
 									},
 								]}
-								height={172}
+								height={165}
 								type="line"
 								width="100%"
 							/>
@@ -548,8 +548,8 @@ export default function Dashboard({ setModuleProps }) {
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Invoices, key)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded shadow-xl ${zoomRotate} ${aesthetics.background}`}>
-					<div className="py-4 px-8 rounded-r-full shadow-2xl font-bold-20 text-white gray-background-transparent-02">{count}</div>
-					<div className="flex flex-col px-8 justify-center items-center">
+					<div className="p-4 rounded-r-full shadow-2xl font-bold-16 text-white gray-background-transparent-02">{count}</div>
+					<div className="flex flex-col w-full px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
 						<span className="font-bold-30">
 							<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={MyGlobal.FormatCurrency(amount)} />
@@ -564,8 +564,8 @@ export default function Dashboard({ setModuleProps }) {
 		const total = main.invoices.pending.reduce((p, c) => p + Number(c.amount_pending), 0);
 
 		return (
-			<div className="flex flex-col w-1/4 px-5 space-y-2 justify-between items-center animate__animated animate__zoomIn">
-				<div className="flex w-full justify-between items-center font-bold-18 primary-text">
+			<div className="flex flex-col w-1/2 px-5 space-y-2 justify-start items-center animate__animated animate__zoomIn">
+				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-18 primary-text">
 					<span>Pending Invoices</span>
 					<BadgeLarge2>
 						<span>{MyGlobal.ThousandSeparator(total)}</span>
@@ -574,7 +574,7 @@ export default function Dashboard({ setModuleProps }) {
 				<div className="flex flex-col w-full p-4 justify-between items-center rounded shadow-xl full-border contrast-background">
 					<div className="flex flex-col w-full h-full justify-center items-start full-border">
 						<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-						<div className="flex flex-col w-full h-[210px] overflow-y-auto">{uiPendingInvoiceRows()}</div>
+						<div className="flex flex-col w-full h-[265px] overflow-y-auto">{uiPendingInvoiceRows()}</div>
 						{/* <Virtuoso
 							className="w-full h-full overflow-y-auto bottom-border contrast-background scrollbar-gutter"
 							data={main.invoices.pending}
@@ -594,7 +594,7 @@ export default function Dashboard({ setModuleProps }) {
 				const style = `flex flex-wrap w-1/3 min-h-9 justify-center items-center text-center`;
 
 				return (
-					<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-8 black-text" key={i}>
+					<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-12 black-text" key={i}>
 						<span className={style}>{i + 1}</span>
 						<span className={style}>{m.company_name}</span>
 						<span className={style}>{MyGlobal.FormatCurrency(m.amount_pending)}</span>
@@ -605,41 +605,38 @@ export default function Dashboard({ setModuleProps }) {
 
 	function uiProjectsAndTasks() {
 		return (
-			<div className="flex w-full p-5 space-x-5 justify-between items-start">
-				<div className="flex flex-col w-1/4 justify-between items-start">
-					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text animate__animated animate__slideInDown">
-						<span>{baseModules.Projects}</span>
-						<BadgeLarge2>
-							<SlotCounter value={main.projects.total} />
-						</BadgeLarge2>
-					</div>
-					<div className="w-full pt-2.5 grid grid-cols-2 gap-5">
-						<div className="flex flex-col space-y-5 justify-start items-start">
+			<div className="flex w-full px-5 space-x-2.5 justify-start items-center">
+				<div className="flex w-1/2 space-x-10 justify-between items-center">
+					<div className="flex flex-col w-full justify-between items-center">
+						<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text animate__animated animate__slideInDown">
+							<span>{baseModules.Projects}</span>
+							<BadgeLarge2>
+								<SlotCounter value={main.projects.total} />
+							</BadgeLarge2>
+						</div>
+						<div className="w-full pt-2.5 grid grid-cols-2 gap-2.5">
 							{uiProjects(projectsStatus.Active)}
 							{uiProjects(projectsStatus.Closed)}
-						</div>
-						<div className="flex flex-col space-y-5 justify-start items-start">
 							{uiProjects(projectsStatus.Completed)}
 							{uiProjects(projectsStatus.Hold)}
 						</div>
 					</div>
+					<div className="flex flex-col w-full justify-between items-center">
+						<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text animate__animated animate__slideInDown">
+							<span>{baseModules.Tasks}</span>
+							<BadgeLarge2>
+								<SlotCounter value={main.tasks.total} />
+							</BadgeLarge2>
+						</div>
+						<div className="w-full pt-2.5 grid grid-cols-2 gap-2.5">
+							{uiTasks("Overdue")}
+							{uiTasks("Today")}
+							{uiTasks("Tomorrow")}
+							{uiTasks("Upcoming")}
+						</div>
+					</div>
 				</div>
 				{uiCompletedProjects()}
-				<div className="flex flex-col w-1/4 justify-between items-end">
-					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text animate__animated animate__slideInDown">
-						<span>{baseModules.Tasks}</span>
-						<BadgeLarge2>
-							<SlotCounter value={main.tasks.total} />
-						</BadgeLarge2>
-					</div>
-					<div className="w-full pt-2.5 space-y-5 columns-2 gap-x-5">
-						{uiTasks("Overdue")}
-						{uiTasks("Today")}
-						{uiTasks("Tomorrow")}
-						{uiTasks("Upcoming")}
-					</div>
-				</div>
-				{uiPendingInvoice()}
 			</div>
 		);
 	}
@@ -778,31 +775,30 @@ export default function Dashboard({ setModuleProps }) {
 							<SlotCounter value={main.inquiries.total} />
 						</BadgeLarge2>
 					</div>
-					<div className="w-full pt-2.5 grid grid-cols-2 gap-5">
-						<div className="flex flex-col space-y-5 justify-start items-start">
-							{uiInquiries(inquiriesStatus.Open)}
-							{uiInquiries(inquiriesStatus.Closed)}
-						</div>
-						<div className="flex flex-col space-y-5 justify-start items-start">
-							{uiInquiries(inquiriesStatus.Confirmed)}
-							{uiInquiries(inquiriesStatus.Hold)}
-						</div>
+					<div className="w-full pt-2.5 grid grid-cols-2 gap-10">
+						{uiInquiries(inquiriesStatus.Open)}
+						{uiInquiries(inquiriesStatus.Closed)}
+						{uiInquiries(inquiriesStatus.Confirmed)}
+						{uiInquiries(inquiriesStatus.Hold)}
 					</div>
 				</div>
 				{uiInquiryAmount()}
 			</div>
-			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text">
-					<span>{baseModules.Invoices}</span>
-					<BadgeLarge2>
-						<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={main.projects.total} />
-					</BadgeLarge2>
-				</div>
-				<div className="flex w-full space-x-24 justify-between items-center">
-					{uiInvoices(main.invoices.due.label)}
-					{uiInvoices(main.invoices.generated.label)}
+			<div className="flex w-full p-5 space-x-3 justify-between items-start">
+				<div className="flex flex-col w-1/2 space-x-3 justify-between items-center">
+					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text">
+						<span>{baseModules.Invoices}</span>
+						<BadgeLarge2>
+							<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={main.projects.total} />
+						</BadgeLarge2>
+					</div>
+					<div className="w-full pt-2.5 mb-10 grid grid-cols-2 gap-10">
+						{uiInvoices(main.invoices.due.label)}
+						{uiInvoices(main.invoices.generated.label)}
+					</div>
 					{uiInvoices(main.invoices.notGenerated.label)}
 				</div>
+				{uiPendingInvoice()}
 			</div>
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-20 primary-text">

@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { client, company, phoneNumber, remarks, id, invoiceFees, invoiceFirmId, isInvoiceGenerated, isInvoiceTransactionDone, mainProjectId, quote, reimburseVoucher, subProject, teams, userId } = req.body;
+		const { client, company, phoneNumber, remarks, generatedInvoice, id, invoiceFees, invoiceFirmId, isInvoiceGenerated, isInvoiceTransactionDone, mainProjectId, quote, reimburseVoucher, subProject, teams, userId } = req.body;
 
 		// New Client ID
 		let newClientId = client.id;
@@ -85,7 +85,14 @@ export default async function handler(req, res) {
 		}
 
 		if (isInvoiceGenerated) {
-			await query(`UPDATE invoices SET amount=? WHERE project_id=?`, [invoiceFees, id]);
+			const abc = JSON.parse(generatedInvoice.particulars);
+			const firstRecord = abc.at(0);
+
+			firstRecord.amount = invoiceFees;
+			abc.shift();
+			abc.unshift(firstRecord);
+
+			await query(`UPDATE invoices SET amount=?, particulars=? WHERE project_id=?`, [invoiceFees, JSON.stringify(abc), id]);
 		}
 
 		if (isInvoiceTransactionDone) {
