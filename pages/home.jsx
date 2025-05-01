@@ -454,7 +454,7 @@ export default function Home() {
 		return (
 			<Menu as="div" className="relative z-50 inline-block text-left">
 				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
-					<FontAwesomeIcon className="primary-text" icon={faUserCircle} size="lg" />
+					<FontAwesomeIcon className="text-white" icon={faUserCircle} size="lg" />
 				</MenuButton>
 				<MenuItems anchor="left start" className="absolute w-max mt-2 left-5 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
 					<div className="flex flex-col p-3 font-semibold-16">
@@ -554,7 +554,7 @@ export default function Home() {
 	// Main UI
 	return (
 		<main className="flex flex-col min-w-[1024px] h-screen overflow-y-hidden">
-			<div className="flex w-full h-11 px-5 justify-between items-center relative shadow contrast-background">
+			<div className="flex w-full h-[3.25rem] px-5 justify-between items-center relative shadow dashboard-blue-2">
 				<div className="flex w-full justify-start items-center">
 					<span className="cursor-pointer uppercase dashboard-heading" onClick={() => setModule(0, { name: baseModules.Dashboard })}>
 						{applicationName}

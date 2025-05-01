@@ -13,21 +13,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown, faCheck, faEnvelope, faLock, faMultiply, faUser } from "@fortawesome/free-solid-svg-icons";
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 
-export const ComboBox = ({
-	allowCreatingNewItem,
-	comparisonValue,
-	filteredData,
-	icon,
-	isReadOnly = false,
-	label,
-	onChange,
-	onClick,
-	onKeyPress,
-	searchedItem,
-	tabIndex,
-	value,
-	width,
-}) => {
+export const ComboBox = ({ allowCreatingNewItem, comparisonValue, filteredData, icon, isReadOnly = false, label, onChange, onClick, onKeyPress, searchedItem, tabIndex, value, width }) => {
 	const aesthetics = isReadOnly ? "opacity-50" : " opacity-100";
 	const clickEvent = isReadOnly ? `pointer-events-none ${aesthetics}` : "pointer-events-auto";
 	const cursor = isReadOnly ? "cursor-not-allowed" : "cursor-default";
@@ -54,19 +40,12 @@ export const ComboBox = ({
 						<div className="relative w-full">
 							<div className="flex w-full h-9 px-3 space-x-1 justify-center items-center relative overflow-hidden rounded primary-background-transparent-01 primary-bottom-border-transparent-05">
 								<FontAwesomeIcon className="primary-text" icon={icon} />
-								<ComboboxInput
-									autoComplete="off"
-									className="w-full p-2 font-regular-11 bg-transparent black-text outline-none"
-									displayValue={(m) => m}
-									tabIndex={tabIndex}
-								/>
+								<ComboboxInput autoComplete="off" className="w-full p-2 font-regular-11 bg-transparent black-text outline-none" displayValue={(m) => m} tabIndex={tabIndex} />
 								<ComboboxButton className="flex absolute pr-2 items-center inset-y-0 right-0 outline-none">
 									<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
 								</ComboboxButton>
 							</div>
-							<ComboboxOptions className="absolute w-full max-h-[150px] mt-1 overflow-auto divide-y rounded bottom-shadow outline-none z-50 full-border primary-light-background">
-								{uiList()}
-							</ComboboxOptions>
+							<ComboboxOptions className="absolute w-full max-h-[150px] mt-1 overflow-auto divide-y rounded bottom-shadow outline-none z-50 full-border primary-light-background">{uiList()}</ComboboxOptions>
 						</div>
 					</Combobox>
 				</div>
@@ -88,9 +67,7 @@ export const ComboBox = ({
 				const isSelected = comparisonValue == m;
 
 				const nameStyle = isSelected ? `font-regular-10 primary-text` : "font-regular-10 black-text";
-				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y hovered-rows ${
-					isSelected && "primary-background-transparent-01"
-				}`;
+				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y hovered-rows ${isSelected && "primary-background-transparent-01"}`;
 
 				return (
 					<ComboboxOption className={wrapper} key={n} value={m}>
@@ -153,14 +130,7 @@ export const ComboBox2 = ({
 						<div className={inputWrapper}>
 							<div className="flex w-full h-9 px-3 space-x-1 justify-center items-center relative overflow-hidden rounded primary-background-transparent-01 primary-bottom-border-transparent-05">
 								<FontAwesomeIcon className="primary-text" icon={icon} />
-								<ComboboxInput
-									autoComplete="off"
-									className="w-full p-2 font-regular-11 bg-transparent black-text outline-none"
-									displayValue={(m) => m}
-									onChange={onInputChange}
-									readOnly={isReadOnly}
-									tabIndex={tabIndex}
-								/>
+								<ComboboxInput autoComplete="off" className="w-full p-2 font-regular-11 bg-transparent black-text outline-none" displayValue={(m) => m} onChange={onInputChange} readOnly={isReadOnly} tabIndex={tabIndex} />
 								<ComboboxButton className="flex absolute pr-2 items-center inset-y-0 right-0 outline-none">
 									<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
 								</ComboboxButton>
@@ -192,9 +162,7 @@ export const ComboBox2 = ({
 				const dataObject = hasDataObject ? { id: m.id, name: m.name } : m;
 
 				const nameStyle = isSelected ? "font-regular-10 primary-text" : "font-regular-10 black-text";
-				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y hovered-rows ${
-					isSelected && `primary-background-transparent-01`
-				}`;
+				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y hovered-rows ${isSelected && `primary-background-transparent-01`}`;
 
 				return (
 					<ComboboxOption className={wrapper} key={n} value={dataObject}>
@@ -209,20 +177,7 @@ export const ComboBox2 = ({
 	return uiBox();
 };
 
-export const ComboBoxWithChips = ({
-	displayKey,
-	label,
-	icon,
-	isMenuInverted,
-	onBlur,
-	onItemClick,
-	onSelectedItemClick,
-	selectedItems,
-	showList,
-	source,
-	subIcon = faUser,
-	toggleMenu,
-}) => {
+export const ComboBoxWithChips = ({ displayKey, label, icon, isMenuInverted, onBlur, onItemClick, onSelectedItemClick, selectedItems, showList, source, subIcon = faUser, toggleMenu }) => {
 	const uiBox = () => {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-1 relative" onBlur={onBlur}>
@@ -336,17 +291,7 @@ export const DatePicker = ({ icon, label, onChange, tabIndex, value, width }) =>
 	);
 };
 
-export const EmailAddress = ({
-	autoComplete = false,
-	isReadOnly = false,
-	label = "Email Address",
-	onChange,
-	reference = null,
-	suffix,
-	tabIndex,
-	value,
-	width,
-}) => {
+export const EmailAddress = ({ autoComplete = false, isReadOnly = false, label = "Email Address", onChange, reference = null, suffix, tabIndex, value, width }) => {
 	const _autoComplete = autoComplete ? "off" : "on";
 	const emailAddressSuffix = `@${applicationName.toLowerCase()}.com`;
 
@@ -362,20 +307,8 @@ export const EmailAddress = ({
 			<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">{label}</span>
 			<div className={inputWrapper}>
 				<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
-				<input
-					autoComplete={_autoComplete}
-					className="inputs"
-					onChange={onChange}
-					readOnly={isReadOnly}
-					ref={reference}
-					tabIndex={tabIndex}
-					value={value}
-				/>
-				{suffix && (
-					<span className="flex h-9 px-1 justify-center items-center full-border no-right-border font-regular-8 primary-light-background black-text">
-						{emailAddressSuffix}
-					</span>
-				)}
+				<input autoComplete={_autoComplete} className="inputs" onChange={onChange} readOnly={isReadOnly} ref={reference} tabIndex={tabIndex} value={value} />
+				{suffix && <span className="flex h-9 px-1 justify-center items-center full-border no-right-border font-regular-8 primary-light-background black-text">{emailAddressSuffix}</span>}
 			</div>
 		</div>
 	);
@@ -400,22 +333,7 @@ export const Password = ({ eyeIconStyle, eyeIconUi, onChange, reference, toggleC
 	);
 };
 
-export const TextInput = ({
-	disable = false,
-	errorText = "",
-	hasError = false,
-	icon,
-	iconSize = "1x",
-	id,
-	isReadOnly = false,
-	label,
-	maxLength = 255,
-	onChange,
-	onKeyPress,
-	tabIndex,
-	value,
-	width,
-}) => {
+export const TextInput = ({ disable = false, errorText = "", hasError = false, icon, iconSize = "1x", id, isReadOnly = false, label, maxLength = 255, onChange, onKeyPress, tabIndex, value, width }) => {
 	const aesthetics = disable || isReadOnly ? "opacity-50" : " opacity-100";
 	const clickEvent = isReadOnly ? `pointer-events-none ${aesthetics}` : "pointer-events-auto";
 	const cursor = isReadOnly ? "cursor-not-allowed" : "cursor-default";
@@ -424,9 +342,7 @@ export const TextInput = ({
 	const animation = hasError ? "animate__animated animate__shakeX animate__faster" : "";
 	const colour = hasError ? "red-text-important" : "primary-text";
 
-	const background = hasError
-		? "red-background-transparent-01 red-bottom-border-transparent-05"
-		: "primary-background-transparent-01 primary-bottom-border-transparent-05";
+	const background = hasError ? "red-background-transparent-01 red-bottom-border-transparent-05" : "primary-background-transparent-01 primary-bottom-border-transparent-05";
 
 	const inputStyle = `inputs ${colour}`;
 	const inputWrapper = `flex w-full h-9 px-3 space-x-1 justify-start items-center ${clickEvent} rounded ${animation} ${background}`;
@@ -438,41 +354,21 @@ export const TextInput = ({
 			<Tippy allowHTML animation="shift-away" content={errorText} visible={hasError} placement="right">
 				<div className={inputWrapper}>
 					<FontAwesomeIcon className={colour} icon={icon} size={iconSize} />
-					<input
-						autoComplete="off"
-						className={inputStyle}
-						id={id}
-						maxLength={maxLength}
-						onChange={onChange}
-						onKeyPress={onKeyPress}
-						readOnly={isReadOnly}
-						tabIndex={tabIndex}
-						type="text"
-						value={value}
-					/>
+					<input autoComplete="off" className={inputStyle} id={id} maxLength={maxLength} onChange={onChange} onKeyPress={onKeyPress} readOnly={isReadOnly} tabIndex={tabIndex} type="text" value={value} />
 				</div>
 			</Tippy>
 		</div>
 	);
 };
 
-export const TextInputNative = ({ id, icon, onChange, onClearButtonClick, placeholder, showClearButton, tabIndex, value, width }) => {
-	const wrapper = `flex ${width} px-3 justify-start items-center rounded shadow contrast-background`;
+export const TextInputNative = ({ id, icon, onChange, onClearButtonClick, placeholder, showClearButton, source, tabIndex, value, width }) => {
+	const background = source ? "bg-[var(--primary-transparent-01)] bottom-shadow full-border" : "contrast-background shadow";
+	const wrapper = `flex ${width} px-3 justify-start items-center rounded ${background}`;
 
 	return (
 		<div className={wrapper}>
 			<FontAwesomeIcon className="primary-text" icon={icon} size="sm" />
-			<input
-				autoComplete="off"
-				autoFocus
-				className="inputs !h-[30px] !text-[13px]"
-				id={id}
-				onChange={onChange}
-				placeholder={placeholder}
-				tabIndex={tabIndex}
-				type="text"
-				value={value}
-			/>
+			<input autoComplete="off" autoFocus className="inputs !h-[30px] !text-[13px]" id={id} onChange={onChange} placeholder={placeholder} tabIndex={tabIndex} type="text" value={value} />
 			<FontAwesomeIcon className={showClearButton} icon={faMultiply} onClick={onClearButtonClick} />
 		</div>
 	);
@@ -487,15 +383,7 @@ export const TextArea = ({ icon, isReadOnly = false, label, onChange, onKeyDown,
 			<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">{label}</span>
 			<div className={inputWrapper}>
 				<FontAwesomeIcon className="primary-text" icon={icon} />
-				<textarea
-					className="textarea-inputs whitespace-pre-line"
-					onChange={onChange}
-					onKeyDown={onKeyDown}
-					readOnly={isReadOnly}
-					rows={rows}
-					tabIndex={tabIndex}
-					value={value}
-				/>
+				<textarea className="textarea-inputs whitespace-pre-line" onChange={onChange} onKeyDown={onKeyDown} readOnly={isReadOnly} rows={rows} tabIndex={tabIndex} value={value} />
 			</div>
 		</div>
 	);

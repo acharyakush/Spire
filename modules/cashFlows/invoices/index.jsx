@@ -619,7 +619,6 @@ export default function Invoices({ presetStatus, unmount }) {
 						dangerouslySetInnerHTML={{ __html: invoiceId }}
 						onClick={() => {
 							if (row.invoice_id) {
-								console.log(row);
 								if (isUserAdministrator) {
 									toggleEditInvoice(row);
 								}

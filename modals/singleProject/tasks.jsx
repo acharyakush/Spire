@@ -462,8 +462,6 @@ export function EditParticularRemark({ mount, reload, task, unmount }) {
 		dueOn: task.due_date,
 	});
 
-	console.log(task);
-
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 

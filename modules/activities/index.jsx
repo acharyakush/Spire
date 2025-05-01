@@ -16,7 +16,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { faCalendar, faChevronLeft, faFilter, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
-export default function Activities({ unmount }) {
+export default function Activities({ source = "", unmount }) {
 	// Business Logic
 	const tableHeaders = MyConstants.TableHeaders.Activities;
 
@@ -247,6 +247,7 @@ export default function Activities({ unmount }) {
 					onClearButtonClick={() => setInputs("text", "")}
 					placeholder="Find"
 					showClearButton={showFindClearButton}
+					source="dashboard"
 					tabIndex="3"
 					value={main.find.text}
 					width="w-36"
@@ -258,7 +259,7 @@ export default function Activities({ unmount }) {
 	function uiFromDate() {
 		if (api.activities.copy.length) {
 			return (
-				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
+				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow bg-[var(--primary-transparent-01)] full-border">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
 						className="w-20 h-6 bg-transparent outline-none font-regular-10"
@@ -319,7 +320,7 @@ export default function Activities({ unmount }) {
 	}
 
 	function uiModulesMenu() {
-		const wrapper = "flex w-36 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+		const wrapper = "flex w-36 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow bg-[var(--primary-transparent-01)] full-border font-regular-10";
 
 		return (
 			<Menu as="div" className="flex w-36 justify-center items-center relative">
@@ -393,7 +394,7 @@ export default function Activities({ unmount }) {
 	function uiToDate() {
 		if (api.activities.copy.length) {
 			return (
-				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
+				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow bg-[var(--primary-transparent-01)] full-border">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
 						className="w-20 h-6 bg-transparent outline-none font-regular-10"
@@ -453,7 +454,7 @@ export default function Activities({ unmount }) {
 			<div className="flex flex-col w-full h-full justify-start items-center">
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-full space-x-2.5 justify-start items-center">
-						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
+						{source == "" && <FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />}
 						<div className="flex w-1/5 space-x-2 justify-start items-center">
 							<span className="view-heading">Activities</span>
 							{api.activities.data.length > 0 && <Badge value={getRowsCount()} />}

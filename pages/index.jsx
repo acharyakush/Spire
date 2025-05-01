@@ -117,7 +117,7 @@ export default function Home() {
 
 	// Main UI
 	return (
-		<div className="flex flex-col min-w-full min-h-screen space-y-4 justify-center items-center">
+		<div className="flex flex-col min-w-full min-h-screen space-y-4 justify-center items-center bg-blue-100">
 			<main className="flex flex-col min-w-max w-1/5 px-10 py-5 space-y-2.5 justify-center items-center rounded shadow bg-white full-border">
 				<span className="login-heading">
 					<img onClick={autofill} src="./logo.svg" alt="Logo" className="mx-auto w-60" />

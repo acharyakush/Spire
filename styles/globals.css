@@ -79,12 +79,12 @@
 	--orange: #ff9900;
 	--orange-transparent-01: rgba(255, 153, 0, 0.1);
 
-	--primary: #0078d4;
+	--primary: #193a6f;
 	--primary-background: #2e2e2e;
 	--primary-border: #222222;
 	--primary-light: rgba(51, 102, 153, 0.05);
-	--primary-transparent-01: rgba(51, 102, 153, 0.1);
-	--primary-transparent-05: rgba(51, 102, 153, 0.5);
+	--primary-transparent-01: rgba(25, 58, 111, 0.1);
+	--primary-transparent-05: rgba(25, 58, 111, 0.5);
 
 	--red: #e31937;
 	--red-transparent-01: rgba(227, 25, 55, 0.1);
@@ -119,13 +119,13 @@
 	--orange: #d87f2f;
 	--orange-transparent-01: rgba(216, 127, 47, 0.1);
 
-	--primary: #525f77;
+	--primary: #193a6f;
 	--primary-background: #f4f7fc;
 	--primary-border: #d6dee8;
 	--primary-light: #ecf1fa;
-	--primary-transparent-005: rgba(82, 95, 119, 0.05);
-	--primary-transparent-01: rgba(82, 95, 119, 0.1);
-	--primary-transparent-05: rgba(82, 95, 119, 0.5);
+	--primary-transparent-005: rgba(25, 58, 111, 0.05);
+	--primary-transparent-01: rgba(25, 58, 111, 0.1);
+	--primary-transparent-05: rgba(25, 58, 111, 0.5);
 
 	--red: #b33a3a;
 	--red-transparent-01: rgba(179, 58, 58, 0.1);
@@ -140,7 +140,7 @@
 
 body,
 html {
-	@apply bg-[var(--primary-transparent-01)] m-0 p-0;
+	@apply bg-white m-0 p-0;
 	-moz-osx-font-smoothing: auto;
 	font-synthesis: none;
 	font-feature-settings: "cpsp" 1;
@@ -740,7 +740,7 @@ html {
 .primary-button-transparent-background:active,
 .primary-button-wide:active {
 	border: 1px solid rgba(0, 0, 0, 0.7);
-	box-shadow: inset -1px -1px 1px 1px rgba(35, 255, 255, 0.3);
+	box-shadow: inset -1px -1px 1px 1px var(--primary-transparent-01);
 	text-decoration: none;
 }
 
@@ -761,7 +761,11 @@ html {
 	-webkit-box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
 }
 
-.dashboard-heading,
+.dashboard-heading {
+	@apply text-white text-[16pt];
+	font-family: var(--bold);
+}
+
 .view-heading {
 	@apply text-[var(--primary)] text-[16pt];
 	font-family: var(--bold);
@@ -996,10 +1000,12 @@ html {
 	padding: 12px;
 	border-radius: 99px;
 	overflow: hidden;
+	color: #ffffff;
 }
 
 .tabs * {
 	z-index: 2;
+	color: #ffffff;
 }
 
 input[type="radio"] {
@@ -1014,9 +1020,13 @@ input[type="radio"] {
 	padding: 0 10px;
 	border-radius: 99px;
 	cursor: pointer;
-	color: var(--gray);
+	color: #ffffff;
 	transition: color 0.15s ease-in;
 	text-align: center;
+}
+
+input[type="radio"] + label {
+	color: #ffffff;
 }
 
 input[type="radio"]:checked + label {
@@ -1027,7 +1037,8 @@ input[type="radio"]:checked + label {
 	position: absolute;
 	display: flex;
 	height: 30px;
-	background-color: var(--primary-transparent-01);
+	color: #ffffff;
+	background-color: #ffffff;
 	z-index: 1;
 	border-radius: 99px;
 	opacity: 1;
