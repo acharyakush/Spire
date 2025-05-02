@@ -21,8 +21,6 @@ import { MyGlobal } from "@/utilities/global";
 export default function Dashboard({ setModuleProps }) {
 	// Business Logic
 	const [main, setMain] = useState({
-		filter: { amountReceived: false, from: "", to: "" },
-		filter2: { from: "", to: "" },
 		inquiries: {
 			api: [],
 			closed: 0,
@@ -30,8 +28,8 @@ export default function Dashboard({ setModuleProps }) {
 			hold: 0,
 			my: 0,
 			open: 0,
-			total: 0,
-			totalAmount: 0,
+			totalCount: 0,
+			totalQuote: 0,
 		},
 		invoices: {
 			due: { amount: 0, count: 0, label: "DUE" },
@@ -41,7 +39,7 @@ export default function Dashboard({ setModuleProps }) {
 			pending: [],
 			received: [],
 			receivedCopy: [],
-			total: 0,
+			totalCount: 0,
 		},
 		isLoading: false,
 		projects: {
@@ -53,16 +51,16 @@ export default function Dashboard({ setModuleProps }) {
 			hold: 0,
 			paymentReceived: [],
 			my: 0,
-			total: 0,
-			totalAmount: 0,
+			totalCount: 0,
+			totalInvoiceFees: 0,
 		},
 		rv: {
 			due: { amount: 0, count: 0, label: "DUE" },
+			overdue: { amount: 0, count: 0, label: "OVERDUE" },
 			generated: { amount: 0, count: 0, label: "GENERATED" },
 			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
 			total: 0,
 		},
-		sort: { column: "", isAscending: false },
 		tasks: {
 			overdue: 0,
 			today: 0,
@@ -106,12 +104,12 @@ export default function Dashboard({ setModuleProps }) {
 						inquiriesObj.my++;
 					}
 
-					inquiriesObj.totalAmount += Number(i.quote);
+					inquiriesObj.totalQuote += Number(i.quote);
 				}
 
 				inquiriesObj.api = response.data.inquiries;
-				inquiriesObj.total = response.data.inquiries.length;
-				projectsObj.total = response.data.projects.length;
+				inquiriesObj.totalCount = response.data.inquiries.length;
+				projectsObj.totalCount = response.data.projects.length;
 				tasksObj.total = response.data.tasks.length;
 
 				const pending = [];
@@ -133,7 +131,7 @@ export default function Dashboard({ setModuleProps }) {
 						projectsObj.my++;
 					}
 
-					projectsObj.totalAmount += Number(p.invoice_fees);
+					projectsObj.totalInvoiceFees += Number(p.invoice_fees);
 
 					let amountPending = 0;
 					let amountReceived = 0;
@@ -143,7 +141,7 @@ export default function Dashboard({ setModuleProps }) {
 					const invoice = response.data.invoices.filter((f) => f.project_id == p.id);
 
 					if (Array.isArray(invoice) && invoice.length) {
-						invoiceAmount = invoice.reduce((total, i) => total + Number(i.amount), 0);
+						invoiceAmount = invoice.reduce((t, i) => t + Number(i.amount), 0);
 					}
 
 					const company = response.data.companies.find((f) => f.id == p.company_id);
@@ -155,8 +153,8 @@ export default function Dashboard({ setModuleProps }) {
 					const transactions = response.data.transactions.filter((f) => f.project_id == p.id);
 
 					if (Array.isArray(transactions) && transactions.length) {
-						amountReceived = transactions.reduce((pv, cv) => {
-							return pv + Number(cv.amount);
+						amountReceived = transactions.reduce((t, v) => {
+							return t + Number(v.amount);
 						}, 0);
 					}
 
@@ -185,7 +183,7 @@ export default function Dashboard({ setModuleProps }) {
 
 				projectsObj.api = response.data.projects;
 				projectsObj.apiCopy = response.data.projects;
-				projectsObj.paymentReceived = pending.filter((fe) => fe.amount_received !== 0);
+				projectsObj.paymentReceived = pending.filter((f) => f.amount_received !== 0);
 
 				// Tasks
 				for (const t of response.data.tasks) {
@@ -210,6 +208,18 @@ export default function Dashboard({ setModuleProps }) {
 						if (dayjs(fe.due_date).isBefore(today, "day")) {
 							invoicesObj.due.amount += Number(fe.amount);
 							invoicesObj.due.count += 1;
+
+							// Overdue
+							const overdue = received.filter((f) => {
+								if (f.amount_pending != Number(fe.amount)) {
+									return f;
+								}
+							});
+
+							if (overdue.length) {
+								invoicesObj.overdue.amount = overdue.reduce((t, v) => t + v.amount_pending, 0);
+								invoicesObj.overdue.count += 1;
+							}
 						}
 					}
 
@@ -230,30 +240,53 @@ export default function Dashboard({ setModuleProps }) {
 				invoicesObj.pending = pending;
 				invoicesObj.received = received;
 				invoicesObj.receivedCopy = received;
-				invoicesObj.total = response.data.invoices.length;
+				invoicesObj.totalCount = response.data.invoices.length;
 
 				// Reimbursement Voucher
-				response.data.rv.forEach((fe) => {
-					if (dayjs(fe.due_date).isBefore(today)) {
-						rvObj.due.amount += Number(fe.amount);
+				const rvArray = response.data.rv;
+				const taskArray = response.data.tasks;
+				const todayStr = dayjs(today).format("YYYY-MM-DD"); // So we don’t parse `today` N times
+
+				const rvProjectIds = new Set();
+				const rvArrayLength = rvArray.length;
+
+				for (let i = 0; i < rvArrayLength; i++) {
+					const fe = rvArray[i];
+					const { due_date, amount, amount_pending, custom_id, project_id } = fe;
+
+					const amountNum = +amount;
+					const pendingNum = +amount_pending;
+
+					rvProjectIds.add(project_id); // collect all project_ids from generated RVs
+
+					if (dayjs(due_date).isBefore(todayStr)) {
+						rvObj.due.amount += amountNum;
 						rvObj.due.count += 1;
+
+						if (pendingNum !== 0) {
+							rvObj.overdue.amount += pendingNum;
+							rvObj.overdue.count += 1;
+						}
 					}
 
-					if (fe.custom_id) {
-						rvObj.generated.amount += Number(fe.amount);
+					if (custom_id) {
+						rvObj.generated.amount += amountNum;
 						rvObj.generated.count += 1;
 					}
-				});
+				}
 
-				const rvProjectIds = new Set(response.data.rv.map((m) => m.project_id));
-				const notGeneratedRv = response.data.tasks.filter((f) => !rvProjectIds.has(f.project_id));
+				const taskArrayLength = taskArray.length;
 
-				notGeneratedRv.forEach((fe, i) => {
-					rvObj.notGenerated.amount += Number(fe.expense);
-					rvObj.notGenerated.count = i + 1;
-				});
+				for (let i = 0; i < taskArrayLength; i++) {
+					const fe = taskArray[i];
 
-				rvObj.total = response.data.rv.length;
+					if (!rvProjectIds.has(fe.project_id)) {
+						rvObj.notGenerated.amount += +fe.expense;
+						rvObj.notGenerated.count += 1;
+					}
+				}
+
+				rvObj.total = rvArrayLength;
 
 				setMain((s) => ({
 					...s,
@@ -274,12 +307,12 @@ export default function Dashboard({ setModuleProps }) {
 	// UI Components
 	function uiFirstRow() {
 		return (
-			<div className="flex w-full px-5 space-x-2.5 justify-start items-center">
-				<div className="flex w-1/2 space-x-2.5 justify-between items-center">
+			<div className="flex w-full px-2.5 space-x-10 justify-between items-center">
+				<div className="flex w-full space-x-10 justify-between items-center">
 					<Projects projects={main.projects} setModuleProps={setModuleProps} />
 					<ConfirmedProjects projects={main.projects} />
 				</div>
-				<div className="flex w-1/2 space-x-2.5 justify-between items-center">
+				<div className="flex w-full space-x-10 justify-between items-center">
 					<Tasks setModuleProps={setModuleProps} tasks={main.tasks} />
 					<PendingPayments invoices={main.invoices.pending} />
 				</div>
@@ -289,12 +322,12 @@ export default function Dashboard({ setModuleProps }) {
 
 	function uiSecondRow() {
 		return (
-			<div className="flex w-full p-5 space-x-2.5 justify-between items-center">
-				<div className="flex w-1/2 space-x-2.5 justify-between items-center">
+			<div className="flex w-full p-2.5 space-x-10 justify-between items-center">
+				<div className="flex w-full space-x-10 justify-between items-center">
 					<Inquiries inquiries={main.inquiries} setModuleProps={setModuleProps} />
 					<InquiryAmount inquiries={main.inquiries} />
 				</div>
-				<div className="flex w-1/2 space-x-2.5 justify-between items-center">
+				<div className="flex w-full space-x-10 justify-between items-center">
 					<PaymentsReceived invoices={main.invoices} />
 					{uiReports()}
 				</div>
@@ -304,11 +337,11 @@ export default function Dashboard({ setModuleProps }) {
 
 	function uiThirdRow() {
 		return (
-			<div className="flex w-full p-5 space-x-10 justify-between items-center">
-				<div className="flex w-1/2 space-x-2.5 justify-between items-center">
+			<div className="flex w-full p-2.5 space-x-10 justify-between items-center">
+				<div className="flex w-full space-x-10 justify-between items-center">
 					<Invoices invoices={main.invoices} setModuleProps={setModuleProps} />
 				</div>
-				<div className="flex w-1/2 space-x-2.5 justify-between items-center">
+				<div className="flex w-full space-x-10 justify-between items-center">
 					<RVs rv={main.rv} setModuleProps={setModuleProps} />
 				</div>
 			</div>
@@ -317,7 +350,7 @@ export default function Dashboard({ setModuleProps }) {
 
 	function uiReports() {
 		return (
-			<div className="flex flex-col w-full px-5 space-y-2 justify-start items-center animate__animated animate__zoomIn">
+			<div className="flex flex-col w-full space-y-2 justify-start items-center animate__animated animate__zoomIn">
 				<div className="flex w-full justify-between items-center">
 					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-18 primary-text">
 						<span>Reports</span>

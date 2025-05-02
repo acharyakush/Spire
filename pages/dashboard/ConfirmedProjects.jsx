@@ -21,7 +21,7 @@ export default function ConfirmedProjects({ projects }) {
 	const [main, setMain] = useState({
 		api: projects?.apiCopy,
 		filter: { amountReceived: false, from: "", to: "" },
-		total: projects?.total,
+		total: projects?.totalInvoiceFees,
 	});
 
 	const months = [];
@@ -137,7 +137,7 @@ export default function ConfirmedProjects({ projects }) {
 				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
 					<FontAwesomeIcon className="primary-text" icon={faFilter} size="lg" />
 				</MenuButton>
-				<MenuItems anchor="bottom end" className="absolute w-max h-auto right-5 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
+				<MenuItems anchor="bottom start" className="absolute w-max h-auto rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
 					<div className="flex flex-col w-full p-5 space-y-5 justify-center items-center">
 						<div className="flex w-full space-x-5 justify-between items-center">
 							<div className="flex w-1/4 justify-start items-center font-regular-10">By Date</div>
@@ -188,16 +188,16 @@ export default function ConfirmedProjects({ projects }) {
 
 	function uiMain() {
 		return (
-			<div className="flex flex-col w-full px-5 space-y-2 justify-between items-center animate__animated animate__zoomIn">
+			<div className="flex flex-col w-full space-y-2 justify-between items-center animate__animated animate__zoomIn">
 				<span className="flex w-full justify-start items-center font-bold-16 primary-text">Confirmed Projects</span>
-				<div className="flex flex-col w-full p-4 justify-between items-center rounded shadow-md full-border contrast-background">
-					<div className="flex w-full p-2 justify-between items-center">
+				<div className="flex flex-col w-full justify-between items-center rounded shadow-md full-border contrast-background">
+					<div className="flex w-full px-4 py-2 justify-between items-center">
 						<span className="font-bold-20">{MyGlobal.FormatCurrency(main.total)}</span>
 						{uiFilter()}
 					</div>
 					<div className="w-full">
 						<div id="chart">
-							<ReactApexChart options={getChartOptions()} series={getChartSeries()} height={175} type="line" width="100%" />
+							<ReactApexChart options={getChartOptions()} series={getChartSeries()} height={205} type="line" width="100%" />
 						</div>
 						<div id="html-dist" />
 					</div>

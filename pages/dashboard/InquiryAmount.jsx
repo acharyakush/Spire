@@ -107,11 +107,11 @@ export default function InquiryAmount({ inquiries }) {
 	// UI Components
 	function uiMain() {
 		return (
-			<div className="flex flex-col w-full px-5 space-y-2 justify-between items-center animate__animated animate__zoomIn">
+			<div className="flex flex-col w-full space-y-2 justify-between items-center animate__animated animate__zoomIn">
 				<span className="flex w-full justify-start items-center font-bold-16 primary-text">Inquiry Amount</span>
 				<div className="flex flex-col w-full p-4 justify-between items-center full-border rounded shadow-md contrast-background">
 					<div className="flex w-full p-2 justify-between items-center">
-						<span className="font-bold-20">{MyGlobal.FormatCurrency(inquiries?.totalAmount)}</span>
+						<span className="font-bold-20">{MyGlobal.FormatCurrency(inquiries?.totalQuote)}</span>
 					</div>
 					<div className="w-full">
 						<div id="chart">

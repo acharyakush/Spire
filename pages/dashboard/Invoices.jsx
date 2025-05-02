@@ -7,7 +7,7 @@ import MyConstants from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { BadgeLarge2 } from "@/components/Elements";
-import { faCheckDouble, faCirclePause, faUnlock } from "@fortawesome/free-solid-svg-icons";
+import { faCheckDouble, faCirclePause, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
 
 export default function Invoices({ invoices, setModuleProps }) {
 	// Business Logic
@@ -29,6 +29,10 @@ export default function Invoices({ invoices, setModuleProps }) {
 			case status == "DUE":
 				object.background = "dashboard-blue-4";
 				object.icon = faCirclePause;
+				break;
+			case status == "OVERDUE":
+				object.background = "dashboard-blue-2";
+				object.icon = faLock;
 				break;
 		}
 
@@ -56,7 +60,7 @@ export default function Invoices({ invoices, setModuleProps }) {
 		return (
 			<div className={wrapper} onClick={() => setModuleProps(baseModules.Invoices, key)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded shadow-md ${zoomRotate} ${aesthetics.background}`}>
-					<div className="p-4 rounded-r-full shadow-2xl font-bold-16 text-white gray-background-transparent-02">{count}</div>
+					{/* <div className="p-4 rounded-r-full shadow-2xl font-bold-16 text-white gray-background-transparent-02">{count}</div> */}
 					<div className="flex flex-col w-full px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
 						<span className="font-bold-30">
@@ -70,17 +74,17 @@ export default function Invoices({ invoices, setModuleProps }) {
 
 	function uiMain() {
 		return (
-			<div className="flex flex-col w-full space-x-2.5 justify-between items-center">
+			<div className="flex flex-col w-full justify-between items-center">
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-16 primary-text">
 					<span>{baseModules.Invoices}</span>
 					<BadgeLarge2>
-						<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={invoices?.total ?? 0} />
+						<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={invoices?.totalCount ?? 0} />
 					</BadgeLarge2>
 				</div>
 				<div className="w-full pt-2.5 grid grid-cols-2 gap-5">
 					{uiBlock("DUE")}
+					{uiBlock("OVERDUE")}
 					{uiBlock("GENERATED")}
-					{uiBlock("NOT GENERATED")}
 					{uiBlock("NOT GENERATED")}
 				</div>
 			</div>

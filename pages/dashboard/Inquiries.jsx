@@ -85,7 +85,7 @@ export default function Inquiries({ inquiries, setModuleProps }) {
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-16 primary-text ">
 					<span>{baseModules.Inquiries}</span>
 					<BadgeLarge2>
-						<SlotCounter value={inquiries?.total ?? 0} />
+						<SlotCounter value={inquiries?.totalCount ?? 0} />
 					</BadgeLarge2>
 				</div>
 				<div className="w-full pt-2.5 grid grid-cols-2 gap-5">

@@ -86,7 +86,7 @@ export default function Projects({ projects, setModuleProps }) {
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-16 primary-text">
 					<span>{MyConstants.Modules.Base.Projects}</span>
 					<BadgeLarge2>
-						<SlotCounter value={projects?.total ?? 0} />
+						<SlotCounter value={projects?.totalCount ?? 0} />
 					</BadgeLarge2>
 				</div>
 				<div className="w-full pt-2.5 grid grid-cols-2 gap-5">

@@ -209,6 +209,10 @@ export default function Invoices({ presetStatus, unmount }) {
 				return a.created_at - b.created_at;
 			} else if (column == headers.CreatedAt && !isAscending) {
 				return b.created_at - a.created_at;
+			} else if (column == headers.DueDate && isAscending) {
+				return a.due_date - b.due_date;
+			} else if (column == headers.DueDate && !isAscending) {
+				return b.due_date - a.due_date;
 			} else if (column == headers.Amount && isAscending) {
 				return a.amount - b.amount;
 			} else if (column == headers.Amount && !isAscending) {

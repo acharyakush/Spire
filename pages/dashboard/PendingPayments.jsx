@@ -55,10 +55,14 @@ export default function PendingPayments({ invoices }) {
 	}
 
 	function uiMain() {
+		const fontSize =
+			"text-[16px] [@media(max-width:1351px)]:text-[15px] [@media(max-width:1299px)]:text-[14px]  [@media(max-width:1251px)]:text-[13px] [@media(max-width:1201px)]:text-[12px] [@media(max-width:1152px)]:text-[11px] [@media(max-width:1104px)]:text-[10px]";
+		const firstRowStyle = `flex w-full space-x-2.5 justify-start items-center font-bold-16 ${fontSize} primary-text`;
+
 		return (
-			<div className="flex flex-col w-full px-5 space-y-2 justify-start items-center animate__animated animate__zoomIn">
+			<div className="flex flex-col w-full space-y-2 justify-start items-center animate__animated animate__zoomIn">
 				<div className="flex w-full justify-between items-center">
-					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-16 primary-text">
+					<div className={firstRowStyle}>
 						<span>Pending Payments</span>
 						<BadgeLarge2>
 							<span>{MyGlobal.ThousandSeparator(total)}</span>
