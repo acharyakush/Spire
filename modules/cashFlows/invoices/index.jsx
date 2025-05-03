@@ -186,49 +186,54 @@ export default function Invoices({ presetStatus, unmount }) {
 	}
 
 	function doSorting() {
-		return api.projects.sort((a, b) => {
-			const { column, isAscending } = main.sort;
+		return (
+			api.projects
+				// .filter((f) => f.invoice_due_date)
+				// .filter((f) => f.amount_pending != 0)
+				.sort((a, b) => {
+					const { column, isAscending } = main.sort;
 
-			if (column == headers.Id && isAscending) {
-				return a.id.localeCompare(b.id);
-			} else if (column == headers.Id && !isAscending) {
-				return b.id.localeCompare(a.id);
-			} else if (column == headers.Company && isAscending) {
-				return a.company_name.localeCompare(b.company_name);
-			} else if (column == headers.Company && !isAscending) {
-				return b.company_name.localeCompare(a.company_name);
-			} else if (column == headers.MainProject && isAscending) {
-				return a.main_project_name.localeCompare(b.main_project_name);
-			} else if (column == headers.MainProject && !isAscending) {
-				return b.main_project_name.localeCompare(a.main_project_name);
-			} else if (column == headers.SubProject && isAscending) {
-				return a.sub_project_name.localeCompare(b.sub_project_name);
-			} else if (column == headers.SubProject && !isAscending) {
-				return b.sub_project_name.localeCompare(a.sub_project_name);
-			} else if (column == headers.CreatedAt && isAscending) {
-				return a.created_at - b.created_at;
-			} else if (column == headers.CreatedAt && !isAscending) {
-				return b.created_at - a.created_at;
-			} else if (column == headers.DueDate && isAscending) {
-				return a.due_date - b.due_date;
-			} else if (column == headers.DueDate && !isAscending) {
-				return b.due_date - a.due_date;
-			} else if (column == headers.Amount && isAscending) {
-				return a.amount - b.amount;
-			} else if (column == headers.Amount && !isAscending) {
-				return b.amount - a.amount;
-			} else if (column == headers.AmountReceived && isAscending) {
-				return a.amount_received - b.amount_received;
-			} else if (column == headers.AmountReceived && !isAscending) {
-				return b.amount_received - a.amount_received;
-			} else if (column == headers.InvoiceId && isAscending) {
-				return a.status.localeCompare(b.status);
-			} else if (column == headers.InvoiceId && !isAscending) {
-				return b.status.localeCompare(a.status);
-			} else {
-				return b.id.localeCompare(a.id);
-			}
-		});
+					if (column == headers.Id && isAscending) {
+						return a.id.localeCompare(b.id);
+					} else if (column == headers.Id && !isAscending) {
+						return b.id.localeCompare(a.id);
+					} else if (column == headers.Company && isAscending) {
+						return a.company_name.localeCompare(b.company_name);
+					} else if (column == headers.Company && !isAscending) {
+						return b.company_name.localeCompare(a.company_name);
+					} else if (column == headers.MainProject && isAscending) {
+						return a.main_project_name.localeCompare(b.main_project_name);
+					} else if (column == headers.MainProject && !isAscending) {
+						return b.main_project_name.localeCompare(a.main_project_name);
+					} else if (column == headers.SubProject && isAscending) {
+						return a.sub_project_name.localeCompare(b.sub_project_name);
+					} else if (column == headers.SubProject && !isAscending) {
+						return b.sub_project_name.localeCompare(a.sub_project_name);
+					} else if (column == headers.CreatedAt && isAscending) {
+						return a.created_at - b.created_at;
+					} else if (column == headers.CreatedAt && !isAscending) {
+						return b.created_at - a.created_at;
+					} else if (column == headers.DueDate && isAscending) {
+						return a.due_date - b.due_date;
+					} else if (column == headers.DueDate && !isAscending) {
+						return b.due_date - a.due_date;
+					} else if (column == headers.Amount && isAscending) {
+						return a.amount - b.amount;
+					} else if (column == headers.Amount && !isAscending) {
+						return b.amount - a.amount;
+					} else if (column == headers.AmountReceived && isAscending) {
+						return a.amount_received - b.amount_received;
+					} else if (column == headers.AmountReceived && !isAscending) {
+						return b.amount_received - a.amount_received;
+					} else if (column == headers.InvoiceId && isAscending) {
+						return a.status.localeCompare(b.status);
+					} else if (column == headers.InvoiceId && !isAscending) {
+						return b.status.localeCompare(a.status);
+					} else {
+						return b.id.localeCompare(a.id);
+					}
+				})
+		);
 	}
 
 	function getIconOrBadge() {

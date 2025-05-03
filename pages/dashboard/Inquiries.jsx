@@ -50,16 +50,16 @@ export default function Inquiries({ inquiries, setModuleProps }) {
 		let zoomRotate = "";
 
 		if (key === inquiriesStatus.Open) {
-			effect = "animate__animated animate__fadeInTopLeft";
+			effect = "anim fade-in-top-left";
 			zoomRotate = "zoom-rotate-right";
 		} else if (key === inquiriesStatus.Closed) {
-			effect = "animate__animated animate__fadeInTopLeft";
+			effect = "anim fade-in-top-left";
 			zoomRotate = "zoom-rotate-left";
 		} else if (key === inquiriesStatus.Hold) {
-			effect = "animate__animated animate__fadeInTopRight";
+			effect = "anim fade-in-top-right";
 			zoomRotate = "zoom-rotate-left";
 		} else {
-			effect = "animate__animated animate__fadeInDown";
+			effect = "anim fade-in-down";
 			zoomRotate = "zoom-rotate-right";
 		}
 
@@ -81,7 +81,7 @@ export default function Inquiries({ inquiries, setModuleProps }) {
 
 	function uiMain() {
 		return (
-			<div className="flex flex-col w-full justify-between items-start animate__animated animate__slideInDown">
+			<div className="flex flex-col w-full justify-between items-start anim slide-in-down">
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-16 primary-text ">
 					<span>{baseModules.Inquiries}</span>
 					<BadgeLarge2>

@@ -188,7 +188,7 @@ export default function ConfirmedProjects({ projects }) {
 
 	function uiMain() {
 		return (
-			<div className="flex flex-col w-full space-y-2 justify-between items-center animate__animated animate__zoomIn">
+			<div className="flex flex-col w-full space-y-2 justify-between items-center anim zoom-in">
 				<span className="flex w-full justify-start items-center font-bold-16 primary-text">Confirmed Projects</span>
 				<div className="flex flex-col w-full justify-between items-center rounded shadow-md full-border contrast-background">
 					<div className="flex w-full px-4 py-2 justify-between items-center">

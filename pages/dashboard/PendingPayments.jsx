@@ -60,7 +60,7 @@ export default function PendingPayments({ invoices }) {
 		const firstRowStyle = `flex w-full space-x-2.5 justify-start items-center font-bold-16 ${fontSize} primary-text`;
 
 		return (
-			<div className="flex flex-col w-full space-y-2 justify-start items-center animate__animated animate__zoomIn">
+			<div className="flex flex-col w-full space-y-2 justify-start items-center anim zoom-in">
 				<div className="flex w-full justify-between items-center">
 					<div className={firstRowStyle}>
 						<span>Pending Payments</span>

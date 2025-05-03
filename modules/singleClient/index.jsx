@@ -354,7 +354,11 @@ export default function SingleClient({ client, unmount }) {
 							subProjectName = subProject.name;
 						}
 
-						const amountReceived = response.data.transactions.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.amount), 0);
+						const invoiceAmountReceived = response.data.transactions.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.amount), 0);
+
+						const rvAmountReceived = response.data.rvTransactions.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.amount), 0);
+
+						const totalAmountReceived = invoiceAmountReceived + rvAmountReceived;
 
 						const reimburseVoucher = tasks.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.expense), 0);
 
@@ -364,19 +368,22 @@ export default function SingleClient({ client, unmount }) {
 
 						revisedProjects.push({
 							...fe,
-							amount_pending: totalFees - amountReceived,
-							amount_received: amountReceived,
+							amount_pending: totalFees - totalAmountReceived,
+							amount_received: totalAmountReceived,
 							company_name: companyName,
 							completed_on: dayjs(fe.completed_on).format("hh:mm:ss A - DD/MM/YYYY"),
+							invoice_amount_received: invoiceAmountReceived,
 							invoice_fees: invoiceFees,
 							invoice_firm_name: invoiceFirmName,
 							invoice_firm_initials: MyGlobal.GetInitials(invoiceFirmName),
 							main_project_name: mainProjectName,
 							reimburse_voucher: reimburseVoucher,
+							rv_amount_received: rvAmountReceived,
 							sub_project_name: subProjectName,
 							teams: MyGlobal.GetFullDetailsFromIds(fe.teams),
 							team_names: teamNames,
 							team_names_initials: MyGlobal.GetInitials(teamNames),
+							total_amount_received: totalAmountReceived,
 							total_fees: totalFees,
 						});
 					});
@@ -674,7 +681,7 @@ export default function SingleClient({ client, unmount }) {
 						</div>
 						<div className="flex w-full h-full px-5 space-x-5 justify-center items-start">
 							<div className="flex flex-col w-[10%] space-y-2.5 justify-start items-center">{uiCompanies()}</div>
-							<div className="flex flex-col w-[90%] h-full justify-start items-center">
+							<div className="flex flex-col w-[90%] h-full justify-start items-center full-border">
 								<div className="flex w-full primary-background">{uiHeaders()}</div>
 								<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.data.length} />
 								<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
@@ -689,11 +696,24 @@ export default function SingleClient({ client, unmount }) {
 	function uiRows(row, i) {
 		const width = main.selectedCompany.id != 0 ? "w-[14.28%]" : "w-[8.33%]";
 		const style = `flex flex-wrap ${width} min-h-9 justify-center items-center text-center`;
-		const tooltipStyle = `${style} cursor-help primary-text`;
 
-		const amountPendingStyle = `${style} font-semibold-11 red-text`;
-		const amountReceivedStyle = `${style} font-semibold-11 green-text`;
-		const totalFeesStyle = `${style} font-semibold-11 primary-text`;
+		const tooltipStyle = `${style} cursor-help primary-text`;
+		const tooltipStyle2 = `${style} cursor-help`;
+
+		const invoiceFeesColour = row.invoice_fees == 0 ? "text-gray-300" : "primary-text";
+		const invoiceFeesStyle = `${tooltipStyle2} ${invoiceFeesColour}`;
+
+		const rvFeesColour = row.reimburse_voucher == 0 ? "text-gray-300" : "primary-text";
+		const rvFeesStyle = `${tooltipStyle2} ${rvFeesColour}`;
+
+		const amountPendingColour = row.amount_pending == 0 ? "text-gray-300" : "red-text";
+		const amountPendingStyle = `${style} font-semibold-11 ${amountPendingColour}`;
+
+		const amountReceivedColour = row.amount_received == 0 ? "text-gray-300" : "green-text";
+		const amountReceivedStyle = `${style} font-semibold-11 ${amountReceivedColour}`;
+
+		const totalFeesColour = row.total_fees == 0 ? "text-gray-300" : "primary-text";
+		const totalFeesStyle = `${style} font-semibold-11 ${totalFeesColour}`;
 
 		return (
 			<div className="flex w-full justify-center items-center black-white-background bottom-border font-regular-11 black-text" key={i}>
@@ -717,11 +737,13 @@ export default function SingleClient({ client, unmount }) {
 					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_firm_initials, main.filter.find) }} />
 				</Tippy>
 
-				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_fees, main.filter.find) }} />
+				<span className={invoiceFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_fees, main.filter.find) }} />
 
-				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.reimburse_voucher, main.filter.find) }} />
+				<span className={rvFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.reimburse_voucher, main.filter.find) }} />
 
-				<span className={amountReceivedStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_received, main.filter.find) }} />
+				<Tippy content={<Tooltip text={`Invoice - ${row.invoice_amount_received}\n, RV - ${row.rv_amount_received}`} />} placement="bottom">
+					<span className={`${tooltipStyle2} ${amountReceivedStyle} underline underline-offset-4 cursor-pointer`} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_received, main.filter.find) }} />
+				</Tippy>
 
 				<span className={amountPendingStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_pending, main.filter.find) }} />
 

@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 	try {
 		const clientId = req.query.clientId;
 
-		const [companies, transactions, mainProjects, firms, projects, subProjects, tasks, reference] = await Promise.all([
+		const [companies, transactions, mainProjects, firms, projects, subProjects, tasks, rvTransactions, reference] = await Promise.all([
 			query("SELECT * FROM companies WHERE client_id=?", [clientId]), // Queries
 			query("SELECT * FROM invoices_transactions", []),
 			query("SELECT * FROM main_projects", []),
@@ -23,10 +23,11 @@ export default async function handler(req, res) {
 			query("SELECT * FROM projects WHERE is_deleted=0", []),
 			query("SELECT * FROM sub_projects", []),
 			query("SELECT * FROM tasks WHERE client_id=?", [clientId]),
+			query("SELECT * FROM rv_transactions", []),
 			query("SELECT * FROM the_references WHERE client_id=?", [clientId]),
 		]);
 
-		return res.status(200).json({ companies, transactions, mainProjects, firms, projects, subProjects, tasks, reference });
+		return res.status(200).json({ companies, transactions, mainProjects, firms, projects, subProjects, tasks, rvTransactions, reference });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");

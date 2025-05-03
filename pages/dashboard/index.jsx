@@ -20,337 +20,416 @@ import { MyGlobal } from "@/utilities/global";
 
 export default function Dashboard({ setModuleProps }) {
 	// Business Logic
-	const [main, setMain] = useState({
-		inquiries: {
-			api: [],
-			closed: 0,
-			confirmed: 0,
-			hold: 0,
-			my: 0,
-			open: 0,
-			totalCount: 0,
-			totalQuote: 0,
-		},
-		invoices: {
-			due: { amount: 0, count: 0, label: "DUE" },
-			overdue: { amount: 0, count: 0, label: "OVERDUE" },
-			generated: { amount: 0, count: 0, label: "GENERATED" },
-			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
-			pending: [],
-			received: [],
-			receivedCopy: [],
-			totalCount: 0,
-		},
+	const [data, setData] = useState({
 		isLoading: false,
-		projects: {
-			active: 0,
-			api: [],
-			apiCopy: [],
-			closed: 0,
-			completed: 0,
-			hold: 0,
-			paymentReceived: [],
-			my: 0,
-			totalCount: 0,
-			totalInvoiceFees: 0,
-		},
-		rv: {
-			due: { amount: 0, count: 0, label: "DUE" },
-			overdue: { amount: 0, count: 0, label: "OVERDUE" },
-			generated: { amount: 0, count: 0, label: "GENERATED" },
-			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
-			total: 0,
-		},
-		tasks: {
-			overdue: 0,
-			today: 0,
-			tomorrow: 0,
-			total: 0,
-			upcoming: 0,
-		},
+		showRow1: false,
+		showRow2: false,
+		showRow3: false,
+	});
+
+	const [inquiries, setInquiries] = useState({
+		api: [],
+		closed: 0,
+		confirmed: 0,
+		hold: 0,
+		my: 0,
+		open: 0,
+		totalCount: 0,
+		totalQuote: 0,
+	});
+
+	const [invoices, setInvoices] = useState({
+		due: { amount: 0, count: 0, label: "DUE" },
+		overdue: { amount: 0, count: 0, label: "OVERDUE" },
+		generated: { amount: 0, count: 0, label: "GENERATED" },
+		notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
+		pending: [],
+		received: [],
+		receivedCopy: [],
+		totalCount: 0,
+	});
+
+	const [projects, setProjects] = useState({
+		active: 0,
+		api: [],
+		apiCopy: [],
+		closed: 0,
+		completed: 0,
+		hold: 0,
+		paymentOverdue: [],
+		paymentPending: [],
+		paymentReceived: [],
+		my: 0,
+		totalCount: 0,
+		totalInvoiceFees: 0,
+	});
+
+	const [rv, setRv] = useState({
+		due: { amount: 0, count: 0, label: "DUE" },
+		overdue: { amount: 0, count: 0, label: "OVERDUE" },
+		generated: { amount: 0, count: 0, label: "GENERATED" },
+		notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
+		total: 0,
+	});
+
+	const [tasks, setTasks] = useState({
+		overdue: 0,
+		today: 0,
+		tomorrow: 0,
+		total: 0,
+		upcoming: 0,
 	});
 
 	const today = dayjs();
-	const inquiriesStatus = MyConstants.Statuses.Inquiries;
-	const projectsStatus = MyConstants.Statuses.Projects;
+	const inqStatus = MyConstants.Statuses.Inquiries;
+	const prjStatus = MyConstants.Statuses.Projects;
 
 	// Functions
+	function getInquiries(list) {
+		const obj = Object.assign({}, inquiries);
+
+		for (const i of list) {
+			i.status == inqStatus.Closed && obj.closed++;
+			i.status == inqStatus.Confirmed && obj.confirmed++;
+			i.status == inqStatus.Hold && obj.hold++;
+			i.status == inqStatus.Open && obj.open++;
+
+			String(i.follow_ups).includes(MyGlobal.GetUserId()) && obj.my++;
+
+			obj.totalQuote += +i.quote;
+		}
+
+		obj.api = list;
+		obj.totalCount = list.length;
+
+		setInquiries(obj);
+	}
+
+	function getInvoices(list, paymentOverdue, paymentPending, paymentReceived, prjList) {
+		const obj = Object.assign({}, invoices);
+
+		let dueAmount = 0;
+		let dueCount = 0;
+
+		let overDueAmount = 0;
+		let overDueCount = 0;
+
+		let generatedAmount = 0;
+		let generatedCount = 0;
+
+		for (let i = 0; i < list.length; i++) {
+			const fe = list[i];
+			const amount = +fe.amount;
+
+			if (fe.due_date) {
+				if (dayjs(fe.due_date).isBefore(today, "day")) {
+					dueAmount += amount;
+					dueCount += 1;
+				}
+			}
+
+			if (fe.custom_id) {
+				generatedAmount += amount;
+				generatedCount += 1;
+			}
+		}
+
+		for (let j = 0; j < paymentOverdue.length; j++) {
+			const f = paymentOverdue[j];
+
+			overDueAmount += f.amount_pending;
+			overDueCount += 1;
+		}
+
+		obj.due.amount = dueAmount;
+		obj.due.count = dueCount;
+
+		obj.overdue.amount = overDueAmount;
+		obj.overdue.count = overDueCount;
+
+		obj.generated.amount = generatedAmount;
+		obj.generated.count = generatedCount;
+
+		const invoiceProjectIds = new Set(list.map((m) => m.project_id));
+		const isNotGenerated = prjList.filter((f) => !invoiceProjectIds.has(f.id));
+
+		let notGenAmount = 0;
+		let notGenCount = 0;
+
+		for (let i = 0; i < isNotGenerated.length; i++) {
+			notGenAmount += +isNotGenerated[i].quote;
+			notGenCount++;
+		}
+
+		obj.notGenerated.amount = notGenAmount;
+		obj.notGenerated.count = notGenCount;
+
+		obj.pending = paymentPending;
+		obj.received = paymentReceived;
+		obj.receivedCopy = paymentReceived;
+		obj.totalCount = list.length;
+
+		setInvoices(obj);
+	}
+
+	function getProjects(_companies, _invoices, invoicesTransactions, list) {
+		const obj = Object.assign({}, projects);
+
+		const moneyPendingPrjs = [];
+		const moneyReceivedPrjs = [];
+		const moneyOverduePrjs = [];
+
+		for (const p of list) {
+			p.status == prjStatus.Active && obj.active++;
+			p.status == prjStatus.Closed && obj.closed++;
+			p.status == prjStatus.Completed && obj.completed++;
+			p.status == prjStatus.Hold && obj.hold++;
+
+			String(p.teams).includes(MyGlobal.GetUserId()) && obj.my++;
+
+			obj.totalInvoiceFees += +p.invoice_fees;
+
+			let amountPending = 0;
+			let amountReceived = 0;
+			let companyName = "";
+			let invoiceAmount = +p.invoice_fees;
+			let invoiceDueDate = "";
+
+			const invoice = _invoices.filter((f) => f.project_id == p.id);
+
+			if (Array.isArray(invoice) && invoice.length) {
+				invoiceAmount = invoice.reduce((t, i) => t + +i.amount, 0);
+				invoiceDueDate = invoice.map((m) => (m.due_date ? dayjs(m.due_date).format("DD/MM/YYYY") : "")).at(0);
+			}
+
+			const company = _companies.find((f) => f.id == p.company_id);
+
+			if (typeof company === "object") {
+				companyName = company.name;
+			}
+
+			const transactions = invoicesTransactions.filter((f) => f.project_id == p.id);
+
+			if (Array.isArray(transactions) && transactions.length) {
+				amountReceived = transactions.reduce((t, v) => {
+					return t + +v.amount;
+				}, 0);
+			}
+
+			amountPending = invoiceAmount - amountReceived;
+
+			const finalObj = {
+				...p,
+				amount: invoiceAmount,
+				amount_pending: amountPending,
+				amount_received: amountReceived,
+				company_name: companyName,
+				invoice_due_date: invoiceDueDate,
+			};
+
+			if (invoiceDueDate && amountPending != 0) {
+				moneyOverduePrjs.push(finalObj);
+			}
+
+			if (amountPending > 0) {
+				moneyPendingPrjs.push(finalObj);
+			}
+
+			if (amountReceived > 0) {
+				moneyReceivedPrjs.push(finalObj);
+			}
+		}
+
+		obj.api = list;
+		obj.apiCopy = list;
+		obj.paymentOverdue = moneyOverduePrjs;
+		obj.paymentPending = moneyPendingPrjs;
+		obj.paymentReceived = moneyReceivedPrjs;
+		obj.totalCount = list.length;
+
+		setProjects(obj);
+
+		return obj;
+	}
+
+	function getRv(list, tskList) {
+		const obj = Object.assign({}, rv);
+
+		const rvProjectIds = new Set();
+		const todayStr = dayjs(today).format("YYYY-MM-DD");
+
+		let rvDueAmount = 0;
+		let rvDueCount = 0;
+		let rvOverDueAmount = 0;
+		let rvOverDueCount = 0;
+		let rvGenAmount = 0;
+		let rvGenCount = 0;
+
+		for (let i = 0; i < list.length; i++) {
+			const fe = list[i];
+			const { due_date, amount, amount_pending, custom_id, project_id } = fe;
+
+			const amountNum = +amount;
+			const pendingNum = +amount_pending;
+
+			rvProjectIds.add(project_id); // collect all project_ids from generated RVs
+
+			if (dayjs(due_date).isBefore(todayStr)) {
+				rvDueAmount += amountNum;
+				rvDueCount += 1;
+
+				if (pendingNum !== 0) {
+					rvOverDueAmount += pendingNum;
+					rvOverDueCount += 1;
+				}
+			}
+
+			if (custom_id) {
+				rvGenAmount += amountNum;
+				rvGenCount += 1;
+			}
+		}
+
+		obj.due.amount = rvDueAmount;
+		obj.due.count = rvDueCount;
+
+		obj.overdue.amount = rvOverDueAmount;
+		obj.overdue.count = rvOverDueCount;
+
+		obj.generated.amount = rvGenAmount;
+		obj.generated.count = rvGenCount;
+
+		let notGenRvAmount = 0;
+		let notGenRvCount = 0;
+
+		for (let i = 0; i < tskList.length; i++) {
+			const fe = tskList[i];
+
+			if (!rvProjectIds.has(fe.project_id)) {
+				notGenRvAmount += +fe.expense;
+				notGenRvCount += 1;
+			}
+		}
+
+		obj.notGenerated.amount = notGenRvAmount;
+		obj.notGenerated.count = notGenRvCount;
+		obj.total = list.length;
+
+		setRv(obj);
+	}
+
+	function getTasks(list) {
+		const obj = Object.assign({}, tasks);
+
+		for (const t of list) {
+			const dueDate = dayjs(t.due_on);
+
+			dueDate.isBefore(today, "date") && obj.overdue++;
+			dueDate.isSame(today, "date") && obj.today++;
+			dueDate.isSame(today.add(1, "day"), "date") && obj.tomorrow++;
+
+			if (dueDate.isAfter(today.add(1, "day"), "date")) {
+				t.is_completed == 0 && obj.upcoming++;
+			}
+		}
+
+		obj.total = list.length;
+
+		setTasks(obj);
+	}
+
 	async function getSupportData() {
 		try {
-			setMain((s) => ({ ...s, isLoading: true }));
+			setData((s) => ({ ...s, isLoading: true }));
 
 			const response = await axios.get(MyConstants.ApiEndpoints.Dashboard, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const inquiriesObj = Object.assign({}, main.inquiries);
-				const invoicesObj = Object.assign({}, main.invoices);
-				const projectsObj = Object.assign({}, main.projects);
-				const rvObj = Object.assign({}, main.rv);
-				const tasksObj = Object.assign({}, main.tasks);
+				const { companies, inquiries, invoices, projects, rv, tasks, transactions } = response.data;
 
-				// Inquiries
-				for (const i of response.data.inquiries) {
-					if (i.status == inquiriesStatus.Closed) {
-						inquiriesObj.closed++;
-					} else if (i.status == inquiriesStatus.Confirmed) {
-						inquiriesObj.confirmed++;
-					} else if (i.status == inquiriesStatus.Hold) {
-						inquiriesObj.hold++;
-					} else if (i.status == inquiriesStatus.Open) {
-						inquiriesObj.open++;
-					}
+				const prjs = getProjects(companies, invoices, transactions, projects);
 
-					if (String(i.follow_ups).includes(MyGlobal.GetUserId())) {
-						inquiriesObj.my++;
-					}
-
-					inquiriesObj.totalQuote += Number(i.quote);
-				}
-
-				inquiriesObj.api = response.data.inquiries;
-				inquiriesObj.totalCount = response.data.inquiries.length;
-				projectsObj.totalCount = response.data.projects.length;
-				tasksObj.total = response.data.tasks.length;
-
-				const pending = [];
-				const received = [];
-
-				// Projects
-				for (const p of response.data.projects) {
-					if (p.status == projectsStatus.Active) {
-						projectsObj.active++;
-					} else if (p.status == projectsStatus.Closed) {
-						projectsObj.closed++;
-					} else if (p.status == projectsStatus.Completed) {
-						projectsObj.completed++;
-					} else if (p.status == projectsStatus.Hold) {
-						projectsObj.hold++;
-					}
-
-					if (String(p.teams).includes(MyGlobal.GetUserId())) {
-						projectsObj.my++;
-					}
-
-					projectsObj.totalInvoiceFees += Number(p.invoice_fees);
-
-					let amountPending = 0;
-					let amountReceived = 0;
-					let companyName = "";
-					let invoiceAmount = Number(p.invoice_fees);
-
-					const invoice = response.data.invoices.filter((f) => f.project_id == p.id);
-
-					if (Array.isArray(invoice) && invoice.length) {
-						invoiceAmount = invoice.reduce((t, i) => t + Number(i.amount), 0);
-					}
-
-					const company = response.data.companies.find((f) => f.id == p.company_id);
-
-					if (typeof company === "object") {
-						companyName = company.name;
-					}
-
-					const transactions = response.data.transactions.filter((f) => f.project_id == p.id);
-
-					if (Array.isArray(transactions) && transactions.length) {
-						amountReceived = transactions.reduce((t, v) => {
-							return t + Number(v.amount);
-						}, 0);
-					}
-
-					amountPending = invoiceAmount - amountReceived;
-
-					if (amountPending > 0) {
-						pending.push({
-							...p,
-							amount: invoiceAmount,
-							amount_pending: amountPending,
-							amount_received: amountReceived,
-							company_name: companyName,
-						});
-					}
-
-					if (amountReceived > 0) {
-						received.push({
-							...p,
-							amount: invoiceAmount,
-							amount_pending: amountPending,
-							amount_received: amountReceived,
-							company_name: companyName,
-						});
-					}
-				}
-
-				projectsObj.api = response.data.projects;
-				projectsObj.apiCopy = response.data.projects;
-				projectsObj.paymentReceived = pending.filter((f) => f.amount_received !== 0);
-
-				// Tasks
-				for (const t of response.data.tasks) {
-					const dueDate = dayjs(t.due_on);
-
-					if (dueDate.isBefore(today, "date")) {
-						tasksObj.overdue++;
-					} else if (dueDate.isSame(today, "date")) {
-						tasksObj.today++;
-					} else if (dueDate.isSame(today.add(1, "day"), "date")) {
-						tasksObj.tomorrow++;
-					} else if (dueDate.isAfter(today.add(1, "day"), "date")) {
-						if (t.is_completed == 0) {
-							tasksObj.upcoming++;
-						}
-					}
-				}
-
-				// Invoices
-				response.data.invoices.forEach((fe) => {
-					if (fe.due_date) {
-						if (dayjs(fe.due_date).isBefore(today, "day")) {
-							invoicesObj.due.amount += Number(fe.amount);
-							invoicesObj.due.count += 1;
-
-							// Overdue
-							const overdue = received.filter((f) => {
-								if (f.amount_pending != Number(fe.amount)) {
-									return f;
-								}
-							});
-
-							if (overdue.length) {
-								invoicesObj.overdue.amount = overdue.reduce((t, v) => t + v.amount_pending, 0);
-								invoicesObj.overdue.count += 1;
-							}
-						}
-					}
-
-					if (fe.custom_id) {
-						invoicesObj.generated.amount += Number(fe.amount);
-						invoicesObj.generated.count += 1;
-					}
-				});
-
-				const invoiceProjectIds = new Set(response.data.invoices.map((m) => m.project_id));
-				const isNotGenerated = response.data.projects.filter((f) => !invoiceProjectIds.has(f.id));
-
-				isNotGenerated.forEach((fe, i) => {
-					invoicesObj.notGenerated.amount += Number(fe.quote);
-					invoicesObj.notGenerated.count = i + 1;
-				});
-
-				invoicesObj.pending = pending;
-				invoicesObj.received = received;
-				invoicesObj.receivedCopy = received;
-				invoicesObj.totalCount = response.data.invoices.length;
-
-				// Reimbursement Voucher
-				const rvArray = response.data.rv;
-				const taskArray = response.data.tasks;
-				const todayStr = dayjs(today).format("YYYY-MM-DD"); // So we don’t parse `today` N times
-
-				const rvProjectIds = new Set();
-				const rvArrayLength = rvArray.length;
-
-				for (let i = 0; i < rvArrayLength; i++) {
-					const fe = rvArray[i];
-					const { due_date, amount, amount_pending, custom_id, project_id } = fe;
-
-					const amountNum = +amount;
-					const pendingNum = +amount_pending;
-
-					rvProjectIds.add(project_id); // collect all project_ids from generated RVs
-
-					if (dayjs(due_date).isBefore(todayStr)) {
-						rvObj.due.amount += amountNum;
-						rvObj.due.count += 1;
-
-						if (pendingNum !== 0) {
-							rvObj.overdue.amount += pendingNum;
-							rvObj.overdue.count += 1;
-						}
-					}
-
-					if (custom_id) {
-						rvObj.generated.amount += amountNum;
-						rvObj.generated.count += 1;
-					}
-				}
-
-				const taskArrayLength = taskArray.length;
-
-				for (let i = 0; i < taskArrayLength; i++) {
-					const fe = taskArray[i];
-
-					if (!rvProjectIds.has(fe.project_id)) {
-						rvObj.notGenerated.amount += +fe.expense;
-						rvObj.notGenerated.count += 1;
-					}
-				}
-
-				rvObj.total = rvArrayLength;
-
-				setMain((s) => ({
-					...s,
-					invoices: invoicesObj,
-					inquiries: inquiriesObj,
-					projects: projectsObj,
-					rv: rvObj,
-					tasks: tasksObj,
-				}));
+				getTasks(tasks);
+				getInquiries(inquiries);
+				getInvoices(invoices, prjs.paymentOverdue, prjs.paymentPending, prjs.paymentReceived, projects);
+				getRv(rv, tasks);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Dashboard => Get Support Data");
 		} finally {
-			setMain((s) => ({ ...s, isLoading: false }));
+			setData((s) => ({ ...s, isLoading: false }));
 		}
 	}
 
+	function setValues(key, value) {
+		setData((s) => ({ ...s, [key]: value }));
+	}
+
 	// UI Components
-	function uiFirstRow() {
-		return (
-			<div className="flex w-full px-2.5 space-x-10 justify-between items-center">
-				<div className="flex w-full space-x-10 justify-between items-center">
-					<Projects projects={main.projects} setModuleProps={setModuleProps} />
-					<ConfirmedProjects projects={main.projects} />
+	function uiRow1() {
+		if (data.showRow1) {
+			const transition = `row-fade ${data.showRow1 ? "shown" : ""}`;
+
+			return (
+				<div className={transition}>
+					<div className="flex w-full px-2.5 space-x-10 justify-between items-center">
+						<div className="flex w-full space-x-10 justify-between items-center">
+							<Projects projects={projects} setModuleProps={setModuleProps} />
+							<ConfirmedProjects projects={projects} />
+						</div>
+						<div className="flex w-full space-x-10 justify-between items-center">
+							<Tasks setModuleProps={setModuleProps} tasks={tasks} />
+							<PendingPayments invoices={invoices.pending} />
+						</div>
+					</div>
 				</div>
-				<div className="flex w-full space-x-10 justify-between items-center">
-					<Tasks setModuleProps={setModuleProps} tasks={main.tasks} />
-					<PendingPayments invoices={main.invoices.pending} />
-				</div>
-			</div>
-		);
+			);
+		}
 	}
 
-	function uiSecondRow() {
-		return (
-			<div className="flex w-full p-2.5 space-x-10 justify-between items-center">
-				<div className="flex w-full space-x-10 justify-between items-center">
-					<Inquiries inquiries={main.inquiries} setModuleProps={setModuleProps} />
-					<InquiryAmount inquiries={main.inquiries} />
+	function uiRow2() {
+		if (data.showRow2) {
+			const transition = `row-fade ${data.showRow2 ? "shown" : ""}`;
+
+			return (
+				<div className={transition}>
+					<div className="flex w-full p-2.5 space-x-10 justify-between items-center">
+						<div className="flex w-full space-x-10 justify-between items-center">
+							<Inquiries inquiries={inquiries} setModuleProps={setModuleProps} />
+							<InquiryAmount inquiries={inquiries} />
+						</div>
+						<div className="flex w-full space-x-10 justify-between items-center">
+							<PaymentsReceived invoices={invoices} />
+							{uiReports()}
+						</div>
+					</div>
 				</div>
-				<div className="flex w-full space-x-10 justify-between items-center">
-					<PaymentsReceived invoices={main.invoices} />
-					{uiReports()}
-				</div>
-			</div>
-		);
+			);
+		}
 	}
 
-	function uiThirdRow() {
-		return (
-			<div className="flex w-full p-2.5 space-x-10 justify-between items-center">
-				<div className="flex w-full space-x-10 justify-between items-center">
-					<Invoices invoices={main.invoices} setModuleProps={setModuleProps} />
+	function uiRow3() {
+		if (data.showRow3) {
+			const transition = `row-fade ${data.showRow3 ? "shown" : ""}`;
+
+			return (
+				<div className={transition}>
+					<div className="flex w-full p-2.5 space-x-10 justify-between items-center">
+						<div className="flex w-full space-x-10 justify-between items-center">
+							<Invoices invoices={invoices} setModuleProps={setModuleProps} />
+						</div>
+						<div className="flex w-full space-x-10 justify-between items-center">
+							<RVs rv={rv} setModuleProps={setModuleProps} />
+						</div>
+					</div>
 				</div>
-				<div className="flex w-full space-x-10 justify-between items-center">
-					<RVs rv={main.rv} setModuleProps={setModuleProps} />
-				</div>
-			</div>
-		);
+			);
+		}
 	}
 
 	function uiReports() {
 		return (
-			<div className="flex flex-col w-full space-y-2 justify-start items-center animate__animated animate__zoomIn">
+			<div className="flex flex-col w-full space-y-2 justify-start items-center anim zoom-in">
 				<div className="flex w-full justify-between items-center">
 					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-18 primary-text">
 						<span>Reports</span>
@@ -366,12 +445,24 @@ export default function Dashboard({ setModuleProps }) {
 		getSupportData();
 	}, []);
 
+	useEffect(() => {
+		const delay1 = setTimeout(() => setValues("showRow1", true), 400);
+		const delay2 = setTimeout(() => setValues("showRow2", true), 800);
+		const delay3 = setTimeout(() => setValues("showRow3", true), 1200);
+
+		return () => {
+			clearTimeout(delay1);
+			clearTimeout(delay2);
+			clearTimeout(delay3);
+		};
+	}, []);
+
 	// Main UI
 	return (
 		<div className="w-full h-full p-5 space-y-5 overflow-x-hidden overflow-y-auto">
-			{uiFirstRow()}
-			{uiSecondRow()}
-			{uiThirdRow()}
+			{uiRow1()}
+			{uiRow2()}
+			{uiRow3()}
 		</div>
 	);
 }

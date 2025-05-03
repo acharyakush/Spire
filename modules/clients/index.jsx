@@ -111,13 +111,7 @@ export default function Clients() {
 		const blankRows = [{ span: _headers.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
-			records.push(
-				fe.id,
-				fe.name,
-				fe.phone_number,
-				fe.email_address,
-				`${dayjs(fe.joined_on).format("hh:mm:ss A")}\n${dayjs(fe.joined_on).format("DD MMM YYYY")}`,
-			);
+			records.push(fe.id, fe.name, fe.phone_number, fe.email_address, `${dayjs(fe.joined_on).format("hh:mm:ss A")}\n${dayjs(fe.joined_on).format("DD MMM YYYY")}`);
 		});
 
 		records.forEach((fe) => {
@@ -252,12 +246,7 @@ export default function Clients() {
 		return (
 			<div className="flex flex-col w-full h-full justify-center items-start full-border">
 				<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-				<Virtuoso
-					className="w-full h-full overflow-y-auto bottom-border contrast-background"
-					data={doSorting()}
-					itemContent={(i, row) => uiRows(row, i)}
-					totalCount={api.clients.data.length}
-				/>
+				<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.clients.data.length} />
 
 				{mounted.editClient && <EditClient client={main.selectedClient} mount={mounted.editClient} reload={getAllClients} unmount={toggleEditClient} />}
 			</div>
@@ -391,7 +380,7 @@ export default function Clients() {
 
 	// Main UI
 	return (
-		<div className="flex flex-col w-full h-full justify-start items-center">
+		<div className="flex flex-col w-full h-full justify-start items-center" style={{ backgroundColor: "ghostwhite" }}>
 			<>
 				{!mounted.singleClient && (
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">

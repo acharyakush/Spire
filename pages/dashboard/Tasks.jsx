@@ -46,16 +46,16 @@ export default function Tasks({ setModuleProps, tasks }) {
 		let zoomRotate = "";
 
 		if (key === "Overdue") {
-			effect = "animate__animated animate__fadeInTopLeft";
+			effect = "anim fade-in-top-left";
 			zoomRotate = "zoom-rotate-right";
 		} else if (key === "Today") {
-			effect = "animate__animated animate__fadeInBottomLeft";
+			effect = "anim fade-in-bottom-left";
 			zoomRotate = "zoom-rotate-left";
 		} else if (key === "Tomorrow") {
-			effect = "animate__animated animate__fadeInTopRight";
+			effect = "anim fade-in-top-right";
 			zoomRotate = "zoom-rotate-left";
 		} else {
-			effect = "animate__animated animate__fadeInBottomRight";
+			effect = "anim fade-in-bottom-right";
 			zoomRotate = "zoom-rotate-right";
 		}
 
@@ -77,7 +77,7 @@ export default function Tasks({ setModuleProps, tasks }) {
 
 	function uiMain() {
 		return (
-			<div className="flex flex-col w-full justify-between items-center animate__animated animate__slideInDown">
+			<div className="flex flex-col w-full justify-between items-center anim slide-in-down">
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-16 primary-text">
 					<span>{MyConstants.Modules.Base.Tasks}</span>
 					<BadgeLarge2>

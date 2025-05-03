@@ -1136,3 +1136,160 @@ input[type="radio"]:checked + label {
 .dragged {
 	opacity: 0.5;
 }
+
+/* Shared base */
+.anim {
+	opacity: 0;
+	transform: scale(1); /* Default state */
+	will-change: transform, opacity;
+	animation-duration: 0.6s; /* Duration for each animation */
+	animation-fill-mode: forwards;
+	animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Elastic effect */
+}
+
+/* Unique animation keyframes for each direction */
+@keyframes fadeInTopLeft {
+	from {
+		opacity: 0;
+		transform: translate(-30px, -30px);
+	}
+	to {
+		opacity: 1;
+		transform: translate(0, 0);
+	}
+}
+
+@keyframes fadeInLeft {
+	from {
+		opacity: 0;
+		transform: translateX(-30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+@keyframes fadeInBottomRight {
+	from {
+		opacity: 0;
+		transform: translate(30px, 30px);
+	}
+	to {
+		opacity: 1;
+		transform: translate(0, 0);
+	}
+}
+
+@keyframes fadeInTopRight {
+	from {
+		opacity: 0;
+		transform: translate(30px, -30px);
+	}
+	to {
+		opacity: 1;
+		transform: translate(0, 0);
+	}
+}
+
+@keyframes zoomIn {
+	from {
+		opacity: 0;
+		transform: scale(0.8);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+/* Classes to apply */
+.fade-in-top-left {
+	animation-name: fadeInTopLeft;
+}
+.fade-in-left {
+	animation-name: fadeInLeft;
+}
+.fade-in-bottom-right {
+	animation-name: fadeInBottomRight;
+}
+.fade-in-top-right {
+	animation-name: fadeInTopRight;
+}
+.zoom-in {
+	animation-name: zoomIn;
+}
+
+.row-fade {
+	opacity: 0;
+	transform: translateY(10px);
+	transition: all 0.4s ease-out;
+}
+.row-fade.shown {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+@keyframes fadeInBottomLeft {
+	from {
+		opacity: 0;
+		transform: translate(-30px, 30px);
+	}
+	to {
+		opacity: 1;
+		transform: translate(0, 0);
+	}
+}
+.fade-in-bottom-left {
+	animation-name: fadeInBottomLeft;
+}
+
+/* 2. slideInDown */
+@keyframes slideInDown {
+	from {
+		transform: translateY(-100%);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+.slide-in-down {
+	animation-name: slideInDown;
+}
+
+/* 3. fadeInDown */
+@keyframes fadeInDown {
+	from {
+		opacity: 0;
+		transform: translateY(-30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+.fade-in-down {
+	animation-name: fadeInDown;
+}
+
+@keyframes elasticZoomOut {
+	0% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	50% {
+		transform: scale(1.2); /* Zoom in before it zooms out */
+		opacity: 0.8;
+	}
+	100% {
+		transform: scale(0.8); /* Zoom out */
+		opacity: 0;
+	}
+}
+
+/* Applying animation */
+.elastic-zoom-out {
+	animation-name: elasticZoomOut;
+}

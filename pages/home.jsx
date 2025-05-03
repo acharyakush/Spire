@@ -551,6 +551,8 @@ export default function Home() {
 		document.body.setAttribute("app-theme", main.mode);
 	}, [main.mode]);
 
+	const backgroundColour = MyGlobal.GetUserId() === "A3" ? "background-color: lightsteelblue" : "";
+
 	// Main UI
 	return (
 		<main className="flex flex-col min-w-[1024px] h-screen overflow-y-hidden">
@@ -571,7 +573,9 @@ export default function Home() {
 				</div>
 				<div className="flex w-full justify-end items-center">{uiUserMenu()}</div>
 			</div>
-			<div className="flex w-full h-[calc(100vh-45px)] justify-center items-center overflow-y-auto">{uiMain()}</div>
+			<div className="flex w-full h-[calc(100vh-45px)] justify-center items-center overflow-y-auto" style={{ backgroundColour }}>
+				{uiMain()}
+			</div>
 		</main>
 	);
 }

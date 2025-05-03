@@ -160,16 +160,16 @@ export default function MySpace({ setModuleProps }) {
 		let zoomRotate = "";
 
 		if (key === inquiriesStatus.Open) {
-			effect = "animate__animated animate__fadeInTopLeft";
+			effect = "anim fade-in-top-left";
 			zoomRotate = "zoom-rotate-right";
 		} else if (key === inquiriesStatus.Closed) {
-			effect = "animate__animated animate__fadeInTopLeft";
+			effect = "anim fade-in-top-left";
 			zoomRotate = "zoom-rotate-left";
 		} else if (key === inquiriesStatus.Hold) {
-			effect = "animate__animated animate__fadeInTopRight";
+			effect = "anim fade-in-top-right";
 			zoomRotate = "zoom-rotate-left";
 		} else {
-			effect = "animate__animated animate__fadeInTopRight";
+			effect = "anim fade-in-top-right";
 			zoomRotate = "zoom-rotate-right";
 		}
 
@@ -196,7 +196,7 @@ export default function MySpace({ setModuleProps }) {
 		return (
 			<div className="flex w-full p-5 justify-between items-start">
 				<div className="flex flex-col w-1/2 justify-between items-start">
-					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
+					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text anim slide-in-down">
 						<span>{baseModules.Projects}</span>
 						<BadgeLarge2>
 							<SlotCounter value={main.projects.total} />
@@ -214,7 +214,7 @@ export default function MySpace({ setModuleProps }) {
 					</div>
 				</div>
 				<div className="flex flex-col w-1/2 justify-between items-end">
-					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
+					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text anim slide-in-down">
 						<span>{baseModules.Tasks}</span>
 						<BadgeLarge2>
 							<SlotCounter value={main.tasks.total} />
@@ -241,19 +241,19 @@ export default function MySpace({ setModuleProps }) {
 		let zoomRotate = "";
 
 		if (key === projectsStatus.Active) {
-			effect = "animate__animated animate__fadeInTopLeft";
+			effect = "anim fade-in-top-left";
 			zoomRotate = "zoom-rotate-right";
 		} else if (key === projectsStatus.Closed) {
-			effect = "animate__animated animate__fadeInLeft";
+			effect = "anim fade-in-left";
 			zoomRotate = "zoom-rotate-left";
 		} else if (key === projectsStatus.Hold) {
-			effect = "animate__animated animate__fadeInBottomRight";
+			effect = "anim fade-in-bottom-right";
 			zoomRotate = "zoom-rotate-right";
 		} else if (key === projectsStatus.Completed) {
-			effect = "animate__animated animate__fadeInTopRight";
+			effect = "anim fade-in-top-right";
 			zoomRotate = "zoom-rotate-left";
 		} else {
-			effect = "animate__animated animate__fadeInBottomRight";
+			effect = "anim fade-in-bottom-right";
 		}
 
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
@@ -285,16 +285,16 @@ export default function MySpace({ setModuleProps }) {
 		let zoomRotate = "";
 
 		if (key === "Overdue") {
-			effect = "animate__animated animate__fadeInTopLeft";
+			effect = "anim fade-in-top-left";
 			zoomRotate = "zoom-rotate-right";
 		} else if (key === "Today") {
-			effect = "animate__animated animate__fadeInBottomLeft";
+			effect = "anim fade-in-bottom-left";
 			zoomRotate = "zoom-rotate-left";
 		} else if (key === "Tomorrow") {
-			effect = "animate__animated animate__fadeInTopRight";
+			effect = "anim fade-in-top-right";
 			zoomRotate = "zoom-rotate-left";
 		} else {
-			effect = "animate__animated animate__fadeInBottomRight";
+			effect = "anim fade-in-bottom-right";
 			zoomRotate = "zoom-rotate-right";
 		}
 
@@ -325,7 +325,7 @@ export default function MySpace({ setModuleProps }) {
 	return (
 		<div className="w-full h-full p-5 space-y-1 overflow-x-hidden overflow-y-auto">
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text animate__animated animate__slideInDown">
+				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text anim slide-in-down">
 					<span>{baseModules.Inquiries}</span>
 					<BadgeLarge2>
 						<SlotCounter value={main.inquiries.total} />
