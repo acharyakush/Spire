@@ -1,36 +1,33 @@
 @font-face {
-	font-family: "Light";
-	src: url("/fonts/light.ttf") format("truetype");
-	font-weight: 300;
-	font-style: normal;
-}
-
-@font-face {
 	font-family: "Regular";
-	src: url("/fonts/regular.ttf") format("truetype");
+	src: url("/fonts/inter/regular.woff2") format("woff2");
 	font-weight: 400;
 	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
 	font-family: "Medium";
-	src: url("/fonts/medium.ttf") format("truetype");
+	src: url("/fonts/inter/medium.woff2") format("woff2");
 	font-weight: 500;
 	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
 	font-family: "SemiBold";
-	src: url("/fonts/semi_bold.ttf") format("truetype");
+	src: url("/fonts/inter/semi_bold.woff2") format("woff2");
 	font-weight: 600;
 	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
 	font-family: "Bold";
-	src: url("/fonts/bold.ttf") format("truetype");
+	src: url("/fonts/inter/bold.woff2") format("woff2");
 	font-weight: 700;
 	font-style: normal;
+	font-display: swap;
 }
 
 :root {
@@ -48,6 +45,8 @@
 	}
 	body {
 		font-family: var(--font-family);
+		font-feature-settings: "cpsp" 1, /* Capital spacing */ "cv05" 1, /* Custom stylistic variant 5 */ "cv06" 1, /* Custom stylistic variant 6 */ "cv08" 1, /* Custom stylistic variant 8 */ "cv11" 1,
+			/* Custom stylistic variant 11 */ "cv13" 1, /* Custom stylistic variant 13 */ "kern" 1, /* Kerning */ "ss03" 1; /* Stylistic set 3 */
 	}
 }
 
@@ -140,10 +139,9 @@
 
 body,
 html {
-	@apply bg-white m-0 p-0;
+	@apply bg-[var(--primary-transparent-01)] m-0 p-0;
 	-moz-osx-font-smoothing: auto;
 	font-synthesis: none;
-	font-feature-settings: "cpsp" 1;
 	scrollbar-width: thin;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
@@ -1203,6 +1201,16 @@ input[type="radio"]:checked + label {
 	}
 }
 
+.gradient-hr {
+	border: none;
+	height: 1px;
+	width: 100%;
+	margin: 2rem auto;
+	background: linear-gradient(to right, transparent, var(--primary-transparent-05), transparent);
+	opacity: 0.9;
+	border-radius: 999px;
+}
+
 /* Classes to apply */
 .fade-in-top-left {
 	animation-name: fadeInTopLeft;
@@ -1272,24 +1280,4 @@ input[type="radio"]:checked + label {
 }
 .fade-in-down {
 	animation-name: fadeInDown;
-}
-
-@keyframes elasticZoomOut {
-	0% {
-		transform: scale(1);
-		opacity: 1;
-	}
-	50% {
-		transform: scale(1.2); /* Zoom in before it zooms out */
-		opacity: 0.8;
-	}
-	100% {
-		transform: scale(0.8); /* Zoom out */
-		opacity: 0;
-	}
-}
-
-/* Applying animation */
-.elastic-zoom-out {
-	animation-name: elasticZoomOut;
 }

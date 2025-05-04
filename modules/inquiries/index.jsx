@@ -11,6 +11,7 @@ import Tippy from "@tippyjs/react";
 import NewInquiry from "./NewInquiry";
 import EditInquiry from "./EditInquiry";
 import MyInquiries from "./MyInquiries";
+import NewQuotaion from "./NewQuotation";
 import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
 import NewProject from "../projects/NewProject";
@@ -24,7 +25,7 @@ import { UpdateStatus } from "@/modals/inquiries/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmallWithBackground, Spinner, Tooltip, TooltipList } from "@/components/Elements";
-import { faCalendar, faChevronDown, faCircleCheck, faFileExcel, faFilter, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronDown, faCircleCheck, faFileExcel, faFilter, faMultiply, faPlusCircle, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 export default function Inquiries({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -48,6 +49,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	});
 
 	const [mounted, setMounted] = useState({
+		addQuotation: false,
 		convertToProject: false,
 		editInquiry: false,
 		mainComponent: false,
@@ -480,6 +482,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		}
 	}
 
+	function toggleAddQuotation(inquiry, type) {
+		setMain((s) => ({ ...s, selectedInquiryForNotes: inquiry }));
+		setMounted((s) => ({ ...s, addQuotation: type }));
+	}
+
 	function toggleEditInquiryView(inquiry, type) {
 		setMain((s) => ({ ...s, selectedInquiryForNotes: inquiry }));
 		setMounted((s) => ({ ...s, editInquiry: type }));
@@ -643,7 +650,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function uiMain() {
-		if (mounted.editInquiry) {
+		if (mounted.addQuotation) {
+			return <NewQuotaion inquiry={main.selectedInquiryForNotes} unmount={toggleAddQuotation} />;
+		} else if (mounted.editInquiry) {
 			return <EditInquiry inquiry={main.selectedInquiryForNotes} reload={setSupportData} unmount={toggleEditInquiryView} />;
 		} else if (mounted.newInquiry) {
 			return <NewInquiry reload={setSupportData} unmount={toggleNewInquiryView} />;
@@ -734,7 +743,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				</span>
 
 				<span className={`${style} space-x-1`}>{uiFollowUps(row)}</span>
-				<span className={style} dangerouslySetInnerHTML={{ __html: quote }} />
+				<div className={`${style} space-x-2.5`}>
+					<span dangerouslySetInnerHTML={{ __html: quote }} />
+					<FontAwesomeIcon className="cursor-pointer green-text" icon={faReceipt} onClick={() => toggleAddQuotation(row, true)} />
+				</div>
 				<span className={style}>{uiStatusMenu(row)}</span>
 				<span className={style}>{uiNotes(row)}</span>
 

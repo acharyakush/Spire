@@ -380,7 +380,7 @@ export default function Clients() {
 
 	// Main UI
 	return (
-		<div className="flex flex-col w-full h-full justify-start items-center" style={{ backgroundColor: "ghostwhite" }}>
+		<div className="flex flex-col w-full h-full justify-start items-center">
 			<>
 				{!mounted.singleClient && (
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">

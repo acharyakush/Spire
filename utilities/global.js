@@ -438,6 +438,41 @@ export const MyGlobal = Object.freeze({
 		}
 	},
 
+	NumberToWordsIndian(num) {
+		if (num === 0) return "Zero Rupees Only";
+
+		const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+		const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+		const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+
+		const words = [];
+
+		function addPart(n, label) {
+			if (n > 0) {
+				if (n < 10) words.push(ones[n]);
+				else if (n < 20) words.push(teens[n - 10]);
+				else words.push(tens[Math.floor(n / 10)], ones[n % 10]);
+				if (label) words.push(label);
+			}
+		}
+
+		const crore = Math.floor(num / 10000000);
+		const lakh = Math.floor((num / 100000) % 100);
+		const thousand = Math.floor((num / 1000) % 100);
+		const hundred = Math.floor((num / 100) % 10);
+		const rest = Math.floor(num % 100);
+
+		addPart(crore, "Crore");
+		addPart(lakh, "Lakh");
+		addPart(thousand, "Thousand");
+		if (hundred) words.push(ones[hundred], "Hundred");
+		if (rest && words.length) words.push("and");
+		addPart(rest, "");
+
+		words.push("Rupees Only");
+		return words.filter(Boolean).join(" ");
+	},
+
 	SetAllUsers: (allUsersArray) => {
 		allUsers = allUsersArray;
 	},

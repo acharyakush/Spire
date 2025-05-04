@@ -72,7 +72,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 	const totalPendingAmount = Math.abs(totalAmount - main.totalAmountReceived);
 	const finalPendingAmount = String.fromCharCode(8377) + ` ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
 
-	const generateButtonStyle = loading.downloadPdf ? "opacity-50 pointer-events-none" : "opacity-100 pointerss-events-auto";
+	const generateButtonStyle = loading.downloadPdf ? "opacity-50 pointer-events-none" : "opacity-100 pointers-events-auto";
 	const generateButton = `primary-button-condensed ${generateButtonStyle}`;
 
 	// Functions

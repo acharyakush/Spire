@@ -79,7 +79,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 
 	const finalPendingAmount = String.fromCharCode(8377) + ` ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
 
-	const generateButtonStyle = loading.downloadPdf ? "opacity-50 pointer-events-none" : "opacity-100 pointerss-events-auto";
+	const generateButtonStyle = loading.downloadPdf ? "opacity-50 pointer-events-none" : "opacity-100 pointers-events-auto";
 	const generateButton = `primary-button-condensed ${generateButtonStyle}`;
 
 	// Functions
@@ -497,15 +497,12 @@ export default function NewInvoice({ project, reload, unmount }) {
 			.sort((a, b) => a.rowId - b.rowId)
 			.map((m, i) => {
 				const showAddButton = i == main.particulars.length - 1 ? "visible" : "invisible";
-
 				const showDeleteButton = main.particulars.length > 1 ? "visible" : "invisible";
 
 				const addButtonWrapper = `flex w-fit h-[55px] justify-center items-center ${showAddButton}`;
-
 				const deleteButtonWrapper = `flex w-fit h-[55px] justify-center items-center ${showDeleteButton}`;
 
 				const reverseButtons = main.particulars.length > 1 ? "flex-row" : "flex-row-reverse";
-
 				const buttonsWrapper = `flex ${reverseButtons} w-fit space-x-3 justify-center items-end`;
 
 				return (

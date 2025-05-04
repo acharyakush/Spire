@@ -459,7 +459,7 @@ export default function Dashboard({ setModuleProps }) {
 
 	// Main UI
 	return (
-		<div className="w-full h-full p-5 space-y-5 overflow-x-hidden overflow-y-auto">
+		<div className="w-full h-full p-5 space-y-5 overflow-x-hidden overflow-y-auto bg-white">
 			{uiRow1()}
 			{uiRow2()}
 			{uiRow3()}
