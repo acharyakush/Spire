@@ -3,8 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import MyConstants from "@/utilities/constants";
 import NewQuotaionPreview from "./NewQuotationPreview";
 
@@ -83,37 +81,6 @@ export default function NewQuotaion({ inquiry, unmount }) {
 	const generateButton = `primary-button-condensed ${generateButtonStyle}`;
 
 	// Functions
-	async function addQuotation() {
-		try {
-			const body = {
-				clientId: targetClient.id,
-				clientContactPerson: targetClient.contactPerson,
-				clientAddress: targetClient.address,
-				date: main.date,
-				firmId: sourceFirm.id,
-				proposalNumber: main.proposalNumber,
-				services,
-				termsConditions: sourceFirm.termsConditions,
-			};
-
-			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.AddQuotation, body, MyGlobal.GetHeaders());
-
-			if (response.status === 200) {
-				// reload();
-
-				MyGlobal.AddActivity(`Generated quotation <b>${main.proposalNumber}</b> for <b>${inquiry?.id}</b>`, MyConstants.Modules.Derived.NewQuotation);
-
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.QuotationAdded);
-			} else {
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.SomeErrorOccurred);
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewQuotation);
-		} finally {
-			unmount({}, false);
-		}
-	}
-
 	function addRow() {
 		const copy = [...services];
 
@@ -140,74 +107,6 @@ export default function NewQuotaion({ inquiry, unmount }) {
 			const revised = copy.filter((f) => f.rowId != object.rowId);
 			setServices(revised);
 		}
-	}
-
-	function downloadPdf() {
-		setValues("isPdfBeingDownloaded", true);
-
-		const pdf = new jsPDF("p", "mm", "a4", true);
-		const invoiceBody = document.getElementById("invoiceBody");
-		const pageHeight = pdf.internal.pageSize.getHeight();
-		const marginBottom = 50;
-
-		const originalStyle = {
-			height: invoiceBody.style.height,
-			overflow: invoiceBody.style.overflow,
-		};
-
-		invoiceBody.style.height = "auto";
-		invoiceBody.style.overflow = "visible";
-
-		html2canvas(invoiceBody, { scale: 2, scrollX: 0, scrollY: 0 })
-			.then((c) => {
-				const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
-				const imgHeight = (c.height * pdfWidth) / c.width;
-				const canvasHeight = c.height;
-
-				let yPosition = 10;
-				let remainingHeight = imgHeight;
-				let sourceY = 0;
-
-				while (remainingHeight > 0) {
-					const cropHeight = Math.min(pageHeight - marginBottom, remainingHeight);
-					const croppedCanvas = document.createElement("canvas");
-
-					croppedCanvas.width = c.width;
-					croppedCanvas.height = cropHeight * (c.width / pdfWidth);
-
-					const ctx = croppedCanvas.getContext("2d");
-					ctx.drawImage(c, 0, sourceY, c.width, croppedCanvas.height, 0, 0, croppedCanvas.width, croppedCanvas.height);
-
-					const croppedImgData = croppedCanvas.toDataURL("image/png", 1);
-					pdf.addImage(croppedImgData, "PNG", 10, yPosition, pdfWidth, cropHeight, "", "FAST");
-
-					remainingHeight -= cropHeight;
-					sourceY += cropHeight * (canvasHeight / imgHeight);
-
-					if (remainingHeight > 0) {
-						pdf.addPage();
-						yPosition = 10;
-					}
-				}
-
-				pdf.save(`${inquiry?.id}.pdf`);
-
-				const pdfBlob = pdf.output("blob");
-
-				const formData = new FormData();
-				formData.append("file", pdfBlob, `${inquiry?.id}.pdf`);
-
-				return axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData, {
-					headers: { "Content-Type": "multipart/form-data" },
-				});
-			})
-			.then(() => addQuotation())
-			.finally(() => {
-				invoiceBody.style.height = originalStyle.height;
-				invoiceBody.style.overflow = originalStyle.overflow;
-
-				setValues("isPdfBeingDownloaded", false);
-			});
 	}
 
 	function getClientName() {
@@ -324,8 +223,12 @@ export default function NewQuotaion({ inquiry, unmount }) {
 		setMain((s) => ({ ...s, [key]: value }));
 	}
 
-	function togglePreview() {
-		setMain((s) => ({ ...s, openPreview: !main.openPreview }));
+	function togglePreview(value) {
+		setMain((s) => ({ ...s, openPreview: value }));
+
+		if (typeof value === "string") {
+			downloadPdf();
+		}
 	}
 
 	// UI Components
@@ -574,7 +477,7 @@ export default function NewQuotaion({ inquiry, unmount }) {
 
 	// Main UI
 	if (main.openPreview) {
-		return <NewQuotaionPreview quotation={{ main, services, sourceFirm, targetClient }} unmount={togglePreview} />;
+		return <NewQuotaionPreview inquiry={inquiry} quotation={{ main, services, sourceFirm, targetClient }} unmount={togglePreview} />;
 	}
 
 	return (
@@ -589,7 +492,7 @@ export default function NewQuotaion({ inquiry, unmount }) {
 			</div>
 			<div className="flex w-full h-[calc(100vh-148px)] justify-center items-center overflow-y-auto contrast-background">{uiInputs()}</div>
 			<footer className="w-full dialog-footer">
-				<button className={generateButton} onClick={() => togglePreview()}>
+				<button className={generateButton} onClick={() => togglePreview(true)}>
 					Preview
 				</button>
 			</footer>

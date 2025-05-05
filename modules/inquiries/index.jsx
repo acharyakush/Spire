@@ -66,6 +66,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	const thisView = MyConstants.Modules.Base.Inquiries;
 	const statuses = MyConstants.Statuses.Inquiries;
 
+	const isAdministrator = MyGlobal.IsUserAdministrator();
+
 	const newInquiryButton = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry) ? "block space-x-1.5 primary-button-transparent-background" : "hidden";
 
 	const showFromDateClearButton = main.filter.from ? "cursor-pointer primary-text" : "hidden";
@@ -745,7 +747,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<span className={`${style} space-x-1`}>{uiFollowUps(row)}</span>
 				<div className={`${style} space-x-2.5`}>
 					<span dangerouslySetInnerHTML={{ __html: quote }} />
-					<FontAwesomeIcon className="cursor-pointer green-text" icon={faReceipt} onClick={() => toggleAddQuotation(row, true)} />
+					{isAdministrator && <FontAwesomeIcon className="cursor-pointer green-text" icon={faReceipt} onClick={() => toggleAddQuotation(row, true)} />}
 				</div>
 				<span className={style}>{uiStatusMenu(row)}</span>
 				<span className={style}>{uiNotes(row)}</span>
