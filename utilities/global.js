@@ -438,6 +438,27 @@ export const MyGlobal = Object.freeze({
 		}
 	},
 
+	MakeNewQuotationId: (payload) => {
+		if (payload.length) {
+			const extractedIds = [];
+
+			payload?.forEach((m) => {
+				const getLastUsedId = String(m.custom_id).split("/").at(2);
+				const extractNumber = +getLastUsedId.match(/\d+$/)[0].replace(/0/g, "");
+
+				extractedIds.push(extractNumber);
+			});
+
+			const latestId = extractedIds.sort((a, b) => b - a).at(0);
+			const incrementedId = (parseInt(latestId, 10) + 1).toString();
+			const newId = incrementedId.padStart(String(latestId).length, "0");
+
+			return String(newId).padStart(5, "0");
+		} else {
+			return "00001";
+		}
+	},
+
 	NumberToWordsIndian(num) {
 		if (num === 0) return "Zero Rupees Only";
 

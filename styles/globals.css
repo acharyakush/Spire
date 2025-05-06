@@ -1202,12 +1202,12 @@ input[type="radio"]:checked + label {
 }
 
 .gradient-hr {
-	border: none;
+	border-width: 0.5px;
 	height: 1px;
 	width: 100%;
 	margin: 2rem auto;
 	background: linear-gradient(to right, transparent, var(--primary-transparent-05), transparent);
-	opacity: 0.9;
+	opacity: 0.6;
 	border-radius: 999px;
 }
 

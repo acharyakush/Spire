@@ -13,18 +13,34 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const {} = req.body;
+		const { customId, firmId, clientId, inquiryId, clientAddress, services, remarks, date, termsConditions, userId } = req.body;
 
-		await query("CALL generate_id('IQN', 'quotations', @new_quotation_id)", []);
-		const [quotationResult] = await query("SELECT @new_quotation_id AS new_id;", []);
+		await query("INSERT INTO inquiries_quotations (custom_id, firm_id, client_id, client_address, remarks, date, terms_conditions, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [
+			customId,
+			firmId,
+			clientId,
+			clientAddress,
+			remarks,
+			date,
+			termsConditions,
+			userId,
+		]);
 
-		const result = await query("INSERT INTO quotations () VALUES ()", []);
+		await query("UPDATE inquiries SET quotation_id=? WHERE id=?", [customId, inquiryId]);
 
-		if (result.affectedRows == 0) {
-			return res.status(400).send("Could not add Quotation.");
-		}
+		await Promise.all(
+			services.map((s) =>
+				query("INSERT INTO inquiries_quotations_services (quotation_id, services, inclusions, professional_fees, government_fees) VALUES (?, ?, ?, ?, ?)", [
+					customId,
+					s?.services,
+					s?.inclusions,
+					s?.professionalFees,
+					s?.governmentFees,
+				]),
+			),
+		);
 
-		return res.status(200).send(quotationResult.new_id);
+		return res.status(200).end();
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");

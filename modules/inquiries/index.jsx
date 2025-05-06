@@ -25,7 +25,7 @@ import { UpdateStatus } from "@/modals/inquiries/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmallWithBackground, Spinner, Tooltip, TooltipList } from "@/components/Elements";
-import { faCalendar, faChevronDown, faCircleCheck, faFileExcel, faFilter, faMultiply, faPlusCircle, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronDown, faCircleCheck, faFileDownload, faFileExcel, faFilter, faMultiply, faPlusCircle, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 export default function Inquiries({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -485,7 +485,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function toggleAddQuotation(inquiry, type) {
-		setMain((s) => ({ ...s, selectedInquiryForNotes: inquiry }));
+		const clientAddress = api.clients.find((f) => f.id === inquiry.client_id);
+		const obj = { ...inquiry, client_address: clientAddress?.address };
+
+		setMain((s) => ({ ...s, selectedInquiryForNotes: obj }));
 		setMounted((s) => ({ ...s, addQuotation: type }));
 	}
 
@@ -653,7 +656,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiMain() {
 		if (mounted.addQuotation) {
-			return <NewQuotaion inquiry={main.selectedInquiryForNotes} unmount={toggleAddQuotation} />;
+			return <NewQuotaion inquiry={main.selectedInquiryForNotes} reload={setSupportData} unmount={toggleAddQuotation} />;
 		} else if (mounted.editInquiry) {
 			return <EditInquiry inquiry={main.selectedInquiryForNotes} reload={setSupportData} unmount={toggleEditInquiryView} />;
 		} else if (mounted.newInquiry) {
@@ -711,6 +714,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		const clientNameTextStyle = row.status == statuses.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
 
+		const showDownloadButton = row.quotation_id ? "cursor-pointer visible primary-text" : "invisible";
+
 		const clientName = MyGlobal.HighlightText(row.client_name, main.findText);
 		const phoneNumber = MyGlobal.HighlightText(row.phone_number, main.findText);
 		const mainProject = MyGlobal.HighlightText(row.main_project, main.findText);
@@ -748,6 +753,21 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<div className={`${style} space-x-2.5`}>
 					<span dangerouslySetInnerHTML={{ __html: quote }} />
 					{isAdministrator && <FontAwesomeIcon className="cursor-pointer green-text" icon={faReceipt} onClick={() => toggleAddQuotation(row, true)} />}
+					<Tippy animation="shift-away" content={<Tooltip text="Download this quotation." />} placement="bottom">
+						<FontAwesomeIcon
+							className={showDownloadButton}
+							icon={faFileDownload}
+							onClick={() => {
+								const link = document.createElement("a");
+								const fileName = String(row.quotation_id).replace("/", "_").replace("/", "_");
+
+								link.href = `/quotations/${fileName}.pdf`;
+								link.download = `${fileName}.pdf`;
+
+								link.click();
+							}}
+						/>
+					</Tippy>
 				</div>
 				<span className={style}>{uiStatusMenu(row)}</span>
 				<span className={style}>{uiNotes(row)}</span>

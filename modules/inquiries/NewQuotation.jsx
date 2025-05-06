@@ -10,39 +10,26 @@ import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Badge } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ComboBox2, DatePicker, EmailAddress, TextArea, TextInput } from "@/components/Inputs";
-import { faCalendar, faChevronLeft, faHashtag, faHome, faIndianRupee, faListCheck, faMinusCircle, faPerson, faPhone, faPlusCircle, faStickyNote, faTasks, faUser } from "@fortawesome/free-solid-svg-icons";
+import { ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
+import { faCalendar, faChevronLeft, faHashtag, faHome, faIndianRupee, faListCheck, faMinusCircle, faPlusCircle, faStickyNote, faTasks, faUser } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewQuotaion({ inquiry, unmount }) {
+export default function NewQuotaion({ inquiry, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
-		banks: [],
-		clients: [],
-		clientsCopy: [],
 		firms: [],
+		quotations: [],
 	});
 
-	const [main, setMain] = useState({
-		date: new Date(),
-		find: "",
-		isLoading: false,
-		isPdfBeingDownloaded: false,
-		proposalNumber: "",
-		openPreview: false,
+	const [client, setClient] = useState({
+		address: inquiry?.client_address,
+		contactPerson: "",
+		emailAddress: "",
+		id: "",
+		name: "",
+		phoneNumber: "",
 	});
 
-	const [services, setServices] = useState([
-		{
-			governmentFees: 0,
-			inclusions: "",
-			professionalFees: 0,
-			remarks: "",
-			rowId: 0,
-			services: "",
-		},
-	]);
-
-	const [sourceFirm, setSourceFirm] = useState({
+	const [firm, setFirm] = useState({
 		address: "",
 		emailAddress: "",
 		gstin: "",
@@ -53,32 +40,24 @@ export default function NewQuotaion({ inquiry, unmount }) {
 		termsConditions: "",
 	});
 
-	const [sourceFirmBank, setSourceFirmBank] = useState([
+	const [main, setMain] = useState({
+		date: new Date(),
+		openPreview: false,
+		remarks: "",
+	});
+
+	const [services, setServices] = useState([
 		{
-			accountNumber: 0,
-			accountType: "",
-			address: "",
-			emailAddress: "",
-			firmId: "",
-			id: "",
-			ifsc: "",
-			name: "",
-			phoneNumber: "",
-			upiId: "",
+			governmentFees: 0,
+			inclusions: "",
+			professionalFees: 0,
+			rowId: 0,
+			services: "",
 		},
 	]);
 
-	const [targetClient, setTargetClient] = useState({
-		address: "",
-		contactPerson: "",
-		emailAddress: "",
-		id: "",
-		name: "",
-		phoneNumber: "",
-	});
-
-	const generateButtonStyle = main.isPdfBeingDownloaded ? "opacity-50 pointer-events-none" : "opacity-100 pointers-events-auto";
-	const generateButton = `primary-button-condensed ${generateButtonStyle}`;
+	const getProposalNumber = api.quotations.length ? MyGlobal.MakeNewQuotationId(api.quotations) : 0;
+	const proposalNumber = "QTN/" + MyGlobal.GetInitials(firm.name)[0] + "/" + getProposalNumber;
 
 	// Functions
 	function addRow() {
@@ -91,7 +70,6 @@ export default function NewQuotaion({ inquiry, unmount }) {
 			governmentFees: 0,
 			inclusions: "",
 			professionalFees: 0,
-			remarks: "",
 			rowId: greatestId,
 			services: "",
 		});
@@ -109,36 +87,6 @@ export default function NewQuotaion({ inquiry, unmount }) {
 		}
 	}
 
-	function getClientName() {
-		let name = "";
-
-		if (api.clientsCopy.length) {
-			const client = api.clientsCopy.find((f) => f.id == targetClient.id);
-
-			if (typeof client === "object") {
-				name = client.name;
-			}
-		}
-
-		return name;
-	}
-
-	function getFilteredClients() {
-		let list = !api.clientsCopy.length ? [] : api.clientsCopy;
-
-		if (list.length) {
-			const value = String(main.find);
-
-			if (value !== "undefined") {
-				list = api.clientsCopy.filter((f) => {
-					return String(f.name).toLowerCase().includes(value.toLowerCase());
-				});
-			}
-		}
-
-		return list;
-	}
-
 	async function getSupportData() {
 		try {
 			setValues("isLoading", true);
@@ -147,16 +95,41 @@ export default function NewQuotaion({ inquiry, unmount }) {
 
 			if (result.status === 200) {
 				setApi({
-					banks: result.data.banks,
-					clients: result.data.clients,
-					clientsCopy: result.data.clients,
 					firms: result.data.firms,
+					quotations: result.data.quotations,
 				});
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Inquiries => New Quotation => Get Support Data");
 		} finally {
 			setValues("isLoading", false);
+		}
+	}
+
+	function setClientSingleValue(key, value) {
+		if (value) {
+			setClient((s) => ({ ...s, [key]: value }));
+		}
+	}
+
+	function setFirmValue(value) {
+		if (value) {
+			setFirm({
+				address: value.address,
+				emailAddress: value.email_address,
+				gstin: value.gstin,
+				id: value.id,
+				name: value.name,
+				pan: value.pan,
+				phoneNumber: value.phone_number,
+				termsConditions: value.terms_conditions,
+			});
+		}
+	}
+
+	function setFirmSingleValue(key, value) {
+		if (value) {
+			setFirm((s) => ({ ...s, [key]: value }));
 		}
 	}
 
@@ -177,61 +150,48 @@ export default function NewQuotaion({ inquiry, unmount }) {
 		}
 	}
 
-	function setSourceFirmValue(value) {
-		if (value) {
-			setSourceFirm({
-				address: value.address,
-				emailAddress: value.email_address,
-				gstin: value.gstin,
-				id: value.id,
-				name: value.name,
-				pan: value.pan,
-				phoneNumber: value.phone_number,
-				termsConditions: value.terms_conditions,
-			});
-		}
-	}
-
-	function setSourceFirmSingleValue(key, value) {
-		if (value) {
-			setSourceFirm((s) => ({ ...s, [key]: value }));
-		}
-	}
-
-	function setTargetClientSingleValue(key, value) {
-		if (value) {
-			setTargetClient((s) => ({ ...s, [key]: value }));
-		}
-	}
-
-	function setTargetClientValue(value) {
-		if (value) {
-			setTargetClient({
-				address: value.address,
-				emailAddress: value.email_address,
-				gstin: value.gstin,
-				id: value.id,
-				name: value.name,
-				pan: value.pan,
-				phoneNumber: value.phone_number,
-				termsConditions: value.terms_conditions,
-			});
-		}
-	}
-
 	function setValues(key, value) {
 		setMain((s) => ({ ...s, [key]: value }));
 	}
 
 	function togglePreview(value) {
 		setMain((s) => ({ ...s, openPreview: value }));
+	}
 
-		if (typeof value === "string") {
-			downloadPdf();
-		}
+	function unmountAndReloadRoot() {
+		reload();
+		unmount({}, false);
 	}
 
 	// UI Components
+	function uiClientAddress() {
+		return <TextArea icon={faHome} label="Client's Address" onChange={(e) => setClientSingleValue("address", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={client.address} width="w-full" />;
+	}
+
+	function uiFirm() {
+		return (
+			<ComboBox2
+				allowCreatingNewItem={false}
+				comparingValue1="name"
+				comparingValue2={firm.name}
+				displayValue="name"
+				filteredData={api.firms}
+				hasDataObject={false}
+				icon={faUser}
+				isReadOnly={false}
+				label="Firm"
+				onChange={(e) => setFirmValue(e)}
+				onClick={() => {}}
+				onInputChange={() => {}}
+				onKeyPress={() => {}}
+				searchedItem=""
+				tabIndex={1}
+				value={firm.name}
+				width="w-full"
+			/>
+		);
+	}
+
 	function uiDate() {
 		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setValues("date", e)} tabIndex={7} value={main.date} width="w-full" />;
 	}
@@ -239,30 +199,39 @@ export default function NewQuotaion({ inquiry, unmount }) {
 	function uiInputs() {
 		return (
 			<div className="flex flex-col w-full h-full px-4 py-2 space-y-1 justify-start items-center overflow-y-auto scrollbar-gutter bg-white">
-				<div className="flex w-3/5 px-5 space-x-5 justify-between items-center">
-					{uiSourceFirm()}
-					{uiTargetClient()}
-				</div>
-				<div className="flex w-3/5 px-5 space-x-5 justify-between items-center">
-					{uiSourceFirmPhoneNumber()}
-					{uiTargetClientContactPerson()}
-				</div>
-				<div className="flex w-3/5 px-5 space-x-5 justify-between items-start">
-					{uiSourceFirmEmailAddress()}
-					{uiTargetClientAddress()}
-				</div>
-				<div className="flex w-3/5 px-5 space-x-5 justify-between items-center">
+				<div className="flex w-3/4 px-5 space-x-5 justify-between items-center">
 					{uiDate()}
+					{uiFirm()}
 					{uiProposalNumber()}
 				</div>
-				<div className="flex flex-col w-full px-5 justify-center items-center">{uiServicesRows()}</div>
-				<div className="flex w-3/5 px-5 justify-center items-center">{uiTermsConditions()}</div>
+				<div className="flex w-3/4 px-5 space-x-5 justify-between items-start">
+					{uiClientAddress()}
+					{uiRemarks()}
+				</div>
+				<div className="flex w-3/4 px-5 justify-center items-center">{uiTermsConditions()}</div>
+				<div className="flex flex-col w-3/4 px-5 justify-center items-center">{uiServicesRows()}</div>
 			</div>
 		);
 	}
 
 	function uiProposalNumber() {
-		return <TextInput icon={faHashtag} id="proposalNumber" label="Proposal Number" onChange={(e) => setValues("proposalNumber", e.target.value)} onKeyPress={() => {}} tabIndex={8} value={main.proposalNumber} width="w-full" />;
+		return (
+			<TextInput
+				icon={faHashtag}
+				id="proposalNumber"
+				isReadOnly
+				label="Proposal Number"
+				onChange={(e) => setValues("proposalNumber", e.target.value)}
+				onKeyPress={() => {}}
+				tabIndex={8}
+				value={firm.id ? proposalNumber : ""}
+				width="w-full"
+			/>
+		);
+	}
+
+	function uiRemarks() {
+		return <TextArea icon={faStickyNote} label="Remarks" onChange={(e) => setValues("remarks", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={main.remarks} width="w-full" />;
 	}
 
 	function uiServices(row) {
@@ -316,12 +285,6 @@ export default function NewQuotaion({ inquiry, unmount }) {
 		);
 	}
 
-	function uiServicesRemarks(row) {
-		return (
-			<TextInput icon={faStickyNote} id={`remarks${row.rowId}`} label="Remarks" onChange={(e) => setServicesValue("remarks", row.rowId, e.target.value)} onKeyPress={() => {}} tabIndex={row.rowId} value={row.remarks} width="w-full" />
-		);
-	}
-
 	function uiServicesRows() {
 		return services
 			.sort((a, b) => a.rowId - b.rowId)
@@ -336,16 +299,15 @@ export default function NewQuotaion({ inquiry, unmount }) {
 				const buttonsWrapper = `flex ${reverseButtons} w-fit h-full pl-2.5 space-x-3 justify-center items-end`;
 
 				return (
-					<div className="flex w-3/4 justify-between items-center" key={m.rowId}>
+					<div className="flex w-full justify-between items-center" key={m.rowId}>
 						<div className="flex w-fit h-10 pr-5 justify-center items-end">
 							<Badge value={i + 1} />
 						</div>
-						<div className="flex w-full justify-between items-center">
+						<div className="flex w-full space-x-5 justify-between items-center">
 							<div className="w-1/2">{uiServices(m)}</div>
 							<div className="w-1/2">{uiServicesInclusions(m)}</div>
-							<div className="w-1/2">{uiServicesRemarks(m)}</div>
-							<div className="w-1/3">{uiServicesProfessionalFees(m)}</div>
-							<div className="w-1/3">{uiServicesGovernmentFees(m)}</div>
+							<div className="w-1/4">{uiServicesProfessionalFees(m)}</div>
+							<div className="w-1/4">{uiServicesGovernmentFees(m)}</div>
 						</div>
 						<div className={buttonsWrapper}>
 							<div className={addButtonWrapper}>
@@ -360,99 +322,12 @@ export default function NewQuotaion({ inquiry, unmount }) {
 			});
 	}
 
-	function uiSourceFirm() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={sourceFirm.name}
-				displayValue="name"
-				filteredData={api.firms}
-				hasDataObject={false}
-				icon={faUser}
-				isReadOnly={false}
-				label="Source Firm"
-				onChange={(e) => setSourceFirmValue(e)}
-				onClick={() => {}}
-				onInputChange={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex={1}
-				value={sourceFirm.name}
-				width="w-full"
-			/>
-		);
-	}
-
-	function uiSourceFirmEmailAddress() {
-		return <EmailAddress isReadOnly label="Source Firm's Email Address" onChange={(e) => setSourceFirmSingleValue("emailAddress", e.target.value)} suffix="" tabIndex={2} value={sourceFirm.emailAddress} width="w-full" />;
-	}
-
-	function uiSourceFirmPhoneNumber() {
-		return (
-			<TextInput
-				icon={faPhone}
-				isReadOnly
-				label="Source Firm's Phone Number"
-				maxLength={12}
-				onChange={(e) => setSourceFirmSingleValue("phoneNumber", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={2}
-				value={sourceFirm.phoneNumber}
-				width="w-full"
-			/>
-		);
-	}
-
-	function uiTargetClient() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={targetClient.name}
-				displayValue="name"
-				filteredData={getFilteredClients}
-				hasDataObject={false}
-				icon={faUser}
-				isReadOnly={false}
-				label="Target Client"
-				onChange={(e) => setTargetClientValue(e)}
-				onClick={() => {}}
-				onInputChange={(e) => setValues("find", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={main.find}
-				tabIndex={2}
-				value={getClientName()}
-				width="w-full"
-			/>
-		);
-	}
-
-	function uiTargetClientAddress() {
-		return <TextArea icon={faHome} label="Target Client's Address" onChange={(e) => setTargetClientSingleValue("address", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={targetClient.address} width="w-full" />;
-	}
-
-	function uiTargetClientContactPerson() {
-		return (
-			<TextInput
-				icon={faPerson}
-				id="targetClientContactPerson"
-				label="Target Client's Contact Person"
-				onChange={(e) => setTargetClientSingleValue("contactPerson", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex={8}
-				value={targetClient.contactPerson}
-				width="w-full"
-			/>
-		);
-	}
-
 	function uiTermsConditions() {
 		let termsConditions = "";
 		let termsConditionsLength = "";
 
-		if (typeof sourceFirm.termsConditions === "string") {
-			termsConditions = sourceFirm.termsConditions.replace(/\\n/g, "\n");
+		if (typeof firm.termsConditions === "string") {
+			termsConditions = firm.termsConditions.replace(/\\n/g, "\n");
 			termsConditionsLength = termsConditions.split("\n").length;
 		}
 
@@ -460,9 +335,9 @@ export default function NewQuotaion({ inquiry, unmount }) {
 			<TextArea
 				icon={faListCheck}
 				label="Terms & Conditions"
-				onChange={(e) => setSourceFirmSingleValue("termsConditions", e.target.value)}
+				onChange={(e) => setFirmSingleValue("termsConditions", e.target.value)}
 				onKeyDown={() => {}}
-				rows={termsConditionsLength + termsConditionsLength}
+				rows={termsConditionsLength + 1}
 				tabIndex={9}
 				value={termsConditions}
 				width="w-full"
@@ -477,7 +352,7 @@ export default function NewQuotaion({ inquiry, unmount }) {
 
 	// Main UI
 	if (main.openPreview) {
-		return <NewQuotaionPreview inquiry={inquiry} quotation={{ main, services, sourceFirm, targetClient }} unmount={togglePreview} />;
+		return <NewQuotaionPreview inquiry={inquiry} quotation={{ client, firm, main, services, proposalNumber }} reload={unmountAndReloadRoot} unmount={togglePreview} />;
 	}
 
 	return (
@@ -492,7 +367,7 @@ export default function NewQuotaion({ inquiry, unmount }) {
 			</div>
 			<div className="flex w-full h-[calc(100vh-148px)] justify-center items-center overflow-y-auto contrast-background">{uiInputs()}</div>
 			<footer className="w-full dialog-footer">
-				<button className={generateButton} onClick={() => togglePreview(true)}>
+				<button className="primary-button-condensed" onClick={() => togglePreview(true)}>
 					Preview
 				</button>
 			</footer>
