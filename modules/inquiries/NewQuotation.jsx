@@ -11,22 +11,21 @@ import { MyGlobal } from "@/utilities/global";
 import { Badge } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
-import { faCalendar, faChevronLeft, faHashtag, faHome, faIndianRupee, faListCheck, faMinusCircle, faPlusCircle, faStickyNote, faTasks, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronLeft, faHashtag, faHome, faIndianRupee, faListCheck, faMinusCircle, faPhone, faPlusCircle, faStickyNote, faTasks, faUser } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewQuotaion({ inquiry, reload, unmount }) {
+export default function NewQuotaion({ clients, inquiry, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
+		banks: [],
 		firms: [],
 		quotations: [],
 	});
 
 	const [client, setClient] = useState({
-		address: inquiry?.client_address,
-		contactPerson: "",
-		emailAddress: "",
-		id: "",
-		name: "",
-		phoneNumber: "",
+		address: inquiry?.client?.address,
+		id: inquiry?.client?.id,
+		name: inquiry?.client?.name,
+		phoneNumber: inquiry?.client?.phone_number,
 	});
 
 	const [firm, setFirm] = useState({
@@ -37,11 +36,13 @@ export default function NewQuotaion({ inquiry, reload, unmount }) {
 		name: "",
 		pan: "",
 		phoneNumber: "",
+		selectedBank: [],
 		termsConditions: "",
 	});
 
 	const [main, setMain] = useState({
 		date: new Date(),
+		find: "",
 		openPreview: false,
 		remarks: "",
 	});
@@ -56,8 +57,7 @@ export default function NewQuotaion({ inquiry, reload, unmount }) {
 		},
 	]);
 
-	const getProposalNumber = api.quotations.length ? MyGlobal.MakeNewQuotationId(api.quotations) : 0;
-	const proposalNumber = "QTN/" + MyGlobal.GetInitials(firm.name)[0] + "/" + getProposalNumber;
+	const proposalNumber = "QTN/" + MyGlobal.GetInitials(firm.name)[0] + "/" + MyGlobal.MakeNewQuotationId(api.quotations);
 
 	// Functions
 	function addRow() {
@@ -87,6 +87,36 @@ export default function NewQuotaion({ inquiry, reload, unmount }) {
 		}
 	}
 
+	function getClientName() {
+		let name = "";
+
+		if (clients?.length) {
+			const obj = clients?.find((f) => f.id == client.id);
+
+			if (typeof obj === "object") {
+				name = obj.name;
+			}
+		}
+
+		return name;
+	}
+
+	function getFilteredClients() {
+		let list = !clients?.length ? [] : clients;
+
+		if (list.length) {
+			const value = String(main.find);
+
+			if (value !== "undefined") {
+				list = clients?.filter((f) => {
+					return String(f.name).toLowerCase().includes(value.toLowerCase());
+				});
+			}
+		}
+
+		return list;
+	}
+
 	async function getSupportData() {
 		try {
 			setValues("isLoading", true);
@@ -94,10 +124,7 @@ export default function NewQuotaion({ inquiry, reload, unmount }) {
 			const result = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetAddQuotationSupport, MyGlobal.GetHeaders());
 
 			if (result.status === 200) {
-				setApi({
-					firms: result.data.firms,
-					quotations: result.data.quotations,
-				});
+				setApi({ banks: result.data.banks, firms: result.data.firms, quotations: result.data.quotations });
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Inquiries => New Quotation => Get Support Data");
@@ -106,7 +133,19 @@ export default function NewQuotaion({ inquiry, reload, unmount }) {
 		}
 	}
 
-	function setClientSingleValue(key, value) {
+	function setClientObject(value) {
+		if (value) {
+			console.log(value);
+			setClient({
+				address: value.address ?? "",
+				id: value.id,
+				name: value.name,
+				phoneNumber: value.phone_number,
+			});
+		}
+	}
+
+	function setClientValue(key, value) {
 		if (value) {
 			setClient((s) => ({ ...s, [key]: value }));
 		}
@@ -114,6 +153,8 @@ export default function NewQuotaion({ inquiry, reload, unmount }) {
 
 	function setFirmValue(value) {
 		if (value) {
+			const selectedBank = api.banks.filter((f) => f.firm_id === value.id).at(0);
+
 			setFirm({
 				address: value.address,
 				emailAddress: value.email_address,
@@ -122,6 +163,7 @@ export default function NewQuotaion({ inquiry, reload, unmount }) {
 				name: value.name,
 				pan: value.pan,
 				phoneNumber: value.phone_number,
+				selectedBank,
 				termsConditions: value.terms_conditions,
 			});
 		}
@@ -164,8 +206,48 @@ export default function NewQuotaion({ inquiry, reload, unmount }) {
 	}
 
 	// UI Components
+	function uiClient() {
+		return (
+			<ComboBox2
+				allowCreatingNewItem={false}
+				comparingValue1="name"
+				comparingValue2={client.name}
+				displayValue="name"
+				filteredData={getFilteredClients}
+				hasDataObject={false}
+				icon={faUser}
+				isReadOnly={false}
+				label="Client"
+				onChange={(e) => setClientObject(e)}
+				onClick={() => {}}
+				onInputChange={(e) => setValues("find", e.target.value)}
+				onKeyPress={() => {}}
+				searchedItem={main.find}
+				tabIndex={2}
+				value={getClientName()}
+				width="w-full"
+			/>
+		);
+	}
+
 	function uiClientAddress() {
-		return <TextArea icon={faHome} label="Client's Address" onChange={(e) => setClientSingleValue("address", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={client.address} width="w-full" />;
+		return <TextArea icon={faHome} label="Client's Address" onChange={(e) => setClientValue("address", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={client.address} width="w-full" />;
+	}
+
+	function uiClientPhoneNumber() {
+		return (
+			<TextInput
+				icon={faPhone}
+				id="clientPhoneNumber"
+				isReadOnly
+				label="Client's Phone Number"
+				onChange={(e) => setClientValue("phoneNumber", e.target.value)}
+				onKeyPress={() => {}}
+				tabIndex={8}
+				value={client.phoneNumber}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiFirm() {
@@ -205,10 +287,14 @@ export default function NewQuotaion({ inquiry, reload, unmount }) {
 					{uiProposalNumber()}
 				</div>
 				<div className="flex w-3/4 px-5 space-x-5 justify-between items-start">
+					{uiClient()}
+					{uiClientPhoneNumber()}
 					{uiClientAddress()}
+				</div>
+				<div className="flex w-3/4 px-5 space-x-5 justify-center items-start">
+					{uiTermsConditions()}
 					{uiRemarks()}
 				</div>
-				<div className="flex w-3/4 px-5 justify-center items-center">{uiTermsConditions()}</div>
 				<div className="flex flex-col w-3/4 px-5 justify-center items-center">{uiServicesRows()}</div>
 			</div>
 		);

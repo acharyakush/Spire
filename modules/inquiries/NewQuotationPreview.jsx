@@ -9,6 +9,7 @@ import html2canvas from "html2canvas";
 import MyConstants from "@/utilities/constants";
 
 import { useState } from "react";
+import { QRCode } from "react-qrcode-logo";
 import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
@@ -63,64 +64,59 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 	function downloadPdf() {
 		setMain((s) => ({ ...s, isPdfBeingDownloaded: true }));
 
-		const pdf = new jsPDF("l", "mm", "a4", true);
+		const pdf = new jsPDF("p", "mm", "a4", true);
 		const invoiceBody = document.getElementById("invoiceBody");
+
 		const pageHeight = pdf.internal.pageSize.getHeight();
-		const marginBottom = 50;
+		const pageWidth = pdf.internal.pageSize.getWidth();
 
 		const originalStyle = {
 			height: invoiceBody.style.height,
 			overflow: invoiceBody.style.overflow,
+			fontSize: invoiceBody.style.fontSize || "",
 		};
 
+		invoiceBody.style.fontSize = "18px";
 		invoiceBody.style.height = "auto";
 		invoiceBody.style.overflow = "visible";
 
-		html2canvas(invoiceBody, { scale: 1, scrollX: 0, scrollY: 0 })
-			.then((c) => {
-				const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
-				const imgHeight = (c.height * pdfWidth) / c.width;
-				const canvasHeight = c.height;
+		html2canvas(invoiceBody, { scale: 3 })
+			.then((canvas) => {
+				const imgWidth = pageWidth;
+				const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-				let yPosition = 5;
-				let remainingHeight = imgHeight;
-				let sourceY = 0;
+				let y = 0;
+				while (y < imgHeight) {
+					const pageCanvas = document.createElement("canvas");
+					const context = pageCanvas.getContext("2d");
 
-				while (remainingHeight > 0) {
-					const cropHeight = Math.min(pageHeight - marginBottom, remainingHeight);
-					const croppedCanvas = document.createElement("canvas");
+					pageCanvas.width = canvas.width;
+					pageCanvas.height = Math.min(canvas.height - y, (pageHeight * canvas.width) / pageWidth);
 
-					croppedCanvas.width = c.width;
-					croppedCanvas.height = cropHeight * (c.width / pdfWidth);
+					context.drawImage(canvas, 0, y, canvas.width, pageCanvas.height, 0, 0, canvas.width, pageCanvas.height);
 
-					const ctx = croppedCanvas.getContext("2d");
-					ctx.drawImage(c, 0, sourceY, c.width, croppedCanvas.height, 0, 0, croppedCanvas.width, croppedCanvas.height);
+					const imgData = pageCanvas.toDataURL("image/png");
+					pdf.addImage(imgData, "PNG", 0, 0, imgWidth, (pageCanvas.height * imgWidth) / canvas.width);
 
-					const croppedImgData = croppedCanvas.toDataURL("image/png", 1);
-					pdf.addImage(croppedImgData, "PNG", 10, yPosition, pdfWidth, cropHeight, "", "FAST");
+					y += pageCanvas.height;
 
-					remainingHeight -= cropHeight;
-					sourceY += cropHeight * (canvasHeight / imgHeight);
-
-					if (remainingHeight > 0) {
-						pdf.addPage();
-						yPosition = 10;
-					}
+					if (y < canvas.height) pdf.addPage();
 				}
 
 				pdf.save(`${quotation?.proposalNumber}.pdf`);
 
-				const pdfBlob = pdf.output("blob");
+				// const pdfBlob = pdf.output("blob");
 
-				const formData = new FormData();
-				formData.append("file", pdfBlob, `${quotation?.proposalNumber}.pdf`);
+				// const formData = new FormData();
+				// formData.append("file", pdfBlob, `${quotation?.proposalNumber}.pdf`);
 
-				return axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData, {
-					headers: { "Content-Type": "multipart/form-data" },
-				});
+				// return axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData, {
+				// 	headers: { "Content-Type": "multipart/form-data" },
+				// });
 			})
-			.then(() => addQuotation())
+			// .then(() => addQuotation())
 			.finally(() => {
+				invoiceBody.style.fontSize = originalStyle.fontSize;
 				invoiceBody.style.height = originalStyle.height;
 				invoiceBody.style.overflow = originalStyle.overflow;
 
@@ -143,6 +139,39 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 				<div className="flex w-full justify-between items-center">
 					<span className="w-1/2 pr-2.5 text-right font-medium-12 gray-text">Final Amount</span>
 					<span className="w-1/2 pl-1.5 font-bold-14">{MyGlobal.FormatCurrency(finalAmount)}</span>
+				</div>
+			</div>
+		);
+	}
+
+	function uiBank() {
+		const label = "flex w-1/2 justify-start items-center font-regular-12";
+		const value = `flex w-1/2 justify-start items-center font-bold-12`;
+
+		return (
+			<div className="flex w-full p-4 space-x-5 justify-center items-center rounded full-border bg-blue-50">
+				<div className="flex w-1/2 justify-center items-center">{uiQrCode()}</div>
+				<div className="flex flex-col w-full space-y-2 justify-center items-center">
+					<div className="flex w-full space-x-3 justify-between items-center text-black">
+						<span className={label}>Account Name</span>
+						<span className={value}>{quotation?.firm?.selectedBank?.name}</span>
+					</div>
+					<div className="flex w-full space-x-3 justify-between items-center">
+						<span className={label}>Account Number</span>
+						<span className={value}>{quotation?.firm?.selectedBank?.account_number}</span>
+					</div>
+					<div className="flex w-full space-x-3 justify-between items-center">
+						<span className={label}>Account Type</span>
+						<span className={value}>{quotation?.firm?.selectedBank?.account_type}</span>
+					</div>
+					<div className="flex w-full space-x-3 justify-between items-center">
+						<span className={label}>Bank Name</span>
+						<span className={value}>{quotation?.firm?.selectedBank?.name}</span>
+					</div>
+					<div className="flex w-full space-x-3 justify-between items-center">
+						<span className={label}>IFSC</span>
+						<span className={value}>{quotation?.firm?.selectedBank?.ifsc}</span>
+					</div>
 				</div>
 			</div>
 		);
@@ -207,16 +236,6 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 		);
 	}
 
-	function uiFirmSignature() {
-		return (
-			<div className="flex flex-col w-[70%] justify-center items-start">
-				<span className="font-bold-12 text-black">For {quotation?.firm?.name}</span>
-				<span className="w-52 h-10 bottom-border" />
-				<span className="font-medium-11 gray-text">Authorized Signature</span>
-			</div>
-		);
-	}
-
 	function uiClient() {
 		return (
 			<div className="flex flex-col w-1/2 justify-center items-start">
@@ -228,12 +247,12 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 		);
 	}
 
-	function uiClientSignature() {
+	function uiQrCode() {
+		const qrCodeContent = `upi://pay?pa=${quotation?.firm?.selectedBank?.upi_id}&am=${finalAmount}&cu=INR`;
+
 		return (
-			<div className="flex flex-col w-[30%] justify-center items-start">
-				<span className="font-bold-12 text-black">For {inquiry?.client_name}</span>
-				<span className="w-52 h-10 bottom-border" />
-				<span className="font-medium-11 gray-text">Authorized Signature</span>
+			<div className="flex w-full justify-start items-center">
+				<QRCode quietZone={0} value={qrCodeContent} />
 			</div>
 		);
 	}
@@ -243,7 +262,7 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 
 		if (typeof quotation?.firm?.termsConditions === "string") {
 			termsConditions = quotation?.firm?.termsConditions.split("\\n").map((m, i) => (
-				<span className="py-0.5 whitespace-pre-line" key={i}>
+				<span className="py-1 whitespace-pre-line" key={i}>
 					{m}
 				</span>
 			));
@@ -292,24 +311,20 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 					</div>
 				</div>
 				<div className="flex w-full space-x-5 justify-between items-start">
-					<div className="flex flex-col w-full justify-center items-start">
-						<span className="font-bold-14">Remarks</span>
-						{uiRemarks()}
+					<div className="flex flex-col w-2/5 space-y-5 justify-center items-start">
+						<div className="flex flex-col w-full justify-center items-start">
+							<span className="font-bold-14">Remarks</span>
+							{uiRemarks()}
+						</div>
+						<div className="flex flex-col w-full justify-center items-start">
+							<span className="font-bold-14">Bank Details</span>
+							{uiBank()}
+						</div>
 					</div>
-					<div className="flex flex-col w-full justify-center items-start">
+					<div className="flex flex-col w-3/5 justify-center items-start">
 						<span className="font-bold-14">Terms & Conditions</span>
 						{uiTermsConditions()}
 					</div>
-				</div>
-				<hr className="gradient-hr" />
-				<div className="flex w-full justify-between items-center">
-					{uiTotalAmountsInWords()}
-					{uiFinalAmounts()}
-				</div>
-				<hr className="gradient-hr" />
-				<div className="flex w-full justify-between items-center">
-					{uiFirmSignature()}
-					{uiClientSignature()}
 				</div>
 			</div>
 			<footer className="w-full dialog-footer">

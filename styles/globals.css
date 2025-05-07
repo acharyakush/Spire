@@ -796,7 +796,7 @@ html {
 }
 
 .inputs {
-	@apply bg-transparent flex items-center justify-center outline-none px-2.5 text-[11pt] h-9 black-text w-full;
+	@apply bg-transparent flex items-center justify-center outline-none px-2.5 text-[11pt] h-[34px] black-text w-full;
 	font-family: var(--regular);
 }
 

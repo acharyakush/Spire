@@ -485,8 +485,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function toggleAddQuotation(inquiry, type) {
-		const clientAddress = api.clients.find((f) => f.id === inquiry.client_id);
-		const obj = { ...inquiry, client_address: clientAddress?.address };
+		const client = api.clients.find((f) => f.id === inquiry.client_id);
+		const obj = { ...inquiry, client };
 
 		setMain((s) => ({ ...s, selectedInquiryForNotes: obj }));
 		setMounted((s) => ({ ...s, addQuotation: type }));
@@ -656,7 +656,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiMain() {
 		if (mounted.addQuotation) {
-			return <NewQuotaion inquiry={main.selectedInquiryForNotes} reload={setSupportData} unmount={toggleAddQuotation} />;
+			return <NewQuotaion clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={setSupportData} unmount={toggleAddQuotation} />;
 		} else if (mounted.editInquiry) {
 			return <EditInquiry inquiry={main.selectedInquiryForNotes} reload={setSupportData} unmount={toggleEditInquiryView} />;
 		} else if (mounted.newInquiry) {
