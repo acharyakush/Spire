@@ -1,5 +1,63 @@
 "use client";
 
+import { MyGlobal } from "@/utilities/global";
+
+const getInitials = (name) => {
+	if (!name) return "";
+	const words = name.trim().split(" ");
+	const initials = words.map((word) => word[0].toUpperCase());
+	return initials.slice(0, 2).join("");
+};
+
+const getRandomPastel = (seed = 0) => {
+	const pastelColors = [
+		"#E8DFF5", // Lavender Mist
+		"#D5E8D4", // Mint Court
+		"#FDEBD0", // Peach Champagne
+		"#F9E79F", // Golden Glow
+		"#E6E6FA", // Soft Amethyst
+		"#F6DDCC", // Apricot Blush
+		"#D6EAF8", // Powder Sapphire
+		"#F2F4F4", // Imperial Pearl
+		"#FADBD8", // Rose Dust
+		"#EBDEF0", // Lilac Silk
+	];
+	return pastelColors[seed % pastelColors.length];
+};
+
+export function AvatarCircle({ name, names }) {
+	const people = Array.isArray(names) ? names : name ? [name] : [];
+
+	const renderAvatar = (person, index) => {
+		const initials = getInitials(person);
+		const bg = getRandomPastel(index);
+
+		const style = {
+			backgroundColor: bg,
+			color: "#333",
+			width: 36,
+			height: 36,
+			borderRadius: "50%",
+			border: "1px solid rgba(0, 0, 0, 0.05)",
+			display: "flex",
+			alignItems: "center",
+			justifyContent: "center",
+			userSelect: "none",
+			boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+			marginLeft: index === 0 ? 0 : -7,
+			zIndex: people.length - index,
+		};
+
+		return (
+			<div className="font-medium-10" key={index} title={person} style={style}>
+				{initials}
+			</div>
+		);
+	};
+
+	return <div style={{ display: "flex", alignItems: "center" }}>{people.map((person, i) => renderAvatar(person, i))}</div>;
+}
+
 export const Badge = ({ value }) => {
 	return (
 		<div className="relative inline-block">
@@ -41,7 +99,11 @@ export const BadgeSmallGreen = ({ value }) => {
 };
 
 export const BadgeSmallWithBackground = ({ style, value }) => {
-	return <span className={`flex h-5 px-1.5 justify-center items-center rounded-full font-regular-10 ${style.text} ${style.border} ${style.background}`}>{value}</span>;
+	return (
+		<span className={`flex min-w-7 h-7 px-2 justify-center items-center rounded-full font-medium-10 leading-none ${style.text} ${style.border} ${style.background}`} style={{ lineHeight: "1", fontFeatureSettings: "'tnum'" }}>
+			{value}
+		</span>
+	);
 };
 
 export const Spinner = () => {

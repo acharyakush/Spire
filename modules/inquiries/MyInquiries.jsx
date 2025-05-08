@@ -58,7 +58,7 @@ export default function MyInquiries({ presetStatus, setModuleProps, unmount }) {
 
 	const allowConvertingToProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewProject);
 
-	const headers = MyConstants.TableHeaders.Inquiries;
+	const headers = MyConstants.TableHeaders.MyInquiries;
 	const thisView = MyConstants.Modules.Base.Inquiries;
 	const statuses = MyConstants.Statuses.Inquiries;
 

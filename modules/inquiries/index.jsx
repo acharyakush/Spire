@@ -24,8 +24,8 @@ import { TextInputNative } from "@/components/Inputs";
 import { UpdateStatus } from "@/modals/inquiries/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { Badge, BadgeSmallWithBackground, Spinner, Tooltip, TooltipList } from "@/components/Elements";
-import { faCalendar, faChevronDown, faCircleCheck, faFileDownload, faFileExcel, faFilter, faMultiply, faPlusCircle, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { AvatarCircle, Badge, BadgeSmallWithBackground, Spinner, Tooltip, TooltipList } from "@/components/Elements";
+import { faCalendar, faChevronDown, faCircleCheck, faFileDownload, faFileExcel, faFilter, faIndianRupee, faMultiply, faPlusCircle, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 export default function Inquiries({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -196,30 +196,19 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function doSorting() {
 		return api.inquiries.data.sort((a, b) => {
-			const aNotesCount = getTotalNotesByInquiry(a.id);
-			const bNotesCount = getTotalNotesByInquiry(b.id);
-
 			const { column, isAscending } = main.sort;
 
-			if (column == headers.EntryDate && isAscending) {
-				return a.entry_date - b.entry_date;
-			} else if (column == headers.EntryDate && !isAscending) {
-				return b.entry_date - a.entry_date;
-			} else if (column == headers.Client && isAscending) {
+			if (column == headers.Client && isAscending) {
 				return a.client_name.localeCompare(b.client_name);
 			} else if (column == headers.Client && !isAscending) {
 				return b.client_name.localeCompare(a.client_name);
-			} else if (column == headers.MainProject && isAscending) {
+			} else if (column == headers.Projects && isAscending) {
 				return a.main_project.localeCompare(b.main_project);
-			} else if (column == headers.MainProject && !isAscending) {
+			} else if (column == headers.Projects && !isAscending) {
 				return b.main_project.localeCompare(a.main_project);
-			} else if (column == headers.SubProject && isAscending) {
-				return a.sub_project.localeCompare(b.sub_project);
-			} else if (column == headers.SubProject && !isAscending) {
-				return b.sub_project.localeCompare(a.sub_project);
-			} else if (column == headers.Reference && isAscending) {
+			} else if (column == headers.CreatedBy && isAscending) {
 				return a.reference_name.localeCompare(b.reference_name);
-			} else if (column == headers.Reference && !isAscending) {
+			} else if (column == headers.CreatedBy && !isAscending) {
 				return b.reference_name.localeCompare(a.reference_name);
 			} else if (column == headers.FollowUps && isAscending) {
 				return a.follow_ups.localeCompare(b.follow_ups);
@@ -233,14 +222,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				return a.status.localeCompare(b.status);
 			} else if (column == headers.Status && !isAscending) {
 				return b.status.localeCompare(a.status);
-			} else if (column == headers.Notes && isAscending) {
-				return aNotesCount - bNotesCount;
-			} else if (column == headers.Notes && !isAscending) {
-				return bNotesCount - aNotesCount;
-			} else if (column == headers.CreatedBy && isAscending) {
-				return a.entry_by_name.localeCompare(b.entry_by_name);
-			} else if (column == headers.CreatedBy && !isAscending) {
-				return b.entry_by_name.localeCompare(a.entry_by_name);
 			} else {
 				return b.id - a.id;
 			}
@@ -376,6 +357,19 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		}
 	}
 
+	function getStatusSeverityBackground2(status) {
+		switch (status) {
+			case statuses.Open:
+				return "orange-background";
+			case statuses.Closed:
+				return "gray-background";
+			case statuses.Hold:
+				return "red-background";
+			case statuses.Confirmed:
+				return "green-background";
+		}
+	}
+
 	function getTotalNotesByInquiry(id) {
 		return api.notes.filter((f) => f.inquiry_id == id && f.source == thisView).length;
 	}
@@ -444,6 +438,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		return mergedArray;
 	}
 
+	function openEmailAddress(emailAddress) {
+		globalThis.window.open(`mailto://${emailAddress}`, "_blank");
+	}
+
 	function openWhatsAppWeb(phoneNumber) {
 		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
 	}
@@ -461,7 +459,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function setSort(header) {
-		if (header != headers.PhoneNumber) {
+		if (header != headers.ContactInfo) {
 			setMain((s) => ({ ...s, sort: { column: header, isAscending: !main.sort.isAscending } }));
 		}
 	}
@@ -531,10 +529,15 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			return <div className={blankDataWrapper}>No inquiries found.</div>;
 		} else {
 			return (
-				<div className="flex flex-col w-full h-full justify-center items-start full-border">
+				<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-					<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.inquiries.data.length} />
-					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
+					<Virtuoso className="w-full h-full overflow-y-auto contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.inquiries.data.length} />
+					<div className="absolute bottom-2.5 right-2.5 space-x-2.5 px-5 py-1 flex justify-between items-center rounded-tr-full rounded-br-full green-background-transparent-01 green-border">
+						<span className="text-white flex justify-center items-center w-10 h-10 rounded-full green-background absolute -left-5">
+							<FontAwesomeIcon icon={faIndianRupee} size="md" />
+						</span>
+						<span className="text-center green-text font-bold-12">{getTotalQuote()}</span>
+					</div>
 				</div>
 			);
 		}
@@ -566,49 +569,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				/>
 			);
 		}
-	}
-
-	function uiFollowUps(row) {
-		const names = String(row.follow_ups);
-		const singleUserInitials = row.follow_ups_initials;
-		const total = names.split(",").length;
-
-		if (names.includes(",")) {
-			if (total > 2) {
-				return (
-					<Tippy content={<TooltipList payload={names} />} placement="bottom">
-						<span className="cursor-help primary-text">{total}</span>
-					</Tippy>
-				);
-			} else {
-				return names.split(",").map((m) => uiFollowUpsTooltip(MyGlobal.GetInitials(m), row, m));
-			}
-		} else {
-			return uiFollowUpsTooltip(singleUserInitials, row, names);
-		}
-	}
-
-	function uiFollowUpsTooltip(badgeText, inquiry, tooltipText) {
-		return (
-			<Tippy content={<Tooltip text={tooltipText} />} placement="bottom">
-				<span className="cursor-help">
-					<BadgeSmallWithBackground style={getStatusSeverityBackground(inquiry.status)} value={badgeText} />
-				</span>
-			</Tippy>
-		);
-	}
-
-	function uiFooter() {
-		return Object.values(headers).map((m, i) => {
-			const showTotalQuote = i == 7 ? "visible" : "invisible";
-			const wrapper = `w-1/6 space-x-1 text-center text-white font-medium-10 ${showTotalQuote}`;
-
-			return (
-				<span className={wrapper} key={i}>
-					<span>{getTotalQuote()}</span>
-				</span>
-			);
-		});
 	}
 
 	function uiFromDate() {
@@ -643,7 +603,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			const showStatusFilter = m == headers.Status ? "block" : "hidden";
 
 			return (
-				<span className="flex w-[9.09%] cursor-pointer justify-center items-center font-medium-10" key={i}>
+				<span className="flex w-[14.28%] cursor-pointer justify-center items-center font-medium-10" key={i}>
 					<div className="flex w-full space-x-2 justify-center items-center text-white" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
@@ -710,7 +670,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function uiRows(row, i) {
-		const style = "flex flex-wrap w-[9.09%] min-h-9 justify-center items-center text-center";
+		const style = "flex flex-col w-[14.28%] justify-center items-center text-center";
+		const childStyle = "flex w-full justify-center items-center";
 
 		const clientNameTextStyle = row.status == statuses.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
 
@@ -718,6 +679,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		const clientName = MyGlobal.HighlightText(row.client_name, main.findText);
 		const phoneNumber = MyGlobal.HighlightText(row.phone_number, main.findText);
+		const emailAddress = MyGlobal.HighlightText(row.email_address, main.findText);
 		const mainProject = MyGlobal.HighlightText(row.main_project, main.findText);
 		const subProject = MyGlobal.HighlightText(row.sub_project, main.findText);
 		const referenceName = MyGlobal.HighlightText(row.reference_name, main.findText);
@@ -725,58 +687,75 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const entryBy = MyGlobal.HighlightText(row.entry_by_name, main.findText);
 
 		return (
-			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
-				<span className={style}>{row.entry_date}</span>
-
-				<span className={`${style} font-semibold-10 space-x-2 ${clientNameTextStyle}`}>
+			<div className="flex w-full py-3 justify-center items-center contrast-background bottom-border font-regular-10 black-text relative" key={i}>
+				<div className={`absolute w-3 h-[50px] rounded-tr-full rounded-br-full ${getStatusSeverityBackground2(row.status)} -left-1`} />
+				<div className={`${style} font-semibold-12 space-x-2 ${clientNameTextStyle}`}>
 					<Tippy content={<Tooltip text={row.client_id_and_name} />} placement="bottom">
-						<span dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleEditInquiryView(row, true)} />
+						<span className={`${childStyle} ${getStatusSeverityBackground(row.status).text}`} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleEditInquiryView(row, true)} />
 					</Tippy>
-				</span>
+					<span className="flex w-full justify-center items-center font-regular-10 gray-text">{row.entry_date}</span>
+				</div>
 
-				<span className={`${style} cursor-pointer primary-text`}>
+				<div className={`${style} cursor-pointer primary-text`}>
 					<Tippy content={<Tooltip text="Open this contact on WhatsApp Web." />} placement="bottom">
-						<span dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsAppWeb(row.phone_number)} />
+						<span className={`${childStyle} font-bold-10`} dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsAppWeb(row.phone_number)} />
 					</Tippy>
-				</span>
-
-				<span className={style} dangerouslySetInnerHTML={{ __html: mainProject }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: subProject }} />
-
-				<span className={`${style} cursor-help`}>
-					<Tippy content={<Tooltip text={row.reference_id_and_name} />} placement="bottom">
-						<span dangerouslySetInnerHTML={{ __html: referenceName }} />
-					</Tippy>
-				</span>
-
-				<span className={`${style} space-x-1`}>{uiFollowUps(row)}</span>
-				<div className={`${style} space-x-2.5`}>
-					<span dangerouslySetInnerHTML={{ __html: quote }} />
-					{isAdministrator && <FontAwesomeIcon className="cursor-pointer green-text" icon={faReceipt} onClick={() => toggleAddQuotation(row, true)} />}
-					<Tippy animation="shift-away" content={<Tooltip text="Download this quotation." />} placement="bottom">
-						<FontAwesomeIcon
-							className={showDownloadButton}
-							icon={faFileDownload}
-							onClick={() => {
-								const link = document.createElement("a");
-								const fileName = String(row.quotation_id).replace("/", "_").replace("/", "_");
-
-								link.href = `/quotations/${fileName}.pdf`;
-								link.download = `${fileName}.pdf`;
-
-								link.click();
-							}}
-						/>
+					<Tippy content={<Tooltip text="Send email to this address." />} placement="bottom">
+						<span className={`${childStyle} font-regular-10 gray-text`} dangerouslySetInnerHTML={{ __html: emailAddress }} onClick={() => openEmailAddress(row.email_address)} />
 					</Tippy>
 				</div>
-				<span className={style}>{uiStatusMenu(row)}</span>
-				<span className={style}>{uiNotes(row)}</span>
 
-				<span className={`${style} cursor-help`}>
-					<Tippy content={<Tooltip text={row.entry_by_id_and_name} />} placement="bottom">
-						<span dangerouslySetInnerHTML={{ __html: entryBy }} />
-					</Tippy>
+				<div className={style}>
+					<span className={`${childStyle} font-bold-12`} dangerouslySetInnerHTML={{ __html: mainProject }} />
+					<span className={`${childStyle} !italic gray-text`} dangerouslySetInnerHTML={{ __html: subProject }} />
+				</div>
+
+				<span className={`${style} !flex-row space-x-1`}>
+					<AvatarCircle names={String(row.follow_ups).split(",")} />
 				</span>
+
+				<div className={`${style} !flex-row space-x-2 font-bold-12`}>
+					<span className="flex w-4/5 justify-end items-center" dangerouslySetInnerHTML={{ __html: MyGlobal.FormatCurrency(quote) }} />
+					<div className={`${childStyle} !w-3/5 !justify-start space-x-2.5`}>
+						{isAdministrator && (
+							<Tippy animation="shift-away" content={<Tooltip text="Add a quotation for this inquiry." />} placement="bottom">
+								<FontAwesomeIcon className="cursor-pointer green-text" icon={faReceipt} onClick={() => toggleAddQuotation(row, true)} size="xs" />
+							</Tippy>
+						)}
+						{isAdministrator && (
+							<Tippy animation="shift-away" content={<Tooltip text="Download this quotation." />} placement="bottom">
+								<FontAwesomeIcon
+									className={showDownloadButton}
+									icon={faFileDownload}
+									onClick={() => {
+										const link = document.createElement("a");
+										const fileName = String(row.quotation_id).replace("/", "_").replace("/", "_");
+
+										link.href = `/quotations/${fileName}.pdf`;
+										link.download = `${fileName}.pdf`;
+
+										link.click();
+									}}
+									size="xs"
+								/>
+							</Tippy>
+						)}
+					</div>
+				</div>
+
+				<div className={`${style} !flex-row space-x-2`}>
+					<span className={`${childStyle} !w-fit`}>{uiStatusMenu(row)}</span>
+					<span className={`${childStyle} !w-fit`}>{uiNotes(row)}</span>
+				</div>
+
+				<div className={`${style} cursor-help`}>
+					<Tippy content={<Tooltip text={row.reference_id_and_name} />} placement="bottom">
+						<span className={`${childStyle} font-bold-12`} dangerouslySetInnerHTML={{ __html: referenceName }} />
+					</Tippy>
+					<Tippy content={<Tooltip text={`Inquiry created by ${row.entry_by_name}`} />} placement="bottom">
+						<span className={`${childStyle} !italic gray-text`} dangerouslySetInnerHTML={{ __html: entryBy }} />
+					</Tippy>
+				</div>
 			</div>
 		);
 	}
@@ -822,15 +801,14 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiStatusMenu(row) {
 		const isConfirmed = row.status == statuses.Confirmed;
-		const reverseIcon = isConfirmed ? "flex-row-reverse" : "";
 
-		const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none relative z-40 font-medium-10 ${getStatusSeverity(row.status)} ${reverseIcon} !py-0`;
+		const wrapper = `flex w-full space-x-2.5 justify-between items-center focus:outline-none relative z-40 font-medium-12 ${getStatusSeverity(row.status)}`;
 
-		const icon = isConfirmed ? <FontAwesomeIcon icon={faCircleCheck} size="sm" /> : <FontAwesomeIcon icon={faChevronDown} size="sm" />;
+		const icon = !isConfirmed && <FontAwesomeIcon icon={faChevronDown} size="xs" />;
 
 		return (
 			<Tippy content={<Tooltip text={row.closure_reason} />} disabled={row.is_closed == 0 && !row.closure_reason} placement="bottom">
-				<Menu as="div" className="flex w-24 justify-center items-center relative">
+				<Menu as="div" className="flex w-full justify-center items-center relative">
 					<MenuButton className={wrapper}>
 						<span dangerouslySetInnerHTML={{ __html: highlightText(true, row.status) }} />
 						{icon}
