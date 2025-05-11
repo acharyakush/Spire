@@ -21,6 +21,22 @@ let permissions = [];
 let userId = "";
 let userFullData = {};
 
+const getSafeRegex = (() => {
+	const cache = new Map();
+
+	return (searchString) => {
+		if (!searchString) return null;
+		if (cache.has(searchString)) return cache.get(searchString);
+
+		const escaped = searchString.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		const regex = new RegExp(escaped, "gi");
+
+		cache.set(searchString, regex);
+
+		return regex;
+	};
+})();
+
 export const MyGlobal = Object.freeze({
 	AddActivity: async (activity, module = "General") => {
 		try {
@@ -374,15 +390,12 @@ export const MyGlobal = Object.freeze({
 	},
 
 	HighlightText: (payload, searchString) => {
-		const regex = new RegExp(searchString.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+		const regex = getSafeRegex(searchString);
 
-		if (searchString) {
-			return String(payload).replace(regex, (m) => `<span class='highlight-characters'>${m}</span>`);
-		} else {
-			return payload;
-		}
+		if (!regex) return payload;
+
+		return String(payload).replace(regex, (m) => `<span class='highlight-characters'>${m}</span>`);
 	},
-
 	IsApiCallMethodValid: (request) => {
 		if (request.method === "GET") {
 			return request.headers["sec-fetch-dest"] === "empty";

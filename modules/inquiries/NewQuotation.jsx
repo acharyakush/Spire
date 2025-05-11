@@ -13,7 +13,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
 import { faCalendar, faChevronLeft, faHashtag, faHome, faIndianRupee, faListCheck, faMinusCircle, faPhone, faPlusCircle, faStickyNote, faTasks, faUser } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewQuotaion({ clients, inquiry, reload, unmount }) {
+export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
 		banks: [],

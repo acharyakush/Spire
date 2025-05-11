@@ -333,12 +333,12 @@ const MyConstants = Object.freeze({
 		}),
 		Inquiries: Object.freeze({
 			Client: "Client",
-			ContactInfo: "Contacts",
+			Contacts: "Contacts",
 			Projects: "Projects",
 			FollowUps: "Follow Ups",
 			Quote: "Quote",
 			Status: "Status",
-			CreatedBy: "References",
+			References: "References",
 		}),
 		MyInquiries: Object.freeze({
 			EntryDate: "Date",

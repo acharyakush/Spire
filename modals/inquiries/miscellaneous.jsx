@@ -14,116 +14,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { faNoteSticky, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export function AddNote({ inquiry, mount, reload, unmount }) {
-	// Business Logic
-	const [main, setMain] = useState({
-		isBoxMoved: false,
-		isLoading: false,
-		note: "",
-	});
-
-	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
-	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
-
-	const disableAddButton = main.isLoading || !main.note ? "pointer-events-none" : "pointer-events-auto";
-	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
-
-	// Functions
-	async function doNoteAdding() {
-		setMain((s) => ({ ...s, isLoading: true }));
-
-		const body = {
-			content: main.note,
-			id: inquiry.id,
-			source: MyConstants.Modules.Base.Inquiries,
-			type: "add-note",
-			userId: MyGlobal.GetUserId(),
-		};
-
-		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
-
-			if (response.status === 200) {
-				reload();
-
-				MyGlobal.AddActivity(`Added in <b>${inquiry.id}</b>.`, MyConstants.Modules.Base.Notes);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.NoteAdded);
-			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "Inquiries => Add Note");
-		} finally {
-			setMain((s) => ({ ...s, isLoading: false }));
-			unmount(false);
-		}
-	}
-
-	function setBoxDrag() {
-		setMain((s) => ({ ...s, isBoxMoved: !main.isBoxMoved }));
-	}
-
-	function setNote(note) {
-		setMain((s) => ({ ...s, note }));
-	}
-
-	// UI Components
-	function uiButton() {
-		if (main.isLoading) {
-			return (
-				<span className="px-3.5">
-					<Spinner />
-				</span>
-			);
-		} else {
-			return "Add";
-		}
-	}
-
-	function uiTitleBar() {
-		return (
-			<DialogTitle as="h2" className={titleBarStyle}>
-				<span className="flex w-full justify-start items-center">Add Note</span>
-				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
-			</DialogTitle>
-		);
-	}
-
-	// Main UI
-	return (
-		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
-			<div className="fixed inset-0 bg-black/50" />
-			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full pt-2 pb-4 justify-between items-center">
-							<div className="flex w-full px-4 justify-center items-center">
-								<TextArea
-									icon={faNoteSticky}
-									key={1}
-									label="Notes"
-									onChange={(e) => setNote(e.target.value)}
-									onKeyDown={() => {}}
-									rows={3}
-									tabIndex={1}
-									value={main.note}
-									width="w-full"
-								/>
-							</div>
-						</div>
-						<footer className="dialog-footer">
-							<button className={addButtonStyle} onClick={() => doNoteAdding()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
-			</div>
-		</Dialog>
-	);
-}
-
 export function UpdateStatus({ inquiry, mount, reload, unmount }) {
 	// Business Logic
 	const [main, setMain] = useState({
@@ -248,17 +138,7 @@ export function UpdateStatus({ inquiry, mount, reload, unmount }) {
 						{uiTitleBar()}
 						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text" dangerouslySetInnerHTML={{ __html: message }} />
 						<div className={reasonBoxStyle}>
-							<TextArea
-								icon={faNoteSticky}
-								key={1}
-								label="Reason"
-								onChange={(e) => setReason(e.target.value)}
-								onKeyDown={() => {}}
-								rows={3}
-								tabIndex={1}
-								value={main.reason}
-								width="w-full"
-							/>
+							<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={main.reason} width="w-full" />
 						</div>
 						<footer className="dialog-footer">
 							<button className={buttonStyle} onClick={() => doStatusUpdate()}>

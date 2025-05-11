@@ -8,13 +8,12 @@ import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
-import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Badge } from "@/components/Elements";
-import { TextInputNative } from "@/components/Inputs";
-import { AddNote } from "@/modals/inquiries/miscellaneous";
+import { Badge, Spinner } from "@/components/Elements";
+import { useCallback, useEffect, useState } from "react";
+import { TextArea, TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendar, faChevronLeft, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronLeft, faMultiply, faNoteSticky, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 export default function Notes({ inquiry, reload, unmount }) {
 	// Business Logic
@@ -25,7 +24,9 @@ export default function Notes({ inquiry, reload, unmount }) {
 	const [main, setMain] = useState({
 		filter: { from: "", to: "" },
 		findText: "",
+		isAddingNote: false,
 		isLoading: false,
+		note: "",
 		sort: { column: "Date", isAscending: false },
 	});
 
@@ -38,7 +39,40 @@ export default function Notes({ inquiry, reload, unmount }) {
 	const showFromDateClearButton = main.filter.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearButton = main.filter.to ? "cursor-pointer primary-text" : "hidden";
 
+	const disableAddButton = main.isAddingNote || !main.note ? "pointer-events-none opacity-25" : "pointer-events-auto opacity-100";
+	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
+
 	// Functions
+	async function doNoteAdding() {
+		setMain((s) => ({ ...s, isAddingNote: true }));
+
+		const body = {
+			content: main.note,
+			id: inquiry?.id,
+			source: MyConstants.Modules.Base.Inquiries,
+			type: "add-note",
+			userId: MyGlobal.GetUserId(),
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				setInputs("note", "");
+				getNotes();
+
+				MyGlobal.AddActivity(`Added in <b>${inquiry?.id}</b>.`, MyConstants.Modules.Base.Notes);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.NoteAdded);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Inquiries => Add Note");
+		} finally {
+			setMain((s) => ({ ...s, isAddingNote: false }));
+		}
+	}
+
 	function doFiltering(type) {
 		const filteredData = api.notes.copy.filter((f) => {
 			const text = main.findText.toLowerCase();
@@ -59,31 +93,6 @@ export default function Notes({ inquiry, reload, unmount }) {
 		});
 
 		setApi((s) => ({ ...s, notes: { ...s.notes, data: filteredData } }));
-	}
-
-	function doSorting() {
-		return api.notes.data.sort((a, b) => {
-			const aEntryDate = new Date(a.entry_date);
-			const bEntryDate = new Date(b.entry_date);
-
-			const { column, isAscending } = main.sort;
-
-			if (column == "Date" && isAscending) {
-				return aEntryDate - bEntryDate;
-			} else if (column == "Date" && !isAscending) {
-				return bEntryDate - aEntryDate;
-			} else if (column == "Note" && isAscending) {
-				return a.note.localeCompare(b.note);
-			} else if (column == "Note" && !isAscending) {
-				return b.note.localeCompare(a.note);
-			} else if (column == "Entry By" && isAscending) {
-				return a.entry_by.localeCompare(b.entry_by);
-			} else if (column == "Entry By" && !isAscending) {
-				return b.entry_by.localeCompare(a.entry_by);
-			} else {
-				return bEntryDate - aEntryDate;
-			}
-		});
 	}
 
 	function getIconOrBadge() {
@@ -119,6 +128,14 @@ export default function Notes({ inquiry, reload, unmount }) {
 		}
 	}
 
+	const openEmailAddress = useCallback((emailAddress) => {
+		globalThis.window.open(`mailto://${emailAddress}`, "_blank");
+	}, []);
+
+	const openWhatsAppWeb = useCallback((phoneNumber) => {
+		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
+	}, []);
+
 	function setInputs(key, value) {
 		if (key == "from" || key == "to") {
 			setMain((s) => ({ ...s, filter: { ...s.filter, [key]: value } }));
@@ -141,10 +158,6 @@ export default function Notes({ inquiry, reload, unmount }) {
 		setApi((s) => ({ ...s, notes: { copy: notesByInquiry, data: notesByInquiry } }));
 	}
 
-	function setSort(column) {
-		setMain((s) => ({ ...s, sort: { column, isAscending: !main.sort.isAscending } }));
-	}
-
 	async function setSupportData() {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Notes.GetNotes, MyGlobal.GetHeaders({ inquiryId: inquiry.id }));
@@ -159,26 +172,96 @@ export default function Notes({ inquiry, reload, unmount }) {
 		}
 	}
 
-	function toggleAddBox() {
-		setMounted((s) => ({ ...s, add: !mounted.add }));
+	// UI Components
+	function uiButton() {
+		if (main.isAddingNote) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Add";
+		}
 	}
 
-	// UI Components
 	function uiBody() {
 		if (!api.notes.data.length && api.notes.copy.length) {
 			return (
-				<div className="flex w-full h-[calc(100vh-120px)] p-6 justify-center items-center rounded full-border">
+				<div className="flex w-1/2 h-[calc(100vh-120px)] p-6 justify-center items-center rounded full-border">
 					<span className="font-regular-12 black-text">No notes found.</span>
 				</div>
 			);
 		} else {
 			return (
-				<div className="flex flex-col w-full h-full justify-center items-start full-border">
-					<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-					<Virtuoso className="w-full h-full overflow-y-auto" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.notes.data.length} />
+				<div className="flex flex-col w-1/2 h-full justify-center items-start">
+					<Virtuoso className="w-full h-full overflow-y-auto" data={api.notes.data} itemContent={(i, row) => uiRows(row, i)} totalCount={api.notes.data.length} />
+					<div className="flex w-full space-x-5 justify-between items-center">
+						<TextArea icon={faNoteSticky} key={1} label="" onChange={(e) => setInputs("note", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={1} value={main.note} width="w-full" />
+						<button className={addButtonStyle} onClick={doNoteAdding}>
+							{uiButton()}
+						</button>
+					</div>
 				</div>
 			);
 		}
+	}
+
+	function uiDetails() {
+		const labelStyle = "font-regular-10 gray-text";
+		const valueStyle = "font-bold-12 black-text";
+		const wrapperStyle = "flex flex-col w-full justify-center items-start";
+
+		return (
+			<div className="flex flex-col w-1/2 h-full p-5 space-y-2 justify-between items-center rounded contrast-background full-border">
+				<div className="flex w-full pb-2.5 justify-between items-center bottom-border">
+					<div className="flex w-full space-x-2 justify-start items-center">
+						<span className="font-regular-12 gray-text">By</span>
+						<span className="font-bold-12 black-text">{inquiry?.entry_by_name}</span>
+					</div>
+					<div className="flex w-full space-x-2 justify-end items-center">
+						<span className="font-regular-12 gray-text">On</span>
+						<span className="font-bold-12 black-text">{inquiry?.entry_date}</span>
+					</div>
+				</div>
+				<div className="flex flex-col w-full h-full py-2.5 space-y-5 justify-start items-center">
+					<div className={wrapperStyle}>
+						<span className={labelStyle}>Client</span>
+						<span className={valueStyle}>{inquiry?.client_name}</span>
+					</div>
+					<div className={wrapperStyle}>
+						<span className={labelStyle}>Can be contacted on</span>
+						<span className="cursor-pointer hover:text-blue-500 font-bold-12 black-text" onClick={() => openWhatsAppWeb(inquiry?.phone_number)}>
+							{inquiry?.phone_number}
+						</span>
+						<span className="cursor-pointer hover:text-blue-500 font-bold-12 black-text" onClick={() => openEmailAddress(inquiry?.email_address)}>
+							{inquiry?.email_address}
+						</span>
+					</div>
+					<div className={wrapperStyle}>
+						<span className={labelStyle}>Has projects</span>
+						<span className={valueStyle}>{inquiry?.sub_project}</span>
+						<span className={valueStyle}>{inquiry?.main_project}</span>
+					</div>
+					<div className={wrapperStyle}>
+						<span className={labelStyle}>Will be followed up by</span>
+						<span className={valueStyle}>{inquiry?.follow_ups}</span>
+					</div>
+					<div className={wrapperStyle}>
+						<span className={labelStyle}>Has been quoted</span>
+						<span className={valueStyle}>{MyGlobal.FormatCurrency(inquiry?.quote)}</span>
+					</div>
+					<div className={wrapperStyle}>
+						<span className={labelStyle}>Present Status</span>
+						<span className={valueStyle}>{inquiry?.status}</span>
+					</div>
+					<div className={wrapperStyle}>
+						<span className={labelStyle}>Referred By</span>
+						<span className={valueStyle}>{inquiry?.reference_name}</span>
+					</div>
+				</div>
+			</div>
+		);
 	}
 
 	function uiFind() {
@@ -217,55 +300,21 @@ export default function Notes({ inquiry, reload, unmount }) {
 		);
 	}
 
-	function uiHeaders() {
-		return Object.values(MyConstants.TableHeaders.Notes).map((m, i) => {
-			const showArrow = m == main.sort.column ? "visible" : "invisible";
-
-			return (
-				<span className="w-1/3 space-x-1 cursor-pointer text-center font-medium-10 text-white" onClick={() => setSort(m)} key={i}>
-					<span>{m}</span>
-					<span className={showArrow}>{uiSortArrows(m)}</span>
-				</span>
-			);
-		});
-	}
-
-	function uiNew() {
-		return (
-			<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddBox()} tabIndex={4}>
-				<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
-				<span>New</span>
-			</button>
-		);
-	}
-
 	function uiRows(row, i) {
-		const style = "flex w-1/3 min-h-9 justify-center items-center text-center";
-
 		const entryDate = dayjs(row.entry_date).format("DD MMM, YYYY");
 
 		const content = MyGlobal.HighlightText(row.content, main.findText);
 		const entryBy = MyGlobal.HighlightText(row.entry_by, main.findText);
 
 		return (
-			<div className="flex w-full justify-center items-center bottom-border font-regular-10 black-text contrast-background" key={i}>
-				<span className={style}>{entryDate}</span>
-				<span className={style} dangerouslySetInnerHTML={{ __html: content }} />
-				<span className={style}>
+			<div className="flex flex-col w-full p-2 mb-2 justify-center items-center rounded-md bottom-border bottom-shadow contrast-background" key={i}>
+				<span className="flex w-full justify-start items-center font-medium-12 black-text" dangerouslySetInnerHTML={{ __html: content }} />
+				<div className="flex w-full justify-between items-center font-regular-10">
 					<span dangerouslySetInnerHTML={{ __html: entryBy }} />
-				</span>
+					<span className="gray-text">{entryDate}</span>
+				</div>
 			</div>
 		);
-	}
-
-	function uiSortArrows(column) {
-		if (main.sort.column == column) {
-			if (main.sort.isAscending) {
-				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} />;
-			} else {
-				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} />;
-			}
-		}
 	}
 
 	function uiToDate() {
@@ -325,12 +374,12 @@ export default function Notes({ inquiry, reload, unmount }) {
 							{uiToDate()}
 						</div>
 						{uiFind()}
-						{uiNew()}
 					</div>
 				</div>
-				<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
-
-				{mounted.add && <AddNote inquiry={inquiry} mount={mounted.add} reload={getNotes} unmount={toggleAddBox} />}
+				<div className="flex w-full h-full px-5 space-x-10 justify-center items-center">
+					{uiDetails()}
+					{uiBody()}
+				</div>
 			</>
 		);
 	}
