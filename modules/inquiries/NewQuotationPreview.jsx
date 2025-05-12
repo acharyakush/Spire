@@ -67,56 +67,62 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 		const pdf = new jsPDF("p", "mm", "a4", true);
 		const invoiceBody = document.getElementById("invoiceBody");
 
-		const pageHeight = pdf.internal.pageSize.getHeight();
 		const pageWidth = pdf.internal.pageSize.getWidth();
+		const pageHeight = pdf.internal.pageSize.getHeight();
+		const margin = 10;
 
 		const originalStyle = {
 			height: invoiceBody.style.height,
 			overflow: invoiceBody.style.overflow,
-			fontSize: invoiceBody.style.fontSize || "",
 		};
 
-		invoiceBody.style.fontSize = "18px";
 		invoiceBody.style.height = "auto";
 		invoiceBody.style.overflow = "visible";
 
-		html2canvas(invoiceBody, { scale: 3 })
+		html2canvas(invoiceBody, { scale: 3, scrollX: 0, scrollY: 0 })
 			.then((canvas) => {
-				const imgWidth = pageWidth;
+				const imgWidth = pageWidth - 2 * margin;
 				const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-				let y = 0;
-				while (y < imgHeight) {
+				const pageHeightPx = (pageHeight * canvas.width) / imgWidth;
+				let remainingHeight = canvas.height;
+				let sourceY = 0;
+
+				while (remainingHeight > 0) {
+					const cropHeight = Math.min(pageHeightPx, remainingHeight);
+
 					const pageCanvas = document.createElement("canvas");
-					const context = pageCanvas.getContext("2d");
-
 					pageCanvas.width = canvas.width;
-					pageCanvas.height = Math.min(canvas.height - y, (pageHeight * canvas.width) / pageWidth);
+					pageCanvas.height = cropHeight;
 
-					context.drawImage(canvas, 0, y, canvas.width, pageCanvas.height, 0, 0, canvas.width, pageCanvas.height);
+					const ctx = pageCanvas.getContext("2d");
+					ctx.drawImage(canvas, 0, sourceY, canvas.width, cropHeight, 0, 0, canvas.width, cropHeight);
 
-					const imgData = pageCanvas.toDataURL("image/png");
-					pdf.addImage(imgData, "PNG", 0, 0, imgWidth, (pageCanvas.height * imgWidth) / canvas.width);
+					const imgData = pageCanvas.toDataURL("image/png", 1);
 
-					y += pageCanvas.height;
+					pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight, "", "FAST");
 
-					if (y < canvas.height) pdf.addPage();
+					remainingHeight -= cropHeight;
+					sourceY += cropHeight;
+
+					if (remainingHeight > 0) pdf.addPage();
 				}
 
-				pdf.save(`${quotation?.proposalNumber}.pdf`);
+				const fileName = String(quotation?.proposalNumber).replace("/", "_").replace("/", "_");
 
-				// const pdfBlob = pdf.output("blob");
+				pdf.save(`${fileName}.pdf`);
 
-				// const formData = new FormData();
-				// formData.append("file", pdfBlob, `${quotation?.proposalNumber}.pdf`);
+				const pdfBlob = pdf.output("blob");
 
-				// return axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData, {
-				// 	headers: { "Content-Type": "multipart/form-data" },
-				// });
+				const formData = new FormData();
+				formData.append("file", pdfBlob, `${fileName}.pdf`);
+
+				return axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
 			})
-			// .then(() => addQuotation())
+			.then(() => addQuotation())
 			.finally(() => {
-				invoiceBody.style.fontSize = originalStyle.fontSize;
 				invoiceBody.style.height = originalStyle.height;
 				invoiceBody.style.overflow = originalStyle.overflow;
 
@@ -145,30 +151,30 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 	}
 
 	function uiBank() {
-		const label = "flex w-1/2 justify-start items-center font-regular-12";
-		const value = `flex w-1/2 justify-start items-center font-bold-12`;
+		const label = "flex w-full justify-start items-center font-regular-12 gray-text";
+		const value = `flex w-full justify-start items-center font-bold-12`;
 
 		return (
-			<div className="flex w-full p-4 space-x-5 justify-center items-center rounded full-border bg-blue-50">
-				<div className="flex w-1/2 justify-center items-center">{uiQrCode()}</div>
-				<div className="flex flex-col w-full space-y-2 justify-center items-center">
-					<div className="flex w-full space-x-3 justify-between items-center text-black">
+			<div className="flex w-full p-4 space-x-5 justify-center items-center rounded full-border logo-green-background-transparent-01">
+				<div className="flex w-1/4 justify-center items-center">{uiQrCode()}</div>
+				<div className="w-3/4 space-y-3 columns-3">
+					<div className="flex flex-col w-full justify-between items-center text-black">
 						<span className={label}>Account Name</span>
 						<span className={value}>{quotation?.firm?.selectedBank?.name}</span>
 					</div>
-					<div className="flex w-full space-x-3 justify-between items-center">
+					<div className="flex flex-col w-full justify-between items-center">
 						<span className={label}>Account Number</span>
 						<span className={value}>{quotation?.firm?.selectedBank?.account_number}</span>
 					</div>
-					<div className="flex w-full space-x-3 justify-between items-center">
+					<div className="flex flex-col w-full justify-between items-center">
 						<span className={label}>Account Type</span>
 						<span className={value}>{quotation?.firm?.selectedBank?.account_type}</span>
 					</div>
-					<div className="flex w-full space-x-3 justify-between items-center">
+					<div className="flex flex-col w-full justify-between items-center">
 						<span className={label}>Bank Name</span>
 						<span className={value}>{quotation?.firm?.selectedBank?.name}</span>
 					</div>
-					<div className="flex w-full space-x-3 justify-between items-center">
+					<div className="flex flex-col w-full justify-between items-center">
 						<span className={label}>IFSC</span>
 						<span className={value}>{quotation?.firm?.selectedBank?.ifsc}</span>
 					</div>
@@ -187,18 +193,18 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 	}
 
 	function uiRemarks() {
-		return <div className="flex flex-col w-full p-4 justify-center items-start rounded bg-blue-50 full-border font-regular-12">{quotation?.main?.remarks}</div>;
+		return <div className="flex flex-col w-full p-4 justify-center items-start rounded logo-green-background-transparent-01 full-border font-regular-12">{quotation?.main?.remarks}</div>;
 	}
 
 	function uiServicesProposalHeaders() {
 		return (
-			<div className="flex w-full py-3 justify-center items-center bg-blue-100 bottom-border font-bold-12">
+			<div className="flex w-full py-3 justify-center items-center logo-green-background bottom-border rounded-tr rounded-tl font-bold-12 text-white">
 				<span className="flex justify-center items-center w-[5%]">SN</span>
-				<span className="flex justify-center items-center w-[19%]">Services</span>
-				<span className="flex justify-center items-center w-[19%]">Inclusions</span>
-				<span className="flex justify-center items-center w-[19%]">Professional Fees</span>
-				<span className="flex justify-center items-center w-[19%]">Government/Other Cost</span>
-				<span className="flex justify-center items-center w-[19%]">Total</span>
+				<span className="flex justify-center items-center w-[30%]">Services</span>
+				<span className="flex justify-center items-center w-[30%]">Inclusions</span>
+				<span className="flex justify-center items-center w-[15%]">Prof Fees</span>
+				<span className="flex justify-center items-center w-[15%]">Gov/Other Cost</span>
+				<span className="flex justify-center items-center w-[10%]">Total</span>
 			</div>
 		);
 	}
@@ -215,11 +221,11 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 				return (
 					<div className={wrapper}>
 						<span className="flex justify-center items-center w-[5%]">{i + 1}</span>
-						<span className="flex w-[19%] justify-center items-center">{m?.services}</span>
-						<span className="flex w-[19%] justify-center items-center">{m?.inclusions}</span>
-						<span className="flex w-[19%] justify-center items-center">{MyGlobal.FormatCurrency(m?.professionalFees)}</span>
-						<span className="flex w-[19%] justify-center items-center">{MyGlobal.FormatCurrency(m?.governmentFees)}</span>
-						<span className="flex w-[19%] justify-center items-center">{MyGlobal.FormatCurrency(total)}</span>
+						<span className="flex w-[30%] justify-center items-center">{m?.services}</span>
+						<span className="flex w-[30%] justify-center items-center">{m?.inclusions}</span>
+						<span className="flex w-[15%] justify-center items-center">{MyGlobal.FormatCurrency(m?.professionalFees)}</span>
+						<span className="flex w-[15%] justify-center items-center">{MyGlobal.FormatCurrency(m?.governmentFees)}</span>
+						<span className="flex w-[10%] justify-center items-center">{MyGlobal.FormatCurrency(total)}</span>
 					</div>
 				);
 			});
@@ -240,7 +246,7 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 		return (
 			<div className="flex flex-col w-1/2 justify-center items-start">
 				<div className="flex justify-start items-center">
-					<span className="font-bold-14">{inquiry?.client_name}</span>
+					<span className="font-bold-14 text-black">{inquiry?.client_name}</span>
 				</div>
 				<span className="font-regular-12 gray-text">{quotation?.client?.address}</span>
 			</div>
@@ -268,7 +274,7 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 			));
 		}
 
-		return <div className="flex flex-col w-full p-4 justify-center items-start rounded bg-blue-50 full-border font-regular-12">{termsConditions}</div>;
+		return <div className="flex flex-col w-full p-4 justify-center items-start rounded logo-green-background-transparent-01 full-border font-regular-12">{termsConditions}</div>;
 	}
 
 	function uiTotalAmountsInWords() {
@@ -291,7 +297,7 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 					</div>
 				</div>
 			</div>
-			<div className="flex flex-col w-full h-[calc(100vh-148px)] p-5 space-y-5 justify-start items-start overflow-y-auto contrast-background" id="invoiceBody">
+			<div className="flex flex-col w-3/5 h-[calc(100vh-148px)] p-5 space-y-7 justify-start items-start overflow-y-auto contrast-background" id="invoiceBody">
 				<div className="flex w-full justify-between items-center">
 					{uiProposal()}
 					<div className="flex flex-col w-full justify-center items-end">
@@ -299,7 +305,7 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 						<span className="font-bold-14 text-black">{dayjs(quotation?.main?.date).format("DD MMM, YYYY")}</span>
 					</div>
 				</div>
-				<div className="flex w-full justify-between items-center">
+				<div className="flex w-full space-x-10 justify-between items-start">
 					{uiFirm()}
 					{uiClient()}
 				</div>
@@ -310,20 +316,18 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 						{uiServicesProposalRows()}
 					</div>
 				</div>
-				<div className="flex w-full space-x-5 justify-between items-start">
-					<div className="flex flex-col w-2/5 space-y-5 justify-center items-start">
-						<div className="flex flex-col w-full justify-center items-start">
-							<span className="font-bold-14">Remarks</span>
-							{uiRemarks()}
-						</div>
-						<div className="flex flex-col w-full justify-center items-start">
-							<span className="font-bold-14">Bank Details</span>
-							{uiBank()}
-						</div>
+				<div className="flex flex-col w-full space-y-5 justify-between items-start">
+					<div className="flex flex-col w-full justify-center items-start">
+						<span className="font-bold-14">Remarks</span>
+						{uiRemarks()}
 					</div>
-					<div className="flex flex-col w-3/5 justify-center items-start">
+					<div className="flex flex-col w-full justify-center items-start">
 						<span className="font-bold-14">Terms & Conditions</span>
 						{uiTermsConditions()}
+					</div>
+					<div className="flex flex-col w-full justify-center items-start">
+						<span className="font-bold-14">Bank Details</span>
+						{uiBank()}
 					</div>
 				</div>
 			</div>

@@ -16,8 +16,8 @@ import { Virtuoso } from "react-virtuoso";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AvatarCircle, Badge, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
 import { faCalendar, faChevronDown, faFileDownload, faFileExcel, faFilter, faIndianRupee, faMultiply, faPlusCircle, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
@@ -270,6 +270,13 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						}
 					}
 
+					// const getQuotation = supportData?.quotations?.filter((f) => f.custom_id == obj.quotation_id);
+					// const getQuotationServices = supportData?.quotationsServices?.filter((f) => f.quotation_id == obj.quotation_id);
+
+					const nextfollowUpOn = supportData?.notes?.filter((f) => f.inquiry_id == obj.id);
+
+					const abc = nextfollowUpOn?.filter((f) => f.next_follow_up_on);
+
 					const data = {
 						...obj,
 						client_id_and_name: `${obj.client_id} - ${clientName}`,
@@ -281,6 +288,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						follow_ups_data: MyGlobal.GetFullDetailsFromIds(obj.follow_ups),
 						follow_ups_initials: MyGlobal.GetInitials(followUps),
 						main_project: MyGlobal.GetNameFromId(obj.main_project_id, supportData.mainProjects),
+						next_follow_up_on: abc?.length ? dayjs(abc?.[0]?.next_follow_up_on).format("DD MMM, YYYY") : "",
 						notes: "",
 						phone_number: phoneNumber,
 						reference_id_and_name: `${obj.reference_id} - ${referenceName}`,
@@ -514,7 +522,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			const showSortArrow = m == main.sort.column ? "block" : "hidden";
 			const showStatusFilter = m == headers.Status ? "block" : "hidden";
 			return (
-				<span className="flex w-[14.28%] cursor-pointer justify-center items-center font-medium-10" key={i}>
+				<span className="flex w-[12.50%] cursor-pointer justify-center items-center font-medium-10" key={i}>
 					<div className="flex w-full space-x-2 justify-center items-center text-white" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
@@ -541,7 +549,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		uiStatusMenu,
 		uiNotes,
 	}) {
-		const style = "flex flex-col w-[14.28%] justify-center items-center text-center";
+		const style = "flex flex-col w-[12.50%] justify-center items-center text-center";
 		const childStyle = "flex w-full justify-center items-center";
 
 		const fancyRightBorderStyle = "absolute w-3 h-[50px] rounded-tr-full rounded-br-full " + getStatusSeverityBackground2(row.status) + " -left-1";
@@ -569,6 +577,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 				{uiQuote(childStyle, main.findText, MyGlobal, row, style, toggleAddQuotation, uiAddQuotation, uiDownloadQuotation)}
 
+				<span className={`${style} font-bold-12`}>{row.next_follow_up_on}</span>
+
 				{uiStatus(childStyle, getStatusSeverityBackground, getTotalNotesByInquiry, row, style, uiNotes, uiStatusMenu, toggleNotesView)}
 
 				{uiReferences(childLabelStyle, main.findText, MyGlobal, parentLabelStyle, row, style)}
@@ -582,7 +592,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
 					<div className="flex w-full h-9 justify-center items-center primary-background animate-pulse">
 						{Object.values(headers).map((_, i) => (
-							<div key={i} className="flex w-[14.28%] justify-center items-center">
+							<div key={i} className="flex w-[12.50%] justify-center items-center">
 								<div className="h-4 w-20 bg-gray-200 rounded" />
 							</div>
 						))}
@@ -788,7 +798,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		} else if (mounted.newProject) {
 			return <DynamicNewProject inquiry={main.selectedInquiryForStatusChange} reload={reloadSupportData} unmount={closeNewProjectView} />;
 		} else if (mounted.notes) {
-			return <DynamicNotes inquiry={main.selectedInquiryForNotes} reload={reloadSupportData} unmount={toggleNotesView} />;
+			return <DynamicNotes clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={reloadSupportData} unmount={toggleNotesView} />;
 		} else {
 			return (
 				<>

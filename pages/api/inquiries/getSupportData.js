@@ -13,15 +13,17 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const [clients, mainProjects, notes, references, subProjects] = await Promise.all([
+		const [clients, mainProjects, notes, quotations, quotationsServices, references, subProjects] = await Promise.all([
 			query("SELECT * FROM clients", []), // Queries
 			query("SELECT * FROM main_projects", []),
 			query("SELECT * FROM notes", []),
+			query("SELECT * FROM inquiries_quotations", []),
+			query("SELECT * FROM inquiries_quotations_services", []),
 			query("SELECT * FROM the_references", []),
 			query("SELECT * FROM sub_projects", []),
 		]);
 
-		return res.status(200).json({ clients, mainProjects, notes, references, subProjects });
+		return res.status(200).json({ clients, mainProjects, notes, quotations, quotationsServices, references, subProjects });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");

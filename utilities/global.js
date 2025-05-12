@@ -396,6 +396,7 @@ export const MyGlobal = Object.freeze({
 
 		return String(payload).replace(regex, (m) => `<span class='highlight-characters'>${m}</span>`);
 	},
+
 	IsApiCallMethodValid: (request) => {
 		if (request.method === "GET") {
 			return request.headers["sec-fetch-dest"] === "empty";
@@ -453,22 +454,20 @@ export const MyGlobal = Object.freeze({
 
 	MakeNewQuotationId: (payload) => {
 		if (payload.length) {
-			const extractedIds = [];
-
-			payload?.forEach((m) => {
-				const getLastUsedId = String(m.custom_id).split("/").at(2);
-				const extractNumber = +getLastUsedId.match(/\d+$/)[0].replace(/0/g, "");
-
-				extractedIds.push(extractNumber);
+			const extractedIds = payload.map((m) => {
+				const idPart = String(m.custom_id).split("/").at(2) || "";
+				const match = idPart.match(/\d+$/);
+				return match ? parseInt(match[0], 10) : 0;
 			});
 
-			const latestId = extractedIds.sort((a, b) => b - a).at(0);
-			const incrementedId = (parseInt(latestId, 10) + 1).toString();
-			const newId = incrementedId.padStart(String(latestId).length, "0");
+			const latestId = Math.max(...extractedIds);
+			const nextId = latestId + 1;
 
-			return String(newId).padStart(5, "0");
+			if (nextId > 999) return "999";
+
+			return String(nextId).padStart(3, "0");
 		} else {
-			return "00001";
+			return "001";
 		}
 	},
 

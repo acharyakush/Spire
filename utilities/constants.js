@@ -337,6 +337,7 @@ const MyConstants = Object.freeze({
 			Projects: "Projects",
 			FollowUps: "Follow Ups",
 			Quote: "Quote",
+			NextFollowUpOn: "Next Follow Up",
 			Status: "Status",
 			References: "References",
 		}),

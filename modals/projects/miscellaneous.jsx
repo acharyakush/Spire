@@ -93,13 +93,11 @@ export function DeleteProject({ mount, projectId, reload, unmount }) {
 								</span>
 
 								<span className="py-2">
-									Please consider having a look at <b>Status</b> (<b>Status</b> <FontAwesomeIcon icon={faArrowRight} size="xs" />{" "}
-									<b>Completed</b>) to see whether all the accounts have been settled or not.
+									Please consider having a look at <b>Status</b> (<b>Status</b> <FontAwesomeIcon icon={faArrowRight} size="xs" /> <b>Completed</b>) to see whether all the accounts have been settled or not.
 								</span>
 
 								<span className="py-2">
-									If you are not fully sure about deletion, you can also change the project's status to <b>Closed</b> or <b>Hold</b>. This
-									way, you can re-open this project in future.
+									If you are not fully sure about deletion, you can also change the project's status to <b>Closed</b> or <b>Hold</b>. This way, you can re-open this project in future.
 								</span>
 
 								<span className="py-2">Are you sure to proceed? Once done, This action cannot be reversed.</span>
@@ -245,17 +243,7 @@ export function EditStatus({ mount, project, reload, unmount }) {
 						{uiTitleBar()}
 						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text" dangerouslySetInnerHTML={{ __html: messageBody }} />
 						<div className={reasonBoxStyle}>
-							<TextArea
-								icon={faNoteSticky}
-								key={1}
-								label="Reason"
-								onChange={(e) => setReason(e.target.value)}
-								onKeyDown={() => {}}
-								rows={3}
-								tabIndex={1}
-								value={main.reason}
-								width="w-full"
-							/>
+							<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={main.reason} width="w-full" />
 							{uiCharactersLeft()}
 						</div>
 						<footer className="dialog-footer">
@@ -277,7 +265,7 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 		isLoading: false,
 		isMarking: false,
 		status: {
-			tasks: { allCompleted: false, total: 0, completed: 0 },
+			tasks: { allCompleted: false, disabled: 0, total: 0, completed: 0 },
 		},
 	});
 
@@ -330,9 +318,10 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 			if (response.status === 200) {
 				const tasks = response.data;
 
-				const completedTasks = tasks.filter((f) => f.is_completed == 1).length;
+				const completedTasks = tasks.filter((f) => f.is_completed == 1 || f.is_disabled == 1).length;
 				const totalTasks = tasks.filter((f) => f.is_disabled != 1).length;
-				const areAllTasksCompleted = tasks.length && tasks.every((f) => f.is_completed == 1);
+				const areAllTasksCompleted = tasks.length && tasks.every((f) => f.is_completed == 1 || f.is_disabled == 1);
+				const disabledTasks = tasks.filter((f) => f.is_disabled == 1).length;
 
 				setMain((s) => ({
 					...s,
@@ -340,6 +329,7 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 						tasks: {
 							allCompleted: areAllTasksCompleted,
 							completed: completedTasks,
+							disabled: disabledTasks,
 							total: totalTasks,
 						},
 					},
@@ -365,7 +355,7 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 				<div className="flex flex-col w-full -space-y-px">
 					<span>All tasks have been completed?</span>
 					<span className="font-regular-9">
-						Completed {main.status.tasks.completed} / {main.status.tasks.total}
+						Completed {main.status.tasks.completed} ({main.status.tasks.disabled} disabled task(s)) / {main.status.tasks.total}
 					</span>
 				</div>
 			);

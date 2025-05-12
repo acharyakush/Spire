@@ -4,18 +4,22 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
+import dynamic from "next/dynamic";
+import Tippy from "@tippyjs/react";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { MyGlobal } from "@/utilities/global";
-import { Badge, Spinner } from "@/components/Elements";
-import { useCallback, useEffect, useState } from "react";
-import { TextArea, TextInputNative } from "@/components/Inputs";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Badge, BadgeSmallWithBackground, Spinner, Tooltip } from "@/components/Elements";
+import { DatePicker, TextArea, TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendar, faChevronLeft, faMultiply, faNoteSticky, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronLeft, faFileDownload, faMultiply, faNoteSticky, faReceipt, faSearch } from "@fortawesome/free-solid-svg-icons";
 
-export default function Notes({ inquiry, reload, unmount }) {
+const DynamicNewQuotation = dynamic(() => import("./NewQuotation"), { ssr: false });
+
+export default function Notes({ clients, inquiry, reload, unmount }) {
 	// Business Logic
 	const [api, setApi] = useState({
 		notes: { copy: [], data: [] },
@@ -26,21 +30,27 @@ export default function Notes({ inquiry, reload, unmount }) {
 		findText: "",
 		isAddingNote: false,
 		isLoading: false,
+		nextfollowUpOn: new Date(),
 		note: "",
 		sort: { column: "Date", isAscending: false },
 	});
 
 	const [mounted, setMounted] = useState({
 		add: false,
+		addQuotation: false,
 		mainComponent: false,
 	});
+
+	const isAdministrator = MyGlobal.IsUserAdministrator();
+
+	const statuses = useMemo(() => MyConstants.Statuses.Inquiries, []);
 
 	const showSearchClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
 	const showFromDateClearButton = main.filter.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearButton = main.filter.to ? "cursor-pointer primary-text" : "hidden";
 
 	const disableAddButton = main.isAddingNote || !main.note ? "pointer-events-none opacity-25" : "pointer-events-auto opacity-100";
-	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
+	const addButtonStyle = `primary-button-condensed !h-9 ${disableAddButton}`;
 
 	// Functions
 	async function doNoteAdding() {
@@ -49,6 +59,7 @@ export default function Notes({ inquiry, reload, unmount }) {
 		const body = {
 			content: main.note,
 			id: inquiry?.id,
+			nextfollowUpOn: main.nextfollowUpOn,
 			source: MyConstants.Modules.Base.Inquiries,
 			type: "add-note",
 			userId: MyGlobal.GetUserId(),
@@ -95,6 +106,16 @@ export default function Notes({ inquiry, reload, unmount }) {
 		setApi((s) => ({ ...s, notes: { ...s.notes, data: filteredData } }));
 	}
 
+	const downloadQuotation = useCallback(() => {
+		const link = document.createElement("a");
+		const fileName = String(inquiry?.quotation_id).replace("/", "_").replace("/", "_");
+
+		link.href = `/quotations/${fileName}.pdf`;
+		link.download = `${fileName}.pdf`;
+
+		link.click();
+	}, []);
+
 	function getIconOrBadge() {
 		if (main.isLoading) {
 			return (
@@ -125,6 +146,19 @@ export default function Notes({ inquiry, reload, unmount }) {
 			return `${api.notes.data.length} / ${api.notes.copy.length}`;
 		} else {
 			return api.notes.data.length;
+		}
+	}
+
+	function getStatusSeverity(status) {
+		switch (status) {
+			case statuses.Open:
+				return "orange-tag-transparent-01";
+			case statuses.Closed:
+				return "gray-tag-transparent-01";
+			case statuses.Hold:
+				return "red-tag-transparent-02";
+			case statuses.Confirmed:
+				return "green-tag-transparent-01 cursor-pointer";
 		}
 	}
 
@@ -172,11 +206,25 @@ export default function Notes({ inquiry, reload, unmount }) {
 		}
 	}
 
+	function toggleAddQuotation(_, type) {
+		setMounted((s) => ({ ...s, addQuotation: type }));
+	}
+
 	// UI Components
+	function uiAddQuotation() {
+		if (isAdministrator) {
+			return (
+				<Tippy animation="shift-away" content={<Tooltip text="Add a quotation for this inquiry." />} placement="bottom">
+					<FontAwesomeIcon className="cursor-pointer green-text" icon={faReceipt} onClick={() => toggleAddQuotation({}, true)} />
+				</Tippy>
+			);
+		}
+	}
+
 	function uiButton() {
 		if (main.isAddingNote) {
 			return (
-				<span className="px-3.5">
+				<span className="w-[64.49px]">
 					<Spinner />
 				</span>
 			);
@@ -194,17 +242,28 @@ export default function Notes({ inquiry, reload, unmount }) {
 			);
 		} else {
 			return (
-				<div className="flex flex-col w-1/2 h-full justify-center items-start">
-					<Virtuoso className="w-full h-full overflow-y-auto" data={api.notes.data} itemContent={(i, row) => uiRows(row, i)} totalCount={api.notes.data.length} />
-					<div className="flex w-full space-x-5 justify-between items-center">
-						<TextArea icon={faNoteSticky} key={1} label="" onChange={(e) => setInputs("note", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={1} value={main.note} width="w-full" />
-						<button className={addButtonStyle} onClick={doNoteAdding}>
-							{uiButton()}
-						</button>
+				<div className="flex flex-col w-3/4 h-full justify-between items-center">
+					<Virtuoso className="w-full h-full mb-5 overflow-y-auto" data={api.notes.data.sort((a, b) => b.id - a.id)} itemContent={(i, row) => uiRows(row, i)} totalCount={api.notes.data.length} />
+					<div className="flex flex-col w-full h-[187px] p-2.5 justify-center items-center rounded shadow contrast-background">
+						<TextArea icon={faNoteSticky} key={1} label="Note" onChange={(e) => setInputs("note", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={1} value={main.note} width="w-full" />
+						{uiNextFollowUpDate()}
 					</div>
 				</div>
 			);
 		}
+	}
+
+	function uiNextFollowUpDate() {
+		return (
+			<div className="flex w-full pr-2.5 space-x-5 justify-between items-center">
+				<DatePicker icon={faCalendar} label="Next Follow Up" onChange={(e) => setInputs("nextfollowUpOn", e)} tabIndex={7} value={main.nextfollowUpOn} width="w-full" />
+				<div className="flex w-fit h-[59px] justify-center items-end">
+					<button className={addButtonStyle} onClick={doNoteAdding}>
+						{uiButton()}
+					</button>
+				</div>
+			</div>
+		);
 	}
 
 	function uiDetails() {
@@ -212,8 +271,10 @@ export default function Notes({ inquiry, reload, unmount }) {
 		const valueStyle = "font-bold-12 black-text";
 		const wrapperStyle = "flex flex-col w-full justify-center items-start";
 
+		const wrapper = `flex w-fit px-5 justify-center items-center focus:outline-none relative z-40 font-bold-12 black-text ${getStatusSeverity(inquiry?.status)} !rounded-md`;
+
 		return (
-			<div className="flex flex-col w-1/2 h-full p-5 space-y-2 justify-between items-center rounded contrast-background full-border">
+			<div className="flex flex-col w-1/4 h-full p-5 space-y-2 justify-between items-center rounded contrast-background shadow">
 				<div className="flex w-full pb-2.5 justify-between items-center bottom-border">
 					<div className="flex w-full space-x-2 justify-start items-center">
 						<span className="font-regular-12 gray-text">By</span>
@@ -249,11 +310,15 @@ export default function Notes({ inquiry, reload, unmount }) {
 					</div>
 					<div className={wrapperStyle}>
 						<span className={labelStyle}>Has been quoted</span>
-						<span className={valueStyle}>{MyGlobal.FormatCurrency(inquiry?.quote)}</span>
+						<div className={`flex space-x-2.5 justify-center items-center ${valueStyle}`}>
+							<span>{MyGlobal.FormatCurrency(inquiry?.quote)}</span>
+							{uiAddQuotation()}
+							{uiDownloadQuotation()}
+						</div>
 					</div>
 					<div className={wrapperStyle}>
 						<span className={labelStyle}>Present Status</span>
-						<span className={valueStyle}>{inquiry?.status}</span>
+						<span className={wrapper}>{inquiry?.status}</span>
 					</div>
 					<div className={wrapperStyle}>
 						<span className={labelStyle}>Referred By</span>
@@ -262,6 +327,18 @@ export default function Notes({ inquiry, reload, unmount }) {
 				</div>
 			</div>
 		);
+	}
+
+	function uiDownloadQuotation() {
+		if (isAdministrator) {
+			const showDownloadButton = inquiry?.quotation_id ? "cursor-pointer visible primary-text" : "invisible";
+
+			return (
+				<Tippy animation="shift-away" content={<Tooltip text="Download this quotation." />} placement="bottom">
+					<FontAwesomeIcon className={showDownloadButton} icon={faFileDownload} onClick={downloadQuotation} />
+				</Tippy>
+			);
+		}
 	}
 
 	function uiFind() {
@@ -301,6 +378,7 @@ export default function Notes({ inquiry, reload, unmount }) {
 	}
 
 	function uiRows(row, i) {
+		const nextFollowUpOn = dayjs(row.next_follow_up_on).format("DD MMM, YYYY");
 		const entryDate = dayjs(row.entry_date).format("DD MMM, YYYY");
 
 		const content = MyGlobal.HighlightText(row.content, main.findText);
@@ -311,7 +389,16 @@ export default function Notes({ inquiry, reload, unmount }) {
 				<span className="flex w-full justify-start items-center font-medium-12 black-text" dangerouslySetInnerHTML={{ __html: content }} />
 				<div className="flex w-full justify-between items-center font-regular-10">
 					<span dangerouslySetInnerHTML={{ __html: entryBy }} />
-					<span className="gray-text">{entryDate}</span>
+					<div className="flex w-1/2 space-x-2.5 justify-end items-center">
+						{row.next_follow_up_on && (
+							<>
+								<span className="inline-block px-5 blink red-text red-tag-transparent-01">
+									Next Follow Up On <b>{nextFollowUpOn}</b>
+								</span>
+							</>
+						)}
+						<span className="gray-text">{entryDate}</span>
+					</div>
 				</div>
 			</div>
 		);
@@ -359,13 +446,17 @@ export default function Notes({ inquiry, reload, unmount }) {
 	}, [main.filter]);
 
 	// Main UI
+	if (mounted.addQuotation) {
+		return <DynamicNewQuotation clients={clients} inquiry={inquiry} reload={reload} unmount={toggleAddQuotation} />;
+	}
+
 	if (mounted.mainComponent) {
 		return (
-			<>
+			<div className="flex flex-col w-full h-full pb-5 justify-between items-center">
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-1/2 space-x-2 justify-start items-center">
 						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount("", false)} />
-						<span className="view-heading">{inquiry.client_name}'s Notes</span>
+						<span className="view-heading">{String(inquiry.client_name).trimEnd()}'s Notes</span>
 						<span className="flex h-8 justify-center items-center">{getIconOrBadge()}</span>
 					</div>
 					<div className="flex w-1/2 space-x-2 justify-end items-center">
@@ -380,7 +471,7 @@ export default function Notes({ inquiry, reload, unmount }) {
 					{uiDetails()}
 					{uiBody()}
 				</div>
-			</>
+			</div>
 		);
 	}
 }
