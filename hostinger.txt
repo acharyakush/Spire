@@ -40,3 +40,10 @@ WordPress
 =========
 Email Address:						admin@signiixadvisors.com
 Password:							Vj%%CuzSbPWszuJd6B
+
+
+==========
+PhpMyAdmin
+==========
+Username:							spire
+Password:							SpireCrmBySigniixAdvisors#2024

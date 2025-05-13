@@ -5,18 +5,98 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
-import SingleClient from "../singleClient";
+import dynamic from "next/dynamic";
 import writeXlsxFile from "write-excel-file";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
-import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { EditClient } from "@/modals/singleClient";
-import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, Spinner, SpinnerBig, Tooltip } from "@/components/Elements";
+import { useEffect, useState, useMemo, useCallback, memo, useLayoutEffect } from "react";
 import { faFileExcel, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+
+// Dynamic imports
+const DynamicEditClient = dynamic(() => import("@/modals/singleClient").then((mod) => ({ default: mod.EditClient })), {
+	loading: () => <SpinnerBig />,
+	ssr: false,
+});
+
+const DynamicSingleClient = dynamic(() => import("../singleClient"), {
+	loading: () => <SpinnerBig />,
+	ssr: false,
+});
+
+const DynamicTextInputNative = dynamic(() => import("@/components/Inputs").then((mod) => ({ default: mod.TextInputNative })), {
+	loading: () => <SpinnerBig />,
+	ssr: false,
+});
+
+// Memoized child components
+const MemoizedBadge = memo(Badge);
+const MemoizedSpinner = memo(Spinner);
+const MemoizedSpinnerBig = memo(SpinnerBig);
+const MemoizedTooltip = memo(Tooltip);
+
+// Memoized row component
+const ClientRow = memo(({ row, main, toggleEditClient, toggleSingleClient, openWhatsApp, openEmailClient }) => {
+	const style = "flex w-1/5 min-h-9 justify-center items-center text-center";
+	const tooltipStyle = `${style} cursor-pointer primary-text`;
+
+	const clientId = MyGlobal.HighlightText(row.id, main.find);
+	const clientName = MyGlobal.HighlightText(row.name, main.find);
+	const phoneNumber = MyGlobal.HighlightText(row.phone_number, main.find);
+	const emailAddress = MyGlobal.HighlightText(row.email_address, main.find);
+	const joinedOn = dayjs(row.joined_on).format("DD MMM, YYYY");
+
+	return (
+		<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text" key={row.id}>
+			<Tippy content={<MemoizedTooltip text="Edit this client's details." />} placement="bottom">
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientId }} onClick={() => toggleEditClient(row)} />
+			</Tippy>
+
+			<Tippy content={<MemoizedTooltip text="Open this client's detailed view." />} placement="bottom">
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleClient(row)} />
+			</Tippy>
+
+			<Tippy content={<MemoizedTooltip text="Open this contact on WhatsApp Web." />} placement="bottom">
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsApp(row.phone_number)} />
+			</Tippy>
+
+			<Tippy content={<MemoizedTooltip text={row.email_address} />} placement="bottom">
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: emailAddress }} onClick={() => openEmailClient(row.email_address)} />
+			</Tippy>
+
+			<span className={style}>{joinedOn}</span>
+		</div>
+	);
+});
+
+// Move getAllClients outside the component
+const fetchClients = async (setApi, setMain, thisView) => {
+	setMain((s) => ({ ...s, isLoading: true }));
+
+	try {
+		const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetClients, MyGlobal.GetHeaders());
+
+		if (response.status === 200) {
+			if (Array.isArray(response.data) && response.data.length) {
+				const confirmedClients = response.data.filter((f) => f.is_confirmed === 1);
+
+				setApi({
+					clients: {
+						copy: confirmedClients,
+						data: confirmedClients,
+					},
+				});
+			}
+		}
+	} catch (error) {
+		MyGlobal.HandleErrors(error, `${thisView} => Get All Clients`);
+	} finally {
+		setMain((s) => ({ ...s, isLoading: false }));
+	}
+};
 
 export default function Clients() {
 	// Business Logic
@@ -40,23 +120,21 @@ export default function Clients() {
 	const thisView = MyConstants.Modules.Base.Clients;
 	const headers = MyConstants.TableHeaders.Clients;
 
-	const showFindBoxClearButton = main.find ? "cursor-pointer primary-text" : "hidden";
-	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
+	// Memoized values
+	const showFindBoxClearButton = useMemo(() => (main.find ? "cursor-pointer primary-text" : "hidden"), [main.find]);
+	const blankDataWrapper = useMemo(() => "flex w-full h-full justify-center items-center contrast-background full-border", []);
 
-	// Functions
-	function detectKeystrokes(event) {
-		switch (true) {
-			case event.ctrlKey && event.key == "f":
-				event.preventDefault();
-				document.getElementById("findBox").focus();
-				break;
+	// Memoized functions
+	const detectKeystrokes = useCallback((event) => {
+		if (event.ctrlKey && event.key === "f") {
+			event.preventDefault();
+			document.getElementById("findBox").focus();
 		}
-	}
+	}, []);
 
-	function doFiltering() {
+	const doFiltering = useCallback(() => {
 		const filteredData = api.clients.copy.filter((f) => {
 			const findText = main.find.toLowerCase();
-
 			const id = String(f.id).toLowerCase();
 			const name = String(f.name).toLowerCase();
 			const phoneNumber = String(f.phone_number);
@@ -66,40 +144,40 @@ export default function Clients() {
 		});
 
 		setApi((s) => ({ ...s, clients: { ...s.clients, data: filteredData } }));
-	}
+	}, [api.clients.copy, main.find]);
 
-	function doSorting() {
+	const doSorting = useCallback(() => {
 		return api.clients.data.sort((a, b) => {
 			const aJoinedOn = new Date(a.joined_on);
 			const bJoinedOn = new Date(b.joined_on);
-
 			const { column, isAscending } = main.sort;
 
 			switch (true) {
-				case column == headers.Id && isAscending:
+				case column === headers.Id && isAscending:
 					return a.id.localeCompare(b.id);
-				case column == headers.Id && !isAscending:
+				case column === headers.Id && !isAscending:
 					return b.id.localeCompare(a.id);
-				case column == headers.Name && isAscending:
+				case column === headers.Name && isAscending:
 					return a.name.localeCompare(b.name);
-				case column == headers.Name && !isAscending:
+				case column === headers.Name && !isAscending:
 					return b.name.localeCompare(a.name);
-				case column == headers.EmailAddress && isAscending:
+				case column === headers.EmailAddress && isAscending:
 					return a.email_address.localeCompare(b.email_address);
-				case column == headers.EmailAddress && !isAscending:
+				case column === headers.EmailAddress && !isAscending:
 					return b.email_address.localeCompare(a.email_address);
-				case column == headers.JoinedOn && isAscending:
+				case column === headers.JoinedOn && isAscending:
 					return aJoinedOn - bJoinedOn;
-				case column == headers.JoinedOn && !isAscending:
+				case column === headers.JoinedOn && !isAscending:
 					return bJoinedOn - aJoinedOn;
+				default:
+					return 0;
 			}
 		});
-	}
+	}, [api.clients.data, main.sort, headers]);
 
-	function doExcelExport() {
+	const doExcelExport = useCallback(() => {
 		const records = [];
 		const _records = [];
-
 		const columnsWidth = [];
 		const dataHeaders = [];
 
@@ -163,110 +241,109 @@ export default function Clients() {
 			columns: columnsWidth,
 			fileName: `${thisView}.xlsx`,
 		});
-	}
+	}, [api.clients.data.length, doSorting, headers, thisView]);
 
-	async function getAllClients() {
-		setMain((s) => ({ ...s, isLoading: true }));
+	const getAllClients = useCallback(async () => {
+		await fetchClients(setApi, setMain, thisView);
+	}, []);
 
-		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetClients, MyGlobal.GetHeaders());
-
-			if (response.status === 200) {
-				if (Array.isArray(response.data) && response.data.length) {
-					const confirmedClients = response.data.filter((f) => f.is_confirmed == 1);
-
-					setApi({
-						clients: {
-							copy: confirmedClients,
-							data: confirmedClients,
-						},
-					});
-				}
-			}
-
-			setMounted((s) => ({ ...s, mainComponent: true }));
-		} catch (error) {
-			MyGlobal.HandleErrors(error, `${thisView} => Get All Clients`);
-		} finally {
-			setMain((s) => ({ ...s, isLoading: false }));
-		}
-	}
-
-	function getRowsCount() {
+	const getRowsCount = useCallback(() => {
 		const apiCount = api.clients.data.length;
 		const apiCopyCount = api.clients.copy.length;
 
-		if (apiCount != apiCopyCount) {
-			return `${apiCount} / ${apiCopyCount}`;
-		} else {
-			return apiCount;
-		}
-	}
+		return apiCount !== apiCopyCount ? `${apiCount} / ${apiCopyCount}` : apiCount;
+	}, [api.clients.data.length, api.clients.copy.length]);
 
-	function getIconOrBadge() {
+	const getIconOrBadge = useCallback(() => {
 		if (main.isLoading) {
 			return (
 				<span className="pl-5 relative">
-					<Spinner />
+					<MemoizedSpinner />
 				</span>
 			);
-		} else {
-			return api.clients.data.length > 0 && <Badge value={getRowsCount()} />;
 		}
-	}
+		return api.clients.data.length > 0 && <MemoizedBadge value={getRowsCount()} />;
+	}, [main.isLoading, api.clients.data.length, getRowsCount]);
 
-	function openEmailClient(emailAddress) {
-		globalThis.window.open(`mailto:${emailAddress}`, "_blank");
-	}
+	const openEmailClient = useCallback((emailAddress) => {
+		window.open(`mailto:${emailAddress}`, "_blank");
+	}, []);
 
-	function openWhatsApp(phoneNumber) {
-		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
-	}
+	const openWhatsApp = useCallback((phoneNumber) => {
+		window.open(`https://wa.me/1${phoneNumber}`, "_blank");
+	}, []);
 
-	function setInputs(key, value) {
+	const setInputs = useCallback((key, value) => {
 		setMain((s) => ({ ...s, [key]: value }));
-	}
+	}, []);
 
-	function setSort(column) {
+	const setSort = useCallback((column) => {
 		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
-	}
+	}, []);
 
-	function toggleEditClient(clientId) {
+	const toggleEditClient = useCallback((clientId) => {
 		setMain((s) => ({ ...s, selectedClient: clientId ?? {} }));
 		setMounted((s) => ({ ...s, editClient: clientId ? true : false }));
-	}
+	}, []);
 
-	function toggleSingleClient(clientId) {
+	const toggleSingleClient = useCallback((clientId) => {
 		setMain((s) => ({ ...s, selectedClient: clientId ?? {} }));
 		setMounted((s) => ({ ...s, singleClient: clientId ? true : false }));
-	}
+	}, []);
 
-	// UI Components
-	const uiBody = () => {
+	// Optimize sorting with useMemo
+	const sortedData = useMemo(() => doSorting(), [doSorting]);
+
+	// Optimize filtering with useMemo
+	const filteredData = useMemo(() => {
+		if (!main.find) return api.clients.copy;
+		return api.clients.copy.filter((f) => {
+			const findText = main.find.toLowerCase();
+			const id = String(f.id).toLowerCase();
+			const name = String(f.name).toLowerCase();
+			const phoneNumber = String(f.phone_number);
+			const emailAddress = String(f.email_address).toLowerCase();
+
+			return id.includes(findText) || name.includes(findText) || phoneNumber.includes(findText) || emailAddress.includes(findText);
+		});
+	}, [api.clients.copy, main.find]);
+
+	// Update api state with filtered data
+	useEffect(() => {
+		setApi((s) => ({ ...s, clients: { ...s.clients, data: filteredData } }));
+	}, [filteredData]);
+
+	// Memoized UI Components
+	const uiBody = useCallback(() => {
 		return (
 			<div className="flex flex-col w-full h-full justify-center items-start full-border">
 				<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-				<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.clients.data.length} />
+				<Virtuoso
+					className="w-full h-full overflow-y-auto bottom-border contrast-background"
+					data={sortedData}
+					itemContent={(i, row) => <ClientRow row={row} main={main} toggleEditClient={toggleEditClient} toggleSingleClient={toggleSingleClient} openWhatsApp={openWhatsApp} openEmailClient={openEmailClient} />}
+					totalCount={api.clients.data.length}
+				/>
 
-				{mounted.editClient && <EditClient client={main.selectedClient} mount={mounted.editClient} reload={getAllClients} unmount={toggleEditClient} />}
+				{mounted.editClient && <DynamicEditClient client={main.selectedClient} mount={mounted.editClient} reload={getAllClients} unmount={toggleEditClient} />}
 			</div>
 		);
-	};
+	}, [sortedData, api.clients.data.length, mounted.editClient, main.selectedClient, getAllClients, toggleEditClient, main, toggleSingleClient, openWhatsApp, openEmailClient]);
 
-	const uiExport = () => {
+	const uiExport = useCallback(() => {
 		if (api.clients.data.length && api.clients.copy.length) {
 			return (
-				<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
+				<button className="primary-button-transparent-background" onClick={doExcelExport}>
 					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 				</button>
 			);
 		}
-	};
+	}, [api.clients.data.length, api.clients.copy.length, doExcelExport]);
 
-	const uiFind = () => {
+	const uiFind = useCallback(() => {
 		if (api.clients.copy.length) {
 			return (
-				<TextInputNative
+				<DynamicTextInputNative
 					id="findBox"
 					icon={faSearch}
 					onChange={(e) => setInputs("find", e.target.value)}
@@ -279,11 +356,11 @@ export default function Clients() {
 				/>
 			);
 		}
-	};
+	}, [api.clients.copy.length, main.find, setInputs, showFindBoxClearButton]);
 
-	const uiHeaders = () => {
+	const uiHeaders = useCallback(() => {
 		return Object.values(headers).map((m, i) => {
-			const showArrow = m == main.sort.column ? "visible" : "invisible";
+			const showArrow = m === main.sort.column ? "visible" : "invisible";
 
 			return (
 				<span className="w-1/5 space-x-1 cursor-pointer text-center text-white font-medium-10" onClick={() => setSort(m)} key={i}>
@@ -292,13 +369,13 @@ export default function Clients() {
 				</span>
 			);
 		});
-	};
+	}, [headers, main.sort.column, setSort]);
 
-	const uiMain = () => {
+	const uiMain = useCallback(() => {
 		if (main.isLoading) {
 			return (
 				<div className={blankDataWrapper}>
-					<SpinnerBig />
+					<MemoizedSpinnerBig />
 				</div>
 			);
 		} else if (!api.clients.data.length && api.clients.copy.length) {
@@ -314,69 +391,34 @@ export default function Clients() {
 				</div>
 			);
 		} else if (mounted.singleClient) {
-			return <SingleClient client={main.selectedClient} unmount={toggleSingleClient} />;
+			return <DynamicSingleClient client={main.selectedClient} unmount={toggleSingleClient} />;
 		} else {
 			return uiBody();
 		}
-	};
+	}, [main.isLoading, api.clients.data.length, api.clients.copy.length, mounted.singleClient, main.selectedClient, toggleSingleClient, uiBody, blankDataWrapper]);
 
-	const uiRows = (row) => {
-		const style = "flex flex-wrap w-1/5 min-h-9 justify-center items-center text-center";
-		const tooltipStyle = `${style} cursor-pointer primary-text`;
-
-		const clientId = MyGlobal.HighlightText(row.id, main.find);
-		const clientName = MyGlobal.HighlightText(row.name, main.find);
-		const phoneNumber = MyGlobal.HighlightText(row.phone_number, main.find);
-		const emailAddress = MyGlobal.HighlightText(row.email_address, main.find);
-
-		const joinedOn = dayjs(row.joined_on).format("DD MMM, YYYY");
-
-		return (
-			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text" key={row.id}>
-				<Tippy content={<Tooltip text="Edit this client's details." />} placement="bottom">
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientId }} onClick={() => toggleEditClient(row)} />
-				</Tippy>
-
-				<Tippy content={<Tooltip text="Open this client's detailed view." />} placement="bottom">
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleClient(row)} />
-				</Tippy>
-
-				<Tippy content={<Tooltip text="Open this contact on WhatsApp Web." />} placement="bottom">
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsApp(row.phone_number)} />
-				</Tippy>
-
-				<Tippy content={<Tooltip text={row.email_address} />} placement="bottom">
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: emailAddress }} onClick={() => openEmailClient(row.email_address)} />
-				</Tippy>
-
-				<span className={style}>{joinedOn}</span>
-			</div>
-		);
-	};
-
-	const uiSortArrows = (column) => {
-		if (main.sort.column == column) {
-			if (main.sort.isAscending) {
-				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} />;
-			} else {
-				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} />;
+	const uiSortArrows = useCallback(
+		(column) => {
+			if (main.sort.column === column) {
+				return main.sort.isAscending ? <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} /> : <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} />;
 			}
-		}
-	};
+		},
+		[main.sort.column, main.sort.isAscending],
+	);
 
-	// Hooks
-	useEffect(() => {
+	// Use useLayoutEffect for initialization
+	useLayoutEffect(() => {
 		getAllClients();
-
-		globalThis.addEventListener("keydown", detectKeystrokes);
-		return () => globalThis.removeEventListener("keydown", detectKeystrokes);
 	}, []);
 
+	// Use useEffect for event listeners
 	useEffect(() => {
-		if (mounted.mainComponent) {
-			doFiltering();
-		}
-	}, [main.find]);
+		window.addEventListener("keydown", detectKeystrokes);
+
+		return () => {
+			window.removeEventListener("keydown", detectKeystrokes);
+		};
+	}, [detectKeystrokes]);
 
 	// Main UI
 	return (
@@ -392,7 +434,7 @@ export default function Clients() {
 						<div className="flex w-1/3 justify-end items-center">{uiExport()}</div>
 					</div>
 				)}
-				{uiMain()}
+				{mounted.singleClient ? <DynamicSingleClient client={main.selectedClient} unmount={toggleSingleClient} /> : uiMain()}
 			</>
 		</div>
 	);

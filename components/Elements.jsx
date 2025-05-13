@@ -1,7 +1,5 @@
 "use client";
 
-import { MyGlobal } from "@/utilities/global";
-
 const getInitials = (name) => {
 	if (!name) return "";
 	const words = name.trim().split(" ");
@@ -61,7 +59,7 @@ export function AvatarCircle({ name, names }) {
 export const Badge = ({ value }) => {
 	return (
 		<div className="relative inline-block">
-			<span className="flex min-w-[1.5rem] w-max h-6 px-2 justify-center items-center rounded-full text-white font-semibold-10 primary-background">{value}</span>
+			<span className="flex min-w-[1.5rem] w-max h-6 px-2 justify-center items-center rounded-full text-white font-semibold-12 primary-background">{value}</span>
 		</div>
 	);
 };

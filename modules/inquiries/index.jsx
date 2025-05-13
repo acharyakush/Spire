@@ -29,10 +29,64 @@ const DynamicNewProject = dynamic(() => import("../projects/NewProject"), { ssr:
 const DynamicNewQuotation = dynamic(() => import("./NewQuotation"), { ssr: false });
 const DynamicUpdateStatus = dynamic(() => import("@/modals/inquiries/miscellaneous").then((t) => ({ default: t.UpdateStatus })), { ssr: false });
 
+function filterMergedInquiries(data, { from, to, findText }) {
+	const isSearchFilterActive = !!findText;
+	const isDateFilterActive = !!from && !!to;
+
+	const lowerText = isSearchFilterActive ? findText.toLowerCase() : null;
+	const startDate = isDateFilterActive ? new Date(from).getTime() : null;
+	const endDate = isDateFilterActive ? new Date(to).getTime() : null;
+
+	const filtered = [];
+
+	for (let i = 0; i < data.length; i++) {
+		const item = data[i];
+
+		// ✅ Date filter
+		if (isDateFilterActive) {
+			const entryTime = new Date(item.entry_date).getTime();
+			if (isNaN(entryTime) || entryTime < startDate || entryTime > endDate) continue;
+		}
+
+		// ✅ Text filter
+		if (isSearchFilterActive) {
+			let found = false;
+			const fields = [
+				item.client_id,
+				item.client_name,
+				item.phone_number,
+				item.main_project,
+				item.sub_project,
+				item.reference_id,
+				item.reference_name,
+				item.follow_ups,
+				item.follow_ups_initials,
+				item.quote,
+				item.status,
+				item.notes,
+				item.entry_by_name,
+			];
+
+			for (let j = 0; j < fields.length; j++) {
+				const val = fields[j];
+
+				if (val && String(val).toLowerCase().includes(lowerText)) {
+					found = true;
+					break; // 🧠 short-circuit!
+				}
+			}
+
+			if (!found) continue;
+		}
+
+		filtered.push(item);
+	}
+
+	return filtered;
+}
+
 export default function Inquiries({ presetStatus, setModuleProps }) {
 	// Business Logic
-	const hasFetchedRef = useRef(false);
-
 	const [api, setApi] = useState({
 		clients: [],
 		inquiries: {
@@ -163,40 +217,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		});
 	}, []);
 
-	function doFiltering(type) {
-		const filteredData = api.inquiries.mergedWithNotes.filter((f) => {
-			if (type == "entryDate") {
-				const checkDate = new Date(f.entry_date);
-				const startDate = main.filter.from;
-				const endDate = main.filter.to;
-
-				if (checkDate >= startDate && checkDate <= endDate) {
-					return f;
-				}
-			} else {
-				const findText = main.findText.toLowerCase();
-
-				return (
-					String(f.client_id).toLowerCase().includes(findText) ||
-					String(f.client_name).toLowerCase().includes(findText) ||
-					String(f.phone_number).includes(findText) ||
-					String(f.main_project).toLowerCase().includes(findText) ||
-					String(f.sub_project).toLowerCase().includes(findText) ||
-					String(f.reference_id).toLowerCase().includes(findText) ||
-					String(f.reference_name).toLowerCase().includes(findText) ||
-					String(f.follow_ups).toLowerCase().includes(findText) ||
-					String(f.follow_ups_initials).toLowerCase().includes(findText) ||
-					String(f.quote).includes(findText) ||
-					String(f.status).toLowerCase().includes(findText) ||
-					String(f.notes).toLowerCase().includes(findText) ||
-					String(f.entry_by_name).toLowerCase().includes(findText)
-				);
-			}
-		});
-
-		setApi((s) => ({ ...s, inquiries: { ...s.inquiries, data: filteredData } }));
-	}
-
 	const doSorting = useCallback(
 		(data) => {
 			const { column, isAscending } = main.sort;
@@ -270,9 +290,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						}
 					}
 
-					// const getQuotation = supportData?.quotations?.filter((f) => f.custom_id == obj.quotation_id);
-					// const getQuotationServices = supportData?.quotationsServices?.filter((f) => f.quotation_id == obj.quotation_id);
-
 					const nextfollowUpOn = supportData?.notes?.filter((f) => f.inquiry_id == obj.id);
 
 					const abc = nextfollowUpOn?.filter((f) => f.next_follow_up_on);
@@ -309,7 +326,15 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					revised = array;
 				}
 
-				setApi((s) => ({ ...s, inquiries: { ...s.inquiries, copy: revisedCopy, data: revised, mergedWithNotes: mergeInquiriesAndNotesById(revisedCopy) } }));
+				const merged = mergeInquiriesAndNotesById(revisedCopy);
+
+				const filtered = filterMergedInquiries(merged, {
+					from: main.filter.from,
+					to: main.filter.to,
+					findText: main.findText,
+				});
+
+				setApi((s) => ({ ...s, inquiries: { ...s.inquiries, copy: revisedCopy, data: filtered, mergedWithNotes: merged } }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get Inquiries");
@@ -1054,16 +1079,23 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}, []);
 
 	useEffect(() => {
-		doFiltering("");
-	}, [main.findText]);
+		// Only run filtering when mergedWithNotes is available
+		if (api.inquiries.mergedWithNotes.length) {
+			const filtered = filterMergedInquiries(api.inquiries.mergedWithNotes, {
+				from: main.filter.from,
+				to: main.filter.to,
+				findText: main.findText,
+			});
 
-	useEffect(() => {
-		if (main.filter.from && main.filter.to) {
-			doFiltering("entryDate");
-		} else {
-			doFiltering("");
+			setApi((s) => ({
+				...s,
+				inquiries: {
+					...s.inquiries,
+					data: filtered,
+				},
+			}));
 		}
-	}, [main.filter]);
+	}, [main.findText, main.filter, api.inquiries.mergedWithNotes]);
 
 	useEffect(() => {
 		if (mounted.mainComponent) {

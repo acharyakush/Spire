@@ -22,10 +22,10 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 	});
 
 	const [client, setClient] = useState({
-		address: inquiry?.client?.address,
-		id: inquiry?.client?.id,
-		name: inquiry?.client?.name,
-		phoneNumber: inquiry?.client?.phone_number,
+		address: inquiry?.address,
+		id: inquiry?.client_id,
+		name: inquiry?.client_name,
+		phoneNumber: inquiry?.phone_number,
 	});
 
 	const [firm, setFirm] = useState({

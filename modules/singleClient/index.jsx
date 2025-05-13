@@ -710,7 +710,7 @@ export default function SingleClient({ client, unmount }) {
 		const amountPendingStyle = `${style} font-semibold-11 ${amountPendingColour}`;
 
 		const amountReceivedColour = row.amount_received == 0 ? "text-gray-300" : "green-text";
-		const amountReceivedStyle = `${style} font-semibold-11 ${amountReceivedColour}`;
+		const amountReceivedStyle = `font-semibold-11 ${amountReceivedColour}`;
 
 		const totalFeesColour = row.total_fees == 0 ? "text-gray-300" : "primary-text";
 		const totalFeesStyle = `${style} font-semibold-11 ${totalFeesColour}`;
@@ -741,9 +741,16 @@ export default function SingleClient({ client, unmount }) {
 
 				<span className={rvFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.reimburse_voucher, main.filter.find) }} />
 
-				<Tippy content={<Tooltip text={`Invoice - ${row.invoice_amount_received}\n, RV - ${row.rv_amount_received}`} />} placement="bottom">
-					<span className={`${tooltipStyle2} ${amountReceivedStyle} underline underline-offset-4 cursor-pointer`} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_received, main.filter.find) }} />
-				</Tippy>
+				<div className={`${style} space-x-2 relative`}>
+					<Tippy content={<Tooltip text={`Invoice - ${row.invoice_amount_received}\n, RV - ${row.rv_amount_received}`} />} placement="bottom">
+						<span className={`${amountReceivedStyle} w-4/5 underline underline-offset-4 cursor-help`} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_received, main.filter.find) }} />
+					</Tippy>
+					<Tippy content={<Tooltip text="Edit this amount." />} placement="bottom">
+						<span className="absolute w-1/5 left-16 cursor-pointer">
+							<FontAwesomeIcon icon={faPencil} onClick={() => editReceivedAmount(row)} size="xs" />
+						</span>
+					</Tippy>
+				</div>
 
 				<span className={amountPendingStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_pending, main.filter.find) }} />
 
