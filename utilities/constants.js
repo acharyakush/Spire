@@ -259,6 +259,7 @@ const MyConstants = Object.freeze({
 			MarkSubTaskCompleted: "Mark Sub Task Completed",
 			MarkTaskCompleted: "Mark Task Completed",
 			NewAffiliate: "New Affiliate",
+			NewEmployee: "New Employee",
 			NewInquiry: "New Inquiry",
 			NewInvoice: "New Invoice",
 			NewFirm: "New Firm",

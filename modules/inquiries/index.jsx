@@ -293,6 +293,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					const nextfollowUpOn = supportData?.notes?.filter((f) => f.inquiry_id == obj.id);
 
 					const abc = nextfollowUpOn?.filter((f) => f.next_follow_up_on);
+					abc?.sort((a, b) => b.id - a.id);
 
 					const data = {
 						...obj,

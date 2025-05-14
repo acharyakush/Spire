@@ -100,11 +100,14 @@ export default function EditEmployee() {
 						reportsTo.id = administrator.id;
 						reportsTo.name = administrator.name;
 					}
-					employees.push({
-						...fe,
-						name: fe.full_name,
-						reports_to: reportsTo,
-					});
+
+					if (fe.id != MyGlobal.GetUserId()) {
+						employees.push({
+							...fe,
+							name: fe.full_name,
+							reports_to: reportsTo,
+						});
+					}
 				});
 
 				setApi((s) => ({

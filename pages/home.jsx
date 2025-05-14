@@ -476,13 +476,24 @@ export default function Home() {
 
 	function uiUserMenuList() {
 		return Object.values(MyConstants.UserMenu)
-			.filter((f) => {
-				if (MyGlobal.GetUserId().startsWith("EP")) {
-					return ![MyConstants.UserMenu.Activity, MyConstants.UserMenu.Employees, MyConstants.UserMenu.Storage].includes(f);
-				} else {
-					return f;
+			.filter((menuItem) => {
+				const isAdmin = MyGlobal.IsUserAdministrator();
+
+				const hasEmployeePermission = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditEmployee);
+
+				// Special handling for restricted items
+				if (menuItem === MyConstants.UserMenu.Activity || menuItem === MyConstants.UserMenu.Storage) {
+					return isAdmin; // only admin sees them
 				}
+
+				if (menuItem === MyConstants.UserMenu.Employees) {
+					return hasEmployeePermission || isAdmin;
+				}
+
+				// All other items are allowed
+				return true;
 			})
+
 			.map((m, i) => {
 				return (
 					<MenuItem as="div" className="p-3 space-x-3 cursor-pointer border-y font-medium-12 black-text hovered-rows" key={i} onClick={() => getUserMenuClickAction(m)}>

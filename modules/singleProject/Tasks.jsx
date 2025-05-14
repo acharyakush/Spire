@@ -621,7 +621,7 @@ export default function Tasks({ project }) {
 	}
 
 	function uiTaskActions(isCompleted, task) {
-		if (!isCompleted || isUserAdministrator) {
+		if (!isCompleted) {
 			const style = "flex w-full py-2 space-x-2.5 justify-start items-center cursor-pointer border-y hovered-rows";
 
 			const noClickAndHalfOpacity = "pointer-events-none opacity-25";
@@ -635,7 +635,17 @@ export default function Tasks({ project }) {
 
 			const disableTaskStyle = isUserAdministrator ? clickAndFullOpacity : allowDisablingTask && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
 
-			const markTaskCompletedStyle = isUserAdministrator && allowMarkingTaskCompleted && task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
+			let markTaskCompletedStyle = "";
+
+			if (isUserAdministrator) {
+				markTaskCompletedStyle = task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
+			} else {
+				if (allowMarkingTaskCompleted) {
+					markTaskCompletedStyle = task.is_completed == 0 && task.is_disabled == 0 ? clickAndFullOpacity : noClickAndHalfOpacity;
+				} else {
+					markTaskCompletedStyle = noClickAndHalfOpacity;
+				}
+			}
 
 			return (
 				<Tippy

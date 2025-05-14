@@ -19,7 +19,7 @@ export default function Employees({ unmount }) {
 	const thisView = MyConstants.Modules.Base.Employees;
 
 	const [main, setMain] = useState({
-		module: modules.New,
+		module: modules.Edit,
 	});
 
 	// Functions
@@ -38,38 +38,34 @@ export default function Employees({ unmount }) {
 	}
 
 	function uiModules() {
-		return Object.values(modules).map((m, i) => {
-			const icon = m == modules.New ? faPlusCircle : faPencil;
+		return Object.values(modules)
+			.filter((f) => (!MyGlobal.HasPermission(MyConstants.Modules.Derived.NewEmployee) ? f != modules.New : f))
+			.map((m, i) => {
+				const icon = m == modules.New ? faPlusCircle : faPencil;
 
-			const selectedStyle = m == main.module ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+				const selectedStyle = m == main.module ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
-			const wrapper = `flex w-full px-4 py-2 space-x-3 justify-start items-center rounded shadow ${selectedStyle} font-medium-12 hovered-rows`;
+				const wrapper = `flex w-full px-4 py-2 space-x-3 justify-start items-center rounded shadow ${selectedStyle} font-medium-12 hovered-rows`;
 
-			return (
-				<button className={wrapper} key={i} onClick={() => toggleModule(m)}>
-					<FontAwesomeIcon icon={icon} size="sm" />
-					<span>{m}</span>
-				</button>
-			);
-		});
+				return (
+					<button className={wrapper} key={i} onClick={() => toggleModule(m)}>
+						<FontAwesomeIcon icon={icon} size="sm" />
+						<span>{m}</span>
+					</button>
+				);
+			});
 	}
 
 	function uiSelectedModule() {
 		if (main.module === modules.New) {
 			return (
-				<ErrorBoundary
-					key={`ErrorBoundary_${module}`}
-					onError={(e) => MyGlobal.LogErrors(e.message, module)}
-					FallbackComponent={ErrorFallbackComponent}>
+				<ErrorBoundary key={`ErrorBoundary_${module}`} onError={(e) => MyGlobal.LogErrors(e.message, module)} FallbackComponent={ErrorFallbackComponent}>
 					<NewEmployee />
 				</ErrorBoundary>
 			);
 		} else {
 			return (
-				<ErrorBoundary
-					key={`ErrorBoundary_${module}`}
-					onError={(e) => MyGlobal.LogErrors(e.message, module)}
-					FallbackComponent={ErrorFallbackComponent}>
+				<ErrorBoundary key={`ErrorBoundary_${module}`} onError={(e) => MyGlobal.LogErrors(e.message, module)} FallbackComponent={ErrorFallbackComponent}>
 					<EditEmployee />
 				</ErrorBoundary>
 			);
