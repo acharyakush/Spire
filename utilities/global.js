@@ -37,6 +37,20 @@ const getSafeRegex = (() => {
 	};
 })();
 
+let scrollMap = {};
+
+export const saveScrollPosition = (key = "default", scrollTop = 0) => {
+	scrollMap[key] = scrollTop;
+};
+
+export const getScrollPosition = (key = "default") => {
+	return scrollMap[key] || 0;
+};
+
+export const clearScrollPosition = (key = "default") => {
+	delete scrollMap[key];
+};
+
 export const MyGlobal = Object.freeze({
 	AddActivity: async (activity, module = "General") => {
 		try {
@@ -452,22 +466,60 @@ export const MyGlobal = Object.freeze({
 		}
 	},
 
-	MakeNewQuotationId: (payload) => {
+	// MakeNewQuotationId: (payload) => {
+	// 	if (payload.length) {
+	// 		const extractedIds = payload.map((m) => {
+	// 			const idPart = String(m.custom_id).split("/").at(2) || "";
+	// 			const match = idPart.match(/\d+$/);
+	// 			return match ? parseInt(match[0], 10) : 0;
+	// 		});
+
+	// 		const latestId = Math.max(...extractedIds);
+	// 		const nextId = latestId + 1;
+
+	// 		if (nextId > 999) return "999";
+
+	// 		return String(nextId).padStart(3, "0");
+	// 	} else {
+	// 		return "001";
+	// 	}
+	// },
+
+	MakeNewQuotationId: (firmName, payload) => {
 		if (payload.length) {
-			const extractedIds = payload.map((m) => {
-				const idPart = String(m.custom_id).split("/").at(2) || "";
-				const match = idPart.match(/\d+$/);
-				return match ? parseInt(match[0], 10) : 0;
+			const initials = MyGlobal.GetInitials(firmName).at(0); // e.g., SA
+			const prefix = `QTN/${initials}`; // e.g., QTN/SA
+
+			const target = payload.filter((f) => {
+				return String(f.custom_id).startsWith(prefix);
 			});
 
-			const latestId = Math.max(...extractedIds);
-			const nextId = latestId + 1;
+			if (!target.length) {
+				return "041";
+			} else {
+				const extractedIds = target.map((m) => {
+					const idPart = String(m.custom_id).split("/").at(2);
+					const matched = idPart?.match(/\d+$/);
 
-			if (nextId > 999) return "999";
+					let number = 0;
+					if (matched && matched[0]) {
+						const cleaned = matched[0].replace(/^0+/, "") || "0"; // fallback to "0" if empty
+						number = parseInt(cleaned, 10);
+					}
 
-			return String(nextId).padStart(3, "0");
+					return number;
+				});
+
+				const latestId = Math.max(...extractedIds);
+				const nextId = latestId + 1;
+
+				if (nextId > 999) return "999";
+
+				const safeId = Math.max(nextId, 41);
+				return String(safeId).padStart(3, "0");
+			}
 		} else {
-			return "001";
+			return "041";
 		}
 	},
 

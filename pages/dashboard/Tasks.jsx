@@ -2,11 +2,15 @@
 
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
+import "tippy.js/animations/shift-away.css";
+
 import SlotCounter from "react-slot-counter";
 import MyConstants from "@/utilities/constants";
 
-import { BadgeLarge2 } from "@/components/Elements";
-import { faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark } from "@fortawesome/free-solid-svg-icons";
+import { BadgeLarge2, TooltipList } from "@/components/Elements";
+import { faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark, faStar } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Tippy from "@tippyjs/react";
 
 export default function Tasks({ setModuleProps, tasks }) {
 	// Functions
@@ -78,11 +82,16 @@ export default function Tasks({ setModuleProps, tasks }) {
 	function uiMain() {
 		return (
 			<div className="flex flex-col w-full justify-between items-center anim slide-in-down">
-				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-16 primary-text">
-					<span>{MyConstants.Modules.Base.Tasks}</span>
-					<BadgeLarge2>
-						<SlotCounter value={tasks?.total ?? 0} />
-					</BadgeLarge2>
+				<div className="flex w-full space-x-2.5 justify-between items-center font-bold-16 primary-text">
+					<div className="flex w-full space-x-2.5 justify-start items-center">
+						<span>{MyConstants.Modules.Base.Tasks}</span>
+						<BadgeLarge2>
+							<SlotCounter value={tasks?.total ?? 0} />
+						</BadgeLarge2>
+					</div>
+					<Tippy animation="shift-away" content={<TooltipList payload={[`Completed: ${tasks?.completed}`, `Disabled: ${tasks?.disabled}`, `Others: ${tasks?.others}`]} />} placement="bottom">
+						<FontAwesomeIcon className="text-yellow-500" icon={faStar} />
+					</Tippy>
 				</div>
 				<div className="w-full pt-2.5 grid grid-cols-2 gap-5">
 					{uiBlock("Overdue")}

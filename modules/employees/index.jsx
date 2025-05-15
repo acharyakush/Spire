@@ -39,7 +39,17 @@ export default function Employees({ unmount }) {
 
 	function uiModules() {
 		return Object.values(modules)
-			.filter((f) => (!MyGlobal.HasPermission(MyConstants.Modules.Derived.NewEmployee) ? f != modules.New : f))
+			.filter((f) => {
+				if (MyGlobal.IsUserAdministrator()) return true;
+
+				const canEdit = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditEmployee);
+				const canNew = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewEmployee);
+
+				if (!canEdit && f === modules.Edit) return false;
+				if (!canNew && f === modules.New) return false;
+
+				return true;
+			})
 			.map((m, i) => {
 				const icon = m == modules.New ? faPlusCircle : faPencil;
 

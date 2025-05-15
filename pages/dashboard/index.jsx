@@ -57,13 +57,6 @@ export default function Dashboard({ setModuleProps }) {
 			if (response.status == 200) {
 				const { companies, inquiries, invoices, projects, rv, tasks, transactions } = response.data;
 
-				// const prjs = updateProjects(companies, invoices, transactions, projects);
-
-				// updateTasks(tasks);
-				// updateInquiries(inquiries);
-				// updateInvoices(invoices, prjs.paymentOverdue, prjs.paymentPending, prjs.paymentReceived, projects);
-				// updateRv(rv, tasks);
-
 				startTransition(() => {
 					const prjs = updateProjects(companies, invoices, transactions, projects);
 

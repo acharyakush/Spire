@@ -49,7 +49,7 @@ export default function Notes({ clients, inquiry, reload, unmount }) {
 	const showFromDateClearButton = main.filter.from ? "cursor-pointer primary-text" : "hidden";
 	const showToDateClearButton = main.filter.to ? "cursor-pointer primary-text" : "hidden";
 
-	const disableAddButton = main.isAddingNote || !main.note ? "pointer-events-none opacity-25" : "pointer-events-auto opacity-100";
+	const disableAddButton = main.isAddingNote ? "pointer-events-none opacity-25" : "pointer-events-auto opacity-100";
 	const addButtonStyle = `primary-button-condensed !h-9 ${disableAddButton}`;
 
 	// Functions

@@ -269,6 +269,7 @@ const MyConstants = Object.freeze({
 			NewTask: "New Task",
 			NewVendor: "New Vendor",
 			PaymentReceived: "Payment Received",
+			Quotation: "Quotation",
 		}),
 		Other: Object.freeze({
 			CashFlow: Object.freeze({

@@ -57,7 +57,7 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 		},
 	]);
 
-	const proposalNumber = "QTN/" + MyGlobal.GetInitials(firm.name)[0] + "/" + MyGlobal.MakeNewQuotationId(api.quotations);
+	const proposalNumber = "QTN/" + MyGlobal.GetInitials(firm.name)[0] + "/" + MyGlobal.MakeNewQuotationId(firm.name, api.quotations);
 
 	// Functions
 	function addRow() {

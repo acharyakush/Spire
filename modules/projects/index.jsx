@@ -12,10 +12,10 @@ import SingleProject from "../singleProject";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
-import { useEffect, useState, useMemo, useCallback } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";

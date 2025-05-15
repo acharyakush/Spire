@@ -13,11 +13,11 @@ import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
-import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getScrollPosition, MyGlobal, saveScrollPosition } from "@/utilities/global";
 import { AvatarCircle, Badge, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
 import { faCalendar, faChevronDown, faFileDownload, faFileExcel, faFilter, faIndianRupee, faMultiply, faPlusCircle, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
@@ -120,12 +120,16 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	const allowConvertingToProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewProject);
 
+	const allowQuotation = MyGlobal.HasPermission(MyConstants.Modules.Derived.Quotation);
+
 	const headers = useMemo(() => MyConstants.TableHeaders.Inquiries, []);
 	const statuses = useMemo(() => MyConstants.Statuses.Inquiries, []);
 
 	const thisView = MyConstants.Modules.Base.Inquiries;
 	const isAdministrator = MyGlobal.IsUserAdministrator();
 	const newInquiryButton = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry) ? "block space-x-1.5 primary-button-transparent-background" : "hidden";
+
+	const currentScrollPositionReference = useRef(null); // prevents multiple restorations
 
 	const showFromDateClearButton = useMemo(() => (main.filter.from ? "cursor-pointer primary-text" : "hidden"), [main.filter.from]);
 	const showToDateClearButton = useMemo(() => (main.filter.to ? "cursor-pointer primary-text" : "hidden"), [main.filter.to]);
@@ -542,6 +546,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		}
 	}
 
+	const handleRangeChange = useCallback((range) => {
+		saveScrollPosition("inquiries", range.startIndex); // topmost visible item index
+	}, []);
+
 	// Memoized
 	const Headers = memo(function renderHeaders({ headers, main, setSort, uiSortArrows, uiStatusFilter }) {
 		return Object.values(headers).map((m, i) => {
@@ -637,6 +645,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						<Headers headers={headers} main={main} setSort={setSort} uiSortArrows={uiSortArrows} uiStatusFilter={uiStatusFilter} />
 					</div>
 					<Virtuoso
+						ref={currentScrollPositionReference}
+						rangeChanged={handleRangeChange}
 						className="w-full h-full overflow-y-auto contrast-background"
 						data={api.inquiries.data}
 						itemContent={(_, row) => (
@@ -702,7 +712,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	// UI Components
 	function uiAddQuotation(row, toggleAddQuotation) {
-		if (isAdministrator) {
+		if (isAdministrator || allowQuotation) {
 			return (
 				<Tippy animation="shift-away" content={<Tooltip text="Add a quotation for this inquiry." />} placement="bottom">
 					<FontAwesomeIcon className="cursor-pointer green-text" icon={faReceipt} onClick={() => toggleAddQuotation(row, true)} size="xs" />
@@ -749,7 +759,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function uiDownloadQuotation(row) {
-		if (isAdministrator) {
+		if (isAdministrator || allowQuotation) {
 			const showDownloadButton = row.quotation_id ? "cursor-pointer visible primary-text" : "invisible";
 
 			return (
@@ -1078,6 +1088,17 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			globalThis.removeEventListener("keydown", detectKeystrokes);
 		};
 	}, []);
+
+	useEffect(() => {
+		if (!mounted.notes && currentScrollPositionReference.current) {
+			const savedIndex = getScrollPosition("inquiries");
+			currentScrollPositionReference.current.scrollToIndex({
+				index: savedIndex,
+				align: "nearest",
+				behavior: "auto", // or "smooth" if you like
+			});
+		}
+	}, [mounted.notes]);
 
 	useEffect(() => {
 		// Only run filtering when mergedWithNotes is available

@@ -479,7 +479,7 @@ export default function Home() {
 			.filter((menuItem) => {
 				const isAdmin = MyGlobal.IsUserAdministrator();
 
-				const hasEmployeePermission = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditEmployee);
+				const hasEmployeePermission = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditEmployee) || MyGlobal.HasPermission(MyConstants.Modules.Derived.NewEmployee);
 
 				// Special handling for restricted items
 				if (menuItem === MyConstants.UserMenu.Activity || menuItem === MyConstants.UserMenu.Storage) {

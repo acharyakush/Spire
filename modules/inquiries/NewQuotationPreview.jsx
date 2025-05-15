@@ -210,25 +210,23 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 	}
 
 	function uiServicesProposalRows() {
-		return quotation?.services
-			?.filter((f) => f.services && f.inclusions && f.professionalFees && f.governmentFees)
-			?.map((m, i) => {
-				const showBottomBorder = i !== quotation?.services?.length - 1 ? "bottom-border" : "";
-				const wrapper = `flex w-full py-2 justify-center items-center font-regular-12 ${showBottomBorder}`;
+		return quotation?.services?.map((m, i) => {
+			const showBottomBorder = i !== quotation?.services?.length - 1 ? "bottom-border" : "";
+			const wrapper = `flex w-full py-2 justify-center items-center font-regular-12 ${showBottomBorder}`;
 
-				const total = +m?.professionalFees + +m.governmentFees;
+			const total = +m?.professionalFees + +m.governmentFees;
 
-				return (
-					<div className={wrapper}>
-						<span className="flex justify-center items-center w-[5%]">{i + 1}</span>
-						<span className="flex w-[30%] justify-center items-center">{m?.services}</span>
-						<span className="flex w-[30%] justify-center items-center">{m?.inclusions}</span>
-						<span className="flex w-[15%] justify-center items-center">{MyGlobal.FormatCurrency(m?.professionalFees)}</span>
-						<span className="flex w-[15%] justify-center items-center">{MyGlobal.FormatCurrency(m?.governmentFees)}</span>
-						<span className="flex w-[10%] justify-center items-center">{MyGlobal.FormatCurrency(total)}</span>
-					</div>
-				);
-			});
+			return (
+				<div className={wrapper}>
+					<span className="flex justify-center items-center w-[5%]">{i + 1}</span>
+					<span className="flex w-[30%] justify-center items-center">{m?.services}</span>
+					<span className="flex w-[30%] justify-center items-center">{m?.inclusions}</span>
+					<span className="flex w-[15%] justify-center items-center">{MyGlobal.FormatCurrency(m?.professionalFees)}</span>
+					<span className="flex w-[15%] justify-center items-center">{MyGlobal.FormatCurrency(m?.governmentFees)}</span>
+					<span className="flex w-[10%] justify-center items-center">{MyGlobal.FormatCurrency(total)}</span>
+				</div>
+			);
+		});
 	}
 
 	function uiFirm() {
@@ -288,7 +286,7 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 
 	// Main UI
 	return (
-		<div className="flex flex-col w-full h-full justify-center items-center">
+		<div className="flex flex-col w-full h-full justify-center items-center contrast-background">
 			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
 				<div className="flex w-full space-x-2.5 justify-start items-center">
 					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount(false)} />
