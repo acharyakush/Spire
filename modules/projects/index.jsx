@@ -264,12 +264,15 @@ export default function Projects({ presetStatus, setModuleProps }) {
 						let reimburseVoucher = 0;
 
 						const projectTasks = tasksByProject[project.id] || [];
+
 						projectTasks.forEach((task) => {
 							reimburseVoucher += Number(task.expense);
 							const tasksDueDate = dayjs(task.due_on);
 
 							if (tasksDueDate.isBefore(today, "date")) {
-								hasTasksOverdue = true;
+								if (project.status == statuses.Active) {
+									hasTasksOverdue = true;
+								}
 							}
 							if (tasksDueDate.isSame(today, "date")) {
 								hasTasksDueToday = true;
@@ -331,9 +334,12 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const setModule = useCallback(
 		(module) => {
-			const source = module.key === "All" ? api.projects.copy : module?.items;
+			// Since aggregatedProjects now contains pre-filtered data,
+			// we can use it directly without additional filtering
+			const source = module.items || [];
 			const revisedStatuses = calculateStatusCounts(source);
 
+			// Update the state with our new module and status counts
 			setMain((s) => ({
 				...s,
 				activeModule: { items: module?.items, name: module?.key },
@@ -341,23 +347,62 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				revisedStatuses,
 			}));
 		},
-		[api.projects.copy, calculateStatusCounts],
+		[calculateStatusCounts],
 	);
 
 	// Memoized derived data
 	const aggregatedProjects = useMemo(() => {
 		if (!api.projects.copy.length) return [];
 
-		const groupedByMainProject = api.projects.copy.reduce((pv, cv) => {
+		// First, pre-filter data if we have a search/filter term from the dashboard
+		let filteredCopy = [...api.projects.copy];
+
+		// Apply any text/filter criteria from dashboard before grouping
+		if (main.findText) {
+			if (Object.values(statuses).includes(main.findText)) {
+				// Handle status filters
+				filteredCopy = filteredCopy.filter((project) => project.status.includes(main.findText));
+			} else if (main.findText === "Overdue") {
+				filteredCopy = filteredCopy.filter((project) => project.has_tasks_overdue);
+			} else if (main.findText === "Today") {
+				filteredCopy = filteredCopy.filter((project) => project.has_tasks_due_today);
+			} else if (main.findText === "Tomorrow") {
+				filteredCopy = filteredCopy.filter((project) => project.has_tasks_due_tomorrow);
+			} else if (main.findText === "Upcoming") {
+				filteredCopy = filteredCopy.filter((project) => project.has_tasks_upcoming);
+			} else {
+				// Handle text search filters
+				const findText = main.findText.toLowerCase();
+				filteredCopy = filteredCopy.filter(
+					(project) =>
+						String(project.id).toLowerCase().includes(findText) ||
+						String(project.government_id || "")
+							.toLowerCase()
+							.includes(findText) ||
+						String(project.client_id).toLowerCase().includes(findText) ||
+						project.client_name.toLowerCase().includes(findText) ||
+						project.company_name.toLowerCase().includes(findText) ||
+						project.main_project_name.toLowerCase().includes(findText) ||
+						project.sub_project_name.toLowerCase().includes(findText) ||
+						String(project.team_names).toLowerCase().includes(findText) ||
+						String(project.team_names_initials).toLowerCase().includes(findText) ||
+						project.status.toLowerCase().includes(findText),
+				);
+			}
+		}
+
+		// Now group the already filtered data by main project
+		const groupedByMainProject = filteredCopy.reduce((pv, cv) => {
 			if (!pv[cv.main_project_name]) {
 				pv[cv.main_project_name] = [];
 			}
 
 			if (!pv["All"]) {
-				pv["All"] = [{ name: "All" }];
+				pv["All"] = [];
 			}
 
 			pv[cv.main_project_name].push(cv);
+			pv["All"].push(cv);
 			return pv;
 		}, {});
 
@@ -369,7 +414,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 				return a.key.localeCompare(b.key);
 			});
-	}, [api.projects.copy]);
+	}, [api.projects.copy, main.findText, statuses]);
 
 	// Setup cache for expensive data operations
 	const dataCache = useMemo(
@@ -420,6 +465,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				if (Object.values(statuses).includes(main.findText)) {
 					matchesTextFilter = project.status.includes(main.findText);
 				} else if (main.findText === "Overdue") {
+					// Important: This filter is coming from the dashboard
 					matchesTextFilter = project.has_tasks_overdue;
 				} else if (main.findText === "Today") {
 					matchesTextFilter = project.has_tasks_due_today;
@@ -976,51 +1022,49 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		[main.findText, statuses, allowDeletingProject, setMouseEnter, setMouseLeave, toggleDeleteProjectBox, toggleEditProjectView, uiClientName, uiTeams, uiStatusMenu],
 	);
 
+	const logProjectCounts = useCallback(() => {
+		console.log("=== Project Counts ===");
+		console.log(`All projects: ${api.projects.copy.length}`);
+		console.log(`Filtered projects: ${filteredProjects.length}`);
+		console.log(`Current module (${main.activeModule.name}): ${main.activeModule.items?.length || 0}`);
+
+		// Count projects with overdue tasks
+		const overdueCount = api.projects.copy.filter((p) => p.has_tasks_overdue).length;
+		console.log(`Projects with overdue tasks: ${overdueCount}`);
+
+		// Count by project type
+		const byProjectType = {};
+		aggregatedProjects.forEach((module) => {
+			if (module.key !== "All") {
+				byProjectType[module.key] = module.items.length;
+
+				// Count overdue in each project type
+				const overdueInType = module.items.filter((p) => p.has_tasks_overdue).length;
+				byProjectType[`${module.key}_overdue`] = overdueInType;
+			}
+		});
+		console.log("By project type:", byProjectType);
+
+		console.log("Current filter:", main.findText);
+		console.log("Status filter:", main.filter);
+	}, [api.projects.copy, filteredProjects.length, main.activeModule, aggregatedProjects, main.findText, main.filter]);
+
 	const uiBody = useCallback(() => {
+		// For debugging
+		logProjectCounts();
+
 		return (
 			<div className="flex w-full h-full justify-center items-start">
 				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiList()}</div>
 				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center">
 					<div className="flex flex-col w-full h-full justify-center items-start full-border">
 						<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-						<Virtuoso
-							className="w-full h-full overflow-y-auto bottom-border contrast-background"
-							data={sortedProjects}
-							itemContent={(i, row) => uiRows(row)}
-							totalCount={sortedProjects.length}
-							// overscan={200}
-							// fixedItemHeight={36}
-							// increaseViewportBy={{ top: 400, bottom: 400 }}
-							// components={{
-							// 	ScrollSeekPlaceholder: ({ index }) => {
-							// 		// Create placeholder that matches the real content's appearance
-							// 		const background = index % 2 === 0 ? "contrast-background" : "gray-background-transparent-01";
-							// 		return (
-							// 			<div className={`flex w-full h-9 justify-center items-center ${background} bottom-border`}>
-							// 				{Array(8)
-							// 					.fill(0)
-							// 					.map((_, i) => (
-							// 						<div key={i} className="flex w-[12.5%] h-full justify-center items-center">
-							// 							<div className="w-3/4 h-4 rounded bg-gray-200"></div>
-							// 						</div>
-							// 					))}
-							// 			</div>
-							// 		);
-							// 	},
-							// }}
-							// scrollSeekConfiguration={{
-							// 	enter: (velocity) => Math.abs(velocity) > 800, // Higher threshold to avoid triggering too easily
-							// 	exit: (velocity) => Math.abs(velocity) < 50, // Higher exit threshold
-							// 	change: () => null, // Don't show placeholders on small position changes
-							// 	items: 5, // How many items to render during fast scrolling
-							// }}
-							// itemKey={(index) => sortedProjects[index].id}
-						/>
+						<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={sortedProjects} itemContent={(i, row) => uiRows(row)} totalCount={sortedProjects.length} />
 					</div>
 				</div>
 			</div>
 		);
-	}, [uiList, uiHeaders, sortedProjects, uiRows]);
+	}, [uiList, uiHeaders, sortedProjects, uiRows, logProjectCounts]);
 
 	const uiMain = useCallback(() => {
 		if (main.isLoading.supportData) {
@@ -1087,6 +1131,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	// Use debouncedFindText in useEffect
 	useEffect(() => {
 		if (mounted.mainComponent) {
+			// For "Overdue" filter specifically, we need to make sure the source is filtered for tasks_overdue
+			// before we apply further filtering
 			const source = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items || [];
 
 			// First, calculate status counts based on text filter ONLY
@@ -1096,6 +1142,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 					if (Object.values(statuses).includes(debouncedFindText)) {
 						return project.status.includes(debouncedFindText);
 					} else if (debouncedFindText === "Overdue") {
+						// Important: This filter is coming from the dashboard
 						return project.has_tasks_overdue;
 					} else if (debouncedFindText === "Today") {
 						return project.has_tasks_due_today;
@@ -1199,6 +1246,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			});
 		};
 	}, []);
+
+	// Debugging helper function
 
 	// Main UI render with optimized components
 	return mounted.myProjects ? (

@@ -768,10 +768,10 @@ export default function Tasks({ project }) {
 						<FontAwesomeIcon icon={faClock} size="lg" />
 						<span className="w-[80px] font-regular-10">{entryAt}</span>
 					</div>
-					<div className="flex !pl-2 space-x-2 justify-between items-center red-tag-transparent-01">
+					{/* <div className="flex !pl-2 space-x-2 justify-between items-center red-tag-transparent-01">
 						<FontAwesomeIcon icon={faStopwatch} size="lg" />
 						<span className="w-[80px] font-regular-10">{dueOn}</span>
-					</div>
+					</div> */}
 				</div>
 			</div>
 		);

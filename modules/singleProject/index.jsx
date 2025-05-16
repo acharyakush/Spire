@@ -15,7 +15,7 @@ import { SpinnerBig, TooltipList } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { EditQuote, ManageGovernmentId, ManageAffiliates } from "@/modals/singleProject/project";
-import { faBars, faBriefcase, faCalendarXmark, faChevronLeft, faCopy, faEnvelope, faFile, faFileExcel, faIdBadge, faIdCardClip, faIndianRupeeSign, faStopwatch, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faBriefcase, faChevronLeft, faCopy, faEnvelope, faFile, faFileExcel, faIdBadge, faIdCardClip, faIndianRupeeSign, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 export default function SingleProject({ client, project, reload, source, unmount }) {
 	// Business Logic
@@ -196,9 +196,9 @@ export default function SingleProject({ client, project, reload, source, unmount
 
 		const columnWrapper = "flex flex-col justify-center items-center cursor-pointer primary-tag-transparent-01";
 
-		const redColumnWrapper = project.status === MyConstants.Statuses.Projects.Completed ? "hidden" : "flex flex-col justify-center items-center cursor-pointer font-normal red-tag-transparent-01";
+		// const redColumnWrapper = project.status === MyConstants.Statuses.Projects.Completed ? "hidden" : "flex flex-col justify-center items-center cursor-pointer font-normal red-tag-transparent-01";
 
-		const dueOnTimeLeft = dayjs(project.due_on).format("DD-MM-YYYY") == dayjs().format("DD-MM-YYYY") ? "Today" : dayjs(project.due_on).fromNow();
+		// const dueOnTimeLeft = dayjs(project.due_on).format("DD-MM-YYYY") == dayjs().format("DD-MM-YYYY") ? "Today" : dayjs(project.due_on).fromNow();
 
 		const quote = Number(project.invoice_fees);
 
@@ -211,7 +211,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 							<span className="view-heading">{project.sub_project_name}</span>
 						</Tippy>
 					</div>
-					<div className={redColumnWrapper}>
+					{/* <div className={redColumnWrapper}>
 						<span className={wrapperSansAesthetics}>
 							<FontAwesomeIcon className="w-4 red-text" icon={faCalendarXmark} />
 							<span>{dayjs(project.due_on).format("DD MMM, YYYY")}</span>
@@ -220,7 +220,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 							<FontAwesomeIcon className="w-4 red-text" icon={faStopwatch} />
 							<span>{dueOnTimeLeft}</span>
 						</span>
-					</div>
+					</div> */}
 					<div className={columnWrapper}>
 						<span className={wrapperSansAesthetics}>
 							<FontAwesomeIcon className="w-4 primary-text" icon={faBriefcase} />
