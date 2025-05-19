@@ -57,6 +57,7 @@ export default function NewEmployee() {
 
 		const body = {
 			...main,
+			emailAddress: main.emailAddress + "@spire.com",
 			password: MyGlobal.Encrypt(main.password),
 			permissions: main.permissions.map((m) => m.id).join(","),
 			userId: MyGlobal.GetUserId(),

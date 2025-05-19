@@ -254,7 +254,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const link = document.createElement("a");
 		const fileName = String(quotationId).replace("/", "_").replace("/", "_");
 
-		link.href = `/quotations/${fileName}.pdf`;
+		link.href = `/quotations/${fileName}`;
 		link.download = `${fileName}.pdf`;
 
 		link.click();
@@ -581,6 +581,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		toggleNotesView,
 		getTotalNotesByInquiry,
 		uiStatusMenu,
+		uiAddQuotation,
+		uiDownloadQuotation,
 		uiNotes,
 	}) {
 		const style = "flex flex-col w-[12.50%] justify-center items-center text-center";
@@ -651,6 +653,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						data={api.inquiries.data}
 						itemContent={(_, row) => (
 							<Rows
+								uiDownloadQuotation={uiDownloadQuotation}
+								uiAddQuotation={uiAddQuotation}
 								row={row}
 								main={main}
 								statuses={statuses}

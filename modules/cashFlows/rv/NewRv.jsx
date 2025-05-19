@@ -714,6 +714,7 @@ export default function NewRv({ project, reload, unmount }) {
 						{uiQrCode()}
 					</div>
 					{uiTotalAmount()}
+					<div className="flex w-full h-full justify-between items-end">{uiDisclaimer()}</div>
 					<div className="flex w-full h-full justify-between items-end">{uiTermsAndConditions()}</div>
 					{main.transactions.length > 0 && (
 						<div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
@@ -724,6 +725,10 @@ export default function NewRv({ project, reload, unmount }) {
 				</div>
 			</div>
 		);
+	}
+
+	function uiDisclaimer() {
+		return <div className="flex w-full p-2 justify-center items-center rounded font-medium-12 red-text red-border red-background-transparent-01">DO NOT DEDUCT TDS ON REIMBURSEMENT VOUCHER</div>
 	}
 
 	function uiTermsAndConditions() {

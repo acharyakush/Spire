@@ -687,10 +687,10 @@ export default function NewInvoice({ project, reload, unmount }) {
 					</div>
 					{uiTotalAmount()}
 					<div className="flex w-full h-full justify-between items-end">{uiTermsAndConditions()}</div>
-					<div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
+					{main.transactions.length > 0 && <div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
 						<div className="flex w-full h-full justify-between items-center bottom-border">{uiTransactionHistoryHeaders()}</div>
 						<div className="flex flex-col w-full h-full justify-between items-center">{uiTransactionHistory()}</div>
-					</div>
+					</div>}
 				</div>
 			</div>
 		);

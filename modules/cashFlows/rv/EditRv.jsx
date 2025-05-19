@@ -92,7 +92,7 @@ export default function EditRv({ project, reload, unmount }) {
 				customId,
 				clientId: project.client_id,
 				dueDate: main.rvDueDate,
-				id: project.rv.id,
+				id: project.rv?.at(0)?.id,
 				particulars: main.particulars,
 				projectId: project.id,
 				receiptDate: main.rvDate,
@@ -348,7 +348,7 @@ export default function EditRv({ project, reload, unmount }) {
 					companies: response.data.companies,
 				});
 
-				const customId = String(project.rv.custom_id).split("/");
+				const customId = String(project.rv?.at(0)?.custom_id).split("/");
 
 				setMain((s) => ({
 					...s,
@@ -363,10 +363,10 @@ export default function EditRv({ project, reload, unmount }) {
 					},
 					financialYear: customId.at(1),
 					firm: firmObj,
-					rvDate: new Date(project.rv.created_at),
-					rvDueDate: new Date(project.rv.due_date),
+					rvDate: new Date(project.rv?.at(0)?.created_at),
+					rvDueDate: new Date(project.rv?.at(0)?.due_date),
 					rvId: customId.at(2),
-					particulars: JSON.parse(project.rv.particulars),
+					particulars: JSON.parse(project.rv?.at(0)?.particulars),
 					totalAmountReceived,
 					totalExpenses,
 					transactions,
@@ -725,6 +725,7 @@ export default function EditRv({ project, reload, unmount }) {
 						{uiQrCode()}
 					</div>
 					{uiTotalAmount()}
+					<div className="flex w-full h-full justify-between items-end">{uiDisclaimer()}</div>
 					<div className="flex w-full h-full justify-between items-end">{uiTermsAndConditions()}</div>
 					{main.transactions.length > 0 && (
 						<div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
@@ -735,6 +736,10 @@ export default function EditRv({ project, reload, unmount }) {
 				</div>
 			</div>
 		);
+	}	
+
+	function uiDisclaimer() {
+		return <div className="flex w-full p-2 justify-center items-center rounded font-medium-12 red-text red-border red-background-transparent-01">DO NOT DEDUCT TDS ON REIMBURSEMENT VOUCHER</div>
 	}
 
 	function uiTermsAndConditions() {
