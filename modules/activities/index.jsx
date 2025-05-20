@@ -247,7 +247,6 @@ export default function Activities({ source = "", unmount }) {
 					onClearButtonClick={() => setInputs("text", "")}
 					placeholder="Find"
 					showClearButton={showFindClearButton}
-					source="dashboard"
 					tabIndex="3"
 					value={main.find.text}
 					width="w-36"
@@ -259,7 +258,7 @@ export default function Activities({ source = "", unmount }) {
 	function uiFromDate() {
 		if (api.activities.copy.length) {
 			return (
-				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow bg-[var(--primary-transparent-01)] full-border">
+				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bg-white bottom-shadow full-border">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
 						className="w-20 h-6 bg-transparent outline-none font-regular-10"
@@ -320,7 +319,7 @@ export default function Activities({ source = "", unmount }) {
 	}
 
 	function uiModulesMenu() {
-		const wrapper = "flex w-36 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow bg-[var(--primary-transparent-01)] full-border font-regular-10";
+		const wrapper = "flex w-36 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow bg-white full-border font-regular-10";
 
 		return (
 			<Menu as="div" className="flex w-36 justify-center items-center relative">
@@ -394,7 +393,7 @@ export default function Activities({ source = "", unmount }) {
 	function uiToDate() {
 		if (api.activities.copy.length) {
 			return (
-				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow bg-[var(--primary-transparent-01)] full-border">
+				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow bg-white full-border">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 					<ReactDatePicker
 						className="w-20 h-6 bg-transparent outline-none font-regular-10"

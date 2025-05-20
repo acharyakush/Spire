@@ -390,7 +390,7 @@ export default function Notes({ clients, inquiry, reload, unmount }) {
 				<div className="flex w-full justify-between items-center font-regular-10">
 					<span dangerouslySetInnerHTML={{ __html: entryBy }} />
 					<div className="flex w-1/2 space-x-2.5 justify-end items-center">
-						{row.next_follow_up_on && (
+						{i === 0 && row.next_follow_up_on && (
 							<>
 								<span className="inline-block px-5 blink red-text red-tag-transparent-01">
 									Next Follow Up On <b>{nextFollowUpOn}</b>

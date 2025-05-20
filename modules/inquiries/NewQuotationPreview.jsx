@@ -315,10 +315,12 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 					</div>
 				</div>
 				<div className="flex flex-col w-full space-y-5 justify-between items-start">
-					<div className="flex flex-col w-full justify-center items-start">
-						<span className="font-bold-14">Remarks</span>
-						{uiRemarks()}
-					</div>
+					{quotation?.main?.remarks?.length > 0 && (
+						<div className="flex flex-col w-full justify-center items-start">
+							<span className="font-bold-14">Remarks</span>
+							{uiRemarks()}
+						</div>
+					)}
 					<div className="flex flex-col w-full justify-center items-start">
 						<span className="font-bold-14">Terms & Conditions</span>
 						{uiTermsConditions()}

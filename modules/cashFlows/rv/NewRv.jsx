@@ -19,7 +19,7 @@ import { faBank, faCalendar, faChevronLeft, faCircleMinus, faHashtag, faIndianRu
 
 export default function NewRv({ project, reload, unmount }) {
 	// Business Logic
-	const financialYear = `${dayjs(new Date()).subtract(1, "y").format("YYYY")}-${dayjs(new Date()).format("YY")}`;
+	const financialYear = `${dayjs(new Date()).format("YYYY")}-${dayjs(new Date()).add(1, "y").format("YY")}`;
 
 	const today = new Date();
 	const rvDueDate = new Date(today);
@@ -728,7 +728,7 @@ export default function NewRv({ project, reload, unmount }) {
 	}
 
 	function uiDisclaimer() {
-		return <div className="flex w-full p-2 justify-center items-center rounded font-medium-12 red-text red-border red-background-transparent-01">DO NOT DEDUCT TDS ON REIMBURSEMENT VOUCHER</div>
+		return <div className="flex w-full p-2 justify-center items-center rounded font-medium-12 red-text red-border red-background-transparent-01">DO NOT DEDUCT TDS ON REIMBURSEMENT VOUCHER</div>;
 	}
 
 	function uiTermsAndConditions() {

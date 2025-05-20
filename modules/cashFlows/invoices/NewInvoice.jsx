@@ -19,7 +19,7 @@ import { faBank, faCalendar, faChevronLeft, faCircleMinus, faHashtag, faIndianRu
 
 export default function NewInvoice({ project, reload, unmount }) {
 	// Business Logic
-	const financialYear = `${dayjs(new Date()).subtract(1, "y").format("YYYY")}-${dayjs(new Date()).format("YY")}`;
+	const financialYear = `${dayjs(new Date()).format("YYYY")}-${dayjs(new Date()).add(1, "y").format("YY")}`;
 
 	const today = new Date();
 	const invoiceDueDate = new Date(today);
@@ -356,7 +356,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 						name: bankObj.name,
 						upiId: bankObj.upiId,
 					},
-					invoiceId: MyGlobal.MakeNewInvoiceId(firmObj.name, response.data.invoices),
+					invoiceId: MyGlobal.MakeNewInvoiceId(firmObj.name, response.data.invoices, MyConstants.Modules.Derived.NewInvoice),
 					transactions,
 					firm: firmObj,
 					totalAmountReceived,
@@ -687,10 +687,12 @@ export default function NewInvoice({ project, reload, unmount }) {
 					</div>
 					{uiTotalAmount()}
 					<div className="flex w-full h-full justify-between items-end">{uiTermsAndConditions()}</div>
-					{main.transactions.length > 0 && <div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
-						<div className="flex w-full h-full justify-between items-center bottom-border">{uiTransactionHistoryHeaders()}</div>
-						<div className="flex flex-col w-full h-full justify-between items-center">{uiTransactionHistory()}</div>
-					</div>}
+					{main.transactions.length > 0 && (
+						<div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
+							<div className="flex w-full h-full justify-between items-center bottom-border">{uiTransactionHistoryHeaders()}</div>
+							<div className="flex flex-col w-full h-full justify-between items-center">{uiTransactionHistory()}</div>
+						</div>
+					)}
 				</div>
 			</div>
 		);

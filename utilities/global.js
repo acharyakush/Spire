@@ -15,6 +15,8 @@ export const applicationName = process.env.NEXT_PUBLIC_APPLICATION_NAME;
 export const isDevelopment = process.env.NODE_ENV !== "production";
 export const allowedKeysForOnKeyPressEvent = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
 
+const thisFinancialYear = `${dayjs(new Date()).format("YYYY")}-${dayjs(new Date()).add(1, "y").format("YY")}`;
+
 let allUsers = [];
 let fullName = "";
 let permissions = [];
@@ -431,7 +433,7 @@ export const MyGlobal = Object.freeze({
 		}
 	},
 
-	MakeNewInvoiceId: (firmName, payload) => {
+	MakeNewInvoiceId: (firmName, payload, source = "") => {
 		if (payload.length) {
 			const initials = MyGlobal.GetInitials(firmName).at(0);
 
@@ -449,10 +451,12 @@ export const MyGlobal = Object.freeze({
 				const extractedIds = [];
 
 				target.forEach((m) => {
-					const getLastUsedId = String(m.custom_id).split("/").at(2);
-					const extractNumber = +getLastUsedId.match(/\d+$/)[0].replace(/0/g, "");
+					const splitCustomId = String(m.custom_id).split("/");
 
-					extractedIds.push(extractNumber);
+					if (splitCustomId.at(1) === thisFinancialYear) {
+						const extractNumber = +splitCustomId.at(2).match(/\d+$/)[0].replace(/0/g, "");
+						extractedIds.push(extractNumber);
+					}
 				});
 
 				const latestId = extractedIds.sort((a, b) => b - a).at(0);
@@ -465,25 +469,6 @@ export const MyGlobal = Object.freeze({
 			return "00001";
 		}
 	},
-
-	// MakeNewQuotationId: (payload) => {
-	// 	if (payload.length) {
-	// 		const extractedIds = payload.map((m) => {
-	// 			const idPart = String(m.custom_id).split("/").at(2) || "";
-	// 			const match = idPart.match(/\d+$/);
-	// 			return match ? parseInt(match[0], 10) : 0;
-	// 		});
-
-	// 		const latestId = Math.max(...extractedIds);
-	// 		const nextId = latestId + 1;
-
-	// 		if (nextId > 999) return "999";
-
-	// 		return String(nextId).padStart(3, "0");
-	// 	} else {
-	// 		return "001";
-	// 	}
-	// },
 
 	MakeNewQuotationId: (firmName, payload) => {
 		if (payload.length) {

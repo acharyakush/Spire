@@ -291,79 +291,81 @@ export default function Invoices({ presetStatus, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				const revised = response.data.projects.map((m) => {
-					let amountPending = 0;
-					let amountReceived = 0;
-					let companyName = "";
-					let mainProjectName = "";
-					let subProjectName = "";
+				const revised = response.data.projects
+					.filter((f) => f.status !== MyConstants.Statuses.Projects.Cancelled)
+					.map((m) => {
+						let amountPending = 0;
+						let amountReceived = 0;
+						let companyName = "";
+						let mainProjectName = "";
+						let subProjectName = "";
 
-					const invoice = response.data.invoices.filter((f) => f.project_id == m.id);
+						const invoice = response.data.invoices.filter((f) => f.project_id == m.id);
 
-					let invoiceAmount = Number(m.invoice_fees);
-					let invoiceId = "";
-					let invoiceCreatedAt = "";
-					let invoiceCreatedAtTime = "";
-					let invoiceDueDate = "";
-					let invoiceDueDateTime = "";
+						let invoiceAmount = Number(m.invoice_fees);
+						let invoiceId = "";
+						let invoiceCreatedAt = "";
+						let invoiceCreatedAtTime = "";
+						let invoiceDueDate = "";
+						let invoiceDueDateTime = "";
 
-					if (Array.isArray(invoice) && invoice.length) {
-						invoiceAmount = invoice.reduce((total, i) => total + Number(i.amount), 0);
-						invoiceId = invoice.map((m) => m.custom_id).at(0);
-						invoiceCreatedAt = invoice.map((m) => dayjs(m.created_at).format("DD/MM/YYYY")).at(0);
-						invoiceCreatedAtTime = invoice.map((m) => dayjs(m.created_at).format("hh:mm:ss a")).at(0);
-						invoiceDueDate = invoice.map((m) => (m.due_date ? dayjs(m.due_date).format("DD/MM/YYYY") : "")).at(0);
-						invoiceDueDateTime = invoice.map((m) => (m.due_date ? dayjs(m.due_date).format("hh:mm:ss a") : "")).at(0);
-					}
+						if (Array.isArray(invoice) && invoice.length) {
+							invoiceAmount = invoice.reduce((total, i) => total + Number(i.amount), 0);
+							invoiceId = invoice.map((m) => m.custom_id).at(0);
+							invoiceCreatedAt = invoice.map((m) => dayjs(m.created_at).format("DD/MM/YYYY")).at(0);
+							invoiceCreatedAtTime = invoice.map((m) => dayjs(m.created_at).format("hh:mm:ss a")).at(0);
+							invoiceDueDate = invoice.map((m) => (m.due_date ? dayjs(m.due_date).format("DD/MM/YYYY") : "")).at(0);
+							invoiceDueDateTime = invoice.map((m) => (m.due_date ? dayjs(m.due_date).format("hh:mm:ss a") : "")).at(0);
+						}
 
-					const company = response.data.companies.find((f) => f.id == m.company_id);
+						const company = response.data.companies.find((f) => f.id == m.company_id);
 
-					if (typeof company === "object") {
-						companyName = company.name;
-					}
+						if (typeof company === "object") {
+							companyName = company.name;
+						}
 
-					const transactions = response.data.transactions.filter((f) => f.project_id == m.id);
+						const transactions = response.data.transactions.filter((f) => f.project_id == m.id);
 
-					if (Array.isArray(transactions) && transactions.length) {
-						amountReceived = transactions.reduce((pv, cv) => {
-							return pv + Number(cv.amount);
-						}, 0);
-					}
+						if (Array.isArray(transactions) && transactions.length) {
+							amountReceived = transactions.reduce((pv, cv) => {
+								return pv + Number(cv.amount);
+							}, 0);
+						}
 
-					if (amountReceived != 0) {
-						amountPending = invoiceAmount - amountReceived;
-					} else {
-						amountPending = invoiceAmount;
-					}
+						if (amountReceived != 0) {
+							amountPending = invoiceAmount - amountReceived;
+						} else {
+							amountPending = invoiceAmount;
+						}
 
-					const mainProject = response.data.mainProjects.find((f) => f.id == m.main_project_id);
+						const mainProject = response.data.mainProjects.find((f) => f.id == m.main_project_id);
 
-					if (typeof mainProject === "object") {
-						mainProjectName = mainProject.name;
-					}
+						if (typeof mainProject === "object") {
+							mainProjectName = mainProject.name;
+						}
 
-					const subProject = response.data.subProjects.find((f) => f.id == m.sub_project_id);
+						const subProject = response.data.subProjects.find((f) => f.id == m.sub_project_id);
 
-					if (typeof subProject === "object") {
-						subProjectName = subProject.name;
-					}
+						if (typeof subProject === "object") {
+							subProjectName = subProject.name;
+						}
 
-					return {
-						...m,
-						amount: invoiceAmount,
-						amount_pending: amountPending,
-						amount_received: amountReceived,
-						company_name: companyName,
-						created_at: invoiceCreatedAt,
-						created_at_time: invoiceCreatedAtTime,
-						invoice,
-						invoice_id: invoiceId,
-						invoice_due_date: invoiceDueDate,
-						invoice_due_date_time: invoiceDueDateTime,
-						main_project_name: mainProjectName,
-						sub_project_name: subProjectName,
-					};
-				});
+						return {
+							...m,
+							amount: invoiceAmount,
+							amount_pending: amountPending,
+							amount_received: amountReceived,
+							company_name: companyName,
+							created_at: invoiceCreatedAt,
+							created_at_time: invoiceCreatedAtTime,
+							invoice,
+							invoice_id: invoiceId,
+							invoice_due_date: invoiceDueDate,
+							invoice_due_date_time: invoiceDueDateTime,
+							main_project_name: mainProjectName,
+							sub_project_name: subProjectName,
+						};
+					});
 
 				const firms = [];
 
@@ -601,6 +603,7 @@ export default function Invoices({ presetStatus, unmount }) {
 			generateInvoiceTooltip = "Edit this invoice.";
 		}
 
+		const hideGenerateButton = ["PJ000018", "PJ000016", "PJ000015", "PJ000012", "PJ000011", "PJ000010", "PJ000009", "PJ000004", "PJ000003", "PJ000002"].includes(row.id);
 		const showDownloadButton = row.invoice_id ? "cursor-pointer visible primary-text" : "invisible";
 
 		return (
@@ -622,23 +625,27 @@ export default function Invoices({ presetStatus, unmount }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountPending }} />
-				<Tippy animation="shift-away" content={<Tooltip text={generateInvoiceTooltip} />} disabled={!generateInvoiceTooltip} placement="bottom">
-					<span
-						className={`${style} cursor-pointer primary-text`}
-						dangerouslySetInnerHTML={{ __html: invoiceId }}
-						onClick={() => {
-							if (row.invoice_id) {
-								if (isUserAdministrator) {
-									toggleEditInvoice(row);
+				{hideGenerateButton ? (
+					<span className={style} />
+				) : (
+					<Tippy animation="shift-away" content={<Tooltip text={generateInvoiceTooltip} />} disabled={!generateInvoiceTooltip} placement="bottom">
+						<span
+							className={`${style} cursor-pointer primary-text`}
+							dangerouslySetInnerHTML={{ __html: invoiceId }}
+							onClick={() => {
+								if (row.invoice_id) {
+									if (isUserAdministrator) {
+										toggleEditInvoice(row);
+									}
+								} else {
+									if (allowNewInvoice) {
+										toggleNewInvoice(row);
+									}
 								}
-							} else {
-								if (allowNewInvoice) {
-									toggleNewInvoice(row);
-								}
-							}
-						}}
-					/>
-				</Tippy>
+							}}
+						/>
+					</Tippy>
+				)}
 				<span className={`${style} space-x-5`}>
 					<Tippy animation="shift-away" content={<Tooltip text="Download this invoice." />} placement="bottom">
 						<FontAwesomeIcon
