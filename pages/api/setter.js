@@ -57,6 +57,12 @@ export default async function handler(req, res) {
 			} else if (request.type == "mark-task-as-completed") {
 				queryString = "UPDATE tasks SET is_completed=1, completed_on=? WHERE id=? AND project_id=?";
 				queryParameters = [request.completedOn, request.taskId, request.projectId];
+			} else if (request.type == "edit-invoice-transaction-amount") {
+				queryString = "UPDATE invoices_transactions SET amount=? WHERE id=? AND project_id=? AND amount=?";
+				queryParameters = [request.amount, request.id, request.projectId, request.old];
+			} else if (request.type == "delete-invoice-transaction") {
+				queryString = "DELETE FROM invoices_transactions WHERE id=? AND project_id=? AND amount=?";
+				queryParameters = [request.payload.id, request.payload.project_id, request.payload.amount];
 			} else if (request.type == "manage-government-id") {
 				queryString = "UPDATE projects SET government_id=? WHERE id=?";
 				queryParameters = [request.governmentId, request.projectId];

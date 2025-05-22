@@ -4,6 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
+import Tippy from "@tippyjs/react";
 import Draggable from "react-draggable";
 import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
@@ -12,24 +13,12 @@ import MyConstants from "@/utilities/constants";
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Spinner, SpinnerBig } from "@/components/Elements";
+import { DeleteTransaction, EditAmount } from "./modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { Spinner, SpinnerBig, Tooltip } from "@/components/Elements";
 import { ComboBox2, DatePicker, TextArea, TextInput, TextInputNative } from "@/components/Inputs";
-import {
-	faAngleRight,
-	faBank,
-	faCalendar,
-	faExclamationTriangle,
-	faFileExcel,
-	faIndianRupee,
-	faMultiply,
-	faNoteSticky,
-	faSearch,
-	faSortAmountAsc,
-	faSortAmountDesc,
-	faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { faAngleRight, faBank, faCalendar, faExclamationTriangle, faFileExcel, faIndianRupee, faMultiply, faNoteSticky, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function Transactions({ mount, project, reload, unmount }) {
 	// Business Logic
@@ -43,6 +32,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 	const [loading, setLoading] = useState({
 		adding: false,
+		editing: false,
 		supportData: false,
 	});
 
@@ -62,6 +52,8 @@ export function Transactions({ mount, project, reload, unmount }) {
 		},
 		hasError: false,
 		isBoxMoved: false,
+		isEditBoxOpen: { obj: {}, status: false },
+		isDeleteBoxOpen: { obj: {}, status: false },
 		sort: { column: "", isAscending: false },
 	});
 
@@ -72,6 +64,9 @@ export function Transactions({ mount, project, reload, unmount }) {
 	} else {
 		totalAmountPending = project.amount_pending;
 	}
+
+	const allowDeleteTransaction = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteInvoiceTransaction);
+	const allowEditTransaction = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditInvoiceTransaction);
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
 
@@ -259,10 +254,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(
-				MyConstants.ApiEndpoints.Invoices.GetHistorySupportData,
-				MyGlobal.GetHeaders({ firmId: project.firm_id, projectId: project.id }),
-			);
+			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetHistorySupportData, MyGlobal.GetHeaders({ firmId: project.firm_id, projectId: project.id }));
 
 			if (response.status === 200) {
 				const banks = MyGlobal.GetRevisedPaymentSourceList(response.data.banks);
@@ -312,10 +304,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function isAddEligible() {
-		const clickEvent =
-			!main.amountReceived || !main.particulars || !main.paymentSource.id || other.hasError || loading.adding
-				? "pointer-events-none opacity-50"
-				: "pointer-events-auto opacity-100";
+		const clickEvent = !main.amountReceived || !main.particulars || !main.paymentSource.id || other.hasError || loading.adding ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 
 		return `primary-button-condensed w-full mt-5 ${clickEvent}`;
 	}
@@ -371,6 +360,12 @@ export function Transactions({ mount, project, reload, unmount }) {
 		if (header != headers.Date) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
+	}
+
+	function unmountAndReload() {
+		toggleEditAmount();
+		reload();
+		unmount();
 	}
 
 	// UI Components
@@ -433,18 +428,9 @@ export function Transactions({ mount, project, reload, unmount }) {
 						{uiFind()}
 						{uiExport()}
 					</div>
-					<div className="flex w-full h-9 justify-center items-center rounded-tl rounded-tr primary-background-transparent-01 primary-border">
-						{uiHeaders()}
-					</div>
-					<Virtuoso
-						className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background"
-						data={doSorting()}
-						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.transactions.copy.length}
-					/>
-					<div className="flex w-full h-9 justify-center items-center rounded-bl rounded-br primary-border primary-background-transparent-01">
-						{uiFooter()}
-					</div>
+					<div className="flex w-full h-9 justify-center items-center rounded-tl rounded-tr primary-background-transparent-01 primary-border">{uiHeaders()}</div>
+					<Virtuoso className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.transactions.copy.length} />
+					<div className="flex w-full h-9 justify-center items-center rounded-bl rounded-br primary-border primary-background-transparent-01">{uiFooter()}</div>
 				</div>
 			);
 		}
@@ -472,6 +458,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				onChange={(e) => setInputs("transaction", e.target.value)}
 				onClearButtonClick={() => setInputs("transaction", "")}
 				placeholder="Find"
+				source="InvoiceTransaction"
 				showClearButton={showFindClearButton}
 				tabIndex={3}
 				value={other.find.transaction}
@@ -495,7 +482,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 	function uiFromDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
+			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow primary-background-transparent-01 full-border">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-regular-10"
@@ -533,18 +520,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiParticulars() {
-		return (
-			<TextArea
-				icon={faNoteSticky}
-				label="Particulars"
-				onChange={(e) => setInputs("particulars", e.target.value)}
-				onKeyDown={() => {}}
-				rows={2}
-				tabIndex="4"
-				value={main.particulars}
-				width="w-full"
-			/>
-		);
+		return <TextArea icon={faNoteSticky} label="Particulars" onChange={(e) => setInputs("particulars", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex="4" value={main.particulars} width="w-full" />;
 	}
 
 	function uiPaymentSource() {
@@ -572,7 +548,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiRows(row, i) {
-		const style = "flex flex-wrap w-1/4 min-h-9 justify-center items-center text-center";
+		const style = "flex w-1/4 min-h-9 justify-center items-center text-center";
 
 		const particulars = MyGlobal.HighlightText(row.particulars, other.find.transaction);
 		const amount = MyGlobal.HighlightText(row.amount, other.find.transaction);
@@ -583,7 +559,42 @@ export function Transactions({ mount, project, reload, unmount }) {
 				<span className={style}>{dayjs(row.entry_at).format("DD-MM-YYYY")}</span>
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
+
+				<div className={`${style} space-x-2.5`}>
+					<span dangerouslySetInnerHTML={{ __html: amount }} />
+
+					<div className="flex space-x-2.5 justify-between items-center">
+						{allowEditTransaction && (
+							<Tippy animation="shift-away" content={<Tooltip text="Edit this amount" />} placement="bottom">
+								<FontAwesomeIcon
+									className="cursor-pointer outline-none blue-text"
+									onClick={() => {
+										if (allowEditTransaction) {
+											toggleEditAmount(row);
+										}
+									}}
+									icon={faPencil}
+								/>
+							</Tippy>
+						)}
+
+						{allowDeleteTransaction && (
+							<Tippy animation="shift-away" content={<Tooltip text="Delete this transaction" />} placement="bottom">
+								<FontAwesomeIcon
+									className="cursor-pointer outline-none red-text"
+									onClick={() => {
+										if (allowDeleteTransaction) {
+											toggleDeleteTransaction(row);
+										}
+									}}
+									icon={faTrash}
+									size="sm"
+								/>
+							</Tippy>
+						)}
+					</div>
+				</div>
+
 				<span className={style} dangerouslySetInnerHTML={{ __html: source }} />
 			</div>
 		);
@@ -612,9 +623,25 @@ export function Transactions({ mount, project, reload, unmount }) {
 		);
 	}
 
+	function toggleEditAmount(payload) {
+		if (payload) {
+			setOther((s) => ({ ...s, isEditBoxOpen: { obj: { ...project, transaction: payload }, status: true } }));
+		} else {
+			setOther((s) => ({ ...s, isEditBoxOpen: { obj: {}, status: false } }));
+		}
+	}
+
+	function toggleDeleteTransaction(payload) {
+		if (payload) {
+			setOther((s) => ({ ...s, isDeleteBoxOpen: { obj: { ...project, transaction: payload }, status: true } }));
+		} else {
+			setOther((s) => ({ ...s, isDeleteBoxOpen: { obj: {}, status: false } }));
+		}
+	}
+
 	function uiToDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
+			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow  primary-background-transparent-01 full-border">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-regular-10"
@@ -659,7 +686,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
-						<div className="flex w-full h-[calc(100%-45px)] p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter primary-light-background">
+						<div className="flex w-full h-[calc(100%-45px)] p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter contrast-background">
 							<div className="flex w-3/4 h-full justify-center items-start">{uiBody()}</div>
 							<div className="flex flex-col w-1/4 h-full justify-center items-start">
 								{uiDate()}
@@ -674,6 +701,10 @@ export function Transactions({ mount, project, reload, unmount }) {
 					</DialogPanel>
 				</Draggable>
 			</div>
+
+			{other.isDeleteBoxOpen.status && <DeleteTransaction transaction={other.isDeleteBoxOpen.obj} mount={other.isDeleteBoxOpen.status} reload={unmountAndReload} unmount={toggleDeleteTransaction} />}
+
+			{other.isEditBoxOpen.status && <EditAmount invoice={other.isEditBoxOpen.obj} mount={other.isEditBoxOpen.status} reload={unmountAndReload} unmount={toggleEditAmount} />}
 		</Dialog>
 	);
 }

@@ -176,7 +176,7 @@ export default function Activities({ source = "", unmount }) {
 		if (api.activities.data.length != api.activities.copy.length) {
 			return `${api.activities.data.length} / ${api.activities.copy.length}`;
 		} else {
-			return api.activities.data.length;
+			return MyGlobal.ThousandSeparator(api.activities.data.length);
 		}
 	}
 

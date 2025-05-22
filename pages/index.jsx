@@ -111,8 +111,6 @@ export default function Home() {
 		// Abhishek Gor => "saa.ag.spire.2024"
 		// Drashti Sharma => "saa.ds.spire.2024"
 
-		console.log(MyGlobal.Decrypt("Rf4G7UEtUaa+N9ORS4ez4g=="));
-
 		globalThis.addEventListener("keydown", detectKeystrokes);
 		return () => globalThis.removeEventListener("keydown", detectKeystrokes);
 	}, []);
