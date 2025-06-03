@@ -598,7 +598,7 @@ export default function Tasks({ project }) {
 
 	// Tasks
 	function uiTask() {
-		const addSubTaskButton = main.selectedTask.is_completed == 0 ? "absolute right-5 bottom-5 cursor-pointer" : "hidden";
+		const addSubTaskButton = isUserAdministrator || main.selectedTask.is_completed == 0 ? "absolute right-5 bottom-5 cursor-pointer" : "hidden";
 
 		return (
 			<div className="flex flex-col w-full h-[calc(100vh-110px)] justify-start items-center">

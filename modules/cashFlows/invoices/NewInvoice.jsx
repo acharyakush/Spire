@@ -660,7 +660,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 	function uiInvoiceSheet() {
 		let imageSource = "../logo.png";
 
-		if (MyGlobal.GetInitials(main.firm.name) == "PS") {
+		if (MyGlobal.GetInitials(main.firm.name) == "PSCL") {
 			imageSource = "../cs.png";
 		}
 

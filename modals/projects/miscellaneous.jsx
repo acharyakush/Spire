@@ -362,6 +362,13 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 
 			return (
 				<div className="flex flex-col w-full px-5 py-4 space-y-3 justify-between items-center">
+					{project.reimburse_voucher === 0 && (
+						<div className="flex flex-col w-full p-5 space-y-3 justify-center items-start rounded font-regular-11 red-text red-background-transparent-01 red-bottom-border">
+							<span>This project has no expenses added.</span>
+							<span>Did you forget to add? Or you are sure that this project has been finished seamlessly in the given quotation?</span>
+							<span>Please double check before proceeding.</span>
+						</div>
+					)}
 					<div className="w-full text-left font-medium-11 black-text">These statistics determine the project's eligibility for completion.</div>
 					{uiRow(label1, main.status.tasks.allCompleted)}
 				</div>

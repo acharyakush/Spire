@@ -107,6 +107,12 @@ const MyConstants = Object.freeze({
 			AddTask: "api/tasks/addTask",
 			SortTasks: "api/tasks/sortTasks",
 		}),
+		Todos: Object.freeze({
+			AddTodo: "api/todos/addTodo",
+			EditTodo: "api/todos/editTodo",
+			GetTodos: "api/todos/getTodos",
+			UpdateStatus: "api/todos/updateStatus",
+		}),
 		Vendors: Object.freeze({
 			AddHead: "api/vendors/addHead",
 			AddVendor: "api/vendors/addVendors",
@@ -205,6 +211,9 @@ const MyConstants = Object.freeze({
 		TaskParticularRemarkAdded: "Task Particular/Remark added.",
 		TaskParticularRemarkDeleted: "Task Particular/Remark deleted.",
 		TaskParticularRemarkEdited: "Task Particular/Remark edited.",
+		TodoAdded: "To-do added successfully.",
+		TodoEdited: "To-do edited successfully.",
+		TodoStatusUpdated: "To-do status updated successfully.",
 		TransactionAdded: "Transaction added.",
 		TransactionEdited: "Transaction edited.",
 		UnauthorizedAccess: "Unauthorized access.",
@@ -227,6 +236,7 @@ const MyConstants = Object.freeze({
 			References: "References",
 			Rv: "RV",
 			Tasks: "Tasks",
+			Todos: "Todos",
 			Vendors: "Vendors",
 		}),
 		Derived: Object.freeze({

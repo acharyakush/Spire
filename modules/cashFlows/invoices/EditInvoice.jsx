@@ -663,7 +663,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 	function uiInvoiceSheet() {
 		let imageSource = "../logo.png";
 
-		if (MyGlobal.GetInitials(main.firm.name) == "PS") {
+		if (MyGlobal.GetInitials(main.firm.name) == "PSCL") {
 			imageSource = "../cs.png";
 		}
 
@@ -690,10 +690,12 @@ export default function EditInvoice({ project, reload, unmount }) {
 					</div>
 					{uiTotalAmount()}
 					<div className="flex w-full h-full justify-between items-end">{uiTermsAndConditions()}</div>
-					{main.transactions.length > 0 && <div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
-						<div className="flex w-full h-full justify-between items-center bottom-border">{uiTransactionHistoryHeaders()}</div>
-						<div className="flex flex-col w-full h-full justify-between items-center">{uiTransactionHistory()}</div>
-					</div>}
+					{main.transactions.length > 0 && (
+						<div className="flex flex-col w-full h-full justify-between items-center rounded shadow full-border">
+							<div className="flex w-full h-full justify-between items-center bottom-border">{uiTransactionHistoryHeaders()}</div>
+							<div className="flex flex-col w-full h-full justify-between items-center">{uiTransactionHistory()}</div>
+						</div>
+					)}
 				</div>
 			</div>
 		);

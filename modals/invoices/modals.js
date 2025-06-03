@@ -4,7 +4,7 @@ import axios from "axios";
 import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
 import { TextInput } from "@/components/Inputs";

@@ -733,7 +733,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const clientNameStyle = childStyle + " !w-3/4 " + getStatusSeverityBackground(row.status).text;
 
 		return (
-			<div className={wrapper}>
+			<div className={wrapper} style={{ overflowWrap: "anywhere" }}>
 				<Tippy content={<Tooltip text={row.client_id_and_name} />} placement="bottom">
 					<span className={clientNameStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleEditInquiryView(row, true)} />
 				</Tippy>

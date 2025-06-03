@@ -135,7 +135,6 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 
 	function setClientObject(value) {
 		if (value) {
-			console.log(value);
 			setClient({
 				address: value.address ?? "",
 				id: value.id,

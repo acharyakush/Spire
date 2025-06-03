@@ -288,6 +288,7 @@ export const MyGlobal = Object.freeze({
 			{ id: "DC", name: "Debit Card" },
 			{ id: "INSTAMOJO", name: "InstaMojo" },
 			{ id: "NETBANKING", name: "NetBanking" },
+			{ id: "TDS", name: "TDS Deducted" },
 			{ id: "UPI", name: "UPI" },
 		];
 	},
@@ -302,6 +303,7 @@ export const MyGlobal = Object.freeze({
 			{ id: "DC", name: "Debit Card" },
 			{ id: "INSTAMOJO", name: "InstaMojo" },
 			{ id: "NETBANKING", name: "NetBanking" },
+			{ id: "TDS", name: "TDS Deducted" },
 			{ id: "UPI", name: "UPI" },
 		);
 

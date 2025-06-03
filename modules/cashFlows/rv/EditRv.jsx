@@ -699,7 +699,7 @@ export default function EditRv({ project, reload, unmount }) {
 	function uiRvSheet() {
 		let imageSource = "../logo.png";
 
-		if (MyGlobal.GetInitials(main.firm.name) == "PS") {
+		if (MyGlobal.GetInitials(main.firm.name) == "PSCL") {
 			imageSource = "../cs.png";
 		}
 
@@ -736,10 +736,10 @@ export default function EditRv({ project, reload, unmount }) {
 				</div>
 			</div>
 		);
-	}	
+	}
 
 	function uiDisclaimer() {
-		return <div className="flex w-full p-2 justify-center items-center rounded font-medium-12 red-text red-border red-background-transparent-01">DO NOT DEDUCT TDS ON REIMBURSEMENT VOUCHER</div>
+		return <div className="flex w-full p-2 justify-center items-center rounded font-medium-12 red-text red-border red-background-transparent-01">DO NOT DEDUCT TDS ON REIMBURSEMENT VOUCHER</div>;
 	}
 
 	function uiTermsAndConditions() {

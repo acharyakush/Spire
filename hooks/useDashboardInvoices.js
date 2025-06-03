@@ -26,15 +26,15 @@ export default function useInvoices(today = dayjs()) {
 		};
 
 		// DUE & GENERATED
-		for (const fe of list) {
-			const amount = +fe.amount;
+		for (const i of list) {
+			const amount = +i.amount;
 
-			if (fe.due_date && dayjs(fe.due_date).isBefore(today, "day")) {
+			if (i.due_date && dayjs(i.due_date).isBefore(today, "day")) {
 				result.due.amount += amount;
 				result.due.count += 1;
 			}
 
-			if (fe.custom_id) {
+			if (i.custom_id) {
 				result.generated.amount += amount;
 				result.generated.count += 1;
 			}

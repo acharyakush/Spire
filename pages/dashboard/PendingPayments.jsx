@@ -14,7 +14,7 @@ export default function PendingPayments({ invoices }) {
 		sort: { column: "Amount", isAscending: false },
 	});
 
-	const total = invoices?.reduce((t, c) => t + Number(c.amount_pending), 0);
+	const total = invoices?.reduce((t, c) => t + +c.amount_pending, 0);
 
 	// Functions
 	function doSorting() {

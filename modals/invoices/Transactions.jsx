@@ -306,7 +306,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	function isAddEligible() {
 		const clickEvent = !main.amountReceived || !main.particulars || !main.paymentSource.id || other.hasError || loading.adding ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 
-		return `primary-button-condensed w-full mt-5 ${clickEvent}`;
+		return `primary-button-wide ${clickEvent}`;
 	}
 
 	function setBoxDrag() {
@@ -415,22 +415,15 @@ export function Transactions({ mount, project, reload, unmount }) {
 		} else {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start">
-					<div className="flex w-full pb-4 space-x-2 justify-start items-center font-medium-16 primary-text">
-						<span>{project.company_name}</span>
-						<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
-						<span>{project.main_project_name}</span>
-						<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
-						<span>{project.sub_project_name}</span>
-					</div>
 					<div className="flex w-full pb-2 space-x-2 justify-end items-center">
 						{uiFromDate()}
 						{uiToDate()}
 						{uiFind()}
 						{uiExport()}
 					</div>
-					<div className="flex w-full h-9 justify-center items-center rounded-tl rounded-tr primary-background-transparent-01 primary-border">{uiHeaders()}</div>
+					<div className="flex w-full h-9 justify-center items-center rounded-tl rounded-tr primary-background primary-border">{uiHeaders()}</div>
 					<Virtuoso className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.transactions.copy.length} />
-					<div className="flex w-full h-9 justify-center items-center rounded-bl rounded-br primary-border primary-background-transparent-01">{uiFooter()}</div>
+					<div className="flex w-full h-9 justify-center items-center rounded-bl rounded-br primary-border primary-background">{uiFooter()}</div>
 				</div>
 			);
 		}
@@ -470,7 +463,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	function uiFooter() {
 		return Object.values(headers).map((m, i) => {
 			const showTotalAmount = i == 2 ? "visible" : "invisible";
-			const wrapper = `w-1/4 space-x-1 text-center primary-text font-medium-10 ${showTotalAmount}`;
+			const wrapper = `w-1/4 space-x-1 text-center text-white font-medium-10 ${showTotalAmount}`;
 
 			return (
 				<span className={wrapper} key={i}>
@@ -510,7 +503,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 			return (
 				<span className="flex w-1/4 justify-center items-center cursor-pointer font-medium-10" key={i}>
-					<div className="flex w-full space-x-2 justify-center items-center primary-text" onClick={() => setSort(m)}>
+					<div className="flex w-full space-x-2 justify-center items-center text-white" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
 					</div>
@@ -686,16 +679,27 @@ export function Transactions({ mount, project, reload, unmount }) {
 				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
-						<div className="flex w-full h-[calc(100%-45px)] p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter contrast-background">
-							<div className="flex w-3/4 h-full justify-center items-start">{uiBody()}</div>
-							<div className="flex flex-col w-1/4 h-full justify-center items-start">
-								{uiDate()}
-								{uiPaymentSource()}
-								{uiAmountReceived()}
-								{uiParticulars()}
-								<button className={isAddEligible()} onClick={() => doAddition()}>
-									{uiAdd()}
-								</button>
+						<div className="flex flex-col w-full h-[calc(100%-45px)] p-5 justify-center items-center primary-light-background">
+							<div className="flex w-full pb-4 space-x-2 justify-start items-center font-medium-16 primary-text">
+								<span>{project.company_name}</span>
+								<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
+								<span>{project.main_project_name}</span>
+								<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
+								<span>{project.sub_project_name}</span>
+							</div>
+							<div className="flex w-full h-full p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter">
+								<div className="flex w-3/4 h-full justify-center items-start">{uiBody()}</div>
+								<div className="flex flex-col w-1/4 h-full justify-center items-start">
+									{uiDate()}
+									{uiPaymentSource()}
+									{uiAmountReceived()}
+									{uiParticulars()}
+									<div className="w-full px-2 mt-5">
+										<button className={isAddEligible()} onClick={() => doAddition()}>
+											{uiAdd()}
+										</button>
+									</div>
+								</div>
 							</div>
 						</div>
 					</DialogPanel>

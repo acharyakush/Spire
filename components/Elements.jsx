@@ -104,6 +104,14 @@ export const BadgeSmallWithBackground = ({ style, value }) => {
 	);
 };
 
+export const BadgeSmallWithBackground2 = ({ style, value }) => {
+	return (
+		<span className={`flex min-w-5 h-5 px-1 justify-center items-center rounded-full font-medium-9 leading-none ${style.text} ${style.background}`} style={{ lineHeight: "1", fontFeatureSettings: "'tnum'" }}>
+			{value}
+		</span>
+	);
+};
+
 export const Spinner = () => {
 	return <span className="login-spinner" />;
 };

@@ -688,7 +688,7 @@ export default function NewRv({ project, reload, unmount }) {
 	function uiRvSheet() {
 		let imageSource = "../logo.png";
 
-		if (MyGlobal.GetInitials(main.firm.name) == "PS") {
+		if (MyGlobal.GetInitials(main.firm.name) == "PSCL") {
 			imageSource = "../cs.png";
 		}
 

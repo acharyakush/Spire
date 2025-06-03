@@ -31,6 +31,7 @@ export default function useProjects() {
 			hold = 0,
 			my = 0;
 		let totalInvoiceFees = 0;
+
 		const paymentPending = [],
 			paymentOverdue = [],
 			paymentReceived = [];

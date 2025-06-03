@@ -51,6 +51,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		singleProject: false,
 	});
 
+	const [debouncedFindText, setDebouncedFindText] = useState("");
+
 	const today = useMemo(() => dayjs(), []);
 	const statuses = MyConstants.Statuses.Projects;
 	const thisView = MyConstants.Modules.Base.Projects;
@@ -63,16 +65,13 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const showFindBoxClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
-	// Add debounce for search function
-	const [debouncedFindText, setDebouncedFindText] = useState("");
-
 	// Functions
-	const autoFocusFindBox = useCallback((event) => {
-		if (event.ctrlKey && event.key == "f") {
+	function autoFocusFindBox(event) {
+		if (event.ctrlKey && event.key === "f") {
 			event.preventDefault();
-			document.getElementById("findBox").focus();
+			document.getElementById("findBox")?.focus();
 		}
-	}, []);
+	}
 
 	const calculateStatusCounts = useCallback(
 		(projectsList) => {
@@ -84,9 +83,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				[statuses.Hold]: 0,
 			};
 
-			projectsList.forEach((project) => {
-				if (counts.hasOwnProperty(project.status)) {
-					counts[project.status]++;
+			projectsList.forEach((fe) => {
+				if (counts.hasOwnProperty(fe.status)) {
+					counts[fe.status]++;
 				}
 			});
 
@@ -97,44 +96,32 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const clearFilter = useCallback(() => {
 		const source = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items;
+		let _statuses = calculateStatusCounts(source);
 
-		// Apply only text filter if it exists to get accurate status counts
 		if (main.findText) {
-			const textFilteredData = source.filter((project) => {
+			const textFilteredData = source.filter((f) => {
 				const findText = main.findText.toLowerCase();
+
 				return (
-					String(project.id).toLowerCase().includes(findText) ||
-					String(project.government_id || "")
+					String(f.id).toLowerCase().includes(findText) ||
+					String(f.government_id || "")
 						.toLowerCase()
 						.includes(findText) ||
-					String(project.client_id).toLowerCase().includes(findText) ||
-					project.client_name.toLowerCase().includes(findText) ||
-					project.company_name.toLowerCase().includes(findText) ||
-					project.main_project_name.toLowerCase().includes(findText) ||
-					project.sub_project_name.toLowerCase().includes(findText) ||
-					String(project.team_names).toLowerCase().includes(findText) ||
-					String(project.team_names_initials).toLowerCase().includes(findText) ||
-					project.status.toLowerCase().includes(findText)
+					String(f.client_id).toLowerCase().includes(findText) ||
+					String(f.client_name).toLowerCase().includes(findText) ||
+					String(f.company_name).toLowerCase().includes(findText) ||
+					String(f.main_project_name).toLowerCase().includes(findText) ||
+					String(f.sub_project_name).toLowerCase().includes(findText) ||
+					String(f.team_names).toLowerCase().includes(findText) ||
+					String(f.team_names_initials).toLowerCase().includes(findText) ||
+					String(f.status).toLowerCase().includes(findText)
 				);
 			});
 
-			const revisedStatuses = calculateStatusCounts(textFilteredData);
-
-			setMain((s) => ({
-				...s,
-				filter: "",
-				revisedStatuses,
-			}));
-		} else {
-			// If no text filter, just use the entire source
-			const revisedStatuses = calculateStatusCounts(source);
-
-			setMain((s) => ({
-				...s,
-				filter: "",
-				revisedStatuses,
-			}));
+			_statuses = calculateStatusCounts(textFilteredData);
 		}
+
+		setMain((s) => ({ ...s, filter: "", revisedStatuses: _statuses }));
 	}, [api.projects.copy, main.activeModule, main.findText, calculateStatusCounts]);
 
 	const closeMyProjects = useCallback(() => {
@@ -142,89 +129,64 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		setMounted((s) => ({ ...s, myProjects: false }));
 	}, []);
 
-	const setMouseEnter = useCallback(
-		(projectId) => {
-			if (allowDeletingProject) {
-				setMain((s) => ({ ...s, showIconButton: { ...s.showIconButton, deleteProject: projectId } }));
-			}
-
-			if (allowEditingProject) {
-				setMain((s) => ({ ...s, showIconButton: { ...s.showIconButton, editProject: projectId } }));
-			}
-		},
-		[allowDeletingProject, allowEditingProject],
-	);
-
-	const setMouseLeave = useCallback(() => {
-		setMain((s) => ({ ...s, showIconButton: { deleteProject: 0, editProject: 0 } }));
-	}, []);
-
-	const setSort = useCallback((column) => {
-		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
-	}, []);
-
-	const setFilter = useCallback(
-		(value) => {
-			// If clicking on the same filter, clear it
-			if (value === main.filter) {
-				setMain((s) => ({ ...s, filter: "" }));
-
-				// Recalculate status counts based on the text search only
-				if (main.findText) {
-					const source = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items;
-					const textFilteredData = source.filter((project) => {
-						const findText = main.findText.toLowerCase();
-						return (
-							String(project.id).toLowerCase().includes(findText) ||
-							String(project.government_id || "")
-								.toLowerCase()
-								.includes(findText) ||
-							String(project.client_id).toLowerCase().includes(findText) ||
-							project.client_name.toLowerCase().includes(findText) ||
-							project.company_name.toLowerCase().includes(findText) ||
-							project.main_project_name.toLowerCase().includes(findText) ||
-							project.sub_project_name.toLowerCase().includes(findText) ||
-							String(project.team_names).toLowerCase().includes(findText) ||
-							String(project.team_names_initials).toLowerCase().includes(findText) ||
-							project.status.toLowerCase().includes(findText)
-						);
-					});
-
-					const revisedStatuses = calculateStatusCounts(textFilteredData);
-					setMain((s) => ({ ...s, revisedStatuses }));
-				} else {
-					// If no text filter, use the entire module data
-					const source = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items;
-					const revisedStatuses = calculateStatusCounts(source);
-					setMain((s) => ({ ...s, revisedStatuses }));
-				}
-			} else {
-				// Set the new filter
-				setMain((s) => ({ ...s, filter: value }));
-			}
-		},
-		[main.filter, main.findText, main.activeModule, api.projects.copy, calculateStatusCounts],
-	);
-
-	const setInputs = useCallback((key, value) => {
-		if (key === "findText") {
-			setMain((s) => ({ ...s, [key]: value }));
-
-			// Clear any existing timeout
-			if (window.searchTimeout) {
-				clearTimeout(window.searchTimeout);
-			}
-
-			// Set a new timeout
-			window.searchTimeout = setTimeout(() => {
-				setDebouncedFindText(value);
-			}, 250); // 250ms debounce
-		} else {
-			setMain((s) => ({ ...s, [key]: value }));
+	function setMouseEnter(projectId) {
+		if (allowDeletingProject) {
+			setMain((s) => ({ ...s, showIconButton: { ...s.showIconButton, deleteProject: projectId } }));
 		}
-	}, []);
 
-	// Define setSupportData earlier in the component
+		if (allowEditingProject) {
+			setMain((s) => ({ ...s, showIconButton: { ...s.showIconButton, editProject: projectId } }));
+		}
+	}
+
+	function setMouseLeave() {
+		setMain((s) => ({ ...s, showIconButton: { deleteProject: 0, editProject: 0 } }));
+	}
+
+	function setSort(column) {
+		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
+	}
+
+	function setFilter(value) {
+		if (value === main.filter) {
+			setMain((s) => ({ ...s, filter: "" }));
+
+			const source = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items;
+			let _statuses = calculateStatusCounts(source);
+
+			if (main.findText) {
+				const textFilteredData = source.filter((f) => {
+					const findText = main.findText.toLowerCase();
+
+					return (
+						String(f.id).toLowerCase().includes(findText) ||
+						String(f.government_id || "")
+							.toLowerCase()
+							.includes(findText) ||
+						String(f.client_id).toLowerCase().includes(findText) ||
+						f.client_name.toLowerCase().includes(findText) ||
+						f.company_name.toLowerCase().includes(findText) ||
+						f.main_project_name.toLowerCase().includes(findText) ||
+						f.sub_project_name.toLowerCase().includes(findText) ||
+						String(f.team_names).toLowerCase().includes(findText) ||
+						String(f.team_names_initials).toLowerCase().includes(findText) ||
+						f.status.toLowerCase().includes(findText)
+					);
+				});
+
+				_statuses = calculateStatusCounts(textFilteredData);
+			}
+
+			setMain((s) => ({ ...s, revisedStatuses: _statuses }));
+		} else {
+			setMain((s) => ({ ...s, filter: value }));
+		}
+	}
+
+	function setInputs(key, value) {
+		setMain((s) => ({ ...s, [key]: value }));
+	}
+
 	const setSupportData = useCallback(
 		async (projectId) => {
 			setMain((s) => ({ ...s, isLoading: { ...s.isLoading, supportData: true } }));
@@ -350,70 +312,69 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		[calculateStatusCounts],
 	);
 
-	// Memoized derived data
-	const aggregatedProjects = useMemo(() => {
-		if (!api.projects.copy.length) return [];
+	function groupProjectsByMainProject(projects = [], findText, statuses) {
+		if (!projects.length) return [];
 
-		// First, pre-filter data if we have a search/filter term from the dashboard
-		let filteredCopy = [...api.projects.copy];
+		let copy = [...projects];
 
-		// Apply any text/filter criteria from dashboard before grouping
-		if (main.findText) {
-			if (Object.values(statuses).includes(main.findText)) {
-				// Handle status filters
-				filteredCopy = filteredCopy.filter((project) => project.status.includes(main.findText));
-			} else if (main.findText === "Overdue" || presetStatus === "Overdue") {
-				filteredCopy = filteredCopy.filter((project) => project.has_tasks_overdue);
-			} else if (main.findText === "Today" || presetStatus === "Today") {
-				filteredCopy = filteredCopy.filter((project) => project.has_tasks_due_today);
-			} else if (main.findText === "Tomorrow" || presetStatus === "Tomorrow") {
-				filteredCopy = filteredCopy.filter((project) => project.has_tasks_due_tomorrow);
-			} else if (main.findText === "Upcoming" || presetStatus === "Upcoming") {
-				filteredCopy = filteredCopy.filter((project) => project.has_tasks_upcoming);
+		if (findText) {
+			if (Object.values(statuses).includes(findText)) {
+				copy = copy.filter((f) => String(f.status).includes(findText));
+			} else if (findText === "Overdue") {
+				copy = copy.filter((f) => f.has_tasks_overdue);
+			} else if (findText === "Today") {
+				copy = copy.filter((f) => f.has_tasks_due_today);
+			} else if (findText === "Tomorrow") {
+				copy = copy.filter((f) => f.has_tasks_due_tomorrow);
+			} else if (findText === "Upcoming") {
+				copy = copy.filter((f) => f.has_tasks_upcoming);
 			} else {
-				// Handle text search filters
-				const findText = main.findText.toLowerCase();
-				filteredCopy = filteredCopy.filter(
-					(project) =>
-						String(project.id).toLowerCase().includes(findText) ||
-						String(project.government_id || "")
+				const _findText = String(findText).toLowerCase();
+
+				copy = copy.filter((f) => {
+					return (
+						String(f.id).toLowerCase().includes(_findText) ||
+						String(f.government_id || "")
 							.toLowerCase()
-							.includes(findText) ||
-						String(project.client_id).toLowerCase().includes(findText) ||
-						project.client_name.toLowerCase().includes(findText) ||
-						project.company_name.toLowerCase().includes(findText) ||
-						project.main_project_name.toLowerCase().includes(findText) ||
-						project.sub_project_name.toLowerCase().includes(findText) ||
-						String(project.team_names).toLowerCase().includes(findText) ||
-						String(project.team_names_initials).toLowerCase().includes(findText) ||
-						project.status.toLowerCase().includes(findText),
-				);
+							.includes(_findText) ||
+						String(f.client_id).toLowerCase().includes(_findText) ||
+						String(f.client_name).toLowerCase().includes(_findText) ||
+						String(f.company_name).toLowerCase().includes(_findText) ||
+						String(f.main_project_name).toLowerCase().includes(_findText) ||
+						String(f.sub_project_name).toLowerCase().includes(_findText) ||
+						String(f.team_names).toLowerCase().includes(_findText) ||
+						String(f.team_names_initials).toLowerCase().includes(_findText) ||
+						String(f.status).toLowerCase().includes(_findText)
+					);
+				});
 			}
 		}
 
-		// Now group the already filtered data by main project
-		const groupedByMainProject = filteredCopy.reduce((pv, cv) => {
-			if (!pv[cv.main_project_name]) {
-				pv[cv.main_project_name] = [];
-			}
-
-			if (!pv["All"]) {
-				pv["All"] = [];
-			}
+		const grouped = copy.reduce((pv, cv) => {
+			if (!pv[cv.main_project_name]) pv[cv.main_project_name] = [];
+			if (!pv["All"]) pv["All"] = [];
 
 			pv[cv.main_project_name].push(cv);
 			pv["All"].push(cv);
+
 			return pv;
 		}, {});
 
-		return Object.keys(groupedByMainProject)
-			.map((m) => ({ key: m, items: groupedByMainProject[m] }))
-			.sort((a, b) => {
-				if (a.key == "All") return -1;
-				if (b.key == "All") return 1;
+		return (
+			Object.entries(grouped)
+				.map(([k, v]) => ({ k, v }))
+				//.sort((a, b) => (a.key === "All" ? -1 : b.key === "All" ? 1 : String(a.k).localeCompare(b.k)))
+				.sort((a, b) => {
+					if (a.k === "All") return -1;
+					if (b.k === "All") return 1;
 
-				return a.key.localeCompare(b.key);
-			});
+					return String(a.k).localeCompare(b.k);
+				})
+		);
+	}
+
+	const aggregatedProjects = useMemo(() => {
+		return groupProjectsByMainProject(api.projects.copy, main.findText, statuses);
 	}, [api.projects.copy, main.findText, statuses]);
 
 	// Setup cache for expensive data operations
@@ -464,14 +425,14 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			if (main.findText) {
 				if (Object.values(statuses).includes(main.findText)) {
 					matchesTextFilter = project.status.includes(main.findText);
-				} else if (main.findText === "Overdue" || presetStatus === "Overdue") {
+				} else if (main.findText === "Overdue") {
 					// Important: This filter is coming from the dashboard
 					matchesTextFilter = project.has_tasks_overdue;
-				} else if (main.findText === "Today" || presetStatus === "Today") {
+				} else if (main.findText === "Today") {
 					matchesTextFilter = project.has_tasks_due_today;
-				} else if (main.findText === "Tomorrow" || presetStatus === "Tomorrow") {
+				} else if (main.findText === "Tomorrow") {
 					matchesTextFilter = project.has_tasks_due_tomorrow;
-				} else if (main.findText === "Upcoming" || presetStatus === "Upcoming") {
+				} else if (main.findText === "Upcoming") {
 					matchesTextFilter = project.has_tasks_upcoming;
 				} else {
 					const findText = main.findText.toLowerCase();
@@ -1021,8 +982,14 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	);
 
 	const logProjectCounts = useCallback(() => {
+		console.log("=== Project Counts ===");
+		console.log(`All projects: ${api.projects.copy.length}`);
+		console.log(`Filtered projects: ${filteredProjects.length}`);
+		console.log(`Current module (${main.activeModule.name}): ${main.activeModule.items?.length || 0}`);
+
 		// Count projects with overdue tasks
 		const overdueCount = api.projects.copy.filter((p) => p.has_tasks_overdue).length;
+		console.log(`Projects with overdue tasks: ${overdueCount}`);
 
 		// Count by project type
 		const byProjectType = {};
@@ -1096,6 +1063,14 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	]);
 
 	// Hooks
+	useEffect(() => {
+		const timeout = setTimeout(() => {
+			setDebouncedFindText(main.findText);
+		}, 500);
+
+		return () => clearTimeout(timeout);
+	}, [main.findText]);
+
 	useEffect(() => {
 		// Delay the initial data loading to ensure component is fully mounted
 		const initializationDelay = setTimeout(() => {
@@ -1252,6 +1227,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 						<div className="flex w-1/3 space-x-5 justify-center items-center">
 							{uiFind()}
 							{uiFilter()}
+
 							<Tippy content={<Tooltip text={`Clear filters of ${main.activeModule.name}`} />} placement="bottom">
 								{uiClearFilter()}
 							</Tippy>

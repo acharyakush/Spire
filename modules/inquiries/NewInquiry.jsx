@@ -47,9 +47,7 @@ export default function NewInquiry({ reload, unmount }) {
 		isLoading: false,
 	});
 
-	const showFollowUpsMenu = mounted.followUpsMenu
-		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border"
-		: "hidden";
+	const showFollowUpsMenu = mounted.followUpsMenu ? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border" : "hidden";
 
 	const disableAddButton = other.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
@@ -74,7 +72,6 @@ export default function NewInquiry({ reload, unmount }) {
 				reload();
 
 				MyGlobal.AddActivity(`Added <b>${response.data}</b>.`, MyConstants.Modules.Base.Inquiries);
-
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
@@ -374,15 +371,11 @@ export default function NewInquiry({ reload, unmount }) {
 	}
 
 	function uiDate() {
-		return (
-			<DatePicker icon={faCalendar} label="Date" onChange={(e) => setLightInputs("entryDate", e)} tabIndex={7} value={main.entryDate} width="w-full" />
-		);
+		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setLightInputs("entryDate", e)} tabIndex={7} value={main.entryDate} width="w-full" />;
 	}
 
 	function uiEmailAddress() {
-		return (
-			<EmailAddress onChange={(e) => setLightInputs("emailAddress", e.target.value)} suffix="" tabIndex={3} value={main.emailAddress} width="w-full" />
-		);
+		return <EmailAddress onChange={(e) => setLightInputs("emailAddress", e.target.value)} suffix="" tabIndex={3} value={main.emailAddress} width="w-full" />;
 	}
 
 	function uiFollowUps() {
@@ -430,19 +423,7 @@ export default function NewInquiry({ reload, unmount }) {
 	}
 
 	function uiNotes() {
-		return (
-			<TextArea
-				icon={faNoteSticky}
-				key={1}
-				label="Notes"
-				onChange={(e) => setLightInputs("note", e.target.value)}
-				onKeyDown={() => {}}
-				rows={2}
-				tabIndex={10}
-				value={main.note}
-				width="w-full"
-			/>
-		);
+		return <TextArea icon={faNoteSticky} key={1} label="Notes" onChange={(e) => setLightInputs("note", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={main.note} width="w-full" />;
 	}
 
 	function uiPhoneNumber() {

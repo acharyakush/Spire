@@ -141,46 +141,50 @@ export default function Invoices({ presetStatus, unmount }) {
 	}
 
 	function doFiltering(query) {
-		const filteredData = api.projectsCopy.filter((f) => {
-			const findText = main.filter.find.toLowerCase();
-
-			if (query === "createdAt") {
-				const createdAt = new Date(f.entry_date);
-				const startDate = main.filter.date.from;
-				const endDate = main.filter.date.to;
-
-				if (createdAt >= startDate && createdAt <= endDate) {
-					return f;
-				}
-			} else if (query === "DUE") {
-				return f.invoice?.some((fe) => {
-					if (!fe?.due_date) return false;
-					const dueDate = dayjs(fe.due_date);
-					return dueDate.isBefore(dayjs(), "day");
-				});
-			} else if (query === "GENERATED") {
-				return f.invoice_id && f.created_at;
-			} else if (query === "NOT GENERATED") {
-				return !f.invoice_id;
-			} else {
+		const filteredData = api.projectsCopy
+			.filter((f) => {
 				if (Object.values(main.company).length) {
 					return f.firm_id === main.company?.id;
 				}
 
-				return (
-					String(f.id).toLowerCase().includes(findText) ||
-					String(f.company_name).toLowerCase().includes(findText) ||
-					String(f.main_project_name).toLowerCase().includes(findText) ||
-					String(f.sub_project_name).toLowerCase().includes(findText) ||
-					String(f.amount).includes(findText) ||
-					String(f.amount_received).includes(findText) ||
-					String(f.amount_pending).includes(findText) ||
-					String(f.invoice_id || "Generate")
-						.toLowerCase()
-						.includes(findText)
-				);
-			}
-		});
+				return f;
+			})
+			.filter((f) => {
+				const findText = main.filter.find.toLowerCase();
+
+				if (query === "createdAt") {
+					const createdAt = new Date(f.entry_date);
+					const startDate = main.filter.date.from;
+					const endDate = main.filter.date.to;
+
+					if (createdAt >= startDate && createdAt <= endDate) {
+						return f;
+					}
+				} else if (query === "DUE") {
+					return f.invoice?.some((fe) => {
+						if (!fe?.due_date) return false;
+						const dueDate = dayjs(fe.due_date);
+						return dueDate.isBefore(dayjs(), "day");
+					});
+				} else if (query === "GENERATED") {
+					return f.invoice_id && f.created_at;
+				} else if (query === "NOT GENERATED") {
+					return !f.invoice_id;
+				} else {
+					return (
+						String(f.id).toLowerCase().includes(findText) ||
+						String(f.company_name).toLowerCase().includes(findText) ||
+						String(f.main_project_name).toLowerCase().includes(findText) ||
+						String(f.sub_project_name).toLowerCase().includes(findText) ||
+						String(f.amount).includes(findText) ||
+						String(f.amount_received).includes(findText) ||
+						String(f.amount_pending).includes(findText) ||
+						String(f.invoice_id || "Generate")
+							.toLowerCase()
+							.includes(findText)
+					);
+				}
+			});
 
 		setApi((s) => ({ ...s, projects: filteredData }));
 	}

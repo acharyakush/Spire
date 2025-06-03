@@ -7,6 +7,7 @@ import MySpace from "./mySpace";
 import Dashboard from "./dashboard";
 import Firms from "@/modules/firms";
 import Clients from "@/modules/clients";
+import Todos from "@/modules/todo/Index";
 import Projects from "@/modules/projects";
 import Inquiries from "@/modules/inquiries";
 import CashFlows from "@/modules/cashFlows";
@@ -18,11 +19,12 @@ import Affiliates from "@/modules/cashFlows/affiliates";
 import { useRouter } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
 import { applicationName, MyGlobal } from "@/utilities/global";
-import { ErrorFallbackComponent } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { faCheck, faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { BadgeSmallWithBackground2, ErrorFallbackComponent } from "@/components/Elements";
+import { faBell, faCheck, faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import dayjs from "dayjs";
 
 export default function Home() {
 	// Business Logic
@@ -38,6 +40,7 @@ export default function Home() {
 		allPermissions: [],
 		allUsers: [],
 		modules: [],
+		todos: [],
 	});
 
 	const [main, setMain] = useState({
@@ -54,6 +57,7 @@ export default function Home() {
 			invoicesOrRv: { find: "", module: "" },
 			projectsOrTasks: "",
 		},
+		unreadTodos: 0,
 		user: {
 			fullName: "",
 			designation: "",
@@ -148,6 +152,8 @@ export default function Home() {
 
 	function getSequence(module) {
 		switch (module) {
+			case baseModules.Todos:
+				return 9;
 			case baseModules.CashFlow:
 				return 7;
 			case baseModules.Clients:
@@ -164,6 +170,34 @@ export default function Home() {
 				return 1;
 			default:
 				return -1;
+		}
+	}
+
+	async function getTodos() {
+		try {
+			const response = await axios.get(MyConstants.ApiEndpoints.Todos.GetTodos, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				const pending = [];
+				const result = response.data;
+
+				if (Array.isArray(result)) {
+					for (let i = 0; i < result.length; i++) {
+						const obj = result[i];
+
+						const doesUserHaveAnyTodosAssigned = String(obj.assigned_to).split(",").includes(MyGlobal.GetUserId());
+
+						if (doesUserHaveAnyTodosAssigned) {
+							if (obj.status === "Pending") pending.push(obj);
+						}
+					}
+
+					setApi((s) => ({ ...s, todos: pending }));
+					setMain((s) => ({ ...s, unreadTodos: pending.length }));
+				}
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Home > Get Todos");
 		}
 	}
 
@@ -284,19 +318,19 @@ export default function Home() {
 	}
 
 	function toggleActivitiesView() {
-		setMounted((s) => ({ ...s, activities: !mounted.activities }));
+		setMounted((s) => ({ ...s, activities: !s.activities }));
 	}
 
 	function toggleEmployeeView() {
-		setMounted((s) => ({ ...s, employees: !mounted.employees }));
+		setMounted((s) => ({ ...s, employees: !s.employees }));
 	}
 
 	function toggleProfileView() {
-		setMounted((s) => ({ ...s, profile: !mounted.profile }));
+		setMounted((s) => ({ ...s, profile: !s.profile }));
 	}
 
 	function toggleSettingsView() {
-		setMounted((s) => ({ ...s, settings: !mounted.settings }));
+		setMounted((s) => ({ ...s, settings: !s.settings }));
 	}
 
 	function updateGliderPosition() {
@@ -447,7 +481,52 @@ export default function Home() {
 						<Projects presetStatus={main.status.projectsOrTasks} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
+			case baseModules.Todos:
+				return (
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Todos}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Todos)} FallbackComponent={ErrorFallbackComponent}>
+						<Todos />
+					</ErrorBoundary>
+				);
 		}
+	}
+
+	function uiTodoMenu() {
+		return (
+			<Menu as="div" className="relative z-50 inline-block text-left">
+				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text" onClick={() => setMain((s) => ({ ...s, unreadTodos: 0 }))}>
+					{main.unreadTodos > 0 && (
+						<div className="absolute -top-1 -right-4">
+							<BadgeSmallWithBackground2 style={{ text: "text-blue-600", background: "bg-white" }} value={api.todos.length} />
+						</div>
+					)}
+					<FontAwesomeIcon icon={faBell} className="text-yellow-500" size="xl" />
+				</MenuButton>
+				<MenuItems anchor="left start" className="absolute w-max mt-10 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
+					<div className="flex flex-col p-3 space-y-5 justify-between items-center">
+						<span className="font-semibold-14">{api.todos.length ? "Your assigned to-dos" : "No to-dos assigned."}</span>
+						{api.todos.map((m, i) => {
+							return (
+								<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start bg-sky-100 border border-blue-400 rounded" key={i}>
+									<span className="font-regular-14 black-text">{m.description}</span>
+									<div className="flex flex-col w-full -space-y-1 justify-center items-start">
+										<span className="font-regular-10 gray-text">Finish by</span>
+										<span className="font-medium-10 blue-text">{m.due_date ? dayjs(m.due_date).format("DD MMM, YYYY") : "N.A."}</span>
+									</div>
+									<div className="flex flex-col w-full -space-y-1 justify-center items-start">
+										<span className="font-regular-10 gray-text">Assigned on</span>
+										<span className="font-medium-10 blue-text">{dayjs(m.entry_at).format("DD MMM, YYYY")}</span>
+									</div>
+									<div className="flex flex-col w-full -space-y-1 justify-center items-start">
+										<span className="font-regular-10 gray-text">Assigned by</span>
+										<span className="font-medium-10 blue-text">{MyGlobal.GetAnyDataFromId(m.entry_by, "full_name")}</span>
+									</div>
+								</div>
+							);
+						})}
+					</div>
+				</MenuItems>
+			</Menu>
+		);
 	}
 
 	function uiUserMenu() {
@@ -456,7 +535,7 @@ export default function Home() {
 				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
 					<FontAwesomeIcon className="text-white" icon={faUserCircle} size="lg" />
 				</MenuButton>
-				<MenuItems anchor="left start" className="absolute w-max mt-2 left-5 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
+				<MenuItems anchor="left start" className="absolute w-max mt-10 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
 					<div className="flex flex-col p-3 font-semibold-16">
 						<span>{main.user.fullName}</span>
 						<span className="font-regular-10 gray-text">{main.user.designation}</span>
@@ -516,6 +595,7 @@ export default function Home() {
 			getUsers();
 
 			getPermissions();
+			getTodos();
 		}
 	}, []);
 
@@ -527,11 +607,16 @@ export default function Home() {
 			}
 		}, 10);
 
+		const todoInterval = setInterval(() => {
+			getTodos();
+		}, 20000);
+
 		window.addEventListener("resize", updateGliderPosition);
 
 		return () => {
 			window.removeEventListener("resize", updateGliderPosition);
 			clearInterval(interval);
+			clearInterval(todoInterval);
 		};
 	}, []);
 
@@ -582,7 +667,10 @@ export default function Home() {
 						{/* {uiOtherModules()} */}
 					</div>
 				</div>
-				<div className="flex w-full justify-end items-center">{uiUserMenu()}</div>
+				<div className="flex w-full space-x-10 justify-end items-center">
+					{uiTodoMenu()}
+					{uiUserMenu()}
+				</div>
 			</div>
 			<div className="flex w-full h-[calc(100vh-45px)] justify-center items-center overflow-y-auto" style={{ backgroundColour }}>
 				{uiMain()}
