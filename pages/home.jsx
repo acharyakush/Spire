@@ -22,7 +22,7 @@ import { applicationName, MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { BadgeSmallWithBackground2, ErrorFallbackComponent } from "@/components/Elements";
+import { BadgeSmallWithBackground2, ErrorFallbackComponent, SpinnerBig, SpinnerSmall } from "@/components/Elements";
 import { faBell, faCheck, faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
 
@@ -45,6 +45,7 @@ export default function Home() {
 
 	const [main, setMain] = useState({
 		isDarkModeEnabled: false,
+		isTodosLoading: false,
 		mode: null,
 		selectedModule: {
 			index: 0,
@@ -175,6 +176,8 @@ export default function Home() {
 
 	async function getTodos() {
 		try {
+			setMain((s) => ({ ...s, isTodosLoading: true }));
+
 			const response = await axios.get(MyConstants.ApiEndpoints.Todos.GetTodos, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
@@ -193,11 +196,16 @@ export default function Home() {
 					}
 
 					setApi((s) => ({ ...s, todos: pending }));
-					setMain((s) => ({ ...s, unreadTodos: pending.length }));
+
+					if (main.unreadTodos != pending.length) {
+						setMain((s) => ({ ...s, unreadTodos: pending.length }));
+					}
 				}
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Home > Get Todos");
+		} finally {
+			setMain((s) => ({ ...s, isTodosLoading: false }));
 		}
 	}
 
@@ -493,36 +501,51 @@ export default function Home() {
 	function uiTodoMenu() {
 		return (
 			<Menu as="div" className="relative z-50 inline-block text-left">
-				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text" onClick={() => setMain((s) => ({ ...s, unreadTodos: 0 }))}>
-					{main.unreadTodos > 0 && (
+				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
+					{/* {main.unreadTodos > 0 && (
 						<div className="absolute -top-1 -right-4">
 							<BadgeSmallWithBackground2 style={{ text: "text-blue-600", background: "bg-white" }} value={api.todos.length} />
 						</div>
-					)}
-					<FontAwesomeIcon icon={faBell} className="text-yellow-500" size="xl" />
+					)} */}
+					<FontAwesomeIcon icon={faBell} className="text-yellow-500" size="xl" onClick={() => getTodos()} />
 				</MenuButton>
-				<MenuItems anchor="left start" className="absolute w-max mt-10 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
-					<div className="flex flex-col p-3 space-y-5 justify-between items-center">
-						<span className="font-semibold-14">{api.todos.length ? "Your assigned to-dos" : "No to-dos assigned."}</span>
-						{api.todos.map((m, i) => {
-							return (
-								<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start bg-sky-100 border border-blue-400 rounded" key={i}>
-									<span className="font-regular-14 black-text">{m.description}</span>
-									<div className="flex flex-col w-full -space-y-1 justify-center items-start">
-										<span className="font-regular-10 gray-text">Finish by</span>
-										<span className="font-medium-10 blue-text">{m.due_date ? dayjs(m.due_date).format("DD MMM, YYYY") : "N.A."}</span>
-									</div>
-									<div className="flex flex-col w-full -space-y-1 justify-center items-start">
-										<span className="font-regular-10 gray-text">Assigned on</span>
-										<span className="font-medium-10 blue-text">{dayjs(m.entry_at).format("DD MMM, YYYY")}</span>
-									</div>
-									<div className="flex flex-col w-full -space-y-1 justify-center items-start">
-										<span className="font-regular-10 gray-text">Assigned by</span>
-										<span className="font-medium-10 blue-text">{MyGlobal.GetAnyDataFromId(m.entry_by, "full_name")}</span>
-									</div>
-								</div>
-							);
-						})}
+				<MenuItems anchor="left start" className="absolute w-[500px] mt-10 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
+					<div className="flex flex-col p-3 space-y-3 justify-between items-center">
+						{main.isTodosLoading ? (
+							<span className="flex w-56 h-10 justify-center items-center">
+								<SpinnerBig />
+							</span>
+						) : (
+							<>
+								<span className="w-full text-left font-semibold-14">{api.todos.length ? "Your to-dos" : "No to-dos assigned."}</span>
+								{api.todos.map((m, i) => {
+									return (
+										<div className="flex w-full h-full p-2 space-x-2 justify-between items-start bg-gray-100 bottom-border rounded" key={i}>
+											<div className="flex flex-col w-3/4 h-full space-y-2.5 justify-between items-center">
+												<div className="flex flex-col w-full h-full -space-y-1 justify-center items-start whitespace-pre-wrap font-medium-12 black-text">
+													<span>{m.description}</span>
+													{m.todays_task && <span className="underline underline-offset-2 font-bold text-[10px] animate-bounce red-text">Today's Task - {m.todays_task}</span>}
+												</div>
+												<div className="flex flex-col w-full justify-center items-start">
+													<span className="font-regular-10 gray-text">Finish by</span>
+													<span className="font-medium-10 blue-text">{m.due_date ? dayjs(m.due_date).format("DD MMM, YYYY") : "N.A."}</span>
+												</div>
+											</div>
+											<div className="flex flex-col w-1/4 h-full space-y-2.5 justify-between items-center">
+												<div className="flex flex-col w-full justify-center items-end">
+													<span className="font-regular-10 gray-text">Assigned on</span>
+													<span className="font-medium-10 blue-text">{dayjs(m.entry_at).format("DD MMM, YYYY")}</span>
+												</div>
+												<div className="flex flex-col w-full justify-center items-end">
+													<span className="font-regular-10 gray-text">Assigned by</span>
+													<span className="font-medium-10 blue-text">{MyGlobal.GetAnyDataFromId(m.entry_by, "full_name")}</span>
+												</div>
+											</div>
+										</div>
+									);
+								})}
+							</>
+						)}
 					</div>
 				</MenuItems>
 			</Menu>
@@ -595,7 +618,6 @@ export default function Home() {
 			getUsers();
 
 			getPermissions();
-			getTodos();
 		}
 	}, []);
 
@@ -607,16 +629,11 @@ export default function Home() {
 			}
 		}, 10);
 
-		const todoInterval = setInterval(() => {
-			getTodos();
-		}, 20000);
-
 		window.addEventListener("resize", updateGliderPosition);
 
 		return () => {
 			window.removeEventListener("resize", updateGliderPosition);
 			clearInterval(interval);
-			clearInterval(todoInterval);
 		};
 	}, []);
 

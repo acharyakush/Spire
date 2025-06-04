@@ -1312,3 +1312,19 @@ input[type="radio"]:checked + label {
 	opacity: 0.5;
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
+
+.low-priority {
+	background: linear-gradient(45deg, #d3d3d3, #f0f0f0);
+}
+
+.medium-priority {
+	background: linear-gradient(45deg, #e06666, #f6a5a5, #fbdcdc);
+}
+
+.high-priority {
+	background: linear-gradient(45deg, #e65c00, #ffa94d, #fff0e0);
+}
+
+.urgent-priority {
+	background: linear-gradient(45deg, #c1a900, #f2e300, #fff9cc);
+}

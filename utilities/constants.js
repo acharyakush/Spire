@@ -236,7 +236,7 @@ const MyConstants = Object.freeze({
 			References: "References",
 			Rv: "RV",
 			Tasks: "Tasks",
-			Todos: "Todos",
+			Todos: "To Do",
 			Vendors: "Vendors",
 		}),
 		Derived: Object.freeze({

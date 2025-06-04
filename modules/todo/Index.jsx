@@ -14,31 +14,23 @@ import { useEffect, useMemo, useState } from "react";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AvatarCircle, Badge, Tooltip } from "@/components/Elements";
-import { faPlusCircle, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faClockRotateLeft, faCrown, faHourglassEnd, faHourglassHalf, faPlusCircle, faSearch, faWebAwesome } from "@fortawesome/free-solid-svg-icons";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, useDroppable, DragOverlay } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable, sortableKeyboardCoordinates, defaultAnimateLayoutChanges, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
 const animateLayoutChanges = (args) => defaultAnimateLayoutChanges({ ...args, wasDragging: true });
 
-function Card({ id, item, description, column, activeCard, openDetailsBox }) {
+function Card({ item, column, activeCard, openDetailsBox }) {
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-		id,
+		id: item.id,
 		data: { column },
 		animateLayoutChanges,
 	});
 
-	const [isHovered, setIsHovered] = useState(false);
-
-	const isActive = activeCard?.id === id;
+	const isActive = activeCard?.id === item.id;
 
 	const style = {
-		background: "white",
-		border: "1px solid #ddd",
-		borderRadius: 6,
-		padding: "12px 16px",
-		marginBottom: 10,
-		minHeight: 48,
-		boxShadow: isDragging ? "0 2px 6px rgba(0,0,0,0.1)" : isHovered ? "0 4px 10px rgba(0,0,0,0.08)" : "none",
+		boxShadow: isDragging ? "0 2px 6px rgba(0,0,0,0.1)" : "none",
 		transform: CSS.Transform.toString(transform),
 		transition: `${transition}, transform 250ms ease, margin 250ms ease`,
 		opacity: isDragging && isActive ? 0 : 1,
@@ -49,52 +41,82 @@ function Card({ id, item, description, column, activeCard, openDetailsBox }) {
 		willChange: "transform, margin",
 	};
 
+	let svgFileName = "";
+	let dueDateTextColor = "";
+
 	const getAssignedToNames = MyGlobal.GetAnyDataFromId(item.assigned_to, "full_name");
 	const assignedToNames = String(getAssignedToNames).split(",");
 
-	const priority = String(item.priority).charAt(0);
-
-	function getPriorityStyle() {
-		switch (priority) {
-			case "L":
-				return "px-1.5 py-0.5 bg-gray-100 text-gray-800 text-xs font-medium rounded";
-			case "M":
-				return "px-1.5 py-0.5 bg-red-100 text-red-800 text-xs font-medium rounded";
-			case "H":
-				return "px-1.5 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded";
+	function getBackgroundColour() {
+		switch (item.priority) {
+			case "Low":
+				svgFileName = "gray";
+				dueDateTextColor = "text-gray-800";
+				return "low-priority";
+			case "Medium":
+				svgFileName = "red";
+				dueDateTextColor = "text-red-800";
+				return "medium-priority";
+			case "High":
+				svgFileName = "orange";
+				dueDateTextColor = "text-orange-800";
+				return "high-priority";
+			case "Urgent":
+				svgFileName = "yellow";
+				dueDateTextColor = "text-yellow-800";
+				return "urgent-priority";
 		}
 	}
 
+	function getPriorityStyle() {
+		switch (item.priority) {
+			case "Low":
+				return "px-1.5 py-0.5 bg-gray-100 text-gray-800 text-xs font-medium rounded";
+			case "Medium":
+				return "px-1.5 py-0.5 bg-red-100 text-red-800 text-xs font-medium rounded";
+			case "High":
+				return "px-1.5 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded";
+			case "Urgent":
+				return "px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded";
+		}
+	}
+
+	const descriptionColour = item.priority === "Low" ? "text-black" : "text-white";
+	const descriptionStyle = `w-4/5 whitespace-pre-wrap font-medium-12 ${descriptionColour}`;
+
+	const container = `flex flex-col w-full h-full space-y-3 px-4 py-3 justify-between items-center bottom-border rounded-md transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1.5 hover:shadow-lg ${getBackgroundColour()}`;
+
+	const dueDateStyle = `font-regular-10 ${dueDateTextColor}`;
+
 	return (
-		<div className="flex flex-col w-full h-full space-y-4 justify-between items-center" ref={setNodeRef} style={style} {...attributes} {...listeners} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+		<div className={container} ref={setNodeRef} style={style} {...attributes} {...listeners}>
 			<div className="flex w-full justify-between items-center">
-				<span className="font-medium-14">{description}</span>
-				{/* <FontAwesomeIcon
-					icon={faInfo}
-					className="cursor-pointer gray-text"
-					onClick={(e) => {
-						e.stopPropagation();
-						openEditModal({ id, description, column });
-					}}
-				/> */}
-				<Tippy animation="shift-away" content={<Tooltip text={item.notes ?? "No notes entered."} />} placement="bottom">
-					<img
-						src="/information-circle-blue.svg"
-						alt="icon"
-						className="w-6 h-6 cursor-pointer"
-						onClick={(e) => {
-							e.stopPropagation();
-							openDetailsBox({ item });
-						}}
-					/>
-				</Tippy>
+				<span className={descriptionStyle}>{item.description}</span>
+				<div className="flex w-1/5 space-x-5 justify-end items-center">
+					{item.todays_task && (
+						<Tippy animation="shift-away" content={<Tooltip text={item.todays_task} />} placement="bottom">
+							<FontAwesomeIcon className="animate-bounce text-red-600" icon={faCrown} size="xl" />
+						</Tippy>
+					)}
+					<Tippy animation="shift-away" content={<Tooltip text={item.notes ?? "No notes entered."} />} placement="bottom">
+						<img
+							src={`/information-circle-${svgFileName}.svg`}
+							alt="icon"
+							className="w-6 h-6 cursor-pointer"
+							onClick={(e) => {
+								e.stopPropagation();
+								openDetailsBox({ item });
+							}}
+						/>
+					</Tippy>
+				</div>
 			</div>
 			<div className="flex w-full justify-start items-center">
 				<AvatarCircle names={assignedToNames} />
 			</div>
-			<div className="flex w-full justify-start items-center">
-				{item.due_date && <span className="mr-2.5 font-regular-10 gray-text">{dayjs(item.due_date).format("DD MMM, YYYY")}</span>}
-				<span className={getPriorityStyle()}>{priority}</span>
+			<div className="flex w-full justify-between items-center">
+				<span className={dueDateStyle}>{item.due_date ? dayjs(item.due_date).format("DD MMM, YYYY") : ""}</span>
+				<span className={getPriorityStyle()}>{item.priority}</span>
 			</div>
 		</div>
 	);
@@ -103,22 +125,26 @@ function Card({ id, item, description, column, activeCard, openDetailsBox }) {
 function Column({ id, items, activeCard, openDetailsBox }) {
 	const { setNodeRef, isOver } = useDroppable({ id });
 
+	const icon = id === "pending" ? faClockRotateLeft : id === "inProgress" ? faHourglassHalf : faHourglassEnd;
+
+	const cardsAreaBackground = isOver ? "bg-[#e0f7fa]" : "bg-[#f9f9f9]";
+	const cardsAreaStyle = `flex flex-col gap-2.5 overflow-y-auto transition-all duration-200 ease-linear ${cardsAreaBackground}`;
+
 	return (
-		<div className="flex flex-col w-full h-full space-y-5 bg-gray-50 rounded p-3 border border-gray-300">
-			<div className="flex w-full justify-between items-center">
-				<span className="font-semibold-14 mb-2 capitalize">{id}</span>
+		<div className="flex flex-col w-full h-full p-3 space-y-3 rounded justify-start bg-gray-50 border border-gray-300">
+			<div className="flex w-full px-3 justify-between items-center">
+				<div className="flex w-full space-x-2 justify-start items-center">
+					<FontAwesomeIcon icon={icon} />
+					<span className="font-semibold-14 capitalize">{id}</span>
+				</div>
 				{items.length > 0 && <Badge value={items.length} />}
 			</div>
 
-			{/* Droppable scrollable content area */}
-			<div
-				ref={setNodeRef}
-				className={`flex flex-col gap-2 overflow-y-auto transition-colors duration-200 ${isOver ? "bg-blue-50" : "bg-white"}`}
-				style={{ background: isOver ? "#e0f7fa" : "#f9f9f9", transition: "background 0.2s ease", display: "flex", flexDirection: "column", gap: "10px", minHeight: "200px", maxHeight: "70vh" }}>
-				<SortableContext items={items.map((item) => item.id)} strategy={verticalListSortingStrategy}>
-					<div className="flex flex-col space-y-2">
-						{items.map((item) => (
-							<Card key={item.id} id={item.id} item={item} description={item.description} column={id} activeCard={activeCard} openDetailsBox={openDetailsBox} />
+			<div className={cardsAreaStyle} ref={setNodeRef}>
+				<SortableContext items={items.map((m) => m.id)} strategy={verticalListSortingStrategy}>
+					<div className="flex flex-col px-3 space-y-4 overflow-visible">
+						{items.map((m) => (
+							<Card key={m.id} item={m} column={id} activeCard={activeCard} openDetailsBox={openDetailsBox} />
 						))}
 					</div>
 				</SortableContext>
@@ -137,8 +163,8 @@ export default function Todos() {
 
 	const [activeCard, setActiveCard] = useState(null);
 	const [columns, setColumns] = useState(initialTodos);
-	const [mounted, setMounted] = useState({ addTodoBox: false, details: false });
 	const [isLoading, setIsLoading] = useState({ updateStatus: false });
+	const [mounted, setMounted] = useState({ addTodoBox: false, details: false });
 
 	const [main, setMain] = useState({
 		find: "",
@@ -214,60 +240,75 @@ export default function Todos() {
 		}
 	}
 
-	function handleDragEnd({ active, over }) {
-		if (!over || active.id === over.id) return;
+	function handleDragEndAndUpdateStatus(event) {
+		const { active, over } = event;
 
-		const activeId = active.id;
-		const overId = over.id;
+		if (!over || active.id === over.id) {
+			setActiveCard(null);
+			return;
+		}
 
+		// Normalize IDs to string
+		const activeId = String(active.id);
+		const overId = String(over.id);
+
+		// Find source and destination columns
 		let sourceColumn = null;
 		let destinationColumn = null;
 
-		// Locate source and destination columns
-		for (const columnId in columns) {
-			if (columns[columnId].some((item) => item.id === activeId)) {
-				sourceColumn = columnId;
-			}
-			if (columns[columnId].some((item) => item.id === overId)) {
-				destinationColumn = columnId;
-			}
+		for (const col in columns) {
+			if (columns[col].some((item) => String(item.id) === activeId)) sourceColumn = col;
+			if (columns[col].some((item) => String(item.id) === overId)) destinationColumn = col;
 		}
 
-		// Special case: dropped into empty column
+		// Special case: dropped into empty column by id
 		if (!destinationColumn && columns[overId]) {
 			destinationColumn = overId;
 		}
 
-		if (!sourceColumn || !destinationColumn) return;
+		if (!sourceColumn || !destinationColumn) {
+			setActiveCard(null);
+			return;
+		}
 
 		const sourceItems = [...columns[sourceColumn]];
 		const destinationItems = [...columns[destinationColumn]];
 
-		const draggedItem = sourceItems.find((item) => item.id === activeId);
+		const draggedItem = sourceItems.find((i) => String(i.id) === activeId);
 
 		// Remove from source
-		const updatedSource = sourceItems.filter((item) => item.id !== activeId);
+		const updatedSource = sourceItems.filter((f) => String(f.id) !== activeId);
 
 		let updatedDestination = destinationItems;
 
 		if (sourceColumn === destinationColumn) {
-			// Reorder within the same column
-			const oldIndex = sourceItems.findIndex((item) => item.id === activeId);
-			const newIndex = destinationItems.findIndex((item) => item.id === overId);
+			// Reorder within same column
+			const oldIndex = sourceItems.findIndex((i) => String(i.id) === activeId);
+			const newIndex = destinationItems.findIndex((i) => String(i.id) === overId);
+
 			updatedDestination = arrayMove(destinationItems, oldIndex, newIndex);
 		} else {
 			// Move to another column
-			const overIndex = destinationItems.findIndex((item) => item.id === overId);
+			const overIndex = destinationItems.findIndex((i) => String(i.id) === overId);
 			const insertAt = overIndex >= 0 ? overIndex : destinationItems.length;
+
 			updatedDestination = [...destinationItems.slice(0, insertAt), draggedItem, ...destinationItems.slice(insertAt)];
 		}
 
-		// Update columns
+		// Update columns state
 		setColumns((prev) => ({
 			...prev,
 			[sourceColumn]: sourceColumn === destinationColumn ? updatedDestination : updatedSource,
 			[destinationColumn]: updatedDestination,
 		}));
+
+		// Update backend status
+		if (sourceColumn !== destinationColumn) {
+			updateStatus({
+				active: { column: sourceColumn, id: activeId },
+				over: { column: destinationColumn, id: overId },
+			});
+		}
 
 		setActiveCard(null);
 	}
@@ -281,33 +322,31 @@ export default function Todos() {
 		setMounted((s) => ({ ...s, details: !s.details }));
 	}
 
-	async function updateStatus(args) {
-		if (typeof args.over.id === "string") {
-			try {
-				setIsLoading((s) => ({ ...s, updateStatus: true }));
+	async function updateStatus({ active, over }) {
+		try {
+			setIsLoading((s) => ({ ...s, updateStatus: true }));
 
-				const newStatus = MyGlobal.Capitalize(args.over.id);
+			const newStatus = MyGlobal.Capitalize(over.column);
 
-				const body = {
-					id: args.active.id,
-					status: newStatus,
-				};
+			const body = {
+				id: active.id,
+				status: newStatus,
+			};
 
-				const response = await axios.post(MyConstants.ApiEndpoints.Todos.UpdateStatus, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.Todos.UpdateStatus, body, MyGlobal.GetHeaders());
 
-				if (response.status === 200) {
-					getTodos();
+			if (response.status === 200) {
+				getTodos();
 
-					const activityMessage = `Updated status from <b>${MyGlobal.Capitalize(args.active.data.current.column)}</b> to <b>${newStatus}</b>.`;
+				const activityMessage = `Updated status from <b>${MyGlobal.Capitalize(active?.column)}</b> to <b>${newStatus}</b>.`;
 
-					MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Todos);
-					MyGlobal.ShowSuccessToast(MyConstants.Messages.TodoStatusUpdated);
-				}
-			} catch (error) {
-				MyGlobal.HandleErrors(error, "Todos > Update Status");
-			} finally {
-				setIsLoading((s) => ({ ...s, updateStatus: false }));
+				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Todos);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.TodoStatusUpdated);
 			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Todos > Update Status");
+		} finally {
+			setIsLoading((s) => ({ ...s, updateStatus: false }));
 		}
 	}
 
@@ -322,11 +361,7 @@ export default function Todos() {
 				<DndContext
 					sensors={sensors}
 					collisionDetection={closestCenter}
-					onDragEnd={(...args) => {
-						handleDragEnd(...args);
-						updateStatus(...args);
-						setTimeout(() => setActiveCard(null), 50);
-					}}
+					onDragEnd={handleDragEndAndUpdateStatus}
 					onDragStart={({ active }) => {
 						setActiveCard({
 							id: active.id,

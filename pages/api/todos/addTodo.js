@@ -13,16 +13,17 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { assignedTo, description, dueDate, priority, userId } = req.body;
+		const { assignedTo, description, dueDate, priority, todaysTask, userId } = req.body;
 
 		await query("CALL generate_id('TD', 'todos', @new_todo_id)", []);
 		const [storedProcedureResult] = await query("SELECT @new_todo_id AS new_id;", []);
 
-		const todoInsertQueryResult = await query("INSERT INTO todos (custom_id, description, assigned_to, due_date, priority, entry_by) VALUES (?, ?, ?, ?, ?, ?)", [
+		const todoInsertQueryResult = await query("INSERT INTO todos (custom_id, description, assigned_to, due_date, todays_task, priority, entry_by) VALUES (?, ?, ?, ?, ?, ?, ?)", [
 			storedProcedureResult.new_id,
 			description,
 			assignedTo,
 			dueDate,
+			todaysTask,
 			priority,
 			userId,
 		]);

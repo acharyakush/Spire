@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ComboBox2, ComboBoxWithChips, DatePicker, TextArea } from "@/components/Inputs";
-import { faCalendar, faNoteSticky, faStar, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faList, faNoteSticky, faStar, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export default function AddTodo({ mount, refresh, unmount }) {
 	// Business Logic
@@ -24,6 +24,7 @@ export default function AddTodo({ mount, refresh, unmount }) {
 		description: "",
 		dueDate: "",
 		priority: "Medium",
+		todaysTask: "",
 	});
 
 	const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +45,7 @@ export default function AddTodo({ mount, refresh, unmount }) {
 				assignedTo: data.assignedTo.map((m) => m.id).join(","),
 				dueDate: data.dueDate,
 				priority: data.priority,
+				todaysTask: data.todaysTask,
 				userId: MyGlobal.GetUserId(),
 			};
 
@@ -80,8 +82,13 @@ export default function AddTodo({ mount, refresh, unmount }) {
 
 	function setValues(key, value) {
 		if (key === "assignedTo") {
-			const old = [...data.assignedTo];
-			old.push(value);
+			let old = [...data.assignedTo];
+
+			if (old.includes(value)) {
+				old = old.filter((f) => f !== value);
+			} else {
+				old.push(value);
+			}
 
 			setData((s) => ({ ...s, assignedTo: old }));
 		} else {
@@ -115,7 +122,6 @@ export default function AddTodo({ mount, refresh, unmount }) {
 					displayKey="full_name"
 					label="Assigned To"
 					icon={faUserGroup}
-					isMenuInverted
 					onBlur={() => toggleAssignedToMenu()}
 					onItemClick={(e) => setValues("assignedTo", e)}
 					onSelectedItemClick={(e) => setValues("assignedTo", e)}
@@ -128,8 +134,12 @@ export default function AddTodo({ mount, refresh, unmount }) {
 		);
 	}
 
+	function uiDescription() {
+		return <TextArea icon={faNoteSticky} label="Description" onChange={(e) => setValues("description", e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={data.description} width="w-full" />;
+	}
+
 	function uiDueDate() {
-		return <DatePicker icon={faCalendar} label="Due Date" onChange={(e) => setValues("dueDate", e)} tabIndex={3} value={data.dueDate} width="w-full" />;
+		return <DatePicker icon={faCalendar} label="Due Date" onChange={(e) => setValues("dueDate", e)} tabIndex={4} value={data.dueDate} width="w-full" />;
 	}
 
 	function uiPriority() {
@@ -139,7 +149,7 @@ export default function AddTodo({ mount, refresh, unmount }) {
 				comparingValue1=""
 				comparingValue2={data.priority}
 				displayValue=""
-				filteredData={["Low", "Medium", "High"]}
+				filteredData={["Low", "Medium", "High", "Urgent"]}
 				icon={faStar}
 				isReadOnly={false}
 				label="Priority"
@@ -148,7 +158,7 @@ export default function AddTodo({ mount, refresh, unmount }) {
 				onInputChange={() => {}}
 				onKeyPress={() => {}}
 				searchedItem={{}}
-				tabIndex={4}
+				tabIndex={3}
 				value={data.priority}
 				width="w-full"
 			/>
@@ -167,6 +177,10 @@ export default function AddTodo({ mount, refresh, unmount }) {
 		);
 	}
 
+	function uiTodaysTask() {
+		return <TextArea icon={faList} label="Today's Task" onChange={(e) => setValues("todaysTask", e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={2} value={data.todaysTask} width="w-full" />;
+	}
+
 	// Hooks
 	useEffect(() => {
 		if (mounted.assignedToMenu) {
@@ -181,14 +195,21 @@ export default function AddTodo({ mount, refresh, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setIsBoxDragged(!isBoxDragged)} onStop={() => setIsBoxDragged(!isBoxDragged)}>
-					<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
+				<Draggable handle=".draggable-handle" onStart={() => setIsBoxDragged(true)} onStop={() => setIsBoxDragged(false)}>
+					<DialogPanel className="w-3/5 transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
-						<div className="flex flex-col w-full p-6 space-y-3 justify-between items-center">
-							<TextArea icon={faNoteSticky} key={1} label="Description" onChange={(e) => setValues("description", e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={data.description} width="w-full" />
+						<div className="flex flex-col w-full p-6 justify-between items-center">
 							{uiAssignedTo()}
-							{uiDueDate()}
-							{uiPriority()}
+							<div className="flex w-full space-x-6 justify-between items-start">
+								<div className="flex flex-col w-1/2 h-full justify-center items-center">
+									{uiDescription()}
+									{uiTodaysTask()}
+								</div>
+								<div className="flex flex-col w-1/2 h-full justify-center items-center">
+									{uiPriority()}
+									{uiDueDate()}
+								</div>
+							</div>
 						</div>
 						<footer className="dialog-footer">
 							<button className={addButtonStyle} onClick={() => addTodo()}>
