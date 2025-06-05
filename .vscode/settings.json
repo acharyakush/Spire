@@ -57,7 +57,7 @@
 	"prettier.htmlWhitespaceSensitivity": "ignore",
 	"prettier.printWidth": 240,
 	"prettier.semi": true,
-	"prettier.singleAttributePerLine": false,
+	"prettier.singleAttributePerLine": true,
 	"prettier.singleQuote": false,
 	"prettier.tabWidth": 4,
 	"prettier.trailingComma": "all",
