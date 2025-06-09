@@ -3,24 +3,26 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import dayjs from "dayjs";
+import axios from "axios";
 import Tippy from "@tippyjs/react";
 import dynamic from "next/dynamic";
 import MyConstants from "@/utilities/constants";
 
+import { Virtuoso } from "react-virtuoso";
 import { MyGlobal } from "@/utilities/global";
-import { Menu, MenuButton } from "@headlessui/react";
+import { useEffect, useMemo, useState } from "react";
 import { TextInputNative } from "@/components/Inputs";
-import { useCallback, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmall, Spinner, Tooltip } from "@/components/Elements";
 import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilterCircleXmark, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
 
-const DynamicEditProject = dynamic(() => import("./EditProject"), { ssr: false });
 const DynamicMyProjects = dynamic(() => import("./MyProjects"), { ssr: false });
+const DynamicEditProject = dynamic(() => import("./EditProject"), { ssr: false });
 const DynamicSingleProject = dynamic(() => import("../singleProject"), { ssr: false });
 
-const DynamicDeleteProject = dynamic(() => import("@/modals/projects/miscellaneous").then((t) => t.DeleteProject), { ssr: false });
 const DynamicEditStatus = dynamic(() => import("@/modals/projects/miscellaneous").then((t) => t.EditStatus), { ssr: false });
+const DynamicDeleteProject = dynamic(() => import("@/modals/projects/miscellaneous").then((t) => t.DeleteProject), { ssr: false });
 const DynamicProjectStatus = dynamic(() => import("@/modals/projects/miscellaneous").then((t) => t.ProjectStatus), { ssr: false });
 
 export default function Projects2({ presetStatus, setModuleProps }) {
@@ -48,7 +50,6 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		deleteProject: false,
 		editProject: false,
 		editStatus: false,
-		component: false,
 		myProjects: presetStatus === "my-projects" || String(presetStatus).includes("MySpace"),
 		projectStatus: false,
 		singleProject: false,
@@ -70,67 +71,68 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 	const allowDeletingProject = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteProject), []);
 	const allowEditingProject = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.EditProject), []);
 
-	const showFindBoxClearButton = useMemo(() => (main.search ? "cursor-pointer primary-text" : "hidden"), [main.search]);
-
+	const clearSearchStyle = useMemo(() => (main.search ? "cursor-pointer primary-text" : "hidden"), [main.search]);
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
 	// Functions
-	const autoFocusSearchBox = useCallback((e) => {
+	function autoFocusSearchBox(e) {
 		if (e.ctrlKey && e.key === "f") {
 			e.preventDefault();
 			document.getElementById("searchBox").focus();
 		}
-	}, []);
+	}
 
-	const clearFilters = useCallback(() => {
+	function clearFilters() {
 		const source = activeModule.name === "All" ? projects.copy : activeModule.list;
 		setMain((s) => ({ ...s, filter: "", revisedStatuses: getRevisedStatuses(source) }));
-	}, []);
+	}
 
-	const closeMyProjects = useCallback(() => {
+	function closeMyProjects() {
 		setMounted((s) => ({ ...s, myProjects: false }));
-	}, []);
+	}
 
-	const doFiltering = useCallback(() => {
+	function doFiltering() {
 		const filtered = getSelectedProjectData().filter((f) => {
-			if (main.filter) return String(f.status) === main.filter;
+			const { client_id, client_name, company_name, government_id, id, main_project_name, sub_project_name, team_names, team_names_initials, status } = f;
 
-			const findText = main.search.toLowerCase();
+			if (main.filter) return String(status) === main.filter;
 
-			const projectId = String(f.id).toLowerCase();
-			const governmentId = String(f.government_id).toLowerCase();
+			const search = main.search.toLowerCase();
 
-			const clientId = String(f.client_id).toLowerCase();
-			const clientName = String(f.client_name).toLowerCase();
+			const projectId = String(id).toLowerCase();
+			const governmentId = String(government_id).toLowerCase();
 
-			const companyName = String(f.company_name).toLowerCase();
+			const clientId = String(client_id).toLowerCase();
+			const clientName = String(client_name).toLowerCase();
 
-			const mainProjectName = String(f.main_project_name).toLowerCase();
-			const subProjectName = String(f.sub_project_name).toLowerCase();
+			const companyName = String(company_name).toLowerCase();
 
-			const teamNames = String(f.team_names).toLowerCase();
-			const teamNamesInitials = String(f.team_names_initials).toLowerCase();
+			const mainProjectName = String(main_project_name).toLowerCase();
+			const subProjectName = String(sub_project_name).toLowerCase();
 
-			const status = String(f.status).toLowerCase();
+			const teamNames = String(team_names).toLowerCase();
+			const teamNamesInitials = String(team_names_initials).toLowerCase();
+
+			const _status = String(status).toLowerCase();
 
 			return (
-				projectId.includes(findText) ||
-				governmentId.includes(findText) ||
-				clientId.includes(findText) ||
-				clientName.includes(findText) ||
-				companyName.includes(findText) ||
-				mainProjectName.includes(findText) ||
-				subProjectName.includes(findText) ||
-				teamNames.includes(findText) ||
-				teamNamesInitials.includes(findText) ||
-				status.includes(findText)
+				projectId.includes(search) ||
+				governmentId.includes(search) ||
+				clientId.includes(search) ||
+				clientName.includes(search) ||
+				companyName.includes(search) ||
+				mainProjectName.includes(search) ||
+				subProjectName.includes(search) ||
+				teamNames.includes(search) ||
+				teamNamesInitials.includes(search) ||
+				_status.includes(search)
 			);
 		});
 
 		setProjects((s) => ({ ...s, api: filtered }));
-	}, [main.filter]);
+	}
 
-	const doSorting = useCallback(() => {
+	function doSorting() {
 		return getSelectedProjectData().sort((a, b) => {
 			const aStartedOn = new Date(a.started_on);
 			const bStartedOn = new Date(b.started_on);
@@ -143,13 +145,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				case column === tableHeaders.Started && !isAscending:
 					return bStartedOn - aStartedOn;
 				case column === tableHeaders.GovermentId && isAscending:
-					if (a.government_id) {
-						return String(a.government_id).localeCompare(b.government_id);
-					}
+					if (a.government_id) return String(a.government_id).localeCompare(b.government_id);
 				case column === tableHeaders.GovermentId && !isAscending:
-					if (b.government_id) {
-						return String(b.government_id).localeCompare(a.government_id);
-					}
+					if (b.government_id) return String(b.government_id).localeCompare(a.government_id);
 				case column === tableHeaders.Client && isAscending:
 					return String(a.client_name).localeCompare(b.client_name);
 				case column === tableHeaders.Client && !isAscending:
@@ -172,21 +170,21 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 					return String(b.status).localeCompare(a.status);
 			}
 		});
-	}, [main.sort]);
+	}
 
-	const editStatus = useCallback((project, status) => {
-		const object = { ...project };
+	function editStatus(project, status) {
+		const copy = Object.assign({}, project);
 
-		object["new_status"] = status;
+		copy["new_status"] = status;
 
 		if (status !== stCompleted) {
-			toggleEditStatusBox(object);
+			toggleEditStatusBox(copy);
 		} else {
-			toggleProjectStatusBox(object);
+			toggleProjectStatusBox(copy);
 		}
-	}, []);
+	}
 
-	const getAggregatedProjects = useCallback(() => {
+	function getAggregatedProjects() {
 		const groupedByMainProject = projects.copy.reduce((pv, cv) => {
 			if (!pv[cv.main_project_name]) {
 				pv[cv.main_project_name] = [];
@@ -206,19 +204,19 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				if (a.key === "All") return -1;
 				if (b.key === "All") return 1;
 
-				return a.key.localeCompare(b.key);
+				return String(a.key).localeCompare(b.key);
 			});
-	}, []);
+	}
 
-	const getEmptyDataMessage = useCallback((message) => {
+	function getEmptyDataMessage(message) {
 		return (
 			<div className={blankDataWrapper}>
 				<span className="font-regular-12 gray-text">{message}</span>
 			</div>
 		);
-	}, []);
+	}
 
-	const getIconOrBadge = useCallback(() => {
+	function getIconOrBadge() {
 		if (!main.isSupportDataLoading) return apiSize > 0 && <Badge value={getRowsCount()} />;
 
 		return (
@@ -226,9 +224,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				<Spinner />
 			</span>
 		);
-	}, [main.isSupportDataLoading]);
+	}
 
-	const getRevisedStatuses = useCallback((source) => {
+	function getRevisedStatuses(source) {
 		if (!Array.isArray(source)) return [];
 		if (!source.length) return [];
 
@@ -243,9 +241,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		});
 
 		return object;
-	}, []);
+	}
 
-	const getRowsCount = useCallback(() => {
+	function getRowsCount() {
 		const apiCount = projects.api.filter((f) => {
 			const { search } = main;
 
@@ -269,18 +267,18 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		if (apiCount !== apiCopySize) return apiCount + " / " + apiCopySize;
 
 		return apiCount;
-	}, [main.search]);
+	}
 
-	const getSelectedProjectData = useCallback(() => {
+	function getSelectedProjectData() {
 		let data = [];
 
 		if (apiCopySize > 0) {
-			const list = activeModule.name === "All" ? projects.copy : getAggregatedProjects().find((f) => f.key == activeModule.name).items;
+			const list = activeModule.name === "All" ? (main.search.length ? projects.api : projects.copy) : getAggregatedProjects().find((f) => f.key == activeModule.name).items;
 
 			const { filter, search } = main;
 
 			data = list.filter((f) => {
-				if (main.search.length) {
+				if (search.length) {
 					if (Object.values(statuses).includes(search)) return String(f.status).includes(search);
 
 					if (search === "Overdue") {
@@ -301,45 +299,12 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		}
 
 		return data;
-	}, []);
+	}
 
-	const setFilter = useCallback((value) => {
-		setMain((s) => ({ ...s, filter: value }));
-	}, []);
-
-	const setInputs = useCallback((key, value) => {
-		setMain((s) => ({ ...s, [key]: value }));
-	}, []);
-
-	const setModule = useCallback((module) => {
-		const source = module.key === "All" ? projects.copy : module?.items;
-
-		setActiveModule({ list: module?.items, name: module?.key });
-		setMain((s) => ({ ...s, filter: "", revisedStatuses: getRevisedStatuses(source) }));
-	}, []);
-
-	const setMouseEnter = useCallback((projectId) => {
-		if (allowDeletingProject) {
-			setMain((s) => ({ ...s, contextMenu: { ...s.contextMenu, deleteProject: projectId } }));
-		}
-
-		if (allowEditingProject) {
-			setMain((s) => ({ ...s, contextMenu: { ...s.contextMenu, editProject: projectId } }));
-		}
-	}, []);
-
-	const setMouseLeave = useCallback(() => {
-		setMain((s) => ({ ...s, contextMenu: { deleteProject: 0, editProject: 0 } }));
-	}, []);
-
-	const setSort = useCallback((column) => {
-		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
-	}, []);
-
-	const getSupportData = useCallback(async (projectId) => {
-		setMain((s) => ({ ...s, isSupportDataLoading: true }));
-
+	async function getSupportData(projectId) {
 		try {
+			setMain((s) => ({ ...s, isSupportDataLoading: true }));
+
 			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetProjects, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
@@ -414,35 +379,87 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		} finally {
 			setMain((s) => ({ ...s, isSupportDataLoading: false }));
 		}
-	}, []);
+	}
 
-	const toggleDeleteProjectBox = useCallback((project) => {
+	function setFilter(value) {
+		setMain((s) => ({ ...s, filter: value }));
+	}
+
+	function setInputs(key, value) {
+		setMain((s) => ({ ...s, [key]: value }));
+	}
+
+	function setModule(module) {
+		const source = module.key === "All" ? projects.copy : module?.items;
+
+		setActiveModule({ list: module?.items, name: module?.key });
+		setMain((s) => ({ ...s, filter: "", revisedStatuses: getRevisedStatuses(source) }));
+	}
+
+	function setMouseEnter(projectId) {
+		if (allowDeletingProject) {
+			setMain((s) => ({ ...s, contextMenu: { ...s.contextMenu, deleteProject: projectId } }));
+		}
+
+		if (allowEditingProject) {
+			setMain((s) => ({ ...s, contextMenu: { ...s.contextMenu, editProject: projectId } }));
+		}
+	}
+
+	function setMouseLeave() {
+		setMain((s) => ({ ...s, contextMenu: { deleteProject: 0, editProject: 0 } }));
+	}
+
+	function setSort(column) {
+		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
+	}
+
+	function toggleDeleteProjectBox(project) {
 		setMain((s) => ({ ...s, selectedProject: project ?? {} }));
 		setMounted((s) => ({ ...s, deleteProject: project ? true : false }));
-	}, []);
+	}
 
-	const toggleEditProjectView = useCallback((project) => {
+	function toggleEditProjectView(project) {
 		setMain((s) => ({ ...s, selectedProject: project ?? {} }));
 		setMounted((s) => ({ ...s, editProject: project ? true : false }));
-	}, []);
+	}
 
-	const toggleEditStatusBox = useCallback((project) => {
+	function toggleEditStatusBox(project) {
 		setMain((s) => ({ ...s, selectedProject: project ?? {} }));
 		setMounted((s) => ({ ...s, editStatus: project ? true : false }));
-	}, []);
+	}
 
-	const toggleProjectStatusBox = useCallback((project) => {
+	function toggleProjectStatusBox(project) {
 		setMain((s) => ({ ...s, selectedProject: project ?? {} }));
 		setMounted((s) => ({ ...s, projectStatus: project ? true : false }));
-	}, []);
+	}
 
-	const toggleSingleProjectView = useCallback((project) => {
+	function toggleSingleProjectView(project) {
 		setMain((s) => ({ ...s, selectedProject: project ?? {} }));
 		setMounted((s) => ({ ...s, singleProject: project ? true : false }));
-	}, []);
+	}
 
 	// UI Components
-	const uiClearFilter = useCallback(() => {
+	function uiBody() {
+		return (
+			<div className="flex w-full h-full justify-center items-start">
+				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiList()}</div>
+				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center">
+					<div className="flex flex-col w-full h-full justify-center items-start full-border">
+						<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
+						<Virtuoso
+							className="w-full h-full overflow-y-auto bottom-border contrast-background"
+							data={doSorting()}
+							itemContent={(i, row) => uiRows(row)}
+							totalCount={doSorting().length}
+						/>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	function uiClearFilter() {
 		return (
 			<FontAwesomeIcon
 				className="cursor-pointer outline-none focus:outline-none red-text"
@@ -450,29 +467,52 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				onClick={() => clearFilters()}
 			/>
 		);
-	}, []);
+	}
 
-	const uiClientName = useCallback(
-		(row, tooltipText) => {
-			const clientName = MyGlobal.HighlightText(row.client_name, main.search);
+	function uiClientName(row, tooltipText) {
+		const clientName = MyGlobal.HighlightText(row.client_name, main.search);
 
-			return (
-				<Tippy
-					allowHTML
-					className="whitespace-pre-line"
-					content={<Tooltip text={tooltipText} />}
-					placement="bottom">
-					<span
-						dangerouslySetInnerHTML={{ __html: clientName }}
-						onClick={() => toggleSingleProjectView(row)}
-					/>
-				</Tippy>
-			);
-		},
-		[main.search, toggleSingleProjectView],
-	);
+		return (
+			<Tippy
+				allowHTML
+				className="whitespace-pre-line"
+				content={<Tooltip text={tooltipText} />}
+				placement="bottom">
+				<span
+					dangerouslySetInnerHTML={{ __html: clientName }}
+					onClick={() => toggleSingleProjectView(row)}
+				/>
+			</Tippy>
+		);
+	}
 
-	const uiExport = useCallback(() => {
+	function uiDeleteProject() {
+		if (!mounted.deleteProject) return null;
+
+		return (
+			<DynamicDeleteProject
+				mount={mounted.deleteProject}
+				projectId={main.selectedProject?.id}
+				reload={getSupportData}
+				unmount={toggleDeleteProjectBox}
+			/>
+		);
+	}
+
+	function uiEditStatus() {
+		if (!mounted.editStatus) return null;
+
+		return (
+			<DynamicEditStatus
+				mount={mounted.editStatus}
+				project={main.selectedProject}
+				reload={getSupportData}
+				unmount={toggleEditStatusBox}
+			/>
+		);
+	}
+
+	function uiExport() {
 		if (apiSize && apiCopySize) {
 			return (
 				<button
@@ -485,9 +525,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				</button>
 			);
 		}
-	}, [apiSize, apiCopySize]);
+	}
 
-	const uiFilter = useCallback(() => {
+	function uiFilter() {
 		const wrapper = "flex w-full h-[30px] px-2 justify-between items-center font-regular-10 gray-text";
 
 		return (
@@ -501,9 +541,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded z-50 contrast-background bottom-shadow full-border">{uiFilterList()}</MenuItems>
 			</Menu>
 		);
-	}, [main.filter]);
+	}
 
-	const uiFilterList = useCallback(() => {
+	function uiFilterList() {
 		return Object.entries(main.revisedStatuses).map(([key, value], i) => {
 			const isSelected = key === main.filter;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
@@ -522,27 +562,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				</MenuItem>
 			);
 		});
-	}, [main.filter, main.revisedStatuses]);
+	}
 
-	const uiFind = useCallback(() => {
-		if (apiSize) {
-			return (
-				<TextInputNative
-					id="searchBox"
-					icon={faSearch}
-					onChange={(e) => setInputs("search", e.target.value)}
-					onClearButtonClick={() => setInputs("search", "")}
-					placeholder="Search"
-					showClearButton={showFindBoxClearButton}
-					tabIndex={1}
-					value={main.search}
-					width="w-60"
-				/>
-			);
-		}
-	}, [main.search]);
-
-	const uiHeaders = useCallback(() => {
+	function uiHeaders() {
 		return Object.values(tableHeaders).map((m, i) => {
 			const showArrow = m === main.sort.column ? "visible" : "invisible";
 
@@ -556,9 +578,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				</span>
 			);
 		});
-	}, [main.sort]);
+	}
 
-	const uiList = useCallback(() => {
+	function uiList() {
 		const modules = apiCopySize > 0 ? getAggregatedProjects() : [];
 
 		return modules.map((m, i) => {
@@ -576,9 +598,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				</button>
 			);
 		});
-	}, [activeModule.name, apiCopySize]);
+	}
 
-	const uiMain = useCallback(() => {
+	function uiMain() {
 		if (main.isSupportDataLoading) return getEmptyDataMessage("Loading...");
 
 		if (!apiSize && apiCopySize) return getEmptyDataMessage("No projects found...");
@@ -618,95 +640,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		}
 
 		return uiBody();
-	}, [apiCopySize, apiSize, main.isSupportDataLoading, mounted.editProject, mounted.myProjects, mounted.singleProject]);
+	}
 
-	const uiRows = useCallback(
-		(row) => {
-			const style = `flex w-[12.5%] min-h-9 justify-center items-center text-center`;
-
-			const { client_id, company_name, government_id, id, main_project_name, remarks, status, sub_project_name } = row;
-
-			const governmentId = MyGlobal.HighlightText(government_id ?? "", main.search);
-			const governmentIdTextColour = !government_id ? "gray-text" : "primary-text";
-
-			const clientIdAndName = [`Client ID - ${client_id}`, <br />, `Project ID - ${id}`];
-			const companyName = MyGlobal.HighlightText(company_name, main.search);
-
-			const mainProjectName = MyGlobal.HighlightText(main_project_name, main.search);
-			const subProjectName = MyGlobal.HighlightText(sub_project_name, main.search);
-
-			const background = status == stCompleted ? "green-background-transparent-01" : "contrast-background";
-
-			const wrapper = `flex w-full justify-center items-center ${background} bottom-border font-regular-11 black-text`;
-
-			return (
-				<div
-					className={wrapper}
-					key={id}
-					onMouseEnter={() => setMouseEnter(id)}
-					onMouseLeave={() => setMouseLeave(id)}>
-					<div className={`${style} cursor-help primary-text`}>{uiStartedOn(row)}</div>
-
-					<span
-						className={`${style} wrap-text ${governmentIdTextColour}`}
-						dangerouslySetInnerHTML={{ __html: governmentId || "NA" }}
-					/>
-
-					<span className={`${style} space-x-5 cursor-pointer relative primary-text`}>{uiClientName(row, clientIdAndName)}</span>
-
-					<span
-						className={style}
-						dangerouslySetInnerHTML={{ __html: companyName }}
-					/>
-					<span
-						className={style}
-						dangerouslySetInnerHTML={{ __html: mainProjectName }}
-					/>
-
-					<Tippy
-						content={<Tooltip text={`Remarks ${remarks}`} />}
-						placement="bottom">
-						<span
-							className={style}
-							dangerouslySetInnerHTML={{ __html: subProjectName }}
-						/>
-					</Tippy>
-
-					<span className={`${style} space-x-1`}>{uiTeams(row)}</span>
-					<span className={style}>{uiStatusMenu(row)}</span>
-				</div>
-			);
-		},
-		[main.search],
-	);
-
-	const renderDeleteProject = useCallback(() => {
-		if (!mounted.deleteProject) return null;
-
-		return (
-			<DynamicDeleteProject
-				mount={mounted.deleteProject}
-				projectId={main.selectedProject?.id}
-				reload={getSupportData}
-				unmount={toggleDeleteProjectBox}
-			/>
-		);
-	}, [mounted.deleteProject, main.selectedProject?.id, toggleDeleteProjectBox]);
-
-	const renderEditStatus = useCallback(() => {
-		if (!mounted.editStatus) return null;
-
-		return (
-			<DynamicEditStatus
-				mount={mounted.editStatus}
-				project={main.selectedProject}
-				reload={getSupportData}
-				unmount={toggleEditStatusBox}
-			/>
-		);
-	}, [mounted.editStatus, main.selectedProject, toggleEditStatusBox]);
-
-	const renderprojectStatus = useCallback(() => {
+	function uiProjectStatus() {
 		if (!mounted.projectStatus) return null;
 
 		return (
@@ -717,24 +653,96 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				unmount={toggleProjectStatusBox}
 			/>
 		);
-	}, [mounted.projectStatus, main.selectedProject, toggleProjectStatusBox]);
+	}
 
-	const uiSortArrows = useCallback(
-		(column) => {
-			if (main.sort.column === column) {
-				return (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={main.sort.isAscending ? faSortAmountDesc : faSortAmountAsc}
+	function uiRows(row) {
+		const style = `flex w-[12.5%] min-h-9 justify-center items-center text-center`;
+
+		const { client_id, company_name, government_id, id, main_project_name, remarks, status, sub_project_name } = row;
+
+		const governmentId = MyGlobal.HighlightText(government_id ?? "", main.search);
+		const governmentIdTextColour = !government_id ? "gray-text" : "primary-text";
+
+		const clientIdAndName = [`Client ID - ${client_id}`, <br />, `Project ID - ${id}`];
+		const companyName = MyGlobal.HighlightText(company_name, main.search);
+
+		const mainProjectName = MyGlobal.HighlightText(main_project_name, main.search);
+		const subProjectName = MyGlobal.HighlightText(sub_project_name, main.search);
+
+		const background = status === stCompleted ? "green-background-transparent-01" : "contrast-background";
+
+		const wrapper = `flex w-full justify-center items-center ${background} bottom-border font-regular-11 black-text`;
+
+		return (
+			<div
+				className={wrapper}
+				key={id}
+				onMouseEnter={() => setMouseEnter(id)}
+				onMouseLeave={() => setMouseLeave(id)}>
+				<div className={`${style} cursor-help primary-text`}>{uiStartedOn(row)}</div>
+
+				<span
+					className={`${style} wrap-text ${governmentIdTextColour}`}
+					dangerouslySetInnerHTML={{ __html: governmentId || "NA" }}
+				/>
+
+				<span className={`${style} space-x-5 cursor-pointer relative primary-text`}>{uiClientName(row, clientIdAndName)}</span>
+
+				<span
+					className={style}
+					dangerouslySetInnerHTML={{ __html: companyName }}
+				/>
+				<span
+					className={style}
+					dangerouslySetInnerHTML={{ __html: mainProjectName }}
+				/>
+
+				<Tippy
+					content={<Tooltip text={`Remarks ${remarks}`} />}
+					placement="bottom">
+					<span
+						className={style}
+						dangerouslySetInnerHTML={{ __html: subProjectName }}
 					/>
-				);
-			}
-		},
-		[main.selectedProject],
-	);
+				</Tippy>
 
-	const uiStartedOn = useCallback((row) => {
-		const actionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text";
+				<span className={`${style} space-x-1`}>{uiTeams(row)}</span>
+				<span className={style}>{uiStatusMenu(row)}</span>
+			</div>
+		);
+	}
+
+	function uiSearch() {
+		if (apiSize) {
+			return (
+				<TextInputNative
+					id="searchBox"
+					icon={faSearch}
+					onChange={(e) => setInputs("search", e.target.value)}
+					onClearButtonClick={() => setInputs("search", "")}
+					placeholder="Search"
+					showClearButton={clearSearchStyle}
+					tabIndex={1}
+					value={main.search}
+					width="w-60"
+				/>
+			);
+		}
+	}
+
+	function uiSortArrows(column) {
+		if (main.sort.column === column) {
+			return (
+				<FontAwesomeIcon
+					className="text-white"
+					icon={main.sort.isAscending ? faSortAmountDesc : faSortAmountAsc}
+				/>
+			);
+		}
+	}
+
+	function uiStartedOn(row) {
+		const actionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 text-white";
 
 		return (
 			<Tippy
@@ -758,43 +766,40 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				}
 				interactive
 				placement="right"
-				theme="light">
+				theme="dark">
 				<span>{dayjs(row.started_on).format("DD MMM, YYYY")}</span>
 			</Tippy>
 		);
-	}, []);
+	}
 
-	const uiStatusMenu = useCallback(
-		(row) => {
-			const isCompleted = row.status === stCompleted;
-			const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none font-regular-11 !py-0`;
+	function uiStatusMenu(row) {
+		const isCompleted = row.status === stCompleted;
+		const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none font-regular-11 !py-0`;
 
-			return (
-				<Menu
-					as="div"
-					className="flex w-24 justify-center items-center relative">
-					<MenuButton className={wrapper}>
-						{isCompleted && (
-							<FontAwesomeIcon
-								className="green-text mr-1.5"
-								icon={faCheckCircle}
-							/>
-						)}
-						<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.search) }} />
-						{!isCompleted && <FontAwesomeIcon icon={faChevronDown} />}
-					</MenuButton>
-					{!isCompleted ? (
-						<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusList(row)}</MenuItems>
-					) : (
-						isUserAdministrator && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusList(row)}</MenuItems>
+		return (
+			<Menu
+				as="div"
+				className="flex w-24 justify-center items-center relative">
+				<MenuButton className={wrapper}>
+					{isCompleted && (
+						<FontAwesomeIcon
+							className="green-text mr-1.5"
+							icon={faCheckCircle}
+						/>
 					)}
-				</Menu>
-			);
-		},
-		[main.search],
-	);
+					<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.search) }} />
+					{!isCompleted && <FontAwesomeIcon icon={faChevronDown} />}
+				</MenuButton>
+				{!isCompleted ? (
+					<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusList(row)}</MenuItems>
+				) : (
+					isUserAdministrator && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusList(row)}</MenuItems>
+				)}
+			</Menu>
+		);
+	}
 
-	const uiStatusList = useCallback((row) => {
+	function uiStatusList(row) {
 		return Object.values(statuses).map((m, i) => {
 			const isSelected = m === row.status;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
@@ -816,9 +821,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				</MenuItem>
 			);
 		});
-	}, []);
+	}
 
-	const uiTeams = useCallback((row) => {
+	function uiTeams(row) {
 		const names = String(row.team_names);
 		const singleUserInitials = row.team_names_initials;
 		const total = names.split(",").length;
@@ -838,9 +843,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		} else {
 			return uiTeamsTooltip(singleUserInitials, names);
 		}
-	}, []);
+	}
 
-	const uiTeamsListTooltip = useCallback((teams) => {
+	function uiTeamsListTooltip(teams) {
 		const splitted = String(teams).split(",");
 
 		return (
@@ -861,9 +866,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 					  })}
 			</div>
 		);
-	}, []);
+	}
 
-	const uiTeamsTooltip = useCallback((badgeText, tooltipText) => {
+	function uiTeamsTooltip(badgeText, tooltipText) {
 		return (
 			<Tippy
 				content={<Tooltip text={tooltipText} />}
@@ -873,9 +878,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				</span>
 			</Tippy>
 		);
-	}, []);
+	}
 
-	const uiTopBar = useCallback(() => {
+	function uiTopBar() {
 		if (!mounted.editProject && !mounted.singleProject) {
 			return (
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
@@ -884,7 +889,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 						{getIconOrBadge()}
 					</div>
 					<div className="flex w-1/3 space-x-5 justify-center items-center">
-						{uiFind()}
+						{uiSearch()}
 						{uiFilter()}
 
 						<Tippy
@@ -897,7 +902,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				</div>
 			);
 		}
-	}, [activeModule.name, mounted.editProject, mounted.singleProject]);
+	}
 
 	// Hooks
 	useEffect(() => {
@@ -912,19 +917,16 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 	}, []);
 
 	useEffect(() => {
-		if (mounted.component) {
-			doFiltering();
-		}
+		doFiltering();
 	}, [main.filter, main.search]);
 
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			{uiTopBar()}
 			{uiMain()}
-
-			{renderDeleteProject()}
-			{renderEditStatus()}
-			{renderprojectStatus()}
+			{uiDeleteProject()}
+			{uiEditStatus()}
+			{uiProjectStatus()}
 		</div>
 	);
 }

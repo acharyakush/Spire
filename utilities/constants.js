@@ -327,6 +327,17 @@ const MyConstants = Object.freeze({
 			Completed: "Completed",
 			Hold: "Hold",
 		}),
+		Projects2: Object.freeze({
+			Active: "Active",
+			Cancelled: "Cancelled",
+			Closed: "Closed",
+			Completed: "Completed",
+			Hold: "Hold",
+			Overdue: "Overdue",
+			Today: "Today",
+			Tomorrow: "Tomorrow",
+			Upcoming: "Upcoming",
+		}),
 		Tasks: Object.freeze({
 			Completed: "Completed",
 			Disable: "Disable",

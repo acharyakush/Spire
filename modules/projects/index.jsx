@@ -52,7 +52,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	});
 
 	const today = useMemo(() => dayjs(), []);
-	const statuses = MyConstants.Statuses.Projects;
+	const statuses = MyConstants.Statuses.Projects2;
 	const thisView = MyConstants.Modules.Base.Projects;
 	const tableHeaders = MyConstants.TableHeaders.Projects;
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
@@ -82,11 +82,31 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				[statuses.Closed]: 0,
 				[statuses.Completed]: 0,
 				[statuses.Hold]: 0,
+				[statuses.Overdue]: 0,
+				[statuses.Today]: 0,
+				[statuses.Tomorrow]: 0,
+				[statuses.Upcoming]: 0,
 			};
 
 			projectsList.forEach((project) => {
 				if (counts.hasOwnProperty(project.status)) {
 					counts[project.status]++;
+				}
+
+				if (project.has_tasks_overdue) {
+					counts.Overdue++;
+				}
+
+				if (project.has_tasks_due_today) {
+					counts.Today++;
+				}
+
+				if (project.has_tasks_due_tomorrow) {
+					counts.Tomorrow++;
+				}
+
+				if (project.has_tasks_upcoming) {
+					counts.Upcoming++;
 				}
 			});
 
@@ -172,8 +192,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				// Recalculate status counts based on the text search only
 				if (main.findText) {
 					const source = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items;
+
 					const textFilteredData = source.filter((project) => {
 						const findText = main.findText.toLowerCase();
+
 						return (
 							String(project.id).toLowerCase().includes(findText) ||
 							String(project.government_id || "")
@@ -493,7 +515,19 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 			// Status filter logic
 			if (main.filter) {
-				matchesStatusFilter = project.status === main.filter;
+				if ([statuses.Overdue, statuses.Today, statuses.Tomorrow, statuses.Upcoming].includes(main.filter)) {
+					if (main.filter === statuses.Overdue) {
+						matchesStatusFilter = project.has_tasks_overdue;
+					} else if (main.filter === statuses.Today) {
+						matchesStatusFilter = project.has_tasks_due_today;
+					} else if (main.filter === statuses.Tomorrow) {
+						matchesStatusFilter = project.has_tasks_due_tomorrow;
+					} else if (main.filter === statuses.Upcoming) {
+						matchesStatusFilter = project.has_tasks_upcoming;
+					}
+				} else {
+					matchesStatusFilter = project.status === main.filter;
+				}
 			}
 
 			// Both filters must match
@@ -670,14 +704,25 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	// Memoized UI components
 	const uiClearFilter = useCallback(() => {
-		return <FontAwesomeIcon className="cursor-pointer outline-none focus:outline-none red-text" icon={faFilterCircleXmark} onClick={clearFilter} />;
+		return (
+			<FontAwesomeIcon
+				className="cursor-pointer outline-none focus:outline-none red-text"
+				icon={faFilterCircleXmark}
+				onClick={clearFilter}
+			/>
+		);
 	}, [clearFilter]);
 
 	const uiExport = useCallback(() => {
 		if (filteredProjects.length && api.projects.copy.length) {
 			return (
-				<button className="primary-button-transparent-background" onClick={doExcelExport}>
-					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
+				<button
+					className="primary-button-transparent-background"
+					onClick={doExcelExport}>
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faFileExcel}
+					/>
 				</button>
 			);
 		}
@@ -711,7 +756,11 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
 
 			return (
-				<MenuItem as="div" className={wrapper} key={i} onClick={() => setFilter(key)}>
+				<MenuItem
+					as="div"
+					className={wrapper}
+					key={i}
+					onClick={() => setFilter(key)}>
 					<span className="flex w-full justify-between items-center font-regular-11">
 						<span>{key}</span>
 						{value > 0 && <BadgeSmall value={value} />}
@@ -723,7 +772,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const uiFilter = useCallback(() => {
 		return (
-			<Menu as="div" className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
+			<Menu
+				as="div"
+				className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
 				<MenuButton className="flex w-full h-[30px] px-2 justify-between items-center font-regular-10 gray-text">
 					<span>{main.filter || "Status"}</span>
 					<FontAwesomeIcon icon={faChevronDown} />
@@ -739,10 +790,16 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const sortIcon = main.sort.isAscending ? faSortAmountDesc : faSortAmountAsc;
 
 			return (
-				<span className="w-[12.5%] space-x-1 cursor-pointer text-center text-white font-medium-10" onClick={() => setSort(header)} key={i}>
+				<span
+					className="w-[12.5%] space-x-1 cursor-pointer text-center text-white font-medium-10"
+					onClick={() => setSort(header)}
+					key={i}>
 					<span>{header}</span>
 					<span className={showArrow}>
-						<FontAwesomeIcon className="text-white" icon={sortIcon} />
+						<FontAwesomeIcon
+							className="text-white"
+							icon={sortIcon}
+						/>
 					</span>
 				</span>
 			);
@@ -758,7 +815,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${style} font-regular-10 hovered-rows`;
 
 			return (
-				<button className={wrapper} key={i} onClick={() => setModule(module)}>
+				<button
+					className={wrapper}
+					key={i}
+					onClick={() => setModule(module)}>
 					<span className="text-left">{module.key}</span>
 					{module.key != "All" && module?.items?.length > 0 && <span className="font-regular-10 gray-text">{module.items.length}</span>}
 				</button>
@@ -836,8 +896,15 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				const clientName = MyGlobal.HighlightText(row.client_name, main.findText);
 
 				return (
-					<Tippy allowHTML className="whitespace-pre-line" content={<Tooltip text={tooltipText} />} placement="bottom">
-						<span dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleProjectView(row)} />
+					<Tippy
+						allowHTML
+						className="whitespace-pre-line"
+						content={<Tooltip text={tooltipText} />}
+						placement="bottom">
+						<span
+							dangerouslySetInnerHTML={{ __html: clientName }}
+							onClick={() => toggleSingleProjectView(row)}
+						/>
 					</Tippy>
 				);
 			}
@@ -847,7 +914,11 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const uiTeamsTooltip = useCallback((badgeText, tooltipText) => {
 		return (
-			<Tippy content={<Tooltip text={tooltipText} />} placement="bottom" trigger="mouseenter" appendTo={() => document.body}>
+			<Tippy
+				content={<Tooltip text={tooltipText} />}
+				placement="bottom"
+				trigger="mouseenter"
+				appendTo={() => document.body}>
 				<span className="cursor-help">
 					<BadgeSmall value={badgeText} />
 				</span>
@@ -867,7 +938,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							const wrapper = `flex w-full justify-start items-center ${bottomBorder}`;
 
 							return (
-								<div className={wrapper} key={i}>
+								<div
+									className={wrapper}
+									key={i}>
 									{i + 1}. {m}
 								</div>
 							);
@@ -885,7 +958,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			if (names.includes(",")) {
 				if (total > 2) {
 					return (
-						<Tippy content={uiTeamsListTooltip(names)} placement="bottom">
+						<Tippy
+							content={uiTeamsListTooltip(names)}
+							placement="bottom">
 							<span className="cursor-help primary-text">{total}</span>
 						</Tippy>
 					);
@@ -921,9 +996,18 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
 
 				return (
-					<MenuItem as="div" className={wrapper} key={i} onClick={() => editStatus(row, status)}>
+					<MenuItem
+						as="div"
+						className={wrapper}
+						key={i}
+						onClick={() => editStatus(row, status)}>
 						<span className="font-regular-11">{status}</span>
-						{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
+						{isSelected && (
+							<FontAwesomeIcon
+								className="primary-text"
+								icon={faCheck}
+							/>
+						)}
 					</MenuItem>
 				);
 			});
@@ -937,9 +1021,16 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none font-regular-11 !py-0`;
 
 			return (
-				<Menu as="div" className="flex w-24 justify-center items-center relative">
+				<Menu
+					as="div"
+					className="flex w-24 justify-center items-center relative">
 					<MenuButton className={wrapper}>
-						{isCompleted && <FontAwesomeIcon className="green-text mr-1.5" icon={faCheckCircle} />}
+						{isCompleted && (
+							<FontAwesomeIcon
+								className="green-text mr-1.5"
+								icon={faCheckCircle}
+							/>
+						)}
 						<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.findText) }} />
 						{!isCompleted && <FontAwesomeIcon icon={faChevronDown} />}
 					</MenuButton>
@@ -973,19 +1064,27 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const handleMouseEnter = () => setMouseEnter(row.id);
 
 			return (
-				<div className={wrapper} key={row.id} onMouseEnter={handleMouseEnter} onMouseLeave={setMouseLeave}>
+				<div
+					className={wrapper}
+					key={row.id}
+					onMouseEnter={handleMouseEnter}
+					onMouseLeave={setMouseLeave}>
 					<div className={`${style} cursor-help primary-text`}>
 						{/* Lazy Tippy only renders when hovered */}
 						<Tippy
 							content={
 								<div className="flex flex-col py-1 justify-start items-center">
 									{allowDeletingProject && (
-										<div className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text" onClick={() => toggleDeleteProjectBox(row)}>
+										<div
+											className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text"
+											onClick={() => toggleDeleteProjectBox(row)}>
 											<FontAwesomeIcon icon={faTrash} />
 											<span>Delete Project</span>
 										</div>
 									)}
-									<div className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text" onClick={() => toggleEditProjectView(row)}>
+									<div
+										className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text"
+										onClick={() => toggleEditProjectView(row)}>
 										<FontAwesomeIcon icon={faPencil} />
 										<span>Edit Project</span>
 									</div>
@@ -1001,15 +1100,31 @@ export default function Projects({ presetStatus, setModuleProps }) {
 						</Tippy>
 					</div>
 
-					<span className={`${style} wrap-text ${governmentIdTextColour}`} dangerouslySetInnerHTML={{ __html: governmentId || "NA" }} />
+					<span
+						className={`${style} wrap-text ${governmentIdTextColour}`}
+						dangerouslySetInnerHTML={{ __html: governmentId || "NA" }}
+					/>
 
 					<span className={`${style} space-x-5 cursor-pointer relative primary-text`}>{uiClientName(row, clientIdAndName)}</span>
 
-					<span className={style} dangerouslySetInnerHTML={{ __html: companyName }} />
-					<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
+					<span
+						className={style}
+						dangerouslySetInnerHTML={{ __html: companyName }}
+					/>
+					<span
+						className={style}
+						dangerouslySetInnerHTML={{ __html: mainProjectName }}
+					/>
 
-					<Tippy content={<Tooltip text={`Remarks ${row.remarks}`} />} placement="bottom" trigger="mouseenter" appendTo={() => document.body}>
-						<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
+					<Tippy
+						content={<Tooltip text={`Remarks ${row.remarks}`} />}
+						placement="bottom"
+						trigger="mouseenter"
+						appendTo={() => document.body}>
+						<span
+							className={style}
+							dangerouslySetInnerHTML={{ __html: subProjectName }}
+						/>
 					</Tippy>
 
 					<span className={`${style} space-x-1`}>{uiTeams(row)}</span>
@@ -1039,7 +1154,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const uiBody = useCallback(() => {
 		// For debugging
-		logProjectCounts();
+		//logProjectCounts();
 
 		return (
 			<div className="flex w-full h-full justify-center items-start">
@@ -1047,7 +1162,12 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center">
 					<div className="flex flex-col w-full h-full justify-center items-start full-border">
 						<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-						<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={sortedProjects} itemContent={(i, row) => uiRows(row)} totalCount={sortedProjects.length} />
+						<Virtuoso
+							className="w-full h-full overflow-y-auto bottom-border contrast-background"
+							data={sortedProjects}
+							itemContent={(i, row) => uiRows(row)}
+							totalCount={sortedProjects.length}
+						/>
 					</div>
 				</div>
 			</div>
@@ -1074,9 +1194,23 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				</div>
 			);
 		} else if (mounted.editProject) {
-			return <EditProject project={main.selectedProject} reload={setSupportData} unmount={toggleEditProjectView} />;
+			return (
+				<EditProject
+					project={main.selectedProject}
+					reload={setSupportData}
+					unmount={toggleEditProjectView}
+				/>
+			);
 		} else if (mounted.singleProject) {
-			return <SingleProject client={main.selectedClient} project={main.selectedProject} reload={setSupportData} source="Single Project" unmount={toggleSingleProjectView} />;
+			return (
+				<SingleProject
+					client={main.selectedClient}
+					project={main.selectedProject}
+					reload={setSupportData}
+					source="Single Project"
+					unmount={toggleSingleProjectView}
+				/>
+			);
 		} else {
 			return uiBody();
 		}
@@ -1203,7 +1337,19 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 				// Status filter logic
 				if (main.filter) {
-					matchesStatusFilter = project.status === main.filter;
+					if ([statuses.Overdue, statuses.Today, statuses.Tomorrow, statuses.Upcoming].includes(main.filter)) {
+						if (main.filter === statuses.Overdue) {
+							matchesStatusFilter = project.has_tasks_overdue;
+						} else if (main.filter === statuses.Today) {
+							matchesStatusFilter = project.has_tasks_due_today;
+						} else if (main.filter === statuses.Tomorrow) {
+							matchesStatusFilter = project.has_tasks_due_tomorrow;
+						} else if (main.filter === statuses.Upcoming) {
+							matchesStatusFilter = project.has_tasks_upcoming;
+						}
+					} else {
+						matchesStatusFilter = project.status === main.filter;
+					}
 				}
 
 				// Both filters must match
@@ -1239,7 +1385,11 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	// Main UI render with optimized components
 	return mounted.myProjects ? (
-		<MyProjects presetStatus={presetStatus} setModuleProps={setModuleProps} unmount={closeMyProjects} />
+		<MyProjects
+			presetStatus={presetStatus}
+			setModuleProps={setModuleProps}
+			unmount={closeMyProjects}
+		/>
 	) : (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<>
@@ -1252,7 +1402,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 						<div className="flex w-1/3 space-x-5 justify-center items-center">
 							{uiFind()}
 							{uiFilter()}
-							<Tippy content={<Tooltip text={`Clear filters of ${main.activeModule.name}`} />} placement="bottom">
+							<Tippy
+								content={<Tooltip text={`Clear filters of ${main.activeModule.name}`} />}
+								placement="bottom">
 								{uiClearFilter()}
 							</Tippy>
 						</div>
@@ -1262,11 +1414,32 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				{uiMain()}
 			</>
 
-			{mounted.deleteProject && <DeleteProject mount={mounted.deleteProject} projectId={main.selectedProject.id} reload={setSupportData} unmount={toggleDeleteProjectBox} />}
+			{mounted.deleteProject && (
+				<DeleteProject
+					mount={mounted.deleteProject}
+					projectId={main.selectedProject.id}
+					reload={setSupportData}
+					unmount={toggleDeleteProjectBox}
+				/>
+			)}
 
-			{mounted.editStatus && <EditStatus mount={mounted.editStatus} project={main.selectedProject} reload={setSupportData} unmount={toggleEditStatusBox} />}
+			{mounted.editStatus && (
+				<EditStatus
+					mount={mounted.editStatus}
+					project={main.selectedProject}
+					reload={setSupportData}
+					unmount={toggleEditStatusBox}
+				/>
+			)}
 
-			{mounted.projectStatus && <ProjectStatus mount={mounted.projectStatus} project={main.selectedProject} reload={setSupportData} unmount={toggleProjectStatusBox} />}
+			{mounted.projectStatus && (
+				<ProjectStatus
+					mount={mounted.projectStatus}
+					project={main.selectedProject}
+					reload={setSupportData}
+					unmount={toggleProjectStatusBox}
+				/>
+			)}
 		</div>
 	);
 }

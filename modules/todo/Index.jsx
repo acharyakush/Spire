@@ -13,10 +13,14 @@ import { MyGlobal } from "@/utilities/global";
 import { useEffect, useMemo, useState } from "react";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AvatarCircle, Badge, Tooltip } from "@/components/Elements";
-import { faClockRotateLeft, faCrown, faHourglassEnd, faHourglassHalf, faPlusCircle, faSearch, faWebAwesome } from "@fortawesome/free-solid-svg-icons";
+import { AvatarCircle, Badge, BadgeSmall, Tooltip } from "@/components/Elements";
+import { faCheck, faClockRotateLeft, faCrown, faHourglassEnd, faHourglassHalf, faInfoCircle, faPlusCircle, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, useDroppable, DragOverlay } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable, sortableKeyboardCoordinates, defaultAnimateLayoutChanges, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+
+const DynamicAddToDo = dynamic(() => import("@/modals/todos/AddTodo"), { ssr: false });
+const DynamicDetails = dynamic(() => import("@/modals/todos/Details"), { ssr: false });
 
 const animateLayoutChanges = (args) => defaultAnimateLayoutChanges({ ...args, wasDragging: true });
 
@@ -89,16 +93,31 @@ function Card({ item, column, activeCard, openDetailsBox }) {
 	const dueDateStyle = `font-regular-10 ${dueDateTextColor}`;
 
 	return (
-		<div className={container} ref={setNodeRef} style={style} {...attributes} {...listeners}>
+		<div
+			className={container}
+			ref={setNodeRef}
+			style={style}
+			{...attributes}
+			{...listeners}>
 			<div className="flex w-full justify-between items-center">
 				<span className={descriptionStyle}>{item.description}</span>
 				<div className="flex w-1/5 space-x-5 justify-end items-center">
 					{item.todays_task && (
-						<Tippy animation="shift-away" content={<Tooltip text={item.todays_task} />} placement="bottom">
-							<FontAwesomeIcon className="animate-bounce text-red-600" icon={faCrown} size="xl" />
+						<Tippy
+							animation="shift-away"
+							content={<Tooltip text={item.todays_task} />}
+							placement="bottom">
+							<FontAwesomeIcon
+								className="animate-bounce text-red-600"
+								icon={faCrown}
+								size="xl"
+							/>
 						</Tippy>
 					)}
-					<Tippy animation="shift-away" content={<Tooltip text={item.notes ?? "No notes entered."} />} placement="bottom">
+					<Tippy
+						animation="shift-away"
+						content={<Tooltip text={item.notes ?? "No notes entered."} />}
+						placement="bottom">
 						<img
 							src={`/information-circle-${svgFileName}.svg`}
 							alt="icon"
@@ -140,11 +159,21 @@ function Column({ id, items, activeCard, openDetailsBox }) {
 				{items.length > 0 && <Badge value={items.length} />}
 			</div>
 
-			<div className={cardsAreaStyle} ref={setNodeRef}>
-				<SortableContext items={items.map((m) => m.id)} strategy={verticalListSortingStrategy}>
+			<div
+				className={cardsAreaStyle}
+				ref={setNodeRef}>
+				<SortableContext
+					items={items.map((m) => m.id)}
+					strategy={verticalListSortingStrategy}>
 					<div className="flex flex-col px-3 space-y-4 overflow-visible">
 						{items.map((m) => (
-							<Card key={m.id} item={m} column={id} activeCard={activeCard} openDetailsBox={openDetailsBox} />
+							<Card
+								key={m.id}
+								item={m}
+								column={id}
+								activeCard={activeCard}
+								openDetailsBox={openDetailsBox}
+							/>
 						))}
 					</div>
 				</SortableContext>
@@ -162,14 +191,24 @@ export default function Todos() {
 	};
 
 	const [activeCard, setActiveCard] = useState(null);
+
 	const [columns, setColumns] = useState(initialTodos);
+	const [columnsCopy, setColumnsCopy] = useState(initialTodos);
+
 	const [isLoading, setIsLoading] = useState({ updateStatus: false });
 	const [mounted, setMounted] = useState({ addTodoBox: false, details: false });
+
+	const [statuses, setStatuses] = useState([
+		{ count: 0, label: "Today" },
+		{ count: 0, label: "Tomorrow" },
+		{ count: 0, label: "All" },
+	]);
 
 	const [main, setMain] = useState({
 		find: "",
 		isLoading: false,
 		selectedTodo: {},
+		status: statuses.at(0).label,
 	});
 
 	const sensors = useSensors(
@@ -189,13 +228,28 @@ export default function Todos() {
 	const showFindClearButton = useMemo(() => (main.find ? "cursor-pointer primary-text" : "hidden"), [main.find]);
 
 	const totalCount = columns.completed.length + columns.inProgress.length + columns.pending.length;
-
-	const DynamicAddToDo = dynamic(() => import("@/modals/todos/AddTodo"), { ssr: false });
-	const DynamicDetails = dynamic(() => import("@/modals/todos/Details"), { ssr: false });
+	const totalCopyCount = columnsCopy.completed.length + columnsCopy.inProgress.length + columnsCopy.pending.length;
 
 	// Functions
+	function getFilteredData() {
+		return Object.fromEntries(
+			Object.entries(columnsCopy).map(([k, v]) => {
+				let filteredTodos = v;
+
+				if (main.status === "Today") {
+					filteredTodos = v.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === dayjs().format("DD-MM-YYYY"));
+				} else if (main.status === "Tomorrow") {
+					filteredTodos = v.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === dayjs().add(1, "day").format("DD-MM-YYYY"));
+				}
+
+				return [k, filteredTodos];
+			}),
+		);
+	}
+
 	function getIconAndBadge() {
-		return totalCount > 0 && <Badge value={totalCount} />;
+		const count = main.status === "All" ? totalCopyCount : `${totalCount} / ${totalCopyCount}`;
+		return totalCount > 0 && <Badge value={count} />;
 	}
 
 	async function getTodos() {
@@ -230,7 +284,7 @@ export default function Todos() {
 						}
 					}
 
-					setColumns({ pending, inProgress, completed });
+					setColumnsCopy({ pending, inProgress, completed });
 				}
 			}
 		} catch (error) {
@@ -322,6 +376,10 @@ export default function Todos() {
 		setMounted((s) => ({ ...s, details: !s.details }));
 	}
 
+	function setStatus(value) {
+		setMain((s) => ({ ...s, status: value }));
+	}
+
 	async function updateStatus({ active, over }) {
 		try {
 			setIsLoading((s) => ({ ...s, updateStatus: true }));
@@ -373,8 +431,15 @@ export default function Todos() {
 					onDragCancel={() => setActiveCard(null)}>
 					<div className="flex w-full h-full justify-center items-center space-x-5 overflow-y-auto p-4">
 						{Object.keys(columns).map((m) => (
-							<div key={m} className="flex w-1/3 h-full justify-center items-center">
-								<Column id={m} items={columns[m]} activeCard={activeCard} openDetailsBox={toggleDetails} />
+							<div
+								key={m}
+								className="flex w-1/3 h-full justify-center items-center">
+								<Column
+									id={m}
+									items={columns[m]}
+									activeCard={activeCard}
+									openDetailsBox={toggleDetails}
+								/>
 							</div>
 						))}
 					</div>
@@ -399,17 +464,69 @@ export default function Todos() {
 
 	function uiFind() {
 		if (totalCount) {
-			return <TextInputNative id="findBox" icon={faSearch} onChange={() => {}} onClearButtonClick={() => {}} placeholder="Find" showClearButton={showFindClearButton} tabIndex={1} value={main.find} width="w-36" />;
+			return (
+				<TextInputNative
+					id="findBox"
+					icon={faSearch}
+					onChange={() => {}}
+					onClearButtonClick={() => {}}
+					placeholder="Find"
+					showClearButton={showFindClearButton}
+					tabIndex={1}
+					value={main.find}
+					width="w-36"
+				/>
+			);
 		}
 	}
 
 	function uiNew() {
 		return (
-			<button className="block space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddTodo()}>
+			<button
+				className="block space-x-1.5 primary-button-transparent-background"
+				onClick={() => toggleAddTodo()}>
 				<FontAwesomeIcon icon={faPlusCircle} />
 				<span>New</span>
 			</button>
 		);
+	}
+
+	function uiStatus() {
+		const wrapper = "flex max-w-full min-w-36 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+
+		return (
+			<Menu
+				as="div"
+				className="flex max-w-full min-w-36 justify-center items-center relative">
+				<MenuButton className={wrapper}>
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faInfoCircle}
+					/>
+					<span className="gray-text">{main.status}</span>
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStatusList()}</MenuItems>
+			</Menu>
+		);
+	}
+
+	function uiStatusList() {
+		return statuses.map((m, i) => {
+			const isSelected = m.label === main.status;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+
+			return (
+				<MenuItem
+					as="div"
+					className={wrapper}
+					key={i}
+					onClick={() => setStatus(m.label)}>
+					<span>{m.label}</span>
+					{m.count > 0 && <BadgeSmall value={m.count} />}
+				</MenuItem>
+			);
+		});
 	}
 
 	// Hooks
@@ -417,24 +534,71 @@ export default function Todos() {
 		getTodos();
 	}, []);
 
+	useEffect(() => {
+		function calculateStatusCounts() {
+			const allTodos = Object.values(columnsCopy).flat();
+
+			const todayStr = dayjs().format("DD-MM-YYYY");
+			const tomorrowStr = dayjs().add(1, "day").format("DD-MM-YYYY");
+
+			const statusCounts = [
+				{
+					label: "Today",
+					count: allTodos.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === todayStr).length,
+				},
+				{
+					label: "Tomorrow",
+					count: allTodos.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === tomorrowStr).length,
+				},
+				{
+					label: "All",
+					count: allTodos.length,
+				},
+			];
+
+			return statusCounts;
+		}
+
+		setStatuses(calculateStatusCounts());
+		setColumns(getFilteredData());
+	}, [columnsCopy]);
+
+	useEffect(() => {
+		setColumns(getFilteredData());
+	}, [main.status]);
+
 	// Main UI
 	return (
 		<div className="flex flex-col w-full justify-between items-center">
-			<div className="flex w-full px-5 py-2.5 justify-between items-center">
-				<div className="flex w-1/5 space-x-2 justify-start items-center">
+			<div className="flex w-full px-5 py-2.5 space-x-5 justify-between items-center">
+				<div className="flex w-2/5 space-x-2 justify-start items-center">
 					<span className="view-heading">{thisView}</span>
 					{getIconAndBadge()}
 				</div>
-				<div className="flex w-4/5 space-x-2 justify-end items-center">
+				<div className="flex w-3/5 space-x-2 justify-start items-center">
 					{/* {uiFind()} */}
+					{uiStatus()}
 					{uiNew()}
 				</div>
 			</div>
 			<div className="flex w-full h-[calc(100vh-105px)] justify-center items-center overflow-y-auto contrast-background">{uiBody()}</div>
 
-			{mounted.addTodoBox && <DynamicAddToDo mount={mounted.addTodoBox} refresh={getTodos} unmount={toggleAddTodo} />}
+			{mounted.addTodoBox && (
+				<DynamicAddToDo
+					mount={mounted.addTodoBox}
+					refresh={getTodos}
+					unmount={toggleAddTodo}
+				/>
+			)}
 
-			{mounted.details && <DynamicDetails mount={mounted.details} refresh={getTodos} todo={main.selectedTodo?.item} unmount={toggleDetails} />}
+			{mounted.details && (
+				<DynamicDetails
+					mount={mounted.details}
+					refresh={getTodos}
+					todo={main.selectedTodo?.item}
+					unmount={toggleDetails}
+				/>
+			)}
 		</div>
 	);
 }

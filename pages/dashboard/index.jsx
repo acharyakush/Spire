@@ -60,7 +60,11 @@ export default function Dashboard({ setModuleProps }) {
 				startTransition(() => {
 					const prjs = updateProjects(companies, invoices, transactions, projects);
 
-					updateTasks(tasks);
+					const _tasks = tasks.map((m) => {
+						const status = prjs.apiCopy.filter((f) => f.id === m.project_id).at(0).status;
+						return { ...m, status };
+					});
+					updateTasks(_tasks);
 					updateInquiries(inquiries);
 					updateInvoices(invoices, prjs.paymentOverdue, prjs.paymentPending, prjs.paymentReceived, projects);
 					updateRv(rv, tasks);
@@ -84,11 +88,17 @@ export default function Dashboard({ setModuleProps }) {
 				<div className={transition}>
 					<div className="flex w-full px-2.5 space-x-10 justify-between items-center">
 						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicProjects projects={memoizedProjects} setModuleProps={setModuleProps} />
+							<DynamicProjects
+								projects={memoizedProjects}
+								setModuleProps={setModuleProps}
+							/>
 							<DynamicConfirmedProjects projects={memoizedProjects} />
 						</div>
 						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicTasks setModuleProps={setModuleProps} tasks={memoizedTasks} />
+							<DynamicTasks
+								setModuleProps={setModuleProps}
+								tasks={memoizedTasks}
+							/>
 							<DynamicPendingPayments invoices={memoizedInvoices.pending} />
 						</div>
 					</div>
@@ -105,7 +115,10 @@ export default function Dashboard({ setModuleProps }) {
 				<div className={transition}>
 					<div className="flex w-full p-2.5 space-x-10 justify-between items-center">
 						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicInquiries inquiries={memoizedInquiries} setModuleProps={setModuleProps} />
+							<DynamicInquiries
+								inquiries={memoizedInquiries}
+								setModuleProps={setModuleProps}
+							/>
 							<DynamicInquiryAmount inquiries={memoizedInquiries} />
 						</div>
 						<div className="flex w-full space-x-10 justify-between items-center">
@@ -126,10 +139,16 @@ export default function Dashboard({ setModuleProps }) {
 				<div className={transition}>
 					<div className="flex w-full p-2.5 space-x-10 justify-between items-center">
 						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicInvoices invoices={memoizedInvoices} setModuleProps={setModuleProps} />
+							<DynamicInvoices
+								invoices={memoizedInvoices}
+								setModuleProps={setModuleProps}
+							/>
 						</div>
 						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicRVs rv={memoizedRv} setModuleProps={setModuleProps} />
+							<DynamicRVs
+								rv={memoizedRv}
+								setModuleProps={setModuleProps}
+							/>
 						</div>
 					</div>
 				</div>
