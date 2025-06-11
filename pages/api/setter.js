@@ -76,8 +76,8 @@ export default async function handler(req, res) {
 				queryString = "UPDATE tasks SET is_completed=?, is_disabled=?, reason=? WHERE id=?";
 				queryParameters = [request.isCompleted, request.isDisabled, request.reason, request.taskId];
 			} else if (request.type == "add-tasks-particular-remark") {
-				queryString = "INSERT INTO sub_tasks (task_id, project_id, particular, remark, due_date, is_completed, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-				queryParameters = [request.taskId, request.projectId, request.particular, request.remark, request.dueOn, 0, request.createdBy];
+				queryString = "INSERT INTO sub_tasks (task_id, project_id, particular, remark, due_date, is_completed,alloted_to, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+				queryParameters = [request.taskId, request.projectId, request.particular, request.remark, request.dueOn, 0, request.allotedTo, request.createdBy];
 			} else if (request.type == "edit-tasks-particular-remark") {
 				queryString = "UPDATE sub_tasks SET particular=?, remark=?, due_date=? WHERE id=? AND task_id=? AND project_id=?";
 				queryParameters = [request.particular, request.remark, request.dueOn, request.rowId, request.taskId, request.projectId];

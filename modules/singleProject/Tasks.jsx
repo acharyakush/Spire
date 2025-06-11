@@ -13,26 +13,33 @@ import MyConstants from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { useEffect, useRef, useState } from "react";
-import { SpinnerBig, Tooltip } from "@/components/Elements";
+import { AvatarCircle, SpinnerBig, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { useDragAndDrop } from "@/utilities/useDragAndDrop";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { ComboBoxWithChips, DatePicker, TextInputNative } from "@/components/Inputs";
 import { AddParticularRemark, AddTask, DeleteParticularRemark, DeleteTask, EditParticularRemark, EditTask, EditTaskStatus, MarkSubTaskCompleted } from "@/modals/singleProject/tasks";
 import {
 	faBan,
 	faBars,
 	faBolt,
+	faCalendar,
+	faCheck,
 	faCheckCircle,
 	faCircleCheck,
 	faCircleExclamation,
 	faClipboardCheck,
 	faClock,
 	faIndianRupee,
+	faListAlt,
 	faPencil,
+	faPlus,
 	faPlusCircle,
 	faSortAmountAsc,
 	faSortAmountDesc,
-	faStopwatch,
+	faStickyNote,
 	faTrash,
+	faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function Tasks({ project }) {
@@ -43,6 +50,7 @@ export default function Tasks({ project }) {
 	const taskHeaders = MyConstants.TableHeaders.Tasks;
 
 	const tippyReference = useRef(null);
+	const assignedToMenuRef = useRef(null);
 
 	const [api, setApi] = useState({
 		notes: { copy: [], data: [] },
@@ -51,13 +59,14 @@ export default function Tasks({ project }) {
 	});
 
 	const [main, setMain] = useState({
+		assignedTo: [],
 		findText: "",
 		selectedModuleId: 1,
 		selectedRemark: {},
 		selectedTask: {},
 		selectedTaskForActions: {},
-		sortNotes: { column: remarksHeaders.Date, isAscending: false },
-		sortRemarks: { column: remarksHeaders.Date, isAscending: false },
+		sortNotes: { column: remarksHeaders.DueDate, isAscending: false },
+		sortRemarks: { column: remarksHeaders.DueDate, isAscending: false },
 		sortTasks: { column: "", isAscending: false },
 	});
 
@@ -71,10 +80,16 @@ export default function Tasks({ project }) {
 		editTaskStatus: false,
 		markSubTaskCompleted: false,
 		markTaskCompleted: false,
+		assignedToMenu: false,
 	});
+
+	const [addRemarksTask, setAddRemarkTask] = useState({});
+	const [addRemarksRemark, setAddRemarksRemark] = useState("");
+	const [addRemarkTaskDueDate, setAddRemarkTaskDueDate] = useState("");
 
 	const [loading, setLoading] = useState({
 		notes: false,
+		remark: false,
 		sort: false,
 		tasks: false,
 	});
@@ -104,6 +119,49 @@ export default function Tasks({ project }) {
 	const allowMarkingSubTaskCompleted = MyGlobal.HasPermission(MyConstants.Modules.Derived.MarkSubTaskCompleted);
 
 	// Functions
+	async function addRemark() {
+		setLoading((s) => ({ ...s, remark: true }));
+
+		const body = {
+			allotedTo: isUserAdministrator ? main.assignedTo.map((m) => m.id).join(",") : MyGlobal.GetUserId(),
+			createdBy: MyGlobal.GetUserId(),
+			dueOn: dayjs(addRemarkTaskDueDate).format("YYYY-MM-DD"),
+			particular: "",
+			projectId: project.id,
+			remark: MyGlobal.EscapeString(addRemarksRemark),
+			taskId: addRemarksTask.id,
+			type: "add-tasks-particular-remark",
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				getTasks();
+
+				setAddRemarkTask({});
+				setAddRemarksRemark("");
+				setAddRemarkTaskDueDate("");
+				setMain((s) => ({ ...s, assignedTo: [] }));
+
+				MyGlobal.AddActivity(`Added a remark in <b>${project.id}</b>.`, MyConstants.Modules.Base.Tasks);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskRemarkAdded);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Tasks > Add Remark");
+		} finally {
+			setLoading((s) => ({ ...s, remark: false }));
+		}
+	}
+
+	function detectOutsideClick(event) {
+		if (assignedToMenuRef.current && !assignedToMenuRef.current.contains(event.target)) {
+			setMounted((s) => ({ ...s, assignedToMenu: false }));
+		}
+	}
+
 	async function updateTaskOrder(updatedOrder) {
 		const currentOrder = sortTasks().map((task) => task.id);
 		const newOrder = updatedOrder.map((task) => task.id);
@@ -263,9 +321,9 @@ export default function Tasks({ project }) {
 				return a.remark.localeCompare(b.remark);
 			} else if (column == remarksHeaders.Remark && !isAscending) {
 				return b.remark.localeCompare(a.remark);
-			} else if (column == remarksHeaders.Date && isAscending) {
+			} else if (column == remarksHeaders.DueDate && isAscending) {
 				return aEntryAt - bEntryAt;
-			} else if (column == remarksHeaders.Date && !isAscending) {
+			} else if (column == remarksHeaders.DueDate && !isAscending) {
 				return bEntryAt - aEntryAt;
 			} else if (column == remarksHeaders.WrittenBy && !isAscending) {
 				return a.entry_by.localeCompare(b.entry_by);
@@ -291,6 +349,18 @@ export default function Tasks({ project }) {
 		if (column != taskHeaders.Actions) {
 			setMain((s) => ({ ...s, sortTasks: { column, isAscending: !s.sortTasks.isAscending } }));
 		}
+	}
+
+	function setAllotedTo(value) {
+		let old = [...main.assignedTo];
+
+		if (old.includes(value)) {
+			old = old.filter((f) => f !== value);
+		} else {
+			old.push(value);
+		}
+
+		setMain((s) => ({ ...s, assignedTo: old }));
 	}
 
 	function sortTasks() {
@@ -329,6 +399,10 @@ export default function Tasks({ project }) {
 
 	function toggleAddTaskBox() {
 		setMounted((s) => ({ ...s, addTask: !s.addTask }));
+	}
+
+	function toggleAssignedToMenu() {
+		setMounted((s) => ({ ...s, assignedToMenu: !s.assignedToMenu }));
 	}
 
 	function toggleDeleteParticularRemarkBox(remark) {
@@ -394,7 +468,14 @@ export default function Tasks({ project }) {
 					<div className="flex flex-col w-full h-full justify-between items-center">
 						<div className="flex w-full h-full justify-start items-center">
 							<div className="flex flex-col w-[15%] h-full px-2.5 pb-5 space-y-2.5 justify-between items-center">
-								{allowNewTask && project.status != MyConstants.Statuses.Projects.Completed && <FontAwesomeIcon className="cursor-pointer primary-text" icon={faPlusCircle} onClick={() => toggleAddTaskBox()} size="xl" />}
+								{allowNewTask && project.status != MyConstants.Statuses.Projects.Completed && (
+									<FontAwesomeIcon
+										className="cursor-pointer primary-text"
+										icon={faPlusCircle}
+										onClick={() => toggleAddTaskBox()}
+										size="xl"
+									/>
+								)}
 								<div className="flex flex-col w-full h-[calc(100vh-265px)] px-5 space-y-2.5 justify-start items-center overflow-y-auto scrollbar-gutter">{uiTaskList()}</div>
 								{uiNotesButton()}
 								{uiRemarksButton()}
@@ -410,10 +491,18 @@ export default function Tasks({ project }) {
 	function uiNoDataFound() {
 		return (
 			<div className="flex flex-col w-[85%] h-full space-y-2 justify-center items-center rounded font-regular-12 gray-text contrast-background">
-				<FontAwesomeIcon className="text-6xl" icon={faCircleExclamation} />
+				<FontAwesomeIcon
+					className="text-6xl"
+					icon={faCircleExclamation}
+				/>
 				<span>No tasks alloted</span>
-				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddTaskBox()}>
-					<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
+				<button
+					className="space-x-1.5 primary-button-transparent-background"
+					onClick={() => toggleAddTaskBox()}>
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faPlusCircle}
+					/>
 					<span>Add</span>
 				</button>
 			</div>
@@ -424,8 +513,13 @@ export default function Tasks({ project }) {
 		return (
 			<div className="flex flex-col w-full h-full space-y-2 justify-center items-center rounded shadow font-regular-12 gray-text contrast-background">
 				<span>No sub tasks found.</span>
-				<button className="space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddParticularRemarkBox()}>
-					<FontAwesomeIcon className="primary-text" icon={faPlusCircle} />
+				<button
+					className="space-x-1.5 primary-button-transparent-background"
+					onClick={() => toggleAddParticularRemarkBox()}>
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faPlusCircle}
+					/>
 					<span>Add</span>
 				</button>
 			</div>
@@ -466,7 +560,7 @@ export default function Tasks({ project }) {
 		return uiRemarks();
 	}
 
-	// Remarks
+	// Notes
 	function uiNotes() {
 		return (
 			<div className="flex flex-col w-full h-full justify-between items-center contrast-background">
@@ -484,7 +578,9 @@ export default function Tasks({ project }) {
 		const wrapper = `flex w-full h-10 px-5 justify-between items-center rounded shadow ${selectedAesthetics} font-regular-11 hovered-rows`;
 
 		return (
-			<button className={wrapper} onClick={() => setModule(-1)}>
+			<button
+				className={wrapper}
+				onClick={() => setModule(-1)}>
 				<span>All Notes</span>
 				<span className={showTotalNotes}>{api.notes.data.length}</span>
 			</button>
@@ -496,7 +592,10 @@ export default function Tasks({ project }) {
 			const showSortArrow = m == main.sortNotes.column ? "visible" : "invisible";
 
 			return (
-				<span className="flex w-1/3 h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11" onClick={() => setNotesSorting(m)} key={i}>
+				<span
+					className="flex w-1/3 h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11"
+					onClick={() => setNotesSorting(m)}
+					key={i}>
 					<span>{m}</span>
 					<span className={showSortArrow}>{uiNotesHeadersSortArrows(m)}</span>
 				</span>
@@ -518,24 +617,168 @@ export default function Tasks({ project }) {
 		const style = `flex w-1/3 justify-center items-center whitespace-pre-wrap`;
 
 		return (
-			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background bottom-border font-regular-11" key={i}>
-				<Tippy animation="shift-away" content={<Tooltip text={dayjs(row.entry_at).format("hh:mm:ss a")} />} placement="bottom">
+			<div
+				className="flex w-full px-4 py-2 justify-center items-center contrast-background bottom-border font-regular-11"
+				key={i}>
+				<Tippy
+					animation="shift-away"
+					content={<Tooltip text={dayjs(row.entry_at).format("hh:mm:ss a")} />}
+					placement="bottom">
 					<span className={`${style} cursor-help`}>{dayjs(row.entry_at).format("DD MMM, YYYY")}</span>
 				</Tippy>
 
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.content, main.findText) }} />
+				<span
+					className={style}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.content, main.findText) }}
+				/>
 
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.entry_by_name, main.findText) }} />
+				<span
+					className={style}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.entry_by_name, main.findText) }}
+				/>
 			</div>
 		);
 	}
 
 	// Remarks
+	function uiAddRemarkTaskAllotedTo() {
+		const showMenu = mounted.assignedToMenu ? "flex flex-col w-full max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow bg-white full-border" : "hidden";
+
+		return (
+			<div
+				className="w-full"
+				ref={assignedToMenuRef}>
+				<ComboBoxWithChips
+					background="bg-white"
+					displayKey="full_name"
+					fontSize="font-regular-10"
+					height="h-[30px]"
+					icon={faUserGroup}
+					iconSize="sm"
+					isMenuInverted={true}
+					label=""
+					onBlur={() => toggleAssignedToMenu()}
+					onItemClick={(e) => setAllotedTo(e)}
+					onSelectedItemClick={(e) => setAllotedTo(e)}
+					padding="p-0"
+					selectedItems={main.assignedTo}
+					showInitials
+					showList={showMenu}
+					source={MyGlobal.GetAllUsers()}
+					toggleMenu={() => toggleAssignedToMenu()}
+					topPosition="-225px"
+					width="w-full"
+				/>
+			</div>
+		);
+	}
+
+	function uiAddRemarkTaskButton() {
+		return (
+			<button
+				className="primary-button-condensed !text-sm"
+				onClick={() => addRemark()}>
+				{loading.remark ? <SpinnerSmall /> : "Add"}
+			</button>
+		);
+	}
+
+	function uiAddRemarkTaskMenu() {
+		const wrapper = "flex max-w-full min-w-36 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded contrast-background primary-bottom-border-transparent-05 font-regular-10";
+
+		return (
+			<Menu
+				as="div"
+				className="flex max-w-full min-w-36 justify-center items-center relative">
+				<MenuButton className={wrapper}>
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faListAlt}
+					/>
+					<span className="gray-text">{addRemarksTask?.task || "Tasks"}</span>
+					{/* <FontAwesomeIcon className={showClearCompanyButton} onClick={() => setCompany({})} icon={faMultiply} /> */}
+				</MenuButton>
+				<MenuItems className="absolute w-full bottom-full mb-2 rounded contrast-background bottom-shadow focus:outline-none z-50">{uiAddRemarkTaskMenuList()}</MenuItems>
+			</Menu>
+		);
+	}
+
+	function uiAddRemarkTaskMenuList() {
+		return api.tasks.copy.map((m, i) => {
+			const isSelected = m.id == addRemarksTask?.id;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+
+			return (
+				<MenuItem
+					as="div"
+					className={wrapper}
+					key={i}
+					onClick={() => setAddRemarkTask(m)}>
+					{m.task}
+					{isSelected && (
+						<FontAwesomeIcon
+							className="primary-text"
+							icon={faCheck}
+						/>
+					)}
+				</MenuItem>
+			);
+		});
+	}
+
+	function uiAddRemarkTaskRemark() {
+		return (
+			<TextInputNative
+				id="findBox"
+				icon={faStickyNote}
+				onChange={(e) => setAddRemarksRemark(e.target.value)}
+				onClearButtonClick={() => setAddRemarksRemark("")}
+				placeholder="Remark"
+				showClearButton="invisible"
+				tabIndex="2"
+				value={addRemarksRemark}
+				source="singleProject"
+				width="w-60"
+			/>
+		);
+	}
+
+	function uiAddRemarkTaskDueDate() {
+		return (
+			<DatePicker
+				icon={faCalendar}
+				background="bg-white"
+				height="h-[30px]"
+				label="Due Date"
+				iconSize="sm"
+				onChange={(e) => setAddRemarkTaskDueDate(e)}
+				tabIndex={4}
+				showLabel={false}
+				gap="space-x-1"
+				placeholder="Due Date"
+				value={addRemarkTaskDueDate}
+				width="w-60"
+				padding="p-0"
+				fontSize="font-regular-10"
+			/>
+		);
+	}
+
 	function uiRemarks() {
 		return (
 			<div className="flex flex-col w-full h-full justify-between items-center contrast-background">
 				<div className="flex w-full px-4 justify-center items-center primary-background">{uiRemarksHeaders()}</div>
-				<div className="flex flex-col w-full h-[calc(100vh-146px)] overflow-y-auto">{sortRemarks().map((m, i) => uiRemarksRows(m, i))}</div>
+				<div className="flex flex-col w-full h-[calc(100vh-156px)] justify-between items-center">
+					<div className="flex flex-col w-full h-full justify-start items-center overflow-y-auto shadow-md">{sortRemarks().map((m, i) => uiRemarksRows(m, i))}</div>
+					<div className="flex w-full p-5 space-x-5 justify-around items-center gray-background-transparent-02">
+						{uiAddRemarkTaskMenu()}
+						{uiAddRemarkTaskRemark()}
+						{uiAddRemarkTaskDueDate()}
+						{isUserAdministrator && uiAddRemarkTaskAllotedTo()}
+						{uiAddRemarkTaskButton()}
+					</div>
+				</div>
 			</div>
 		);
 	}
@@ -548,7 +791,9 @@ export default function Tasks({ project }) {
 		const wrapper = `flex w-full h-10 px-5 justify-between items-center rounded shadow ${selectedAesthetics} font-regular-11 hovered-rows`;
 
 		return (
-			<button className={wrapper} onClick={() => setModule(1)}>
+			<button
+				className={wrapper}
+				onClick={() => setModule(1)}>
 				<span>All Remarks</span>
 				<span className={showTotalRemarks}>{api.remarks.data.length}</span>
 			</button>
@@ -557,10 +802,13 @@ export default function Tasks({ project }) {
 
 	function uiRemarksHeaders() {
 		return Object.values(remarksHeaders).map((m, i) => {
-			const showSortArrow = m == main.sortRemarks.column ? "visible" : "invisible";
+			const showSortArrow = m === main.sortRemarks.column ? "visible" : "invisible";
 
 			return (
-				<span className="flex w-1/4 h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11" onClick={() => setRemarksSorting(m)} key={i}>
+				<span
+					className="flex w-1/5 h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11"
+					onClick={() => setRemarksSorting(m)}
+					key={i}>
 					<span>{m}</span>
 					<span className={showSortArrow}>{uiRemarksHeadersSortArrows(m)}</span>
 				</span>
@@ -579,19 +827,27 @@ export default function Tasks({ project }) {
 	}
 
 	function uiRemarksRows(row, i) {
-		const style = `flex w-1/4 justify-center items-center whitespace-pre-wrap`;
+		const style = `flex w-1/5 justify-center items-center whitespace-pre-wrap`;
+		const allotedTo = MyGlobal.GetAnyDataFromId(row.alloted_to, "full_name");
 
 		return (
-			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background bottom-border font-regular-11" key={i}>
+			<div
+				className="flex w-full px-4 py-2 justify-center items-center contrast-background bottom-border font-regular-11"
+				key={i}>
 				<span className={style}>{row.task_name}</span>
 
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.remark, main.findText) }} />
+				<span
+					className={style}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.remark, main.findText) }}
+				/>
 
-				<Tippy content={<Tooltip text={dayjs(row.entry_at).format("hh:mm:ss a")} />} placement="bottom">
-					<span className={style}>{dayjs(row.entry_at).format("DD MMM, YYYY")}</span>
-				</Tippy>
+				<span className={style}>{row.due_date ? dayjs(row.due_date).format("DD MMM, YYYY") : "NA"}</span>
+				<span className={`${style} !flex-row space-x-1`}>{row.alloted_to && <AvatarCircle names={String(allotedTo).split(",")} />}</span>
 
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.entry_by, main.findText) }} />
+				<span
+					className={style}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.entry_by, main.findText) }}
+				/>
 			</div>
 		);
 	}
@@ -608,11 +864,19 @@ export default function Tasks({ project }) {
 				) : (
 					<div className="flex flex-col w-full h-full relative contrast-background">
 						<div className="flex w-full px-4 justify-center items-center primary-background">{uiTaskHeaders()}</div>
-						<div className="flex flex-col w-full h-[calc(100vh-195px)] overflow-y-auto" ref={containerRef}>
+						<div
+							className="flex flex-col w-full h-[calc(100vh-195px)] overflow-y-auto"
+							ref={containerRef}>
 							{sortTasks().map((m, i) => uiTaskRows(m, i))}
 						</div>
-						<div className={addSubTaskButton} onClick={() => toggleAddParticularRemarkBox()}>
-							<FontAwesomeIcon className="primary-text" icon={faPlusCircle} size="3x" />
+						<div
+							className={addSubTaskButton}
+							onClick={() => toggleAddParticularRemarkBox()}>
+							<FontAwesomeIcon
+								className="primary-text"
+								icon={faPlusCircle}
+								size="3x"
+							/>
 						</div>
 					</div>
 				)}
@@ -653,24 +917,49 @@ export default function Tasks({ project }) {
 					className="relative z-40"
 					content={
 						<div className="flex flex-col justify-center items-center">
-							<div className={`${style} ${editTaskStyle}`} onClick={() => handleTaskActionClicks(() => toggleEditTaskBox(task))}>
-								<FontAwesomeIcon className="w-5 primary-text" icon={faPencil} />
+							<div
+								className={`${style} ${editTaskStyle}`}
+								onClick={() => handleTaskActionClicks(() => toggleEditTaskBox(task))}>
+								<FontAwesomeIcon
+									className="w-5 primary-text"
+									icon={faPencil}
+								/>
 								<span>Edit</span>
 							</div>
-							<div className={`${style} ${deleteTaskStyle}`} onClick={() => handleTaskActionClicks(() => toggleDeleteTaskBox(task))}>
-								<FontAwesomeIcon className="w-5 red-text" icon={faTrash} />
+							<div
+								className={`${style} ${deleteTaskStyle}`}
+								onClick={() => handleTaskActionClicks(() => toggleDeleteTaskBox(task))}>
+								<FontAwesomeIcon
+									className="w-5 red-text"
+									icon={faTrash}
+								/>
 								<span>Delete</span>
 							</div>
-							<div className={`${style} ${enableTaskStyle}`} onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Enable }))}>
-								<FontAwesomeIcon className="w-5 green-text" icon={faCheckCircle} />
+							<div
+								className={`${style} ${enableTaskStyle}`}
+								onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Enable }))}>
+								<FontAwesomeIcon
+									className="w-5 green-text"
+									icon={faCheckCircle}
+								/>
 								<span>Enable</span>
 							</div>
-							<div className={`${style} ${disableTaskStyle}`} onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Disable }))}>
-								<FontAwesomeIcon className="w-5 red-text" icon={faBan} />
+							<div
+								className={`${style} ${disableTaskStyle}`}
+								onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Disable }))}>
+								<FontAwesomeIcon
+									className="w-5 red-text"
+									icon={faBan}
+								/>
 								<span>Disable</span>
 							</div>
-							<div className={`${style} ${markTaskCompletedStyle}`} onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Completed }))}>
-								<FontAwesomeIcon className="w-5 green-text" icon={faClipboardCheck} />
+							<div
+								className={`${style} ${markTaskCompletedStyle}`}
+								onClick={() => handleTaskActionClicks(() => toggleEditTaskStatusBox({ ...task, status: MyConstants.Statuses.Tasks.Completed }))}>
+								<FontAwesomeIcon
+									className="w-5 green-text"
+									icon={faClipboardCheck}
+								/>
 								<span>Mark Task Completed</span>
 							</div>
 						</div>
@@ -680,7 +969,10 @@ export default function Tasks({ project }) {
 					placement="bottom"
 					theme="light"
 					trigger="click">
-					<FontAwesomeIcon className="cursor-pointer font-regular-11 green-text" icon={faBolt} />
+					<FontAwesomeIcon
+						className="cursor-pointer font-regular-11 green-text"
+						icon={faBolt}
+					/>
 				</Tippy>
 			);
 		}
@@ -692,7 +984,10 @@ export default function Tasks({ project }) {
 			const wrapper = `flex w-1/4 h-10 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11`;
 
 			return (
-				<span className={wrapper} onClick={() => setTaskSorting(m)} key={i}>
+				<span
+					className={wrapper}
+					onClick={() => setTaskSorting(m)}
+					key={i}>
 					<span>{m}</span>
 					<span className={showSortArrow}>{uiTaskHeadersSortArrows(m)}</span>
 				</span>
@@ -720,17 +1015,40 @@ export default function Tasks({ project }) {
 
 			const iconColour = m.is_completed == 1 ? "green-text" : "red-text";
 
-			const icon = m.is_completed == 1 ? <FontAwesomeIcon className={iconColour} icon={faCircleCheck} size="lg" /> : m.is_disabled == 1 ? <FontAwesomeIcon className={iconColour} icon={faBan} size="lg" /> : "";
+			const icon =
+				m.is_completed == 1 ? (
+					<FontAwesomeIcon
+						className={iconColour}
+						icon={faCircleCheck}
+						size="lg"
+					/>
+				) : m.is_disabled == 1 ? (
+					<FontAwesomeIcon
+						className={iconColour}
+						icon={faBan}
+						size="lg"
+					/>
+				) : (
+					""
+				);
 
 			const selectedTaskStyle = m.id == main.selectedTask?.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
 			const wrapper = `flex w-full h-10 pl-5 pr-3 justify-between items-center rounded shadow ${selectedTaskStyle} font-regular-11 hovered-rows`;
 
 			return (
-				<Tippy animation="shift-away" className="font-regular-11" content={taskName} disabled={!trimTaskName} placement="right">
+				<Tippy
+					animation="shift-away"
+					className="font-regular-11"
+					content={taskName}
+					disabled={!trimTaskName}
+					placement="right">
 					<div className="flex w-full space-x-3 justify-start items-center relative">
 						<span className="absolute -left-5">{icon}</span>
-						<button className={wrapper} key={i} onClick={() => setTask(m)}>
+						<button
+							className={wrapper}
+							key={i}
+							onClick={() => setTask(m)}>
 							<div className="flex w-4/5 justify-start items-center">
 								<span>{_taskName}</span>
 							</div>
@@ -751,7 +1069,6 @@ export default function Tasks({ project }) {
 		const expense = isSelectedTaskDefined ? MyGlobal.ThousandSeparator(selectedTask.expense) : 0;
 
 		const entryAt = isSelectedTaskDefined ? dayjs(selectedTask.entry_at).format("DD/MM/YYYY") : "";
-		const dueOn = isSelectedTaskDefined ? dayjs(selectedTask.due_on).format("DD/MM/YYYY") : "";
 
 		return (
 			<div className="flex w-full px-4 py-2 justify-between items-center bottom-border">
@@ -759,19 +1076,21 @@ export default function Tasks({ project }) {
 					<span>{task}</span>
 					{uiTaskActions(isCompleted, main.selectedTask)}
 				</div>
-				<div className="flex space-x-2.5 justify-between items-center">
-					<div className="flex !px-2 space-x-2 justify-between items-center green-tag-transparent-02">
-						<FontAwesomeIcon icon={faIndianRupee} size="lg" />
+				<div className="flex space-x-2.5 justify-end items-center">
+					{/* <div className="flex !px-2 space-x-2 justify-between items-center green-tag-transparent-02">
+						<FontAwesomeIcon
+							icon={faIndianRupee}
+							size="lg"
+						/>
 						<span className="font-regular-10">{expense}</span>
-					</div>
+					</div> */}
 					<div className="flex !pl-2 space-x-2 justify-between items-center primary-tag-transparent-01">
-						<FontAwesomeIcon icon={faClock} size="lg" />
+						<FontAwesomeIcon
+							icon={faClock}
+							size="lg"
+						/>
 						<span className="w-[80px] font-regular-10">{entryAt}</span>
 					</div>
-					{/* <div className="flex !pl-2 space-x-2 justify-between items-center red-tag-transparent-01">
-						<FontAwesomeIcon icon={faStopwatch} size="lg" />
-						<span className="w-[80px] font-regular-10">{dueOn}</span>
-					</div> */}
 				</div>
 			</div>
 		);
@@ -787,27 +1106,57 @@ export default function Tasks({ project }) {
 		const markSubTaskCompletedStyle = allowMarkingSubTaskCompleted && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
 		return (
-			<div className={`flex w-full px-4 py-2 justify-center items-center contrast-background border-y font-regular-11 transition-all duration-200 `} key={row.id} data-id={row.id}>
+			<div
+				className={`flex w-full px-4 py-2 justify-center items-center contrast-background border-y font-regular-11 transition-all duration-200 `}
+				key={row.id}
+				data-id={row.id}>
 				<span className="drag-handle cursor-grab px-2">
-					<FontAwesomeIcon icon={faBars} className="text-gray-500" />
+					<FontAwesomeIcon
+						icon={faBars}
+						className="text-gray-500"
+					/>
 				</span>
 
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.particular, main.findText) }} />
+				<span
+					className={style}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.particular, main.findText) }}
+				/>
 
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.remark, main.findText) }} />
+				<span
+					className={style}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.remark, main.findText) }}
+				/>
 
 				<span className={style}>{row.due_date ? dayjs(row.due_date).format("DD-MM-YYYY") : "NA"}</span>
 
 				<span className={style}>
 					<div className="flex space-x-5 justify-center items-center">
-						<div className={`${style} ${editSubTaskStyle}`} onClick={() => toggleEditParticularRemarkBox(row)}>
-							<FontAwesomeIcon className="w-5 cursor-pointer primary-text" icon={faPencil} size="lg" />
+						<div
+							className={`${style} ${editSubTaskStyle}`}
+							onClick={() => toggleEditParticularRemarkBox(row)}>
+							<FontAwesomeIcon
+								className="w-5 cursor-pointer primary-text"
+								icon={faPencil}
+								size="lg"
+							/>
 						</div>
-						<div className={`${style} ${deleteSubTaskStyle}`} onClick={() => toggleDeleteParticularRemarkBox(row)}>
-							<FontAwesomeIcon className="w-5 cursor-pointer red-text" icon={faTrash} size="lg" />
+						<div
+							className={`${style} ${deleteSubTaskStyle}`}
+							onClick={() => toggleDeleteParticularRemarkBox(row)}>
+							<FontAwesomeIcon
+								className="w-5 cursor-pointer red-text"
+								icon={faTrash}
+								size="lg"
+							/>
 						</div>
-						<div className={`${style} ${markSubTaskCompletedStyle}`} onClick={() => toggleMarkSubTaskCompletedBox(row)}>
-							<FontAwesomeIcon className="w-5 cursor-pointer green-text" icon={faCircleCheck} size="lg" />
+						<div
+							className={`${style} ${markSubTaskCompletedStyle}`}
+							onClick={() => toggleMarkSubTaskCompletedBox(row)}>
+							<FontAwesomeIcon
+								className="w-5 cursor-pointer green-text"
+								icon={faCircleCheck}
+								size="lg"
+							/>
 						</div>
 					</div>
 				</span>
@@ -821,26 +1170,91 @@ export default function Tasks({ project }) {
 		getTasks("mount");
 	}, []);
 
+	useEffect(() => {
+		if (mounted.assignedToMenu) {
+			document.addEventListener("mousedown", detectOutsideClick);
+		}
+
+		return () => document.removeEventListener("mousedown", detectOutsideClick);
+	}, [mounted.assignedToMenu]);
+
 	// Main UI
 	return (
 		<>
 			{uiMain()}
 
-			{mounted.addParticularRemark && <AddParticularRemark mount={mounted.addParticularRemark} reload={getTasks} task={main.selectedTask} unmount={toggleAddParticularRemarkBox} />}
+			{mounted.addParticularRemark && (
+				<AddParticularRemark
+					mount={mounted.addParticularRemark}
+					reload={getTasks}
+					task={main.selectedTask}
+					unmount={toggleAddParticularRemarkBox}
+				/>
+			)}
 
-			{mounted.addTask && <AddTask mount={mounted.addTask} reload={getTasks} project={project} tasks={api.tasks.copy} unmount={toggleAddTaskBox} />}
+			{mounted.addTask && (
+				<AddTask
+					mount={mounted.addTask}
+					reload={getTasks}
+					project={project}
+					tasks={api.tasks.copy}
+					unmount={toggleAddTaskBox}
+				/>
+			)}
 
-			{mounted.deleteParticularRemark && <DeleteParticularRemark mount={mounted.deleteParticularRemark} reload={getTasks} task={main.selectedRemark} unmount={toggleDeleteParticularRemarkBox} />}
+			{mounted.deleteParticularRemark && (
+				<DeleteParticularRemark
+					mount={mounted.deleteParticularRemark}
+					reload={getTasks}
+					task={main.selectedRemark}
+					unmount={toggleDeleteParticularRemarkBox}
+				/>
+			)}
 
-			{mounted.deleteTask && <DeleteTask mount={mounted.deleteTask} reload={getTasks} task={main.selectedTaskForActions} unmount={toggleDeleteTaskBox} />}
+			{mounted.deleteTask && (
+				<DeleteTask
+					mount={mounted.deleteTask}
+					reload={getTasks}
+					task={main.selectedTaskForActions}
+					unmount={toggleDeleteTaskBox}
+				/>
+			)}
 
-			{mounted.editParticularRemark && <EditParticularRemark mount={mounted.editParticularRemark} reload={getTasks} task={main.selectedRemark} unmount={toggleEditParticularRemarkBox} />}
+			{mounted.editParticularRemark && (
+				<EditParticularRemark
+					mount={mounted.editParticularRemark}
+					reload={getTasks}
+					task={main.selectedRemark}
+					unmount={toggleEditParticularRemarkBox}
+				/>
+			)}
 
-			{mounted.editTask && <EditTask mount={mounted.editTask} reload={getTasks} task={main.selectedTaskForActions} unmount={toggleEditTaskBox} />}
+			{mounted.editTask && (
+				<EditTask
+					mount={mounted.editTask}
+					reload={getTasks}
+					task={main.selectedTaskForActions}
+					unmount={toggleEditTaskBox}
+				/>
+			)}
 
-			{mounted.editTaskStatus && <EditTaskStatus mount={mounted.editTaskStatus} reload={getTasks} task={main.selectedTaskForActions} unmount={toggleEditTaskStatusBox} />}
+			{mounted.editTaskStatus && (
+				<EditTaskStatus
+					mount={mounted.editTaskStatus}
+					reload={getTasks}
+					task={main.selectedTaskForActions}
+					unmount={toggleEditTaskStatusBox}
+				/>
+			)}
 
-			{mounted.markSubTaskCompleted && <MarkSubTaskCompleted mount={mounted.markSubTaskCompleted} reload={getTasks} remark={main.selectedRemark} unmount={toggleMarkSubTaskCompletedBox} />}
+			{mounted.markSubTaskCompleted && (
+				<MarkSubTaskCompleted
+					mount={mounted.markSubTaskCompleted}
+					reload={getTasks}
+					remark={main.selectedRemark}
+					unmount={toggleMarkSubTaskCompletedBox}
+				/>
+			)}
 		</>
 	);
 }

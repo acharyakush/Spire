@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AvatarCircle, Badge, BadgeSmall, Tooltip } from "@/components/Elements";
-import { faCheck, faClockRotateLeft, faCrown, faHourglassEnd, faHourglassHalf, faInfoCircle, faPlusCircle, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faClock, faClockRotateLeft, faCrown, faHistory, faHourglassEnd, faHourglassHalf, faInfoCircle, faPlusCircle, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, useDroppable, DragOverlay } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable, sortableKeyboardCoordinates, defaultAnimateLayoutChanges, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
@@ -208,7 +208,7 @@ export default function Todos() {
 		find: "",
 		isLoading: false,
 		selectedTodo: {},
-		status: statuses.at(0).label,
+		status: statuses.at(2).label,
 	});
 
 	const sensors = useSensors(
@@ -492,16 +492,16 @@ export default function Todos() {
 	}
 
 	function uiStatus() {
-		const wrapper = "flex max-w-full min-w-36 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
 
 		return (
 			<Menu
 				as="div"
-				className="flex max-w-full min-w-36 justify-center items-center relative">
+				className="flex max-w-full min-w-40 justify-center items-center relative">
 				<MenuButton className={wrapper}>
 					<FontAwesomeIcon
 						className="primary-text"
-						icon={faInfoCircle}
+						icon={faClock}
 					/>
 					<span className="gray-text">{main.status}</span>
 				</MenuButton>
@@ -575,7 +575,7 @@ export default function Todos() {
 					<span className="view-heading">{thisView}</span>
 					{getIconAndBadge()}
 				</div>
-				<div className="flex w-3/5 space-x-2 justify-start items-center">
+				<div className="flex w-3/5 space-x-2 justify-between items-center">
 					{/* {uiFind()} */}
 					{uiStatus()}
 					{uiNew()}

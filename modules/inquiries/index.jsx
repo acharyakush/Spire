@@ -18,8 +18,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getScrollPosition, MyGlobal, saveScrollPosition } from "@/utilities/global";
-import { AvatarCircle, Badge, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
-import { faCalendar, faChevronDown, faFileDownload, faFileExcel, faFilter, faIndianRupee, faMultiply, faPlusCircle, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
+import { faCalendar, faChevronDown, faFileDownload, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPlusCircle, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 const DynamicEditInquiry = dynamic(() => import("./EditInquiry"), { ssr: false });
 const DynamicMyInquiries = dynamic(() => import("./MyInquiries"), { ssr: false });
@@ -29,60 +29,43 @@ const DynamicNewProject = dynamic(() => import("../projects/NewProject"), { ssr:
 const DynamicNewQuotation = dynamic(() => import("./NewQuotation"), { ssr: false });
 const DynamicUpdateStatus = dynamic(() => import("@/modals/inquiries/miscellaneous").then((t) => ({ default: t.UpdateStatus })), { ssr: false });
 
-function filterMergedInquiries(data, { from, to, findText }) {
-	const isSearchFilterActive = !!findText;
-	const isDateFilterActive = !!from && !!to;
+function filterMergedInquiries(data, { from, to, findText, isStatus, statusFilter }) {
+	const isSearchFilterActive = Boolean(findText);
+	const isDateFilterActive = Boolean(from && to);
 
-	const lowerText = isSearchFilterActive ? findText.toLowerCase() : null;
+	const lowerText = findText?.toLowerCase() || "";
 	const startDate = isDateFilterActive ? new Date(from).getTime() : null;
 	const endDate = isDateFilterActive ? new Date(to).getTime() : null;
 
-	const filtered = [];
+	const searchableFields = ["client_id", "client_name", "phone_number", "main_project", "sub_project", "reference_id", "reference_name", "follow_ups", "follow_ups_initials", "quote", "status", "notes", "entry_by_name"];
 
-	for (let i = 0; i < data.length; i++) {
-		const item = data[i];
-
+	return data.filter((item) => {
 		// ✅ Date filter
 		if (isDateFilterActive) {
 			const entryTime = new Date(item.entry_date).getTime();
-			if (isNaN(entryTime) || entryTime < startDate || entryTime > endDate) continue;
+			if (isNaN(entryTime) || entryTime < startDate || entryTime > endDate) return false;
 		}
 
-		// ✅ Text filter
+		// ✅ Status-only filter (no text search)
+		if (!isSearchFilterActive && isStatus && statusFilter) {
+			if (item.status !== statusFilter) return false;
+		}
+
+		// ✅ Text search (with or without status)
 		if (isSearchFilterActive) {
-			let found = false;
-			const fields = [
-				item.client_id,
-				item.client_name,
-				item.phone_number,
-				item.main_project,
-				item.sub_project,
-				item.reference_id,
-				item.reference_name,
-				item.follow_ups,
-				item.follow_ups_initials,
-				item.quote,
-				item.status,
-				item.notes,
-				item.entry_by_name,
-			];
+			const match = searchableFields.some((field) => {
+				const value = item[field];
+				return value && String(value).toLowerCase().includes(lowerText);
+			});
 
-			for (let j = 0; j < fields.length; j++) {
-				const val = fields[j];
+			if (!match) return false;
 
-				if (val && String(val).toLowerCase().includes(lowerText)) {
-					found = true;
-					break; // 🧠 short-circuit!
-				}
-			}
-
-			if (!found) continue;
+			// ✅ If status filter is also required (combined)
+			if (isStatus && statusFilter && item.status !== statusFilter) return false;
 		}
 
-		filtered.push(item);
-	}
-
-	return filtered;
+		return true;
+	});
 }
 
 export default function Inquiries({ presetStatus, setModuleProps }) {
@@ -101,6 +84,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		filter: { from: "", to: "" },
 		findText: presetStatus ?? "",
 		isLoading: false,
+		isStatus: false,
+		statusFilter: "",
+		revisedStatuses: {},
 		selectedInquiryForNotes: {},
 		selectedInquiryForStatusChange: {},
 		sort: { column: "", isAscending: false },
@@ -333,13 +319,18 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 				const merged = mergeInquiriesAndNotesById(revisedCopy);
 
+				const revisedStatuses = calculateStatusCounts(revisedCopy);
+
 				const filtered = filterMergedInquiries(merged, {
 					from: main.filter.from,
 					to: main.filter.to,
 					findText: main.findText,
+					isStatus: main.isStatus,
+					statusFilter: main.statusFilter,
 				});
 
 				setApi((s) => ({ ...s, inquiries: { ...s.inquiries, copy: revisedCopy, data: filtered, mergedWithNotes: merged } }));
+				setMain((s) => ({ ...s, revisedStatuses }));
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get Inquiries");
@@ -418,12 +409,21 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function getTotalQuote() {
 		let total = 0;
+		let fullTotal = 0;
 
 		for (const i of api.inquiries.data) {
 			total += Number(i.quote);
 		}
 
-		return MyGlobal.ThousandSeparator(total);
+		for (const i of api.inquiries.copy) {
+			fullTotal += Number(i.quote);
+		}
+
+		if (main.filter.from || main.filter.to || main.findText || main.isStatus) {
+			return MyGlobal.ThousandSeparator(total) + " / " + MyGlobal.ThousandSeparator(fullTotal);
+		} else {
+			return MyGlobal.ThousandSeparator(fullTotal);
+		}
 	}
 
 	function highlightText(isTag, text) {
@@ -480,6 +480,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function setInputs(key, value) {
 		if (key == "from" || key == "to") {
 			setMain((s) => ({ ...s, filter: { ...s.filter, [key]: value } }));
+		} else if (key === "findText") {
+			setMain((s) => ({ ...s, findText: value }));
 		} else {
 			setMain((s) => ({ ...s, [key]: value }));
 		}
@@ -554,14 +556,17 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	const Headers = memo(function renderHeaders({ headers, main, setSort, uiSortArrows, uiStatusFilter }) {
 		return Object.values(headers).map((m, i) => {
 			const showSortArrow = m == main.sort.column ? "block" : "hidden";
-			const showStatusFilter = m == headers.Status ? "block" : "hidden";
 			return (
-				<span className="flex w-[12.50%] cursor-pointer justify-center items-center font-medium-10" key={i}>
-					<div className="flex w-full space-x-2 justify-center items-center text-white" onClick={() => setSort(m)}>
+				<span
+					className="flex w-[12.50%] cursor-pointer justify-center items-center font-medium-10"
+					key={i}>
+					<div
+						className="flex w-full space-x-2 justify-center items-center text-white"
+						onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
 					</div>
-					<span className={showStatusFilter}>{uiStatusFilter(m)}</span>
+					{/* <span className={showStatusFilter}>{uiStatusFilter(m)}</span> */}
 				</span>
 			);
 		});
@@ -598,7 +603,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const followUpsNames = String(row.follow_ups).split(",");
 
 		return (
-			<div className="flex w-full py-3 justify-center items-center contrast-background bottom-border font-regular-10 black-text relative" key={row.id}>
+			<div
+				className="flex w-full py-3 justify-center items-center contrast-background bottom-border font-regular-10 black-text relative"
+				key={row.id}>
 				<span className={fancyRightBorderStyle} />
 
 				{uiClientAndInquiryDate(childStyle, main.findText, getStatusSeverityBackground, MyGlobal, row, statuses, style, toggleEditInquiryView)}
@@ -628,7 +635,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
 					<div className="flex w-full h-9 justify-center items-center primary-background animate-pulse">
 						{Object.values(headers).map((_, i) => (
-							<div key={i} className="flex w-[12.50%] justify-center items-center">
+							<div
+								key={i}
+								className="flex w-[12.50%] justify-center items-center">
 								<div className="h-4 w-20 bg-gray-200 rounded" />
 							</div>
 						))}
@@ -644,7 +653,13 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
 					<div className="flex w-full h-9 justify-center items-center primary-background">
-						<Headers headers={headers} main={main} setSort={setSort} uiSortArrows={uiSortArrows} uiStatusFilter={uiStatusFilter} />
+						<Headers
+							headers={headers}
+							main={main}
+							setSort={setSort}
+							uiSortArrows={uiSortArrows}
+							uiStatusFilter={uiStatusFilter}
+						/>
 					</div>
 					<Virtuoso
 						ref={currentScrollPositionReference}
@@ -718,8 +733,16 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiAddQuotation(row, toggleAddQuotation) {
 		if (isAdministrator || allowQuotation) {
 			return (
-				<Tippy animation="shift-away" content={<Tooltip text="Add a quotation for this inquiry." />} placement="bottom">
-					<FontAwesomeIcon className="cursor-pointer green-text" icon={faReceipt} onClick={() => toggleAddQuotation(row, true)} size="xs" />
+				<Tippy
+					animation="shift-away"
+					content={<Tooltip text="Add a quotation for this inquiry." />}
+					placement="bottom">
+					<FontAwesomeIcon
+						className="cursor-pointer green-text"
+						icon={faReceipt}
+						onClick={() => toggleAddQuotation(row, true)}
+						size="xs"
+					/>
 				</Tippy>
 			);
 		}
@@ -733,9 +756,17 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const clientNameStyle = childStyle + " !w-3/4 " + getStatusSeverityBackground(row.status).text;
 
 		return (
-			<div className={wrapper} style={{ overflowWrap: "anywhere" }}>
-				<Tippy content={<Tooltip text={row.client_id_and_name} />} placement="bottom">
-					<span className={clientNameStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleEditInquiryView(row, true)} />
+			<div
+				className={wrapper}
+				style={{ overflowWrap: "anywhere" }}>
+				<Tippy
+					content={<Tooltip text={row.client_id_and_name} />}
+					placement="bottom">
+					<span
+						className={clientNameStyle}
+						dangerouslySetInnerHTML={{ __html: clientName }}
+						onClick={() => toggleEditInquiryView(row, true)}
+					/>
 				</Tippy>
 				<span className="flex w-full justify-center items-center font-regular-10 gray-text">{row.entry_date}</span>
 			</div>
@@ -746,17 +777,29 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const phoneNumber = MyGlobal.HighlightText(row.phone_number, findText);
 		const emailAddress = MyGlobal.HighlightText(row.email_address, findText);
 
-		const phoneNumberStyle = childStyle + " font-bold-10";
+		const phoneNumberStyle = childStyle + " font-bold-12";
 		const emailAddressStyle = childStyle + " font-regular-10 gray-text";
 		const wrapper = style + " cursor-pointer primary-text";
 
 		return (
 			<div className={wrapper}>
-				<Tippy content={<Tooltip text="Open this contact on WhatsApp Web." />} placement="bottom">
-					<span className={phoneNumberStyle} dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsAppWeb(row.phone_number)} />
+				<Tippy
+					content={<Tooltip text="Open this contact on WhatsApp Web." />}
+					placement="bottom">
+					<span
+						className={phoneNumberStyle}
+						dangerouslySetInnerHTML={{ __html: phoneNumber }}
+						onClick={() => openWhatsAppWeb(row.phone_number)}
+					/>
 				</Tippy>
-				<Tippy content={<Tooltip text="Send email to this address." />} placement="bottom">
-					<span className={emailAddressStyle} dangerouslySetInnerHTML={{ __html: emailAddress }} onClick={() => openEmailAddress(row.email_address)} />
+				<Tippy
+					content={<Tooltip text="Send email to this address." />}
+					placement="bottom">
+					<span
+						className={emailAddressStyle}
+						dangerouslySetInnerHTML={{ __html: emailAddress }}
+						onClick={() => openEmailAddress(row.email_address)}
+					/>
 				</Tippy>
 			</div>
 		);
@@ -767,8 +810,16 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			const showDownloadButton = row.quotation_id ? "cursor-pointer visible primary-text" : "invisible";
 
 			return (
-				<Tippy animation="shift-away" content={<Tooltip text="Download this quotation." />} placement="bottom">
-					<FontAwesomeIcon className={showDownloadButton} icon={faFileDownload} onClick={() => downloadQuotation(row.quotation_id)} size="xs" />
+				<Tippy
+					animation="shift-away"
+					content={<Tooltip text="Download this quotation." />}
+					placement="bottom">
+					<FontAwesomeIcon
+						className={showDownloadButton}
+						icon={faFileDownload}
+						onClick={() => downloadQuotation(row.quotation_id)}
+						size="xs"
+					/>
 				</Tippy>
 			);
 		}
@@ -777,11 +828,95 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiExport() {
 		if (api.inquiries.data.length && api.inquiries.copy.length) {
 			return (
-				<button className="primary-button-transparent-background" onClick={doExcelExport}>
-					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
+				<button
+					className="primary-button-transparent-background"
+					onClick={doExcelExport}>
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faFileExcel}
+					/>
 				</button>
 			);
 		}
+	}
+
+	function calculateStatusCounts(list) {
+		const counts = {
+			[statuses.Closed]: 0,
+			[statuses.Confirmed]: 0,
+			[statuses.Hold]: 0,
+			[statuses.Open]: 0,
+		};
+
+		list.forEach((fe) => {
+			// if (counts.hasOwnProperty(fe.status)) {
+			// 	counts[fe.status]++;
+			// }
+
+			if (fe.status === statuses.Closed) {
+				counts.Closed++;
+			}
+
+			if (fe.status === statuses.Confirmed) {
+				counts.Confirmed++;
+			}
+
+			if (fe.status === statuses.Hold) {
+				counts.Hold++;
+			}
+
+			if (fe.status === statuses.Open) {
+				counts.Open++;
+			}
+		});
+
+		return counts;
+	}
+
+	function uiClearFilter() {
+		return (
+			<FontAwesomeIcon
+				className="cursor-pointer outline-none focus:outline-none red-text"
+				icon={faFilterCircleXmark}
+				onClick={() => setMain((s) => ({ ...s, isStatus: false, statusFilter: "" }))}
+			/>
+		);
+	}
+
+	function uiFilterMenuList() {
+		// Ensure we're showing the counts from the current filter state
+		return Object.entries(main.revisedStatuses).map(([key, value], i) => {
+			const isSelected = key === main.statusFilter;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
+
+			return (
+				<MenuItem
+					as="div"
+					className={wrapper}
+					key={i}
+					onClick={() => setMain((s) => ({ ...s, statusFilter: key, isStatus: true }))}>
+					<span className="flex w-full justify-between items-center font-regular-11">
+						<span>{key}</span>
+						{value > 0 && <BadgeSmall value={value} />}
+					</span>
+				</MenuItem>
+			);
+		});
+	}
+
+	function uiFilter() {
+		return (
+			<Menu
+				as="div"
+				className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
+				<MenuButton className="flex w-full h-[30px] px-2 justify-between items-center font-regular-10 gray-text">
+					<span>{main.statusFilter || "Status"}</span>
+					<FontAwesomeIcon icon={faChevronDown} />
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded z-50 contrast-background bottom-shadow full-border">{uiFilterMenuList()}</MenuItems>
+			</Menu>
+		);
 	}
 
 	function uiFind() {
@@ -806,7 +941,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		if (api.inquiries.copy.length) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
-					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faCalendar}
+						size="sm"
+					/>
 					<ReactDatePicker
 						className="w-20 h-6 bg-transparent outline-none font-regular-10"
 						dateFormat="dd-MM-YYYY"
@@ -822,7 +961,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						showMonthDropdown
 						showYearDropdown
 					/>
-					<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
+					<FontAwesomeIcon
+						className={showFromDateClearButton}
+						onClick={() => setInputs("from", "")}
+						icon={faMultiply}
+					/>
 				</div>
 			);
 		}
@@ -830,31 +973,72 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiMain() {
 		if (mounted.addQuotation) {
-			return <DynamicNewQuotation clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={reloadSupportData} unmount={toggleAddQuotation} />;
+			return (
+				<DynamicNewQuotation
+					clients={api.clients}
+					inquiry={main.selectedInquiryForNotes}
+					reload={reloadSupportData}
+					unmount={toggleAddQuotation}
+				/>
+			);
 		} else if (mounted.editInquiry) {
-			return <DynamicEditInquiry inquiry={main.selectedInquiryForNotes} reload={reloadSupportData} unmount={toggleEditInquiryView} />;
+			return (
+				<DynamicEditInquiry
+					inquiry={main.selectedInquiryForNotes}
+					reload={reloadSupportData}
+					unmount={toggleEditInquiryView}
+				/>
+			);
 		} else if (mounted.newInquiry) {
-			return <DynamicNewInquiry reload={reloadSupportData} unmount={toggleNewInquiryView} />;
+			return (
+				<DynamicNewInquiry
+					reload={reloadSupportData}
+					unmount={toggleNewInquiryView}
+				/>
+			);
 		} else if (mounted.newProject) {
-			return <DynamicNewProject inquiry={main.selectedInquiryForStatusChange} reload={reloadSupportData} unmount={closeNewProjectView} />;
+			return (
+				<DynamicNewProject
+					inquiry={main.selectedInquiryForStatusChange}
+					reload={reloadSupportData}
+					unmount={closeNewProjectView}
+				/>
+			);
 		} else if (mounted.notes) {
-			return <DynamicNotes clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={reloadSupportData} unmount={toggleNotesView} />;
+			return (
+				<DynamicNotes
+					clients={api.clients}
+					inquiry={main.selectedInquiryForNotes}
+					reload={reloadSupportData}
+					unmount={toggleNotesView}
+				/>
+			);
 		} else {
 			return (
 				<>
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
-						<div className="flex w-1/5 space-x-2 justify-start items-center">
+						<div className="flex w-[250px] space-x-2 justify-start items-center">
 							<span className="view-heading">{thisView}</span>
 							{getIconOrBadge()}
 						</div>
-						<div className="flex w-4/5 space-x-2 justify-end items-center">
-							<div className="flex w-1/2 space-x-2 justify-end items-center">
+						<div className="flex w-full justify-between items-center">
+							<div className="flex w-1/3 space-x-2.5 justify-center items-center">
 								{uiFromDate()}
 								{uiToDate()}
 							</div>
-							{uiFind()}
-							{uiNew()}
-							{uiExport()}
+							<div className="flex w-1/3 space-x-2.5 justify-center items-center">
+								{uiFind()}
+								{uiFilter()}
+								<Tippy
+									content={<Tooltip text={`Clear filters`} />}
+									placement="bottom">
+									{uiClearFilter()}
+								</Tippy>
+							</div>
+							<div className="flex w-1/3 space-x-2.5 justify-center items-center">
+								{uiNew()}
+								{uiExport()}
+							</div>
 						</div>
 					</div>
 					<div className="flex w-full h-full justify-center items-center">{uiBody}</div>
@@ -865,7 +1049,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiNew() {
 		return (
-			<button className={newInquiryButton} onClick={toggleNewInquiryView}>
+			<button
+				className={newInquiryButton}
+				onClick={toggleNewInquiryView}>
 				<FontAwesomeIcon icon={faPlusCircle} />
 				<span>New</span>
 			</button>
@@ -877,8 +1063,13 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const wrapper = totalNotes > 0 ? "cursor-pointer primary-text" : "cursor-default black-text";
 
 		return (
-			<span className={wrapper} onClick={() => totalNotes && toggleNotesView(row, true)}>
-				<BadgeSmallWithBackground style={getStatusSeverityBackground(row.status)} value={totalNotes} />
+			<span
+				className={wrapper}
+				onClick={() => totalNotes && toggleNotesView(row, true)}>
+				<BadgeSmallWithBackground
+					style={getStatusSeverityBackground(row.status)}
+					value={totalNotes}
+				/>
 			</span>
 		);
 	}
@@ -889,8 +1080,14 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		return (
 			<div className={style}>
-				<span className={parentLabelStyle} dangerouslySetInnerHTML={{ __html: subProject }} />
-				<span className={childLabelStyle} dangerouslySetInnerHTML={{ __html: mainProject }} />
+				<span
+					className={parentLabelStyle}
+					dangerouslySetInnerHTML={{ __html: subProject }}
+				/>
+				<span
+					className={childLabelStyle}
+					dangerouslySetInnerHTML={{ __html: mainProject }}
+				/>
 			</div>
 		);
 	}
@@ -903,7 +1100,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		return (
 			<div className={wrapper}>
-				<span className="flex w-4/5 justify-end items-center" dangerouslySetInnerHTML={{ __html: MyGlobal.FormatCurrency(quote) }} />
+				<span
+					className="flex w-4/5 justify-end items-center"
+					dangerouslySetInnerHTML={{ __html: MyGlobal.FormatCurrency(quote) }}
+				/>
 				<div className={quotationBlockStyle}>
 					{uiAddQuotation(row, toggleAddQuotation)}
 					{uiDownloadQuotation(row)}
@@ -920,11 +1120,21 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		return (
 			<div className={wrapper}>
-				<Tippy content={<Tooltip text={row.reference_id_and_name} />} placement="bottom">
-					<span className={parentLabelStyle} dangerouslySetInnerHTML={{ __html: referenceName }} />
+				<Tippy
+					content={<Tooltip text={row.reference_id_and_name} />}
+					placement="bottom">
+					<span
+						className={parentLabelStyle}
+						dangerouslySetInnerHTML={{ __html: referenceName }}
+					/>
 				</Tippy>
-				<Tippy content={<Tooltip text={`Inquiry created by ${row.entry_by_name}`} />} placement="bottom">
-					<span className={childLabelStyle} dangerouslySetInnerHTML={{ __html: entryBy }} />
+				<Tippy
+					content={<Tooltip text={`Inquiry created by ${row.entry_by_name}`} />}
+					placement="bottom">
+					<span
+						className={childLabelStyle}
+						dangerouslySetInnerHTML={{ __html: entryBy }}
+					/>
 				</Tippy>
 			</div>
 		);
@@ -932,7 +1142,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiSkeletion(index) {
 		return (
-			<div className="flex w-full py-3 justify-center items-center contrast-background bottom-border relative animate-pulse" key={index}>
+			<div
+				className="flex w-full py-3 justify-center items-center contrast-background bottom-border relative animate-pulse"
+				key={index}>
 				<div className="absolute w-3 h-[50px] rounded-tr-full rounded-br-full bg-gray-200 -left-1" />
 				<div className="flex flex-col w-[14.28%] justify-center items-center text-center space-y-2">
 					<div className="h-4 w-24 bg-gray-200 rounded" />
@@ -967,9 +1179,21 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiSortArrows(column) {
 		if (main.sort.column == column) {
 			if (main.sort.isAscending) {
-				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} size="sm" />;
+				return (
+					<FontAwesomeIcon
+						className="text-white"
+						icon={faSortAmountDesc}
+						size="sm"
+					/>
+				);
 			} else {
-				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} size="sm" />;
+				return (
+					<FontAwesomeIcon
+						className="text-white"
+						icon={faSortAmountAsc}
+						size="sm"
+					/>
+				);
 			}
 		}
 	}
@@ -988,9 +1212,15 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiStatusFilter() {
 		return (
-			<Menu as="div" className="w-fit relative text-left">
+			<Menu
+				as="div"
+				className="w-fit relative text-left">
 				<MenuButton className="flex w-full justify-between items-center focus:outline-none relative z-40">
-					<FontAwesomeIcon className="text-white" icon={faFilter} size="sm" />
+					<FontAwesomeIcon
+						className="text-white"
+						icon={faFilter}
+						size="sm"
+					/>
 				</MenuButton>
 				<MenuItems className="absolute w-fit right-0 origin-top-right rounded contrast-background shadow-md focus:outline-none z-50">{uiStatusFilterMenu()}</MenuItems>
 			</Menu>
@@ -1008,7 +1238,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		return uniqueStatus.map((m, i) => {
 			return (
-				<MenuItem as="div" className="w-full p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text hovered-rows" key={i} onClick={() => setMain((s) => ({ ...s, findText: m }))}>
+				<MenuItem
+					as="div"
+					className="w-full p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text hovered-rows"
+					key={i}
+					onClick={() => setMain((s) => ({ ...s, statusFilter: m, isStatus: true }))}>
 					<span>{m}</span>
 				</MenuItem>
 			);
@@ -1020,11 +1254,21 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		const wrapper = `flex w-full space-x-2.5 justify-between items-center focus:outline-none relative z-40 font-medium-12 ${getStatusSeverity(row.status)}`;
 
-		const icon = !isConfirmed && <FontAwesomeIcon icon={faChevronDown} size="xs" />;
+		const icon = !isConfirmed && (
+			<FontAwesomeIcon
+				icon={faChevronDown}
+				size="xs"
+			/>
+		);
 
 		return (
-			<Tippy content={<Tooltip text={row.closure_reason} />} disabled={row.is_closed == 0 && !row.closure_reason} placement="bottom">
-				<Menu as="div" className="flex w-full justify-center items-center relative">
+			<Tippy
+				content={<Tooltip text={row.closure_reason} />}
+				disabled={row.is_closed == 0 && !row.closure_reason}
+				placement="bottom">
+				<Menu
+					as="div"
+					className="flex w-full justify-center items-center relative">
 					<MenuButton className={wrapper}>
 						<span dangerouslySetInnerHTML={{ __html: highlightText(true, row.status) }} />
 						{icon}
@@ -1049,7 +1293,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				const label = m == statuses.Closed ? "Close" : m == statuses.Confirmed ? "Confirm" : m;
 
 				return (
-					<MenuItem as="div" className="p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text text-left hovered-rows" key={i} onClick={() => prepareInquiryStatusChangeData(row, m)}>
+					<MenuItem
+						as="div"
+						className="p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text text-left hovered-rows"
+						key={i}
+						onClick={() => prepareInquiryStatusChangeData(row, m)}>
 						<span>{label}</span>
 					</MenuItem>
 				);
@@ -1060,7 +1308,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		if (api.inquiries.copy.length) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
-					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faCalendar}
+						size="sm"
+					/>
 					<ReactDatePicker
 						className="w-20 h-6 bg-transparent outline-none font-regular-10"
 						dateFormat="dd-MM-YYYY"
@@ -1076,7 +1328,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						showYearDropdown
 						tabIndex={2}
 					/>
-					<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
+					<FontAwesomeIcon
+						className={showToDateClearButton}
+						onClick={() => setInputs("to", "")}
+						icon={faMultiply}
+					/>
 				</div>
 			);
 		}
@@ -1111,6 +1367,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				from: main.filter.from,
 				to: main.filter.to,
 				findText: main.findText,
+				isStatus: main.isStatus,
+				statusFilter: main.statusFilter,
 			});
 
 			setApi((s) => ({
@@ -1121,7 +1379,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				},
 			}));
 		}
-	}, [main.findText, main.filter, api.inquiries.mergedWithNotes]);
+	}, [main.findText, main.filter, main.isStatus, api.inquiries.mergedWithNotes, main.statusFilter]);
 
 	useEffect(() => {
 		if (mounted.mainComponent) {
@@ -1132,14 +1390,27 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}, [main.selectedInquiryForStatusChange]);
 
 	if (mounted.myInquiries) {
-		return <DynamicMyInquiries presetStatus={presetStatus} setModuleProps={setModuleProps} unmount={closeMyInquiries} />;
+		return (
+			<DynamicMyInquiries
+				presetStatus={presetStatus}
+				setModuleProps={setModuleProps}
+				unmount={closeMyInquiries}
+			/>
+		);
 	}
 
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center primary-light-background">
 			{uiMain()}
 
-			{mounted.updateStatus && <DynamicUpdateStatus inquiry={main.selectedInquiryForStatusChange} mount={mounted.updateStatus} reload={reloadSupportData} unmount={toggleUpdateStatus} />}
+			{mounted.updateStatus && (
+				<DynamicUpdateStatus
+					inquiry={main.selectedInquiryForStatusChange}
+					mount={mounted.updateStatus}
+					reload={reloadSupportData}
+					unmount={toggleUpdateStatus}
+				/>
+			)}
 		</div>
 	);
 }

@@ -211,6 +211,7 @@ const MyConstants = Object.freeze({
 		TaskParticularRemarkAdded: "Task Particular/Remark added.",
 		TaskParticularRemarkDeleted: "Task Particular/Remark deleted.",
 		TaskParticularRemarkEdited: "Task Particular/Remark edited.",
+		TaskRemarkAdded: "Task remark added.",
 		TodoAdded: "To-do added successfully.",
 		TodoEdited: "To-do edited successfully.",
 		TodoStatusUpdated: "To-do status updated successfully.",
@@ -415,6 +416,14 @@ const MyConstants = Object.freeze({
 			Teams: "Teams",
 			Status: "Status",
 		}),
+		Projects2: Object.freeze({
+			Started: "Started On",
+			Client: "Client",
+			Projects: "Projects",
+			Teams: "Teams",
+			Quote: "Quote",
+			Status: "Status",
+		}),
 		ReimburseVouchers: Object.freeze({
 			Id: "ID",
 			Company: "Company",
@@ -450,7 +459,8 @@ const MyConstants = Object.freeze({
 		TasksRemarks: Object.freeze({
 			Task: "Task",
 			Remark: "Remark",
-			Date: "Date",
+			DueDate: "Due Date",
+			AllotedTo: "Alloted To",
 			WrittenBy: "Written By",
 		}),
 		Transactions: Object.freeze({

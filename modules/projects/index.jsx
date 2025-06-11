@@ -17,9 +17,9 @@ import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
+import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
-import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilterCircleXmark, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilterCircleXmark, faIndianRupee, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -54,7 +54,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const today = useMemo(() => dayjs(), []);
 	const statuses = MyConstants.Statuses.Projects2;
 	const thisView = MyConstants.Modules.Base.Projects;
-	const tableHeaders = MyConstants.TableHeaders.Projects;
+	const tableHeaders = MyConstants.TableHeaders.Projects2;
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const allowDeletingProject = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteProject), []);
@@ -88,24 +88,24 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				[statuses.Upcoming]: 0,
 			};
 
-			projectsList.forEach((project) => {
-				if (counts.hasOwnProperty(project.status)) {
-					counts[project.status]++;
+			projectsList.forEach((fe) => {
+				if (counts.hasOwnProperty(fe.status)) {
+					counts[fe.status]++;
 				}
 
-				if (project.has_tasks_overdue) {
+				if (fe.has_tasks_overdue) {
 					counts.Overdue++;
 				}
 
-				if (project.has_tasks_due_today) {
+				if (fe.has_tasks_due_today) {
 					counts.Today++;
 				}
 
-				if (project.has_tasks_due_tomorrow) {
+				if (fe.has_tasks_due_tomorrow) {
 					counts.Tomorrow++;
 				}
 
-				if (project.has_tasks_upcoming) {
+				if (fe.has_tasks_upcoming) {
 					counts.Upcoming++;
 				}
 			});
@@ -287,9 +287,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 						const projectTasks = tasksByProject[project.id] || [];
 
-						projectTasks.forEach((task) => {
-							reimburseVoucher += Number(task.expense);
-							const tasksDueDate = dayjs(task.due_on);
+						projectTasks.forEach((t) => {
+							reimburseVoucher += Number(t.expense);
+							const tasksDueDate = dayjs(t.due_on);
 
 							if (tasksDueDate.isBefore(today, "date")) {
 								if (project.status == statuses.Active) {
@@ -297,13 +297,13 @@ export default function Projects({ presetStatus, setModuleProps }) {
 								}
 							}
 							if (tasksDueDate.isSame(today, "date")) {
-								hasTasksDueToday = true;
+								if (t.is_disabled === 0 && t.is_completed === 0) hasTasksDueToday = true;
 							}
 							if (tasksDueDate.isSame(today.add(1, "day"), "date")) {
-								hasTasksDueTomorrow = true;
+								if (t.is_disabled === 0 && t.is_completed === 0) hasTasksDueTomorrow = true;
 							}
 							if (tasksDueDate.isAfter(today.add(1, "day"), "date")) {
-								hasTasksUpcoming = true;
+								if (t.is_disabled === 0 && t.is_completed === 0) hasTasksUpcoming = true;
 							}
 						});
 
@@ -791,7 +791,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 			return (
 				<span
-					className="w-[12.5%] space-x-1 cursor-pointer text-center text-white font-medium-10"
+					className="w-[16.66%] space-x-1 cursor-pointer text-center text-white font-medium-10"
 					onClick={() => setSort(header)}
 					key={i}>
 					<span>{header}</span>
@@ -894,14 +894,16 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				return <SpinnerSmall />;
 			} else {
 				const clientName = MyGlobal.HighlightText(row.client_name, main.findText);
+				const textColour = getStatusSeverityBackground(row.status);
 
 				return (
 					<Tippy
 						allowHTML
-						className="whitespace-pre-line"
+						className={`whitespace-pre-line`}
 						content={<Tooltip text={tooltipText} />}
 						placement="bottom">
 						<span
+							className={textColour}
 							dangerouslySetInnerHTML={{ __html: clientName }}
 							onClick={() => toggleSingleProjectView(row)}
 						/>
@@ -988,9 +990,25 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		[statuses, toggleEditStatusBox, toggleProjectStatusBox],
 	);
 
+	function getStatusSeverity(status) {
+		switch (status) {
+			case statuses.Active:
+				return "orange-tag-transparent-01";
+			case statuses.Closed:
+			case statuses.Cancelled:
+				return "gray-tag-transparent-01";
+			case statuses.Hold:
+				return "red-tag-transparent-02";
+			case statuses.Completed:
+				return "green-tag-transparent-01 cursor-pointer";
+			default:
+				return "orange-tag-transparent-01";
+		}
+	}
+
 	const uiStatusMenuList = useCallback(
 		(row) => {
-			return Object.values(statuses).map((status, i) => {
+			return Object.values(MyConstants.Statuses.Projects).map((status, i) => {
 				const isSelected = status == row.status;
 				const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
 				const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
@@ -1017,17 +1035,17 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const uiStatusMenu = useCallback(
 		(row) => {
-			const isCompleted = row.status == statuses.Completed;
-			const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none font-regular-11 !py-0`;
+			const isCompleted = row.status === statuses.Completed;
+			const wrapper = `flex w-full px-4 space-x-2 justify-between items-center focus:outline-none font-regular-12 ${getStatusSeverity(row.status)}`;
 
 			return (
 				<Menu
 					as="div"
-					className="flex w-24 justify-center items-center relative">
+					className="flex w-fit justify-center items-center relative">
 					<MenuButton className={wrapper}>
 						{isCompleted && (
 							<FontAwesomeIcon
-								className="green-text mr-1.5"
+								className="green-text"
 								icon={faCheckCircle}
 							/>
 						)}
@@ -1035,7 +1053,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 						{!isCompleted && <FontAwesomeIcon icon={faChevronDown} />}
 					</MenuButton>
 					{(!isCompleted || isUserAdministrator) && (
-						<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>
+						<MenuItems className="absolute w-full top-9 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>
 					)}
 				</Menu>
 			);
@@ -1043,9 +1061,47 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		[statuses, main.findText, isUserAdministrator, uiStatusMenuList],
 	);
 
+	function getStatusSeverityBackground(status) {
+		switch (status) {
+			case statuses.Active:
+				return "orange-text";
+			case statuses.Closed:
+			case statuses.Cancelled:
+				return "gray-text";
+			case statuses.Hold:
+				return "red-text";
+			case statuses.Completed:
+				return "green-text";
+			default:
+				return "orange-background";
+		}
+	}
+
+	function getStatusSeverityBackground2(status) {
+		switch (status) {
+			case statuses.Active:
+				return "orange-background";
+			case statuses.Closed:
+			case statuses.Cancelled:
+				return "gray-background";
+			case statuses.Hold:
+				return "red-background";
+			case statuses.Completed:
+				return "green-background";
+			default:
+				return "orange-background";
+		}
+	}
+
 	const uiRows = useCallback(
 		(row) => {
-			const style = `flex w-[12.5%] min-h-9 justify-center items-center text-center`;
+			const style = `flex flex-col w-[16.66%] justify-center items-center text-center`;
+			const childStyle = "flex w-full justify-center items-center";
+
+			const parentLabelStyle = childStyle + " font-bold-12";
+			const childLabelStyle = childStyle + " gray-text";
+
+			const fancyRightBorderStyle = "absolute w-3 h-[50px] rounded-tr-full rounded-br-full " + getStatusSeverityBackground2(row.status) + " -left-1";
 
 			const governmentId = MyGlobal.HighlightText(row.government_id ?? "", main.findText);
 			const governmentIdTextColour = !row.government_id ? "gray-text" : "primary-text";
@@ -1058,7 +1114,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 			const background = row.status == statuses.Completed ? "green-background-transparent-01" : "contrast-background";
 
-			const wrapper = `flex w-full justify-center items-center ${background} bottom-border font-regular-11 black-text`;
+			const wrapper = `flex w-full py-3 justify-center items-center ${background} bottom-border font-regular-11 black-text`;
+
+			const avatarWrapper = style + " !flex-row space-x-1";
 
 			// Optimize Tippy usage - only show Tippy when needed
 			const handleMouseEnter = () => setMouseEnter(row.id);
@@ -1070,6 +1128,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 					onMouseEnter={handleMouseEnter}
 					onMouseLeave={setMouseLeave}>
 					<div className={`${style} cursor-help primary-text`}>
+						<span className={fancyRightBorderStyle} />
 						{/* Lazy Tippy only renders when hovered */}
 						<Tippy
 							content={
@@ -1094,40 +1153,49 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							placement="right"
 							theme="light"
 							trigger="mouseenter"
-							appendTo={() => document.body} // Attach to body to reduce reflows
-						>
+							appendTo={() => document.body}>
 							<span>{dayjs(row.started_on).format("DD MMM, YYYY")}</span>
 						</Tippy>
 					</div>
 
-					<span
-						className={`${style} wrap-text ${governmentIdTextColour}`}
-						dangerouslySetInnerHTML={{ __html: governmentId || "NA" }}
-					/>
+					<div className={style}>
+						<span className={`${parentLabelStyle} cursor-pointer hover:underline hover:underline-offset-4`}>{uiClientName(row, clientIdAndName)}</span>
+						<Tippy
+							content={<Tooltip text={`Gov ID: ${governmentId || "NA"}`} />}
+							placement="bottom"
+							trigger="mouseenter"
+							appendTo={() => document.body}>
+							<span
+								className={childLabelStyle}
+								dangerouslySetInnerHTML={{ __html: companyName }}
+							/>
+						</Tippy>
+					</div>
 
-					<span className={`${style} space-x-5 cursor-pointer relative primary-text`}>{uiClientName(row, clientIdAndName)}</span>
-
-					<span
-						className={style}
-						dangerouslySetInnerHTML={{ __html: companyName }}
-					/>
-					<span
-						className={style}
-						dangerouslySetInnerHTML={{ __html: mainProjectName }}
-					/>
-
-					<Tippy
-						content={<Tooltip text={`Remarks ${row.remarks}`} />}
-						placement="bottom"
-						trigger="mouseenter"
-						appendTo={() => document.body}>
+					<div className={style}>
 						<span
-							className={style}
+							className={parentLabelStyle}
 							dangerouslySetInnerHTML={{ __html: subProjectName }}
 						/>
-					</Tippy>
+						<Tippy
+							content={<Tooltip text={`Remarks ${row.remarks}`} />}
+							placement="bottom"
+							trigger="mouseenter"
+							appendTo={() => document.body}>
+							<span
+								className={childLabelStyle}
+								dangerouslySetInnerHTML={{ __html: mainProjectName }}
+							/>
+						</Tippy>
+					</div>
 
-					<span className={`${style} space-x-1`}>{uiTeams(row)}</span>
+					{/* <span className={`${style} space-x-1`}>{uiTeams(row)}</span> */}
+
+					<span className={avatarWrapper}>
+						<AvatarCircle names={String(row.team_names).split(",")} />
+					</span>
+
+					<span className={`${style} font-bold-12`}>{MyGlobal.FormatCurrency(row.quote)}</span>
 					<span className={style}>{uiStatusMenu(row)}</span>
 				</div>
 			);
@@ -1135,22 +1203,24 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		[main.findText, statuses, allowDeletingProject, setMouseEnter, setMouseLeave, toggleDeleteProjectBox, toggleEditProjectView, uiClientName, uiTeams, uiStatusMenu],
 	);
 
-	const logProjectCounts = useCallback(() => {
-		// Count projects with overdue tasks
-		const overdueCount = api.projects.copy.filter((p) => p.has_tasks_overdue).length;
+	function getTotalQuote() {
+		let total = 0;
+		let fullTotal = 0;
 
-		// Count by project type
-		const byProjectType = {};
-		aggregatedProjects.forEach((module) => {
-			if (module.key !== "All") {
-				byProjectType[module.key] = module.items.length;
+		for (const i of sortedProjects) {
+			total += Number(i.quote);
+		}
 
-				// Count overdue in each project type
-				const overdueInType = module.items.filter((p) => p.has_tasks_overdue).length;
-				byProjectType[`${module.key}_overdue`] = overdueInType;
-			}
-		});
-	}, [api.projects.copy, filteredProjects.length, main.activeModule, aggregatedProjects, main.findText, main.filter]);
+		for (const i of api.projects.copy) {
+			fullTotal += Number(i.quote);
+		}
+
+		if (main.filter || main.findText) {
+			return MyGlobal.ThousandSeparator(total) + " / " + MyGlobal.ThousandSeparator(fullTotal);
+		} else {
+			return MyGlobal.ThousandSeparator(fullTotal);
+		}
+	}
 
 	const uiBody = useCallback(() => {
 		// For debugging
@@ -1167,12 +1237,22 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							data={sortedProjects}
 							itemContent={(i, row) => uiRows(row)}
 							totalCount={sortedProjects.length}
+							components={{
+								Footer: () => (
+									<div className="fixed bottom-2.5 right-2.5 space-x-2.5 px-5 py-1 flex justify-between items-center rounded-tr-full rounded-br-full green-background-transparent-01 green-border">
+										<span className="text-white flex justify-center items-center w-10 h-10 rounded-full green-background absolute -left-5">
+											<FontAwesomeIcon icon={faIndianRupee} />
+										</span>
+										<span className="text-center green-text font-bold-12">{getTotalQuote()}</span>
+									</div>
+								),
+							}}
 						/>
 					</div>
 				</div>
 			</div>
 		);
-	}, [uiList, uiHeaders, sortedProjects, uiRows, logProjectCounts]);
+	}, [uiList, uiHeaders, sortedProjects, uiRows]);
 
 	const uiMain = useCallback(() => {
 		if (main.isLoading.supportData) {

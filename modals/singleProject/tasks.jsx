@@ -36,6 +36,7 @@ export function AddParticularRemark({ mount, reload, task, unmount }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		const body = {
+			allotedTo: "",
 			createdBy: MyGlobal.GetUserId(),
 			dueOn: dayjs(main.dueOn).format("YYYY-MM-DD"),
 			particular: MyGlobal.EscapeString(main.particular),
@@ -88,31 +89,73 @@ export function AddParticularRemark({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle as="h2" className={titleBarStyle}>
+			<DialogTitle
+				as="h2"
+				className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Add Particular & Remark</span>
-				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+				<FontAwesomeIcon
+					className="cursor-pointer"
+					icon={faXmark}
+					onClick={() => unmount(false)}
+				/>
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+		<Dialog
+			as="div"
+			className="relative z-50"
+			open={mount}
+			onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+				<Draggable
+					handle=".draggable-handle"
+					onStart={() => setBoxDrag()}
+					onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-[400px] h-[510px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full h-[calc(100%-45px)] justify-between items-center">
 							<div className="flex flex-col w-full h-full px-5 pb-5 justify-between items-center">
 								<div className="flex flex-col w-full h-full py-5 space-y-2.5 justify-start items-center">
-									<DatePicker icon={faCalendar} label="Due On" onChange={(e) => setInputs("dueOn", e)} tabIndex={1} value={main.dueOn} width="w-full" />
-									<TextArea icon={faListCheck} key={1} label="Particular" onChange={(e) => setInputs("particular", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={2} value={main.particular} width="w-full" />
-									<TextArea icon={faStickyNote} key={2} label="Remark" onChange={(e) => setInputs("remark", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={3} value={main.remark} width="w-full" />
+									<DatePicker
+										icon={faCalendar}
+										label="Due On"
+										onChange={(e) => setInputs("dueOn", e)}
+										tabIndex={1}
+										value={main.dueOn}
+										width="w-full"
+									/>
+									<TextArea
+										icon={faListCheck}
+										key={1}
+										label="Particular"
+										onChange={(e) => setInputs("particular", e.target.value)}
+										onKeyDown={() => {}}
+										rows={2}
+										tabIndex={2}
+										value={main.particular}
+										width="w-full"
+									/>
+									<TextArea
+										icon={faStickyNote}
+										key={2}
+										label="Remark"
+										onChange={(e) => setInputs("remark", e.target.value)}
+										onKeyDown={() => {}}
+										rows={2}
+										tabIndex={3}
+										value={main.remark}
+										width="w-full"
+									/>
 								</div>
 							</div>
 							<footer className="dialog-footer w-full">
-								<button className={addButtonStyle} onClick={() => doInsertion()}>
+								<button
+									className={addButtonStyle}
+									onClick={() => doInsertion()}>
 									{uiButton()}
 								</button>
 							</footer>
@@ -144,7 +187,7 @@ export function AddTask({ mount, reload, project, tasks, unmount }) {
 	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
-	const errorStyle = main.error.length ? "flex w-full py-2 space-x-2 justify-center items-center rounded font-regular-10 red-background-transparent-01 red-border red-text" : "hidden";
+	const errorStyle = main.error.length ? "flex w-full p-2 space-x-2 justify-center items-center rounded font-regular-10 red-background-transparent-01 red-border red-text" : "hidden";
 
 	// Functions
 	async function doInsertion() {
@@ -152,8 +195,6 @@ export function AddTask({ mount, reload, project, tasks, unmount }) {
 
 		const body = {
 			clientId: project.client_id,
-			dueOn: dayjs(main.dueOn).format("YYYY-MM-DD"),
-			expense: Number(main.expense),
 			projectId: project.id,
 			task: MyGlobal.EscapeString(main.task),
 			userId: MyGlobal.GetUserId(),
@@ -183,7 +224,7 @@ export function AddTask({ mount, reload, project, tasks, unmount }) {
 
 		if (typeof name === "string" && name.length) {
 			if (Array.isArray(tasks) && tasks.length) {
-				doesExist = tasks.some((s) => s.task == name);
+				doesExist = tasks.some((s) => String(s.task).toLowerCase() === String(name).toLowerCase());
 			}
 		}
 
@@ -221,43 +262,54 @@ export function AddTask({ mount, reload, project, tasks, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle as="h2" className={titleBarStyle}>
+			<DialogTitle
+				as="h2"
+				className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Add Task</span>
-				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+				<FontAwesomeIcon
+					className="cursor-pointer"
+					icon={faXmark}
+					onClick={() => unmount(false)}
+				/>
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+		<Dialog
+			as="div"
+			className="relative z-50"
+			open={mount}
+			onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] h-[510px] transform overflow-hidden rounded contrast-background shadow">
+				<Draggable
+					handle=".draggable-handle"
+					onStart={() => setBoxDrag()}
+					onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[400px] h-1/3 transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full h-[calc(100%-45px)] justify-between items-center">
-							<div className="flex flex-col w-full h-full px-5 pb-5 justify-between items-center">
-								<div className="flex flex-col w-full h-full py-5 space-y-2.5 justify-start items-center">
-									<TextInput icon={faListCheck} label="Task" onChange={(e) => setInputs("task", e.target.value)} onKeyPress={() => {}} tabIndex={1} value={main.task} width="w-full" />
-									<DatePicker icon={faCalendar} label="Due On" onChange={(e) => setInputs("dueOn", e)} tabIndex={2} value={main.dueOn} width="w-full" />
-									<TextInput
-										icon={faCoins}
-										label="Expense"
-										onChange={(e) => setInputs("expense", e.target.value)}
-										onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-										tabIndex={3}
-										value={main.expense}
-										width="w-full"
-									/>
-								</div>
+							<div className="flex flex-col w-full h-full p-5 justify-between items-center">
+								<TextInput
+									icon={faListCheck}
+									label="Task"
+									onChange={(e) => setInputs("task", e.target.value)}
+									onKeyPress={() => {}}
+									tabIndex={1}
+									value={main.task}
+									width="w-full"
+								/>
 								<div className={errorStyle}>
 									<FontAwesomeIcon icon={faFaceAngry} />
 									<span>{main.error}</span>
 								</div>
 							</div>
 							<footer className="dialog-footer w-full">
-								<button className={addButtonStyle} onClick={() => doInsertion()}>
+								<button
+									className={addButtonStyle}
+									onClick={() => doInsertion()}>
 									{uiButton()}
 								</button>
 							</footer>
@@ -328,24 +380,39 @@ export function DeleteParticularRemark({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle as="h2" className={titleBarStyle}>
+			<DialogTitle
+				as="h2"
+				className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Delete Particular/Remark</span>
-				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+				<FontAwesomeIcon
+					className="cursor-pointer"
+					icon={faXmark}
+					onClick={() => unmount(false)}
+				/>
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+		<Dialog
+			as="div"
+			className="relative z-50"
+			open={mount}
+			onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+				<Draggable
+					handle=".draggable-handle"
+					onStart={() => setBoxDrag()}
+					onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center font-regular-12">Do you want to delete the below particular & remark?</div>
 						<footer className="dialog-footer">
-							<button className="primary-button-condensed" onClick={() => doDeletion()}>
+							<button
+								className="primary-button-condensed"
+								onClick={() => doDeletion()}>
 								{uiButton()}
 							</button>
 						</footer>
@@ -421,27 +488,52 @@ export function DeleteTask({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle as="h2" className={titleBarStyle}>
+			<DialogTitle
+				as="h2"
+				className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Delete Task</span>
-				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+				<FontAwesomeIcon
+					className="cursor-pointer"
+					icon={faXmark}
+					onClick={() => unmount(false)}
+				/>
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+		<Dialog
+			as="div"
+			className="relative z-50"
+			open={mount}
+			onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+				<Draggable
+					handle=".draggable-handle"
+					onStart={() => setBoxDrag()}
+					onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text">Are you sure you want to delete this task? You are required to write a reason below.</span>
 						<div className="flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center">
-							<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={main.reason} width="w-full" />
+							<TextArea
+								icon={faNoteSticky}
+								key={1}
+								label="Reason"
+								onChange={(e) => setReason(e.target.value)}
+								onKeyDown={() => {}}
+								rows={3}
+								tabIndex={1}
+								value={main.reason}
+								width="w-full"
+							/>
 						</div>
 						<footer className="dialog-footer">
-							<button className={disableButtonStyle} onClick={() => doDeletion()}>
+							<button
+								className={disableButtonStyle}
+								onClick={() => doDeletion()}>
 								{uiButton()}
 							</button>
 						</footer>
@@ -541,28 +633,70 @@ export function EditParticularRemark({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle as="h2" className={titleBarStyle}>
+			<DialogTitle
+				as="h2"
+				className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Edit Particulars/Remarks</span>
-				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+				<FontAwesomeIcon
+					className="cursor-pointer"
+					icon={faXmark}
+					onClick={() => unmount(false)}
+				/>
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+		<Dialog
+			as="div"
+			className="relative z-50"
+			open={mount}
+			onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+				<Draggable
+					handle=".draggable-handle"
+					onStart={() => setBoxDrag()}
+					onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
-							<DatePicker icon={faCalendar} label="Due On" onChange={(e) => setInputs("dueOn", e)} tabIndex={1} value={main.dueOn} width="w-full" />
-							<TextArea icon={faListCheck} key={1} label="Particular" onChange={(e) => setInputs("particular", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={2} value={main.particular} width="w-full" />
-							<TextArea icon={faStickyNote} key={2} label="Remark" onChange={(e) => setInputs("remark", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={3} value={main.remark} width="w-full" />
+							<DatePicker
+								icon={faCalendar}
+								label="Due On"
+								onChange={(e) => setInputs("dueOn", e)}
+								tabIndex={1}
+								value={main.dueOn}
+								width="w-full"
+							/>
+							<TextArea
+								icon={faListCheck}
+								key={1}
+								label="Particular"
+								onChange={(e) => setInputs("particular", e.target.value)}
+								onKeyDown={() => {}}
+								rows={2}
+								tabIndex={2}
+								value={main.particular}
+								width="w-full"
+							/>
+							<TextArea
+								icon={faStickyNote}
+								key={2}
+								label="Remark"
+								onChange={(e) => setInputs("remark", e.target.value)}
+								onKeyDown={() => {}}
+								rows={2}
+								tabIndex={3}
+								value={main.remark}
+								width="w-full"
+							/>
 						</div>
 						<footer className="dialog-footer">
-							<button className="primary-button-condensed" onClick={() => doEditing()}>
+							<button
+								className="primary-button-condensed"
+								onClick={() => doEditing()}>
 								{uiButton()}
 							</button>
 						</footer>
@@ -661,25 +795,53 @@ export function EditTask({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle as="h2" className={titleBarStyle}>
+			<DialogTitle
+				as="h2"
+				className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Edit Task</span>
-				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+				<FontAwesomeIcon
+					className="cursor-pointer"
+					icon={faXmark}
+					onClick={() => unmount(false)}
+				/>
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+		<Dialog
+			as="div"
+			className="relative z-50"
+			open={mount}
+			onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+				<Draggable
+					handle=".draggable-handle"
+					onStart={() => setBoxDrag()}
+					onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-[400px] h-[510px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full h-[calc(100%-45px)] justify-between items-center">
 							<div className="flex flex-col w-full h-full p-5 space-y-2.5 justify-start items-center">
-								<TextInput icon={faListCheck} label="Task" onChange={(e) => setInputs("task", e.target.value)} onKeyPress={() => {}} tabIndex={1} value={main.task} width="w-full" />
-								<DatePicker icon={faCalendar} label="Due On" onChange={(e) => setInputs("due_on", e)} tabIndex={2} value={main.due_on} width="w-full" />
+								<TextInput
+									icon={faListCheck}
+									label="Task"
+									onChange={(e) => setInputs("task", e.target.value)}
+									onKeyPress={() => {}}
+									tabIndex={1}
+									value={main.task}
+									width="w-full"
+								/>
+								<DatePicker
+									icon={faCalendar}
+									label="Due On"
+									onChange={(e) => setInputs("due_on", e)}
+									tabIndex={2}
+									value={main.due_on}
+									width="w-full"
+								/>
 								<TextInput
 									icon={faCoins}
 									label="Expense"
@@ -691,7 +853,9 @@ export function EditTask({ mount, reload, task, unmount }) {
 								/>
 							</div>
 							<footer className="dialog-footer w-full">
-								<button className="primary-button-condensed" onClick={() => doEditing()}>
+								<button
+									className="primary-button-condensed"
+									onClick={() => doEditing()}>
 									{uiButton()}
 								</button>
 							</footer>
@@ -813,27 +977,52 @@ export function EditTaskStatus({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle as="h2" className={titleBarStyle}>
+			<DialogTitle
+				as="h2"
+				className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Edit Status</span>
-				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+				<FontAwesomeIcon
+					className="cursor-pointer"
+					icon={faXmark}
+					onClick={() => unmount(false)}
+				/>
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
+		<Dialog
+			as="div"
+			className="relative z-50"
+			open={mount}
+			onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+				<Draggable
+					handle=".draggable-handle"
+					onStart={() => setBoxDrag()}
+					onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<span className="flex w-full p-5 font-regular-12 black-text">{messageBody} You are required to write a reason below.</span>
 						<div className="flex flex-col w-full px-2.5 pb-5 justify-center items-center">
-							<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={main.reason} width="w-full" />
+							<TextArea
+								icon={faNoteSticky}
+								key={1}
+								label="Reason"
+								onChange={(e) => setReason(e.target.value)}
+								onKeyDown={() => {}}
+								rows={3}
+								tabIndex={1}
+								value={main.reason}
+								width="w-full"
+							/>
 						</div>
 						<footer className="dialog-footer">
-							<button className={editButtonStyle} onClick={() => doEditing()}>
+							<button
+								className={editButtonStyle}
+								onClick={() => doEditing()}>
 								{uiButton()}
 							</button>
 						</footer>
@@ -913,27 +1102,52 @@ export function MarkSubTaskCompleted({ mount, reload, remark, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle as="h2" className={titleBarStyle}>
+			<DialogTitle
+				as="h2"
+				className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Mark Sub Task Completed</span>
-				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+				<FontAwesomeIcon
+					className="cursor-pointer"
+					icon={faXmark}
+					onClick={() => unmount(false)}
+				/>
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+		<Dialog
+			as="div"
+			className="relative z-50"
+			open={mount}
+			onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
+				<Draggable
+					handle=".draggable-handle"
+					onStart={() => setBoxDrag()}
+					onStop={() => setBoxDrag()}>
 					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text">Are you sure you want to mark this sub task as completed? You are required to write a completion reason below.</span>
 						<div className="flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center">
-							<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={main.reason} width="w-full" />
+							<TextArea
+								icon={faNoteSticky}
+								key={1}
+								label="Reason"
+								onChange={(e) => setReason(e.target.value)}
+								onKeyDown={() => {}}
+								rows={3}
+								tabIndex={1}
+								value={main.reason}
+								width="w-full"
+							/>
 						</div>
 						<footer className="dialog-footer">
-							<button className={disableButtonStyle} onClick={() => doMarking()}>
+							<button
+								className={disableButtonStyle}
+								onClick={() => doMarking()}>
 								{uiButton()}
 							</button>
 						</footer>

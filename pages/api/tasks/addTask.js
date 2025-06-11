@@ -13,15 +13,12 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { clientId, dueOn, expense, projectId, task, userId } = req.body;
+		const { clientId, projectId, task, userId } = req.body;
 
 		await query("CALL generate_id('TK', 'tasks', @new_task_id)", []);
 		const [storedProcedureResult] = await query("SELECT @new_task_id AS new_id;", []);
 
-		const taskInsertQueryResult = await query(
-			"INSERT INTO tasks (id, client_id, project_id, task, due_on, entry_by_id, expense) VALUES (?, ?, ?, ?, ?, ?, ?)",
-			[storedProcedureResult.new_id, clientId, projectId, task, dueOn, userId, expense],
-		);
+		const taskInsertQueryResult = await query("INSERT INTO tasks (id, client_id, project_id, task, entry_by_id) VALUES (?, ?, ?, ?, ?)", [storedProcedureResult.new_id, clientId, projectId, task, userId]);
 
 		if (taskInsertQueryResult.affectedRows > 0) {
 			res.status(200).send(storedProcedureResult.new_id);

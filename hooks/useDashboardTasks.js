@@ -38,11 +38,11 @@ export default function useTasks() {
 						obj.overdue++;
 					}
 				} else if (dueDate.isSame(today, "date")) {
-					obj.today++;
+					if (t.is_disabled === 0 && t.is_completed === 0) obj.today++;
 				} else if (dueDate.isSame(dayjs(today).add(1, "day"), "date")) {
-					obj.tomorrow++;
+					if (t.is_disabled === 0 && t.is_completed === 0) obj.tomorrow++;
 				} else if (dueDate.isAfter(dayjs(today).add(1, "day"), "date")) {
-					obj.upcoming++;
+					if (t.is_disabled === 0 && t.is_completed === 0) obj.upcoming++;
 				} else {
 					obj.others++;
 				}
