@@ -6,22 +6,24 @@ import { MyGlobal } from "@/utilities/global";
 import { query } from "@/utilities/dbConnection";
 
 export default async function handler(req, res) {
-	if (req.method !== "GET" || !MyGlobal.IsApiCallMethodValid(req)) {
+	if (req.method !== "POST" || !MyGlobal.IsApiCallMethodValid(req)) {
 		return res.status(405).send(MyConstants.Messages.ApiCallForbidden);
 	}
 
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const response = await query("SELECT * FROM todos WHERE is_deleted=0 ORDER BY id DESC", []);
+		const { id, notes, status } = req.body;
 
-		if (!response.length) {
-			return res.status(204).end();
+		const updateQueryResult = await query("UPDATE todos SET status = ?, notes = ? WHERE id = ?", [status, String(notes).trim(), id]);
+
+		if (updateQueryResult.affectedRows > 0) {
+			res.status(200).end();
+		} else {
+			res.status(400).end();
 		}
-
-		return res.status(200).json(response);
 	} catch (error) {
 		console.error(error);
-		return res.status(500).send("Internal Server Error");
+		return res.status(500).end(error.message);
 	}
 }

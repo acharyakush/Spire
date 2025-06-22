@@ -278,7 +278,11 @@ export default function Home() {
 				const allUsers = [];
 
 				response.data.administrators.forEach((fe) => allUsers.push(fe));
-				response.data.employees.forEach((fe) => allUsers.push(fe));
+				response.data.employees.forEach((fe) => {
+					if (fe.employment_status === "Active") {
+						allUsers.push(fe);
+					}
+				});
 
 				setApi((s) => ({ ...s, allUsers }));
 				MyGlobal.SetAllUsers(allUsers);

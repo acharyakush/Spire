@@ -13,9 +13,9 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { id, notes, status } = req.body;
+		const { assignedTo, customId, description, dueDate, id, priority } = req.body;
 
-		const updateQueryResult = await query("UPDATE todos SET status = ?, notes = ? WHERE id = ?", [status, notes, id]);
+		const updateQueryResult = await query("UPDATE todos set description=?, assigned_to=?, due_date=?, priority=? WHERE id=? AND custom_id=?", [String(description).trim(), assignedTo, dueDate, priority, id, customId]);
 
 		if (updateQueryResult.affectedRows > 0) {
 			res.status(200).end();

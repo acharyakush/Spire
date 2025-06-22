@@ -174,6 +174,8 @@ export const MyGlobal = Object.freeze({
 				return names.join(", ");
 			} else {
 				const user = allUsers.find((f) => f.id == id);
+
+				if (!user) return "Ex User";
 				return user[type] ?? "Ex User";
 			}
 		} else {

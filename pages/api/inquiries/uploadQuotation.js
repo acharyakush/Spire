@@ -1,11 +1,11 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import path from "path";
-
-import { mkdir, readdir } from "fs/promises";
+import { mkdir } from "fs/promises";
 import { existsSync, createWriteStream } from "fs";
 
 const Busboy = require("@fastify/busboy");
+
 export const config = {
 	api: {
 		bodyParser: false,
@@ -26,38 +26,20 @@ export default async function handler(req, res) {
 
 		const busboy = new Busboy({ headers: req.headers });
 
-		busboy.on("file", async (fieldname, file, filename) => {
-			try {
-				// const baseName = path.parse(filename).name;
-				// const extension = path.parse(filename).ext;
+		busboy.on("file", (fieldname, file, filename) => {
+			const filePath = path.join(invoicesDir, filename);
+			const writeStream = createWriteStream(filePath);
 
-				// Handle duplicate filenames like projectId_(1).pdf
-				const finalFileName = filename;
-				// let counter = 1;
-				// const existingFiles = await readdir(invoicesDir);
+			file.pipe(writeStream);
 
-				// while (existingFiles.includes(finalFileName)) {
-				// 	finalFileName = `${baseName}_(${counter})${extension}`;
-				// 	counter++;
-				// }
+			writeStream.on("finish", () => {
+				console.log(`File saved: ${filePath}`);
+			});
 
-				const filePath = path.join(invoicesDir, finalFileName);
-
-				const writeStream = createWriteStream(filePath);
-				file.pipe(writeStream);
-
-				writeStream.on("finish", () => {
-					console.log(`File saved: ${filePath}`);
-				});
-
-				writeStream.on("error", (err) => {
-					console.error("Stream error:", err);
-					res.status(500).end();
-				});
-			} catch (error) {
-				console.error("File processing error:", error);
+			writeStream.on("error", (err) => {
+				console.error("Stream error:", err);
 				res.status(500).end();
-			}
+			});
 		});
 
 		busboy.on("finish", () => {

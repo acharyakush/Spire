@@ -2,6 +2,7 @@
 
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
+import "tippy.js/animations/shift-toward.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import axios from "axios";
@@ -14,78 +15,40 @@ import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { TextInputNative } from "@/components/Inputs";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getScrollPosition, MyGlobal, saveScrollPosition } from "@/utilities/global";
 import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
-import { faCalendar, faChevronDown, faFileDownload, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPlusCircle, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { faBolt, faCalendar, faChevronDown, faDownload, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlus, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
-const DynamicEditInquiry = dynamic(() => import("./EditInquiry"), { ssr: false });
-const DynamicMyInquiries = dynamic(() => import("./MyInquiries"), { ssr: false });
 const DynamicNotes = dynamic(() => import("./Notes"), { ssr: false });
 const DynamicNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
-const DynamicNewProject = dynamic(() => import("../projects/NewProject"), { ssr: false });
+const DynamicEditInquiry = dynamic(() => import("./EditInquiry"), { ssr: false });
+const DynamicMyInquiries = dynamic(() => import("./MyInquiries"), { ssr: false });
 const DynamicNewQuotation = dynamic(() => import("./NewQuotation"), { ssr: false });
+const DynamicEditQuotation = dynamic(() => import("./EditQuotation"), { ssr: false });
+const DynamicNewProject = dynamic(() => import("../projects/NewProject"), { ssr: false });
 const DynamicUpdateStatus = dynamic(() => import("@/modals/inquiries/miscellaneous").then((t) => ({ default: t.UpdateStatus })), { ssr: false });
-
-function filterMergedInquiries(data, { from, to, findText, isStatus, statusFilter }) {
-	const isSearchFilterActive = Boolean(findText);
-	const isDateFilterActive = Boolean(from && to);
-
-	const lowerText = findText?.toLowerCase() || "";
-	const startDate = isDateFilterActive ? new Date(from).getTime() : null;
-	const endDate = isDateFilterActive ? new Date(to).getTime() : null;
-
-	const searchableFields = ["client_id", "client_name", "phone_number", "main_project", "sub_project", "reference_id", "reference_name", "follow_ups", "follow_ups_initials", "quote", "status", "notes", "entry_by_name"];
-
-	return data.filter((item) => {
-		// ✅ Date filter
-		if (isDateFilterActive) {
-			const entryTime = new Date(item.entry_date).getTime();
-			if (isNaN(entryTime) || entryTime < startDate || entryTime > endDate) return false;
-		}
-
-		// ✅ Status-only filter (no text search)
-		if (!isSearchFilterActive && isStatus && statusFilter) {
-			if (item.status !== statusFilter) return false;
-		}
-
-		// ✅ Text search (with or without status)
-		if (isSearchFilterActive) {
-			const match = searchableFields.some((field) => {
-				const value = item[field];
-				return value && String(value).toLowerCase().includes(lowerText);
-			});
-
-			if (!match) return false;
-
-			// ✅ If status filter is also required (combined)
-			if (isStatus && statusFilter && item.status !== statusFilter) return false;
-		}
-
-		return true;
-	});
-}
 
 export default function Inquiries({ presetStatus, setModuleProps }) {
 	// Business Logic
-	const [api, setApi] = useState({
-		clients: [],
-		inquiries: {
-			copy: [],
-			data: [],
-			mergedWithNotes: [],
-		},
-		notes: [],
+	const currentScrollPositionReference = useRef(null);
+
+	const [api, setApi] = useState({ clients: [], notes: [] });
+
+	const [filter, setFilter] = useState({
+		from: "",
+		to: "",
+		search: presetStatus ?? "",
+		status: "",
 	});
 
+	const [inquiries, setInquiries] = useState({ copy: [], data: [], merged: [] });
+
 	const [main, setMain] = useState({
-		filter: { from: "", to: "" },
-		findText: presetStatus ?? "",
 		isLoading: false,
 		isStatus: false,
-		statusFilter: "",
 		revisedStatuses: {},
 		selectedInquiryForNotes: {},
 		selectedInquiryForStatusChange: {},
@@ -96,6 +59,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		addQuotation: false,
 		convertToProject: false,
 		editInquiry: false,
+		editQuotation: false,
 		mainComponent: false,
 		myInquiries: presetStatus === "my-inquiries" || String(presetStatus).startsWith("MySpace"),
 		newInquiry: false,
@@ -104,28 +68,46 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		updateStatus: false,
 	});
 
-	const allowConvertingToProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewProject);
+	const allowQuotation = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.Quotation), []);
+	const allowConvertingToProject = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.NewProject), []);
+	const allowNewInquiry = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry), []);
 
-	const allowQuotation = MyGlobal.HasPermission(MyConstants.Modules.Derived.Quotation);
-
-	const headers = useMemo(() => MyConstants.TableHeaders.Inquiries, []);
 	const statuses = useMemo(() => MyConstants.Statuses.Inquiries, []);
+	const headers = useMemo(() => MyConstants.TableHeaders.Inquiries, []);
 
-	const thisView = MyConstants.Modules.Base.Inquiries;
-	const isAdministrator = MyGlobal.IsUserAdministrator();
-	const newInquiryButton = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry) ? "block space-x-1.5 primary-button-transparent-background" : "hidden";
+	const inquiriesSize = useMemo(() => inquiries.data.length, [inquiries.data]);
+	const inquiriesCopySize = useMemo(() => inquiries.copy.length, [inquiries.copy]);
 
-	const currentScrollPositionReference = useRef(null); // prevents multiple restorations
+	const thisView = useMemo(() => MyConstants.Modules.Base.Inquiries, []);
+	const isAdministrator = useMemo(() => MyGlobal.IsUserAdministrator(), []);
 
-	const showFromDateClearButton = useMemo(() => (main.filter.from ? "cursor-pointer primary-text" : "hidden"), [main.filter.from]);
-	const showToDateClearButton = useMemo(() => (main.filter.to ? "cursor-pointer primary-text" : "hidden"), [main.filter.to]);
-	const showFindClearButton = useMemo(() => (main.findText ? "cursor-pointer primary-text" : "hidden"), [main.findText]);
+	const showFromDateClearButton = useMemo(() => (filter.from ? "cursor-pointer primary-text" : "hidden"), [filter.from]);
+	const showToDateClearButton = useMemo(() => (filter.to ? "cursor-pointer primary-text" : "hidden"), [filter.to]);
+	const showFindClearButton = useMemo(() => (filter.search ? "cursor-pointer primary-text" : "hidden"), [filter.search]);
 
 	const blankDataWrapper = "flex w-full h-full justify-center items-center font-regular-12 gray-text contrast-background full-border";
 
 	// Functions
+	function calculateStatusCounts(list = []) {
+		const counts = {
+			[statuses.Closed]: 0,
+			[statuses.Confirmed]: 0,
+			[statuses.Hold]: 0,
+			[statuses.Open]: 0,
+		};
+
+		list.forEach((fe) => {
+			if (fe.status === statuses.Closed) counts.Closed++;
+			if (fe.status === statuses.Confirmed) counts.Confirmed++;
+			if (fe.status === statuses.Hold) counts.Hold++;
+			if (fe.status === statuses.Open) counts.Open++;
+		});
+
+		return counts;
+	}
+
 	function closeMyInquiries() {
-		setMain((s) => ({ ...s, findText: "" }));
+		setFilter((s) => ({ ...s, search: "" }));
 		setMounted((s) => ({ ...s, myInquiries: false }));
 	}
 
@@ -135,14 +117,14 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function detectKeystrokes(event) {
 		switch (true) {
-			case event.ctrlKey && event.key == "f":
+			case event.ctrlKey && event.key === "f":
 				event.preventDefault();
 				document.getElementById("findBox").focus();
 				break;
 		}
 	}
 
-	const doExcelExport = useCallback(() => {
+	function doExcelExport() {
 		const records = [];
 		const _records = [];
 
@@ -155,29 +137,38 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const rowHeaders = Object.values(headers);
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
-		sortedData.forEach((fe) => {
-			records.push(fe.entry_date, fe.client_id_and_name, fe.phone_number, fe.main_project, fe.sub_project, fe.reference_id_and_name, fe.follow_ups, fe.quote, fe.status, getTotalNotesByInquiry(fe.id), fe.entry_by_id_and_name);
+		doSorting().forEach((fe) => {
+			records.push(
+				fe.client_name + "\n" + fe.entry_date,
+				fe.phone_number + "\n" + fe.email_address,
+				fe.sub_project + "\n" + fe.main_project,
+				fe.follow_ups,
+				MyGlobal.FormatCurrency(fe.quote),
+				fe.next_follow_up_on,
+				fe.status + " (" + getTotalNotesByInquiry(fe.id) + ")",
+				fe.reference_name + "\n" + fe.entry_by_name,
+			);
 		});
 
-		records.forEach((record) => {
+		records.forEach((fe) => {
 			_records.push({
 				align: "center",
 				alignVertical: "center",
 				color: "#000000",
 				height: rowHeight,
 				type: String,
-				value: String(record),
+				value: String(fe),
 				wrap: true,
 			});
 		});
 
-		rowHeaders.forEach((header) => {
+		rowHeaders.forEach((fe) => {
 			dataHeaders.push({
 				align: "center",
 				alignVertical: "center",
 				fontWeight: "bold",
 				height: rowHeight,
-				value: header,
+				value: fe,
 				width: maximumColumnWidth,
 			});
 
@@ -192,70 +183,95 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				fontWeight: "bold",
 				height: 44,
 				span: rowHeaders.length,
-				value: `${thisView} (${api.inquiries.data.length})`,
+				value: thisView + " (" + inquiriesSize + ")",
 			},
 		];
 
 		const finalData = [header, blankRows, dataHeaders];
-		MyGlobal.SeparateObjectsIntoArrays(_records, rowHeaders.length).forEach((row) => finalData.push(row));
+		MyGlobal.SeparateObjectsIntoArrays(_records, rowHeaders.length).forEach((fe) => finalData.push(fe));
 
 		writeXlsxFile(finalData, {
 			columns: columnsWidth,
-			fileName: `${thisView}.xlsx`,
+			fileName: thisView + ".xlsx",
 			fontFamily: "Segoe UI",
-			fontSize: 9,
+			fontSize: 10,
 		});
-	}, []);
+	}
 
-	const doSorting = useCallback(
-		(data) => {
-			const { column, isAscending } = main.sort;
+	function doFiltering(data = []) {
+		const { from, to, search, status } = filter;
 
-			// If no sort column specified, just return data in original order or sorted by ID
-			if (!column) {
-				return [...data].sort((a, b) => b.id - a.id);
+		const isSearchFilterActive = Boolean(search);
+		const isDateFilterActive = Boolean(from && to);
+
+		const lowerText = String(search).toLowerCase() || "";
+		const startDate = isDateFilterActive ? new Date(from).getTime() : null;
+		const endDate = isDateFilterActive ? new Date(to).getTime() : null;
+
+		const searchableFields = ["client_id", "client_name", "phone_number", "main_project", "sub_project", "reference_id", "reference_name", "follow_ups", "follow_ups_initials", "quote", "status", "notes", "entry_by_name"];
+
+		return data.filter((f) => {
+			if (isDateFilterActive) {
+				const entryTime = new Date(f.entry_date).getTime();
+				if (isNaN(entryTime) || entryTime < startDate || entryTime > endDate) return false;
 			}
 
-			// Create a sort function map for better organization and performance
-			const sortFunctions = {
-				[headers.Client]: (a, b) => (isAscending ? a.client_name.localeCompare(b.client_name) : b.client_name.localeCompare(a.client_name)),
-				[headers.Projects]: (a, b) => (isAscending ? a.main_project.localeCompare(b.main_project) : b.main_project.localeCompare(a.main_project)),
-				[headers.References]: (a, b) => (isAscending ? a.reference_name.localeCompare(b.reference_name) : b.reference_name.localeCompare(a.reference_name)),
-				[headers.FollowUps]: (a, b) => (isAscending ? a.follow_ups.localeCompare(b.follow_ups) : b.follow_ups.localeCompare(a.follow_ups)),
-				[headers.Quote]: (a, b) => (isAscending ? a.quote - b.quote : b.quote - a.quote),
-				[headers.Status]: (a, b) => (isAscending ? a.status.localeCompare(b.status) : b.status.localeCompare(a.status)),
-				default: (a, b) => b.id - a.id,
-			};
+			if (!isSearchFilterActive && main.isStatus && status) {
+				if (f.status !== status) return false;
+			}
 
-			// Use the appropriate sort function or default
-			const sortFunction = sortFunctions[column] || sortFunctions.default;
+			if (isSearchFilterActive) {
+				const match = searchableFields.some((s) => {
+					const value = f[s];
+					return value && String(value).toLowerCase().includes(lowerText);
+				});
 
-			// Return sorted data
-			return [...data].sort(sortFunction);
-		},
-		[main.sort, headers],
-	);
+				if (!match) return false;
+				if (main.isStatus && status && f.status !== status) return false;
+			}
+
+			return true;
+		});
+	}
+
+	function doSorting() {
+		const { column, isAscending } = main.sort;
+
+		if (!column) return [...inquiries.data].sort((a, b) => b.id - a.id);
+
+		const sortFunctions = {
+			[headers.Client]: (a, b) => (isAscending ? a.client_name.localeCompare(b.client_name) : b.client_name.localeCompare(a.client_name)),
+			[headers.Projects]: (a, b) => (isAscending ? a.main_project.localeCompare(b.main_project) : b.main_project.localeCompare(a.main_project)),
+			[headers.References]: (a, b) => (isAscending ? a.reference_name.localeCompare(b.reference_name) : b.reference_name.localeCompare(a.reference_name)),
+			[headers.FollowUps]: (a, b) => (isAscending ? a.follow_ups.localeCompare(b.follow_ups) : b.follow_ups.localeCompare(a.follow_ups)),
+			[headers.Quote]: (a, b) => (isAscending ? a.quote - b.quote : b.quote - a.quote),
+			[headers.Status]: (a, b) => (isAscending ? a.status.localeCompare(b.status) : b.status.localeCompare(a.status)),
+			default: (a, b) => b.id - a.id,
+		};
+
+		const sortFunction = sortFunctions[column] || sortFunctions.default;
+
+		return [...inquiries.data].sort(sortFunction);
+	}
 
 	function downloadQuotation(quotationId) {
 		const link = document.createElement("a");
 		const fileName = String(quotationId).replace("/", "_").replace("/", "_");
 
-		link.href = `/quotations/${fileName}`;
-		link.download = `${fileName}.pdf`;
+		link.href = "/quotations/" + fileName;
+		link.download = fileName + ".pdf";
 
 		link.click();
 	}
 
-	const sortedData = useMemo(() => doSorting(api.inquiries.data), [api.inquiries.data, doSorting]);
-
 	function getIconOrBadge() {
-		return api.inquiries.data.length > 0 && <Badge value={getRowsCount()} />;
+		return inquiriesSize > 0 && <Badge value={getRowsCount()} />;
 	}
 
 	async function getInquiries(supportData) {
-		setMain((s) => ({ ...s, isLoading: true }));
-
 		try {
+			setMain((s) => ({ ...s, isLoading: true }));
+
 			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetInquiries, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
@@ -272,7 +288,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 					let phoneNumber = obj.phone_number;
 
-					const client = supportData.clients.find((f) => f.id == obj.client_id);
+					const client = supportData.clients.find((f) => f.id === obj.client_id);
 
 					if (typeof client === "object") {
 						if (client.is_edited == 1) {
@@ -280,7 +296,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						}
 					}
 
-					const nextfollowUpOn = supportData?.notes?.filter((f) => f.inquiry_id == obj.id);
+					const nextfollowUpOn = supportData?.notes?.filter((f) => f.inquiry_id === obj.id);
 
 					const abc = nextfollowUpOn?.filter((f) => f.next_follow_up_on);
 					abc?.sort((a, b) => b.id - a.id);
@@ -318,22 +334,14 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				}
 
 				const merged = mergeInquiriesAndNotesById(revisedCopy);
-
 				const revisedStatuses = calculateStatusCounts(revisedCopy);
+				const filtered = doFiltering(merged);
 
-				const filtered = filterMergedInquiries(merged, {
-					from: main.filter.from,
-					to: main.filter.to,
-					findText: main.findText,
-					isStatus: main.isStatus,
-					statusFilter: main.statusFilter,
-				});
-
-				setApi((s) => ({ ...s, inquiries: { ...s.inquiries, copy: revisedCopy, data: filtered, mergedWithNotes: merged } }));
+				setInquiries({ copy: revisedCopy, data: filtered, merged });
 				setMain((s) => ({ ...s, revisedStatuses }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "Get Inquiries");
+			MyGlobal.HandleErrors(error, thisView + "> getInquiries()");
 		} finally {
 			setMain((s) => ({ ...s, isLoading: false }));
 			setMounted((s) => ({ ...s, mainComponent: true }));
@@ -341,11 +349,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function getRowsCount() {
-		if (api.inquiries.data.length != api.inquiries.copy.length) {
-			return `${api.inquiries.data.length} / ${api.inquiries.copy.length}`;
-		} else {
-			return api.inquiries.data.length;
+		if (inquiriesSize !== inquiriesCopySize) {
+			return inquiriesSize + " / " + inquiriesCopySize;
 		}
+
+		return inquiriesSize;
 	}
 
 	function getStatusSeverity(status) {
@@ -362,6 +370,48 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function getStatusSeverityBackground(status) {
+		switch (status) {
+			case statuses.Open:
+				return {
+					background: "orange-background",
+					border: "orange-border",
+					text: "text-white",
+				};
+			case statuses.Closed:
+				return {
+					background: "gray-background",
+					border: "gray-border",
+					text: "text-white",
+				};
+			case statuses.Hold:
+				return {
+					background: "red-background",
+					border: "red-border",
+					text: "text-white",
+				};
+			case statuses.Confirmed:
+				return {
+					background: "green-background",
+					border: "green-border",
+					text: "text-white",
+				};
+		}
+	}
+
+	function getStatusSeverityBackground2(status) {
+		switch (status) {
+			case statuses.Open:
+				return "orange-background";
+			case statuses.Closed:
+				return "gray-background";
+			case statuses.Hold:
+				return "red-background";
+			case statuses.Confirmed:
+				return "green-background";
+		}
+	}
+
+	function getStatusSeverityBackground3(status) {
 		switch (status) {
 			case statuses.Open:
 				return {
@@ -390,120 +440,12 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		}
 	}
 
-	function getStatusSeverityBackground2(status) {
-		switch (status) {
-			case statuses.Open:
-				return "orange-background";
-			case statuses.Closed:
-				return "gray-background";
-			case statuses.Hold:
-				return "red-background";
-			case statuses.Confirmed:
-				return "green-background";
-		}
-	}
-
-	function getTotalNotesByInquiry(id) {
-		return api.notes.filter((f) => f.inquiry_id == id && f.source == thisView).length;
-	}
-
-	function getTotalQuote() {
-		let total = 0;
-		let fullTotal = 0;
-
-		for (const i of api.inquiries.data) {
-			total += Number(i.quote);
-		}
-
-		for (const i of api.inquiries.copy) {
-			fullTotal += Number(i.quote);
-		}
-
-		if (main.filter.from || main.filter.to || main.findText || main.isStatus) {
-			return MyGlobal.ThousandSeparator(total) + " / " + MyGlobal.ThousandSeparator(fullTotal);
-		} else {
-			return MyGlobal.ThousandSeparator(fullTotal);
-		}
-	}
-
-	function highlightText(isTag, text) {
-		const regex = new RegExp(main.findText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
-		const classByTag = isTag ? "highlight-characters" : "highlight-characters";
-
-		let result = text;
-
-		if (main.findText) {
-			result = String(text).replace(regex, (match) => `<span class=${classByTag}>${match}</span>`);
-		}
-
-		return MyGlobal.StripHtmlTags(result);
-	}
-
-	const mergeInquiriesAndNotesById = useCallback(
-		(inquiries) => {
-			// Early return if no data
-			if (!inquiries.length || !api.notes.length) return inquiries;
-
-			// Create a notes lookup map (much faster than repeated array searches)
-			const notesMap = {};
-			api.notes.forEach((note) => {
-				if (!notesMap[note.inquiry_id]) {
-					notesMap[note.inquiry_id] = note.content;
-				} else {
-					notesMap[note.inquiry_id] += `\n${note.content}`;
-				}
-			});
-
-			// Map inquiries with their notes in one pass
-			return inquiries.map((inquiry) => {
-				return {
-					...inquiry,
-					notes: notesMap[inquiry.id] || "",
-				};
-			});
-		},
-		[api.notes],
-	);
-
-	const openEmailAddress = useCallback((emailAddress) => {
-		globalThis.window.open(`mailto://${emailAddress}`, "_blank");
-	}, []);
-
-	const openWhatsAppWeb = useCallback((phoneNumber) => {
-		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
-	}, []);
-
-	const prepareInquiryStatusChangeData = useCallback((inquiry, newStatus) => {
-		setMain((s) => ({ ...s, selectedInquiryForStatusChange: { ...inquiry, new_status: newStatus } }));
-	}, []);
-
-	function setInputs(key, value) {
-		if (key == "from" || key == "to") {
-			setMain((s) => ({ ...s, filter: { ...s.filter, [key]: value } }));
-		} else if (key === "findText") {
-			setMain((s) => ({ ...s, findText: value }));
-		} else {
-			setMain((s) => ({ ...s, [key]: value }));
-		}
-	}
-
-	const setSort = useCallback((header) => {
-		if (header != headers.Contacts) {
-			setMain((s) => ({ ...s, sort: { column: header, isAscending: !main.sort.isAscending } }));
-		}
-	}, []);
-
-	async function setSupportData() {
+	async function getSupportData() {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				setApi((s) => ({
-					...s,
-					clients: response.data.clients,
-					notes: response.data.notes,
-				}));
-
+				setApi((s) => ({ ...s, clients: response.data.clients, notes: response.data.notes }));
 				getInquiries(response.data);
 			}
 		} catch (error) {
@@ -511,36 +453,124 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		}
 	}
 
-	const reloadSupportData = useCallback(() => {
-		setSupportData();
-	}, []);
+	function getTotalNotesByInquiry(id) {
+		return api.notes.filter((f) => f.inquiry_id === id && f.source === thisView).length;
+	}
 
-	const toggleAddQuotation = useCallback((inquiry, type) => {
+	function getTotalQuote() {
+		let total = 0;
+		let fullTotal = 0;
+
+		for (const i of inquiries.data) {
+			total += Number(i.quote);
+		}
+
+		for (const i of inquiries.copy) {
+			fullTotal += Number(i.quote);
+		}
+
+		if (filter.from || filter.to || filter.search || filter.status) {
+			return MyGlobal.ThousandSeparator(total) + " / " + MyGlobal.ThousandSeparator(fullTotal);
+		}
+
+		return MyGlobal.ThousandSeparator(fullTotal);
+	}
+
+	function handleRangeChange(range) {
+		saveScrollPosition("inquiries", range.startIndex);
+	}
+
+	function highlightText(isTag, text) {
+		const regex = new RegExp(String(filter.search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+		const classByTag = isTag ? "highlight-characters" : "highlight-characters";
+
+		let result = text;
+
+		if (filter.search) {
+			result = String(text).replace(regex, (m) => `<span class=${classByTag}>${m}</span>`);
+		}
+
+		return MyGlobal.StripHtmlTags(result);
+	}
+
+	function mergeInquiriesAndNotesById(inquiries) {
+		if (!inquiries.length || !api.notes.length) return inquiries;
+
+		const notesMap = {};
+
+		api.notes.forEach((fe) => {
+			if (!notesMap[fe.inquiry_id]) {
+				notesMap[fe.inquiry_id] = fe.content;
+			} else {
+				notesMap[fe.inquiry_id] += `\n${fe.content}`;
+			}
+		});
+
+		return inquiries.map((m) => {
+			return { ...m, notes: notesMap[m.id] || "" };
+		});
+	}
+
+	function openEmailAddress(emailAddress) {
+		globalThis.window.open(`mailto://${emailAddress}`, "_blank");
+	}
+
+	function openWhatsAppWeb(phoneNumber) {
+		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
+	}
+
+	function prepareInquiryStatusChangeData(inquiry, newStatus) {
+		setMain((s) => ({ ...s, selectedInquiryForStatusChange: { ...inquiry, new_status: newStatus } }));
+	}
+
+	function setInputs(key, value) {
+		if (key === "from" || key === "to" || key === "search") {
+			setFilter((s) => ({ ...s, [key]: value }));
+		} else {
+			setMain((s) => ({ ...s, [key]: value }));
+		}
+	}
+
+	function setSort(header) {
+		if (header !== headers.Contacts) {
+			setMain((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
+		}
+	}
+
+	function toggleAddQuotation(inquiry, type) {
 		const client = api.clients.find((f) => f.id === inquiry.client_id);
 		const obj = { ...inquiry, client };
 
 		setMain((s) => ({ ...s, selectedInquiryForNotes: obj }));
 		setMounted((s) => ({ ...s, addQuotation: type }));
-	}, []);
+	}
 
-	const toggleEditInquiryView = useCallback((inquiry, type) => {
+	function toggleEditQuotation(inquiry, type) {
+		const client = api.clients.find((f) => f.id === inquiry.client_id);
+		const obj = { ...inquiry, client };
+
+		setMain((s) => ({ ...s, selectedInquiryForNotes: obj }));
+		setMounted((s) => ({ ...s, editQuotation: type }));
+	}
+
+	function toggleEditInquiryView(inquiry, type) {
 		setMain((s) => ({ ...s, selectedInquiryForNotes: inquiry }));
 		setMounted((s) => ({ ...s, editInquiry: type }));
-	}, []);
+	}
 
-	const toggleNewInquiryView = useCallback(() => {
+	function toggleNewInquiryView() {
 		setMounted((s) => ({ ...s, newInquiry: !s.newInquiry }));
-	}, []);
+	}
 
-	const toggleNotesView = useCallback((inquiry, type) => {
+	function toggleNotesView(inquiry, type) {
 		setMain((s) => ({ ...s, selectedInquiryForNotes: inquiry }));
 		setMounted((s) => ({ ...s, notes: type }));
-	}, []);
+	}
 
 	function toggleUpdateStatus(value) {
 		if (value === true) {
 			setMounted((s) => ({ ...s, updateStatus: true }));
-		} else if (value == "open-new-project") {
+		} else if (value === "open-new-project") {
 			setMounted((s) => ({ ...s, updateStatus: false, newProject: true }));
 		} else {
 			setMain((s) => ({ ...s, selectedInquiryForStatusChange: {} }));
@@ -548,89 +578,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		}
 	}
 
-	const handleRangeChange = useCallback((range) => {
-		saveScrollPosition("inquiries", range.startIndex); // topmost visible item index
-	}, []);
-
-	// Memoized
-	const Headers = memo(function renderHeaders({ headers, main, setSort, uiSortArrows, uiStatusFilter }) {
-		return Object.values(headers).map((m, i) => {
-			const showSortArrow = m == main.sort.column ? "block" : "hidden";
-			return (
-				<span
-					className="flex w-[12.50%] cursor-pointer justify-center items-center font-medium-10"
-					key={i}>
-					<div
-						className="flex w-full space-x-2 justify-center items-center text-white"
-						onClick={() => setSort(m)}>
-						<span>{m}</span>
-						<span className={showSortArrow}>{uiSortArrows(m)}</span>
-					</div>
-					{/* <span className={showStatusFilter}>{uiStatusFilter(m)}</span> */}
-				</span>
-			);
-		});
-	});
-
-	const Rows = memo(function renderRows({
-		row,
-		main,
-		statuses,
-		getStatusSeverityBackground,
-		getStatusSeverityBackground2,
-		MyGlobal,
-		toggleEditInquiryView,
-		openWhatsAppWeb,
-		openEmailAddress,
-		toggleAddQuotation,
-		toggleNotesView,
-		getTotalNotesByInquiry,
-		uiStatusMenu,
-		uiAddQuotation,
-		uiDownloadQuotation,
-		uiNotes,
-	}) {
-		const style = "flex flex-col w-[12.50%] justify-center items-center text-center";
-		const childStyle = "flex w-full justify-center items-center";
-
-		const fancyRightBorderStyle = "absolute w-3 h-[50px] rounded-tr-full rounded-br-full " + getStatusSeverityBackground2(row.status) + " -left-1";
-
-		const parentLabelStyle = childStyle + " font-bold-12";
-		const childLabelStyle = childStyle + " gray-text";
-
-		const avatarWrapper = style + " !flex-row space-x-1";
-
-		const followUpsNames = String(row.follow_ups).split(",");
-
-		return (
-			<div
-				className="flex w-full py-3 justify-center items-center contrast-background bottom-border font-regular-10 black-text relative"
-				key={row.id}>
-				<span className={fancyRightBorderStyle} />
-
-				{uiClientAndInquiryDate(childStyle, main.findText, getStatusSeverityBackground, MyGlobal, row, statuses, style, toggleEditInquiryView)}
-
-				{uiContactDetails(childStyle, main.findText, MyGlobal, openEmailAddress, openWhatsAppWeb, row, style)}
-
-				{uiProjects(childLabelStyle, main.findText, MyGlobal, parentLabelStyle, row, style)}
-
-				<span className={avatarWrapper}>
-					<AvatarCircle names={followUpsNames} />
-				</span>
-
-				{uiQuote(childStyle, main.findText, MyGlobal, row, style, toggleAddQuotation, uiAddQuotation, uiDownloadQuotation)}
-
-				<span className={`${style} font-bold-12`}>{row.next_follow_up_on}</span>
-
-				{uiStatus(childStyle, getStatusSeverityBackground, getTotalNotesByInquiry, row, style, uiNotes, uiStatusMenu, toggleNotesView)}
-
-				{uiReferences(childLabelStyle, main.findText, MyGlobal, parentLabelStyle, row, style)}
-			</div>
-		);
-	});
-
-	const uiBody = useMemo(() => {
-		if (main.isLoading) {
+	// UI Components
+	function uiBody() {
+		if (mounted.mainComponent && main.isLoading) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
 					<div className="flex w-full h-9 justify-center items-center primary-background animate-pulse">
@@ -645,56 +595,83 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					<div className="w-full h-full overflow-y-auto contrast-background">{[...Array(9)].map((_, i) => uiSkeletion(i))}</div>
 				</div>
 			);
-		} else if (!api.inquiries.copy.length) {
+		} else if (mounted.mainComponent && !inquiriesCopySize) {
 			return <div className={blankDataWrapper}>No inquiries generated.</div>;
-		} else if (!api.inquiries.data.length) {
+		} else if (mounted.mainComponent && !inquiriesSize) {
 			return <div className={blankDataWrapper}>No inquiries found.</div>;
 		} else {
+			const itemStyle = "flex w-full p-2 space-x-2 justify-start items-center rounded cursor-pointer hover:transition-all font-regular-11 text-white";
+
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
-					<div className="flex w-full h-9 justify-center items-center primary-background">
-						<Headers
-							headers={headers}
-							main={main}
-							setSort={setSort}
-							uiSortArrows={uiSortArrows}
-							uiStatusFilter={uiStatusFilter}
-						/>
-					</div>
+					<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
 					<Virtuoso
 						ref={currentScrollPositionReference}
 						rangeChanged={handleRangeChange}
 						className="w-full h-full overflow-y-auto contrast-background"
-						data={api.inquiries.data}
-						itemContent={(_, row) => (
-							<Rows
-								uiDownloadQuotation={uiDownloadQuotation}
-								uiAddQuotation={uiAddQuotation}
-								row={row}
-								main={main}
-								statuses={statuses}
-								getStatusSeverityBackground={getStatusSeverityBackground}
-								getStatusSeverityBackground2={getStatusSeverityBackground2}
-								MyGlobal={MyGlobal}
-								toggleEditInquiryView={toggleEditInquiryView}
-								openWhatsAppWeb={openWhatsAppWeb}
-								openEmailAddress={openEmailAddress}
-								toggleAddQuotation={toggleAddQuotation}
-								toggleNotesView={toggleNotesView}
-								getTotalNotesByInquiry={getTotalNotesByInquiry}
-								uiStatusMenu={uiStatusMenu}
-								uiNotes={uiNotes}
-							/>
-						)}
-						totalCount={api.inquiries.data.length}
+						data={inquiries.data}
+						itemContent={(_, row) => uiRows(row)}
+						totalCount={inquiriesSize}
 						overscan={20}
 						components={{
 							Footer: () => (
-								<div className="fixed bottom-2.5 right-2.5 space-x-2.5 px-5 py-1 flex justify-between items-center rounded-tr-full rounded-br-full green-background-transparent-01 green-border">
-									<span className="text-white flex justify-center items-center w-10 h-10 rounded-full green-background absolute -left-5">
-										<FontAwesomeIcon icon={faIndianRupee} />
-									</span>
-									<span className="text-center green-text font-bold-12">{getTotalQuote()}</span>
+								<div className="flex fixed bottom-3 right-3 space-x-3 z-50">
+									<Tippy
+										className="!py-2"
+										content={
+											<div className="flex flex-col space-y-1 justify-center items-center">
+												{allowNewInquiry && (
+													<div
+														className={`${itemStyle} hover:bg-blue-500`}
+														onClick={() => toggleNewInquiryView()}>
+														<FontAwesomeIcon
+															className="w-5"
+															icon={faPlus}
+															size="1x"
+														/>
+														<span>New Inquiry</span>
+													</div>
+												)}
+												<div
+													className={`${itemStyle} hover:bg-emerald-500`}
+													onClick={() => doExcelExport()}>
+													<FontAwesomeIcon
+														className="w-5"
+														icon={faDownload}
+														size="1x"
+													/>
+													<span>Download Excel</span>
+												</div>
+											</div>
+										}
+										interactive
+										placement="bottom"
+										theme="dark"
+										trigger="mouseenter"
+										animation="shift-toward"
+										appendTo={() => document.body}>
+										<div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-100 via-amber-200 to-amber-300 border border-amber-600 shadow transition-all duration-300 transform hover-pulse-glow cursor-help">
+											<FontAwesomeIcon
+												icon={faBolt}
+												className="text-amber-500"
+												size="lg"
+											/>
+										</div>
+									</Tippy>
+									<div className="group relative flex items-center w-fit px-0 transition-all duration-500 ease-in-out">
+										<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
+
+										<div className="flex items-center justify-center w-10 h-10 group-hover:h-[36px] rounded-full text-white ring-1 ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
+											<FontAwesomeIcon
+												icon={faIndianRupee}
+												size="lg"
+											/>
+										</div>
+
+										<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-[300px]">
+											<div className="pl-2 pr-4 text-white font-bold-12 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out relative z-20">{getTotalQuote()}</div>
+										</div>
+									</div>
 								</div>
 							),
 						}}
@@ -702,58 +679,30 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				</div>
 			);
 		}
-	}, [
-		main.isLoading,
-		api.inquiries.copy.length,
-		api.inquiries.data.length,
-		headers,
-		main,
-		setSort,
-		uiSortArrows,
-		uiStatusFilter,
-		api.inquiries.data,
-		statuses,
-		isAdministrator,
-		getStatusSeverityBackground,
-		getStatusSeverityBackground2,
-		MyGlobal,
-		toggleEditInquiryView,
-		openWhatsAppWeb,
-		openEmailAddress,
-		toggleAddQuotation,
-		toggleNotesView,
-		getTotalNotesByInquiry,
-		uiStatusMenu,
-		uiNotes,
-		getTotalQuote,
-		blankDataWrapper,
-	]);
-
-	// UI Components
-	function uiAddQuotation(row, toggleAddQuotation) {
-		if (isAdministrator || allowQuotation) {
-			return (
-				<Tippy
-					animation="shift-away"
-					content={<Tooltip text="Add a quotation for this inquiry." />}
-					placement="bottom">
-					<FontAwesomeIcon
-						className="cursor-pointer green-text"
-						icon={faReceipt}
-						onClick={() => toggleAddQuotation(row, true)}
-						size="xs"
-					/>
-				</Tippy>
-			);
-		}
 	}
 
-	function uiClientAndInquiryDate(childStyle, findText, getStatusSeverityBackground, MyGlobal, row, statuses, style, toggleEditInquiryView) {
-		const clientName = MyGlobal.HighlightText(row.client_name, findText);
-		const clientNameTextStyle = row.status == statuses.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
+	function uiClearFilter() {
+		const visibility = filter.status ? "visible" : "invisible";
+		const style = "cursor-pointer outline-none focus:outline-none red-text " + visibility;
+
+		return (
+			<FontAwesomeIcon
+				className={style}
+				icon={faFilterCircleXmark}
+				onClick={() => {
+					setFilter((s) => ({ ...s, status: "" }));
+					setMain((s) => ({ ...s, isStatus: false }));
+				}}
+			/>
+		);
+	}
+
+	function uiClientAndInquiryDate(childStyle, row, style) {
+		const clientName = MyGlobal.HighlightText(row.client_name, filter.search);
+		const clientNameTextStyle = row.status === statuses.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
 
 		const wrapper = style + " font-semibold-12 space-x-2 " + clientNameTextStyle;
-		const clientNameStyle = childStyle + " !w-3/4 " + getStatusSeverityBackground(row.status).text;
+		const clientNameStyle = childStyle + " !w-3/4 " + getStatusSeverityBackground3(row.status).text;
 
 		return (
 			<div
@@ -773,9 +722,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		);
 	}
 
-	function uiContactDetails(childStyle, findText, MyGlobal, openEmailAddress, openWhatsAppWeb, row, style) {
-		const phoneNumber = MyGlobal.HighlightText(row.phone_number, findText);
-		const emailAddress = MyGlobal.HighlightText(row.email_address, findText);
+	function uiContactDetails(childStyle, row, style) {
+		const phoneNumber = MyGlobal.HighlightText(row.phone_number, filter.search);
+		const emailAddress = MyGlobal.HighlightText(row.email_address, filter.search);
 
 		const phoneNumberStyle = childStyle + " font-bold-12";
 		const emailAddressStyle = childStyle + " font-regular-10 gray-text";
@@ -805,88 +754,23 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		);
 	}
 
-	function uiDownloadQuotation(row) {
-		if (isAdministrator || allowQuotation) {
-			const showDownloadButton = row.quotation_id ? "cursor-pointer visible primary-text" : "invisible";
-
-			return (
-				<Tippy
-					animation="shift-away"
-					content={<Tooltip text="Download this quotation." />}
-					placement="bottom">
-					<FontAwesomeIcon
-						className={showDownloadButton}
-						icon={faFileDownload}
-						onClick={() => downloadQuotation(row.quotation_id)}
-						size="xs"
-					/>
-				</Tippy>
-			);
-		}
-	}
-
-	function uiExport() {
-		if (api.inquiries.data.length && api.inquiries.copy.length) {
-			return (
-				<button
-					className="primary-button-transparent-background"
-					onClick={doExcelExport}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faFileExcel}
-					/>
-				</button>
-			);
-		}
-	}
-
-	function calculateStatusCounts(list) {
-		const counts = {
-			[statuses.Closed]: 0,
-			[statuses.Confirmed]: 0,
-			[statuses.Hold]: 0,
-			[statuses.Open]: 0,
-		};
-
-		list.forEach((fe) => {
-			// if (counts.hasOwnProperty(fe.status)) {
-			// 	counts[fe.status]++;
-			// }
-
-			if (fe.status === statuses.Closed) {
-				counts.Closed++;
-			}
-
-			if (fe.status === statuses.Confirmed) {
-				counts.Confirmed++;
-			}
-
-			if (fe.status === statuses.Hold) {
-				counts.Hold++;
-			}
-
-			if (fe.status === statuses.Open) {
-				counts.Open++;
-			}
-		});
-
-		return counts;
-	}
-
-	function uiClearFilter() {
+	function uiFilter() {
 		return (
-			<FontAwesomeIcon
-				className="cursor-pointer outline-none focus:outline-none red-text"
-				icon={faFilterCircleXmark}
-				onClick={() => setMain((s) => ({ ...s, isStatus: false, statusFilter: "" }))}
-			/>
+			<Menu
+				as="div"
+				className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
+				<MenuButton className="flex w-full h-[30px] px-2 justify-between items-center font-regular-10 gray-text">
+					<span>{filter.status || "Status"}</span>
+					<FontAwesomeIcon icon={faChevronDown} />
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded z-50 contrast-background bottom-shadow full-border">{uiFilterMenuList()}</MenuItems>
+			</Menu>
 		);
 	}
 
 	function uiFilterMenuList() {
-		// Ensure we're showing the counts from the current filter state
 		return Object.entries(main.revisedStatuses).map(([key, value], i) => {
-			const isSelected = key === main.statusFilter;
+			const isSelected = key === filter.status;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
 
@@ -895,7 +779,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					as="div"
 					className={wrapper}
 					key={i}
-					onClick={() => setMain((s) => ({ ...s, statusFilter: key, isStatus: true }))}>
+					onClick={() => {
+						setFilter((s) => ({ ...s, status: key }));
+						setMain((s) => ({ ...s, isStatus: true }));
+					}}>
 					<span className="flex w-full justify-between items-center font-regular-11">
 						<span>{key}</span>
 						{value > 0 && <BadgeSmall value={value} />}
@@ -905,22 +792,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		});
 	}
 
-	function uiFilter() {
-		return (
-			<Menu
-				as="div"
-				className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
-				<MenuButton className="flex w-full h-[30px] px-2 justify-between items-center font-regular-10 gray-text">
-					<span>{main.statusFilter || "Status"}</span>
-					<FontAwesomeIcon icon={faChevronDown} />
-				</MenuButton>
-				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded z-50 contrast-background bottom-shadow full-border">{uiFilterMenuList()}</MenuItems>
-			</Menu>
-		);
-	}
-
 	function uiFind() {
-		if (api.inquiries.copy.length) {
+		if (inquiriesCopySize) {
 			return (
 				<TextInputNative
 					id="findBox"
@@ -930,7 +803,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					placeholder="Find"
 					showClearButton={showFindClearButton}
 					tabIndex={3}
-					value={main.findText}
+					value={filter.search}
 					width="w-36"
 				/>
 			);
@@ -938,7 +811,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function uiFromDate() {
-		if (api.inquiries.copy.length) {
+		if (inquiriesCopySize) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
 					<FontAwesomeIcon
@@ -950,14 +823,14 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						className="w-20 h-6 bg-transparent outline-none font-regular-10"
 						dateFormat="dd-MM-YYYY"
 						dropdownMode="select"
-						endDate={main.filter.to}
+						endDate={filter.to}
 						onChange={(e) => setInputs("from", e)}
 						peekNextMonth
 						placeholderText="From"
 						tabIndex={1}
-						selected={main.filter.from}
+						selected={filter.from}
 						selectsStart
-						startDate={main.filter.from}
+						startDate={filter.from}
 						showMonthDropdown
 						showYearDropdown
 					/>
@@ -971,28 +844,55 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		}
 	}
 
+	function uiHeaders() {
+		return Object.values(headers).map((m, i) => {
+			const showSortArrow = m == main.sort.column ? "block" : "hidden";
+			return (
+				<span
+					className="flex w-[12.50%] cursor-pointer justify-center items-center font-medium-10"
+					key={i}>
+					<div
+						className="flex w-full space-x-2 justify-center items-center text-white"
+						onClick={() => setSort(m)}>
+						<span>{m}</span>
+						<span className={showSortArrow}>{uiSortArrows(m)}</span>
+					</div>
+				</span>
+			);
+		});
+	}
+
 	function uiMain() {
 		if (mounted.addQuotation) {
 			return (
 				<DynamicNewQuotation
 					clients={api.clients}
 					inquiry={main.selectedInquiryForNotes}
-					reload={reloadSupportData}
+					reload={getSupportData}
 					unmount={toggleAddQuotation}
+				/>
+			);
+		} else if (mounted.editQuotation) {
+			return (
+				<DynamicEditQuotation
+					clients={api.clients}
+					inquiry={main.selectedInquiryForNotes}
+					reload={getSupportData}
+					unmount={toggleEditQuotation}
 				/>
 			);
 		} else if (mounted.editInquiry) {
 			return (
 				<DynamicEditInquiry
 					inquiry={main.selectedInquiryForNotes}
-					reload={reloadSupportData}
+					reload={getSupportData}
 					unmount={toggleEditInquiryView}
 				/>
 			);
 		} else if (mounted.newInquiry) {
 			return (
 				<DynamicNewInquiry
-					reload={reloadSupportData}
+					reload={getSupportData}
 					unmount={toggleNewInquiryView}
 				/>
 			);
@@ -1000,7 +900,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			return (
 				<DynamicNewProject
 					inquiry={main.selectedInquiryForStatusChange}
-					reload={reloadSupportData}
+					reload={getSupportData}
 					unmount={closeNewProjectView}
 				/>
 			);
@@ -1009,7 +909,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<DynamicNotes
 					clients={api.clients}
 					inquiry={main.selectedInquiryForNotes}
-					reload={reloadSupportData}
+					reload={getSupportData}
 					unmount={toggleNotesView}
 				/>
 			);
@@ -1017,66 +917,31 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			return (
 				<>
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
-						<div className="flex w-[250px] space-x-2 justify-start items-center">
+						<div className="flex w-[30%] space-x-2 justify-start items-center">
 							<span className="view-heading">{thisView}</span>
 							{getIconOrBadge()}
 						</div>
-						<div className="flex w-full justify-between items-center">
-							<div className="flex w-1/3 space-x-2.5 justify-center items-center">
-								{uiFromDate()}
-								{uiToDate()}
-							</div>
-							<div className="flex w-1/3 space-x-2.5 justify-center items-center">
-								{uiFind()}
-								{uiFilter()}
-								<Tippy
-									content={<Tooltip text={`Clear filters`} />}
-									placement="bottom">
-									{uiClearFilter()}
-								</Tippy>
-							</div>
-							<div className="flex w-1/3 space-x-2.5 justify-center items-center">
-								{uiNew()}
-								{uiExport()}
-							</div>
+						<div className="flex w-[70%] space-x-2 justify-start items-center">
+							{uiFromDate()}
+							{uiToDate()}
+							{uiFind()}
+							{uiFilter()}
+							<Tippy
+								content={<Tooltip text="Clear filters" />}
+								placement="bottom">
+								{uiClearFilter()}
+							</Tippy>
 						</div>
 					</div>
-					<div className="flex w-full h-full justify-center items-center">{uiBody}</div>
+					<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
 				</>
 			);
 		}
 	}
 
-	function uiNew() {
-		return (
-			<button
-				className={newInquiryButton}
-				onClick={toggleNewInquiryView}>
-				<FontAwesomeIcon icon={faPlusCircle} />
-				<span>New</span>
-			</button>
-		);
-	}
-
-	function uiNotes(getStatusSeverityBackground, getTotalNotesByInquiry, row, toggleNotesView) {
-		const totalNotes = getTotalNotesByInquiry(row.id);
-		const wrapper = totalNotes > 0 ? "cursor-pointer primary-text" : "cursor-default black-text";
-
-		return (
-			<span
-				className={wrapper}
-				onClick={() => totalNotes && toggleNotesView(row, true)}>
-				<BadgeSmallWithBackground
-					style={getStatusSeverityBackground(row.status)}
-					value={totalNotes}
-				/>
-			</span>
-		);
-	}
-
-	function uiProjects(childLabelStyle, findText, MyGlobal, parentLabelStyle, row, style) {
-		const mainProject = MyGlobal.HighlightText(row.main_project, findText);
-		const subProject = MyGlobal.HighlightText(row.sub_project, findText);
+	function uiProjects(childLabelStyle, parentLabelStyle, row, style) {
+		const mainProject = MyGlobal.HighlightText(row.main_project, filter.search);
+		const subProject = MyGlobal.HighlightText(row.sub_project, filter.search);
 
 		return (
 			<div className={style}>
@@ -1092,29 +957,72 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		);
 	}
 
-	function uiQuote(childStyle, findText, MyGlobal, row, style, toggleAddQuotation, uiAddQuotation, uiDownloadQuotation) {
-		const quote = MyGlobal.HighlightText(row.quote, findText);
-
-		const wrapper = style + " !flex-row space-x-2 font-bold-12";
-		const quotationBlockStyle = childStyle + " !w-3/5 !justify-start space-x-2.5";
+	function uiQuote(row, style) {
+		const quote = MyGlobal.HighlightText(row.quote, filter.search);
+		const itemStyle = "flex w-full p-2 space-x-2 justify-start items-center rounded cursor-pointer hover:transition-all font-regular-11 text-white";
 
 		return (
-			<div className={wrapper}>
-				<span
-					className="flex w-4/5 justify-end items-center"
-					dangerouslySetInnerHTML={{ __html: MyGlobal.FormatCurrency(quote) }}
-				/>
-				<div className={quotationBlockStyle}>
-					{uiAddQuotation(row, toggleAddQuotation)}
-					{uiDownloadQuotation(row)}
-				</div>
+			<div className={`${style} cursor-help`}>
+				<Tippy
+					className="!shadow !py-2"
+					content={
+						<div className="flex flex-col space-y-1 justify-center items-center">
+							{(isAdministrator || allowQuotation) && (
+								<div
+									className={`${itemStyle} hover:bg-blue-500`}
+									onClick={() => toggleAddQuotation(row, true)}>
+									<FontAwesomeIcon
+										className="w-5"
+										icon={faPlus}
+										size="1x"
+									/>
+									<span>New Quotation</span>
+								</div>
+							)}
+							{isAdministrator && row.quotation_id && (
+								<div
+									className={`${itemStyle} hover:bg-emerald-500`}
+									onClick={() => toggleEditQuotation(row, true)}>
+									<FontAwesomeIcon
+										className="w-5"
+										icon={faPen}
+										size="1x"
+									/>
+									<span>Edit Quotation</span>
+								</div>
+							)}
+							{isAdministrator && row.quotation_id && (
+								<div
+									className={`${itemStyle} hover:bg-amber-500`}
+									onClick={() => downloadQuotation(row.quotation_id)}>
+									<FontAwesomeIcon
+										className="w-5"
+										icon={faDownload}
+										size="1x"
+									/>
+									<span>Download Quotation</span>
+								</div>
+							)}
+						</div>
+					}
+					interactive
+					placement="bottom"
+					theme="dark"
+					trigger="mouseenter"
+					animation="shift-toward"
+					appendTo={() => document.body}>
+					<span
+						className="flex w-fit justify-center items-center font-bold-12 hover:p-2 hover:bg-slate-200 hover:rounded-full hover:w-fit"
+						dangerouslySetInnerHTML={{ __html: MyGlobal.FormatCurrency(quote) }}
+					/>
+				</Tippy>
 			</div>
 		);
 	}
 
-	function uiReferences(childLabelStyle, findText, MyGlobal, parentLabelStyle, row, style) {
-		const referenceName = MyGlobal.HighlightText(row.reference_name, findText);
-		const entryBy = MyGlobal.HighlightText(row.entry_by_name, findText);
+	function uiReferences(childLabelStyle, parentLabelStyle, row, style) {
+		const referenceName = MyGlobal.HighlightText(row.reference_name, filter.search);
+		const entryBy = MyGlobal.HighlightText(row.entry_by_name, filter.search);
 
 		const wrapper = style + " cursor-help";
 
@@ -1136,6 +1044,46 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						dangerouslySetInnerHTML={{ __html: entryBy }}
 					/>
 				</Tippy>
+			</div>
+		);
+	}
+
+	function uiRows(row) {
+		const style = "flex flex-col w-[12.50%] justify-center items-center text-center";
+		const childStyle = "flex w-full justify-center items-center";
+
+		const fancyRightBorderStyle = "absolute w-3 h-[50px] rounded-tr-full rounded-br-full " + getStatusSeverityBackground2(row.status) + " -left-1";
+
+		const parentLabelStyle = childStyle + " font-bold-12";
+		const childLabelStyle = childStyle + " gray-text";
+
+		const avatarWrapper = style + " !flex-row space-x-1";
+
+		const followUpsNames = String(row.follow_ups).split(",");
+
+		return (
+			<div
+				className="flex w-full py-3 justify-center items-center contrast-background bottom-border font-regular-10 black-text relative"
+				key={row.id}>
+				<span className={fancyRightBorderStyle} />
+
+				{uiClientAndInquiryDate(childStyle, row, style)}
+
+				{uiContactDetails(childStyle, row, style)}
+
+				{uiProjects(childLabelStyle, parentLabelStyle, row, style)}
+
+				<span className={avatarWrapper}>
+					<AvatarCircle names={followUpsNames} />
+				</span>
+
+				{uiQuote(row, style)}
+
+				<span className={`${style} font-bold-12`}>{row.next_follow_up_on}</span>
+
+				{uiStatus(childStyle, row, style)}
+
+				{uiReferences(childLabelStyle, parentLabelStyle, row, style)}
 			</div>
 		);
 	}
@@ -1177,7 +1125,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function uiSortArrows(column) {
-		if (main.sort.column == column) {
+		if (main.sort.column === column) {
 			if (main.sort.isAscending) {
 				return (
 					<FontAwesomeIcon
@@ -1198,61 +1146,21 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		}
 	}
 
-	function uiStatus(childStyle, getStatusSeverityBackground, getTotalNotesByInquiry, row, style, uiNotes, uiStatusMenu, toggleNotesView) {
-		const wrapper = style + " !flex-row space-x-2";
+	function uiStatus(childStyle, row, style) {
+		const wrapper = style + " !flex-row";
 		const childElementsStyle = childStyle + " !w-fit";
 
 		return (
 			<div className={wrapper}>
 				<span className={childElementsStyle}>{uiStatusMenu(row)}</span>
-				<span className={childElementsStyle}>{uiNotes(getStatusSeverityBackground, getTotalNotesByInquiry, row, toggleNotesView)}</span>
 			</div>
 		);
 	}
 
-	function uiStatusFilter() {
-		return (
-			<Menu
-				as="div"
-				className="w-fit relative text-left">
-				<MenuButton className="flex w-full justify-between items-center focus:outline-none relative z-40">
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faFilter}
-						size="sm"
-					/>
-				</MenuButton>
-				<MenuItems className="absolute w-fit right-0 origin-top-right rounded contrast-background shadow-md focus:outline-none z-50">{uiStatusFilterMenu()}</MenuItems>
-			</Menu>
-		);
-	}
-
-	function uiStatusFilterMenu() {
-		const uniqueStatus = [];
-
-		api.inquiries.copy.forEach((fe) => {
-			if (!uniqueStatus.includes(fe.status)) {
-				uniqueStatus.push(fe.status);
-			}
-		});
-
-		return uniqueStatus.map((m, i) => {
-			return (
-				<MenuItem
-					as="div"
-					className="w-full p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text hovered-rows"
-					key={i}
-					onClick={() => setMain((s) => ({ ...s, statusFilter: m, isStatus: true }))}>
-					<span>{m}</span>
-				</MenuItem>
-			);
-		});
-	}
-
 	function uiStatusMenu(row) {
-		const isConfirmed = row.status == statuses.Confirmed;
+		const isConfirmed = row.status === statuses.Confirmed;
 
-		const wrapper = `flex w-full space-x-2.5 justify-between items-center focus:outline-none relative z-40 font-medium-12 ${getStatusSeverity(row.status)}`;
+		const wrapper = "flex w-full space-x-2.5 justify-between items-center focus:outline-none relative z-40 font-medium-10 " + getStatusSeverity(row.status);
 
 		const icon = !isConfirmed && (
 			<FontAwesomeIcon
@@ -1261,10 +1169,13 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			/>
 		);
 
+		const totalNotes = getTotalNotesByInquiry(row.id);
+		const notesWrapper = totalNotes > 0 ? "cursor-pointer primary-text" : "cursor-default black-text";
+
 		return (
 			<Tippy
 				content={<Tooltip text={row.closure_reason} />}
-				disabled={row.is_closed == 0 && !row.closure_reason}
+				disabled={row.is_closed === 0 && !row.closure_reason}
 				placement="bottom">
 				<Menu
 					as="div"
@@ -1273,6 +1184,14 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						<span dangerouslySetInnerHTML={{ __html: highlightText(true, row.status) }} />
 						{icon}
 					</MenuButton>
+					<span
+						className={`absolute ${notesWrapper} -top-3 -right-3 z-50`}
+						onClick={() => totalNotes && toggleNotesView(row, true)}>
+						<BadgeSmallWithBackground
+							style={getStatusSeverityBackground(row.status)}
+							value={totalNotes}
+						/>
+					</span>
 					{!isConfirmed && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStatusMenuList(row)}</MenuItems>}
 				</Menu>
 			</Tippy>
@@ -1281,16 +1200,13 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiStatusMenuList(row) {
 		return Object.values(statuses)
-			.filter((f) => f != row.status)
+			.filter((f) => f !== row.status)
 			.filter((f) => {
-				if (f == statuses.Confirmed && !allowConvertingToProject) {
-					return f != statuses.Confirmed;
-				}
-
+				if (f === statuses.Confirmed && !allowConvertingToProject) return f !== statuses.Confirmed;
 				return f;
 			})
 			.map((m, i) => {
-				const label = m == statuses.Closed ? "Close" : m == statuses.Confirmed ? "Confirm" : m;
+				const label = m === statuses.Closed ? "Close" : m === statuses.Confirmed ? "Confirm" : m;
 
 				return (
 					<MenuItem
@@ -1305,7 +1221,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function uiToDate() {
-		if (api.inquiries.copy.length) {
+		if (inquiriesCopySize) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
 					<FontAwesomeIcon
@@ -1317,13 +1233,13 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						className="w-20 h-6 bg-transparent outline-none font-regular-10"
 						dateFormat="dd-MM-YYYY"
 						dropdownMode="select"
-						endDate={main.filter.to}
+						endDate={filter.to}
 						onChange={(e) => setInputs("to", e)}
 						placeholderText="To"
 						peekNextMonth
-						selected={main.filter.to}
+						selected={filter.to}
 						selectsEnd
-						startDate={main.filter.to}
+						startDate={filter.to}
 						showMonthDropdown
 						showYearDropdown
 						tabIndex={2}
@@ -1340,7 +1256,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	// Hooks
 	useEffect(() => {
-		setSupportData();
+		getSupportData();
 		globalThis.addEventListener("keydown", detectKeystrokes);
 
 		return () => {
@@ -1350,36 +1266,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}, []);
 
 	useEffect(() => {
-		if (!mounted.notes && currentScrollPositionReference.current) {
-			const savedIndex = getScrollPosition("inquiries");
-			currentScrollPositionReference.current.scrollToIndex({
-				index: savedIndex,
-				align: "nearest",
-				behavior: "auto", // or "smooth" if you like
-			});
+		if (inquiries.merged.length) {
+			const filtered = doFiltering(inquiries.merged);
+			setInquiries((s) => ({ ...s, data: filtered }));
 		}
-	}, [mounted.notes]);
-
-	useEffect(() => {
-		// Only run filtering when mergedWithNotes is available
-		if (api.inquiries.mergedWithNotes.length) {
-			const filtered = filterMergedInquiries(api.inquiries.mergedWithNotes, {
-				from: main.filter.from,
-				to: main.filter.to,
-				findText: main.findText,
-				isStatus: main.isStatus,
-				statusFilter: main.statusFilter,
-			});
-
-			setApi((s) => ({
-				...s,
-				inquiries: {
-					...s.inquiries,
-					data: filtered,
-				},
-			}));
-		}
-	}, [main.findText, main.filter, main.isStatus, api.inquiries.mergedWithNotes, main.statusFilter]);
+	}, [inquiries.merged, filter, main.isStatus]);
 
 	useEffect(() => {
 		if (mounted.mainComponent) {
@@ -1388,6 +1279,18 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			}
 		}
 	}, [main.selectedInquiryForStatusChange]);
+
+	useEffect(() => {
+		if (!mounted.notes && currentScrollPositionReference.current) {
+			const savedIndex = getScrollPosition("inquiries");
+
+			currentScrollPositionReference.current.scrollToIndex({
+				index: savedIndex,
+				align: "nearest",
+				behavior: "auto",
+			});
+		}
+	}, [mounted.notes]);
 
 	if (mounted.myInquiries) {
 		return (
@@ -1407,7 +1310,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<DynamicUpdateStatus
 					inquiry={main.selectedInquiryForStatusChange}
 					mount={mounted.updateStatus}
-					reload={reloadSupportData}
+					reload={getSupportData}
 					unmount={toggleUpdateStatus}
 				/>
 			)}

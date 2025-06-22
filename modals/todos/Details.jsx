@@ -33,7 +33,7 @@ export default function Details({ mount, refresh, todo, unmount }) {
 				status: data.status,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Todos.EditTodo, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.Todos.EditDetails, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				refresh();
@@ -91,7 +91,19 @@ export default function Details({ mount, refresh, todo, unmount }) {
 	}
 
 	function uiNotes() {
-		return <TextArea icon={faNoteSticky} key={1} label="Notes" onChange={(e) => setValues("notes", e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={data.notes} width="w-full" />;
+		return (
+			<TextArea
+				icon={faNoteSticky}
+				key={1}
+				label="Notes"
+				onChange={(e) => setValues("notes", e.target.value)}
+				onKeyDown={() => {}}
+				rows={3}
+				tabIndex={1}
+				value={data.notes}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiPriority() {
@@ -124,7 +136,7 @@ export default function Details({ mount, refresh, todo, unmount }) {
 						comparingValue1=""
 						comparingValue2={data.status}
 						displayValue=""
-						filteredData={["Completed", "In-Progress", "Pending"]}
+						filteredData={["Completed", "InProgress", "Pending"]}
 						icon={faStar}
 						isReadOnly={false}
 						label="Status"
@@ -147,19 +159,32 @@ export default function Details({ mount, refresh, todo, unmount }) {
 		const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 		return (
-			<DialogTitle as="h2" className={titleBarStyle}>
+			<DialogTitle
+				as="h2"
+				className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">To-Do Details</span>
-				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount()} />
+				<FontAwesomeIcon
+					className="cursor-pointer"
+					icon={faXmark}
+					onClick={() => unmount()}
+				/>
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
+		<Dialog
+			as="div"
+			className="relative z-50"
+			open={mount}
+			onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setIsBoxDragged(!isBoxDragged)} onStop={() => setIsBoxDragged(!isBoxDragged)}>
+				<Draggable
+					handle=".draggable-handle"
+					onStart={() => setIsBoxDragged(!isBoxDragged)}
+					onStop={() => setIsBoxDragged(!isBoxDragged)}>
 					<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full p-6 space-y-6 justify-between items-center">
@@ -175,7 +200,9 @@ export default function Details({ mount, refresh, todo, unmount }) {
 							{uiNotes()}
 						</div>
 						<footer className="dialog-footer">
-							<button className="primary-button-condensed" onClick={() => saveTodo()}>
+							<button
+								className="primary-button-condensed"
+								onClick={() => saveTodo()}>
 								{uiSaveButton()}
 							</button>
 						</footer>

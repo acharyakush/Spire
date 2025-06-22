@@ -12,17 +12,37 @@ import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { EditCompany } from "@/modals/singleClient";
 import { TextInputNative } from "@/components/Inputs";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SpinnerSmall, Tooltip, UsersTooltipList } from "@/components/Elements";
-import { faCalendar, faChevronLeft, faCloudUpload, faEnvelope, faFileExcel, faIdBadge, faMultiply, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faUserTag } from "@fortawesome/free-solid-svg-icons";
+import {
+	faCalendar,
+	faCamera,
+	faCameraAlt,
+	faCameraRetro,
+	faCameraRotate,
+	faChevronLeft,
+	faCloudUpload,
+	faEnvelope,
+	faFileExcel,
+	faIdBadge,
+	faMultiply,
+	faPencil,
+	faSearch,
+	faSortAmountAsc,
+	faSortAmountDesc,
+	faUserTag,
+	faVideoCamera,
+} from "@fortawesome/free-solid-svg-icons";
+import html2canvas from "html2canvas";
 
 export default function SingleClient({ client, unmount }) {
 	// Business Logic
+	const captureRef = useRef();
 	const headers = MyConstants.TableHeaders.SingleClient;
 
 	const [api, setApi] = useState({
@@ -68,6 +88,31 @@ export default function SingleClient({ client, unmount }) {
 	const showToDateClearButton = main.filter.date.to ? "cursor-pointer primary-text" : "hidden";
 
 	// Functions
+	async function captureScreenshot() {
+		const element = captureRef.current;
+
+		if (!element) return;
+
+		const canvas = await html2canvas(element, {
+			scale: 1,
+			useCORS: true,
+		});
+
+		canvas.toBlob(async (blob) => {
+			try {
+				await navigator.clipboard.write([
+					new ClipboardItem({
+						[blob.type]: blob,
+					}),
+				]);
+
+				MyGlobal.ShowSuccessToast("Screenshot copied to clipboard.");
+			} catch (err) {
+				console.error("Failed to copy screenshot: ", err);
+			}
+		});
+	}
+
 	function doExcelExport() {
 		const records = [];
 		const _records = [];
@@ -501,7 +546,10 @@ export default function SingleClient({ client, unmount }) {
 				<SpinnerSmall />
 			</span>
 		) : (
-			<FontAwesomeIcon className="primary-text" icon={faCloudUpload} />
+			<FontAwesomeIcon
+				className="primary-text"
+				icon={faCloudUpload}
+			/>
 		);
 
 		return (
@@ -509,29 +557,52 @@ export default function SingleClient({ client, unmount }) {
 				<div className="flex w-4/5 space-x-2.5 justify-start items-center">
 					<span className="view-heading !text-lg">{client.name}</span>
 					<span className={wrapper}>
-						<FontAwesomeIcon className="primary-text" icon={faIdBadge} />
+						<FontAwesomeIcon
+							className="primary-text"
+							icon={faIdBadge}
+						/>
 						<span>{client.id}</span>
 					</span>
-					<span className={wrapper} onClick={() => openWhatsApp(client.phone_number)}>
-						<FontAwesomeIcon className="primary-text" icon={faWhatsapp} />
+					<span
+						className={wrapper}
+						onClick={() => openWhatsApp(client.phone_number)}>
+						<FontAwesomeIcon
+							className="primary-text"
+							icon={faWhatsapp}
+						/>
 						<span>{client.phone_number}</span>
 					</span>
-					<span className={wrapper} onClick={() => openEmailAddress(client.email_address)}>
-						<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
+					<span
+						className={wrapper}
+						onClick={() => openEmailAddress(client.email_address)}>
+						<FontAwesomeIcon
+							className="primary-text"
+							icon={faEnvelope}
+						/>
 						<span>{client.email_address}</span>
 					</span>
 					<span className={wrapper}>
-						<FontAwesomeIcon className="primary-text" icon={faUserTag} />
+						<FontAwesomeIcon
+							className="primary-text"
+							icon={faUserTag}
+						/>
 						<span>{api.referenceName}</span>
 					</span>
-					<span className={wrapper} onClick={() => toggleFilesView()}>
+					<span
+						className={wrapper}
+						onClick={() => toggleFilesView()}>
 						{uploadedFilesIcon}
 						<span>{uiUploadedFiles()}</span>
 					</span>
 				</div>
 				<div className="flex w-1/5 space-x-2.5 justify-end items-center cursor-pointer font-regular-10 primary-text">
-					<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
-						<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
+					<button
+						className="primary-button-transparent-background"
+						onClick={() => doExcelExport()}>
+						<FontAwesomeIcon
+							className="primary-text"
+							icon={faFileExcel}
+						/>
 					</button>
 				</div>
 			</div>
@@ -548,7 +619,10 @@ export default function SingleClient({ client, unmount }) {
 			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedCompanyStyle} font-regular-10 hovered-rows`;
 
 			return (
-				<button className={wrapper} key={i} onClick={() => setSelectedCompany(m, i)}>
+				<button
+					className={wrapper}
+					key={i}
+					onClick={() => setSelectedCompany(m, i)}>
 					<span>{m.name}</span>
 				</button>
 			);
@@ -584,7 +658,9 @@ export default function SingleClient({ client, unmount }) {
 			.map((m, i) => {
 				if (main.selectedCompany.id != 0) {
 					return (
-						<span className="flex w-[9.09%] justify-center items-center text-white font-medium-12" key={i}>
+						<span
+							className="flex w-[9.09%] justify-center items-center text-white font-medium-12"
+							key={i}>
 							<span>{i == 5 && totalValues.invoiceFees}</span>
 							<span>{i == 6 && totalValues.reimburseVoucher}</span>
 							<span>{i == 7 && totalValues.amountReceived}</span>
@@ -594,7 +670,9 @@ export default function SingleClient({ client, unmount }) {
 					);
 				} else {
 					return (
-						<span className="flex w-[8.33%] justify-center items-center text-white font-medium-12" key={i}>
+						<span
+							className="flex w-[8.33%] justify-center items-center text-white font-medium-12"
+							key={i}>
 							<span>{i == 6 && totalValues.invoiceFees}</span>
 							<span>{i == 7 && totalValues.reimburseVoucher}</span>
 							<span>{i == 8 && totalValues.amountReceived}</span>
@@ -609,7 +687,11 @@ export default function SingleClient({ client, unmount }) {
 	function uiFromDate() {
 		return (
 			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded shadow contrast-background">
-				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<FontAwesomeIcon
+					className="primary-text"
+					icon={faCalendar}
+					size="sm"
+				/>
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-medium-11"
 					dateFormat="dd-MM-YYYY"
@@ -625,7 +707,11 @@ export default function SingleClient({ client, unmount }) {
 					showMonthDropdown
 					showYearDropdown
 				/>
-				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
+				<FontAwesomeIcon
+					className={showFromDateClearButton}
+					onClick={() => setInputs("from", "")}
+					icon={faMultiply}
+				/>
 			</div>
 		);
 	}
@@ -644,7 +730,10 @@ export default function SingleClient({ client, unmount }) {
 				const wrapper = `flex ${width} h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-10`;
 
 				return (
-					<span className={wrapper} onClick={() => setSort(m)} key={i}>
+					<span
+						className={wrapper}
+						onClick={() => setSort(m)}
+						key={i}>
 						<span>{m}</span>
 						<span className={showArrow}>{uiSortArrows(m)}</span>
 					</span>
@@ -661,7 +750,11 @@ export default function SingleClient({ client, unmount }) {
 			return (
 				<>
 					<div className="flex w-full px-5 py-2.5 space-x-3 justify-center items-center">
-						<FontAwesomeIcon className="cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
+						<FontAwesomeIcon
+							className="cursor-pointer black-text"
+							icon={faChevronLeft}
+							onClick={() => unmount()}
+						/>
 						{uiClientDetails()}
 					</div>
 					<div className="flex flex-col w-full h-full space-y-2 justify-start items-center">
@@ -670,9 +763,19 @@ export default function SingleClient({ client, unmount }) {
 							<div className="flex w-[90%] justify-between items-center">
 								<div className={selectedCompanyNameStyle}>
 									<span className="view-heading !text-lg">{main.selectedCompany.name}</span>
-									<FontAwesomeIcon className={showEditCompanyIcon} icon={faPencil} onClick={() => toggleEditCompanyBox()} size="sm" />
+									<FontAwesomeIcon
+										className={showEditCompanyIcon}
+										icon={faPencil}
+										onClick={() => toggleEditCompanyBox()}
+										size="sm"
+									/>
 								</div>
 								<div className="flex w-1/2 space-x-5 justify-end items-center">
+									<FontAwesomeIcon
+										className="cursor-pointer p-2 hover:w-fit hover:p-2 hover:bg-blue-500 hover:text-white hover:rounded-full hover:transition-all duration-500"
+										icon={faCamera}
+										onClick={() => captureScreenshot()}
+									/>
 									{uiFromDate()}
 									{uiToDate()}
 									{uiFind()}
@@ -681,9 +784,16 @@ export default function SingleClient({ client, unmount }) {
 						</div>
 						<div className="flex w-full h-full px-5 space-x-5 justify-center items-start">
 							<div className="flex flex-col w-[10%] space-y-2.5 justify-start items-center">{uiCompanies()}</div>
-							<div className="flex flex-col w-[90%] h-full justify-start items-center full-border">
+							<div
+								className="flex flex-col w-[90%] h-full justify-start items-center full-border"
+								ref={captureRef}>
 								<div className="flex w-full primary-background">{uiHeaders()}</div>
-								<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.data.length} />
+								<Virtuoso
+									className="w-full h-full overflow-y-auto bottom-border contrast-background"
+									data={doSorting()}
+									itemContent={(i, row) => uiRows(row, i)}
+									totalCount={api.projects.data.length}
+								/>
 								<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 							</div>
 						</div>
@@ -716,48 +826,91 @@ export default function SingleClient({ client, unmount }) {
 		const totalFeesStyle = `${style} font-semibold-11 ${totalFeesColour}`;
 
 		return (
-			<div className="flex w-full justify-center items-center black-white-background bottom-border font-regular-11 black-text" key={i}>
-				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.id, main.filter.find) }} />
+			<div
+				className="flex w-full justify-center items-center black-white-background bottom-border font-regular-11 black-text"
+				key={i}>
+				<span
+					className={style}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.id, main.filter.find) }}
+				/>
 
-				<Tippy content={<Tooltip text={dayjs(row.started_on).format("hh:mm:ss A")} />} placement="bottom">
+				<Tippy
+					content={<Tooltip text={dayjs(row.started_on).format("hh:mm:ss A")} />}
+					placement="bottom">
 					<span className={tooltipStyle}>{dayjs(row.started_on).format("DD/MM/YYYY")}</span>
 				</Tippy>
 
-				<Tippy content={<Tooltip text={row.main_project_name} />} placement="bottom">
-					<span className={`${tooltipStyle} cursor-pointer`} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.sub_project_name, main.filter.find) }} onClick={() => toggleSingleProjectView(row)} />
+				<Tippy
+					content={<Tooltip text={row.main_project_name} />}
+					placement="bottom">
+					<span
+						className={`${tooltipStyle} cursor-pointer`}
+						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.sub_project_name, main.filter.find) }}
+						onClick={() => toggleSingleProjectView(row)}
+					/>
 				</Tippy>
 
-				{main.selectedCompany.id == 0 && <span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.company_name, main.filter.find) }} />}
+				{main.selectedCompany.id == 0 && (
+					<span
+						className={style}
+						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.company_name, main.filter.find) }}
+					/>
+				)}
 
-				<Tippy content={<UsersTooltipList list={row.teams} />} placement="bottom">
+				<Tippy
+					content={<UsersTooltipList list={row.teams} />}
+					placement="bottom">
 					<span className={`${style} space-x-1 cursor-help primary-text`}>{row.teams.length}</span>
 				</Tippy>
 
-				<Tippy content={<Tooltip text={row.invoice_firm_name} />} placement="bottom">
-					<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_firm_initials, main.filter.find) }} />
+				<Tippy
+					content={<Tooltip text={row.invoice_firm_name} />}
+					placement="bottom">
+					<span
+						className={style}
+						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_firm_initials, main.filter.find) }}
+					/>
 				</Tippy>
 
-				<span className={invoiceFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_fees, main.filter.find) }} />
+				<span
+					className={invoiceFeesStyle}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_fees, main.filter.find) }}
+				/>
 
-				<span className={rvFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.reimburse_voucher, main.filter.find) }} />
+				<span
+					className={rvFeesStyle}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.reimburse_voucher, main.filter.find) }}
+				/>
 
 				<div className={`${style} space-x-2 relative`}>
-					<Tippy content={<Tooltip text={`Invoice - ${row.invoice_amount_received}\n, RV - ${row.rv_amount_received}`} />} placement="bottom">
-						<span className={`${amountReceivedStyle} w-4/5 underline underline-offset-4 cursor-help`} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_received, main.filter.find) }} />
-					</Tippy>
-					<Tippy content={<Tooltip text="Edit this amount." />} placement="bottom">
-						<span className="absolute w-1/5 left-16 cursor-pointer">
-							<FontAwesomeIcon icon={faPencil} onClick={() => editReceivedAmount(row)} size="xs" />
-						</span>
+					<Tippy
+						content={<Tooltip text={`Invoice - ${row.invoice_amount_received}\n, RV - ${row.rv_amount_received}`} />}
+						placement="bottom">
+						<span
+							className={`${amountReceivedStyle} w-4/5 underline underline-offset-4 cursor-help`}
+							dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_received, main.filter.find) }}
+						/>
 					</Tippy>
 				</div>
 
-				<span className={amountPendingStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_pending, main.filter.find) }} />
+				<span
+					className={amountPendingStyle}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_pending, main.filter.find) }}
+				/>
 
-				<span className={totalFeesStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.total_fees, main.filter.find) }} />
+				<span
+					className={totalFeesStyle}
+					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.total_fees, main.filter.find) }}
+				/>
 
-				<Tippy content={<Tooltip text={row.completed_on} />} disabled={row.status != "Completed"} placement="bottom">
-					<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.filter.find) }} />
+				<Tippy
+					content={<Tooltip text={row.completed_on} />}
+					disabled={row.status != "Completed"}
+					placement="bottom">
+					<span
+						className={tooltipStyle}
+						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.filter.find) }}
+					/>
 				</Tippy>
 			</div>
 		);
@@ -776,7 +929,11 @@ export default function SingleClient({ client, unmount }) {
 	function uiToDate() {
 		return (
 			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded shadow contrast-background">
-				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<FontAwesomeIcon
+					className="primary-text"
+					icon={faCalendar}
+					size="sm"
+				/>
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-medium-11"
 					dateFormat="dd-MM-YYYY"
@@ -792,7 +949,11 @@ export default function SingleClient({ client, unmount }) {
 					showMonthDropdown
 					showYearDropdown
 				/>
-				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
+				<FontAwesomeIcon
+					className={showToDateClearButton}
+					onClick={() => setInputs("to", "")}
+					icon={faMultiply}
+				/>
 			</div>
 		);
 	}
@@ -838,11 +999,33 @@ export default function SingleClient({ client, unmount }) {
 		<>
 			{uiMain()}
 
-			{mounted.editCompany && <EditCompany company={main.selectedCompany} mount={mounted.editCompany} reload={setSupportData} unmount={toggleEditCompanyBox} />}
+			{mounted.editCompany && (
+				<EditCompany
+					company={main.selectedCompany}
+					mount={mounted.editCompany}
+					reload={setSupportData}
+					unmount={toggleEditCompanyBox}
+				/>
+			)}
 
-			{mounted.uploadedFiles && <Files close={toggleFilesView} files={api.uploadedFiles} refresh={setUploadedFiles} thisClient={client} />}
+			{mounted.uploadedFiles && (
+				<Files
+					close={toggleFilesView}
+					files={api.uploadedFiles}
+					refresh={setUploadedFiles}
+					thisClient={client}
+				/>
+			)}
 
-			{mounted.singleProject && <SingleProject client={client} project={main.selectedProject} reload={setSupportData} source="Single Client => Single Project" unmount={toggleSingleProjectView} />}
+			{mounted.singleProject && (
+				<SingleProject
+					client={client}
+					project={main.selectedProject}
+					reload={setSupportData}
+					source="Single Client => Single Project"
+					unmount={toggleSingleProjectView}
+				/>
+			)}
 		</>
 	);
 }

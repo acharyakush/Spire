@@ -27,7 +27,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 
 	const [main, setMain] = useState({
 		company: { id: 0, name: "" },
-		invoiceFees: "",
+		invoiceFees: inquiry.quote,
 		invoiceFirm: { id: 0, name: "" },
 		mainProject: { id: 0, name: "" },
 		note: "",
@@ -297,7 +297,19 @@ export default function NewProject({ inquiry, reload, unmount }) {
 
 	// UI Components
 	function uiClient() {
-		return <TextInput icon={faUser} id="newProjectClientName" isReadOnly label="Client" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={inquiry.client_name} width="w-full" />;
+		return (
+			<TextInput
+				icon={faUser}
+				id="newProjectClientName"
+				isReadOnly
+				label="Client"
+				onChange={() => {}}
+				onKeyPress={() => {}}
+				tabIndex={1}
+				value={inquiry.client_name}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiCompany() {
@@ -389,11 +401,34 @@ export default function NewProject({ inquiry, reload, unmount }) {
 	}
 
 	function uiNotes() {
-		return <TextArea icon={faNoteSticky} key={1} label="Notes" onChange={(e) => setInputs("note", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={main.note} width="w-full" />;
+		return (
+			<TextArea
+				icon={faNoteSticky}
+				key={1}
+				label="Notes"
+				onChange={(e) => setInputs("note", e.target.value)}
+				onKeyDown={() => {}}
+				rows={2}
+				tabIndex={10}
+				value={main.note}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiPhoneNumber() {
-		return <TextInput icon={faPhone} isReadOnly label="Phone Number" onChange={() => {}} onKeyPress={() => {}} tabIndex={3} value={main.phoneNumber} width="w-full" />;
+		return (
+			<TextInput
+				icon={faPhone}
+				isReadOnly
+				label="Phone Number"
+				onChange={() => {}}
+				onKeyPress={() => {}}
+				tabIndex={3}
+				value={main.phoneNumber}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiPreview() {
@@ -415,11 +450,31 @@ export default function NewProject({ inquiry, reload, unmount }) {
 			label = `Quote (Original ${inquiry.quote})`;
 		}
 
-		return <TextInput icon={faIndianRupee} isReadOnly label={label} onChange={() => {}} onKeyPress={() => {}} tabIndex="8" value={MyGlobal.ThousandSeparator(main.quote)} width="w-full" />;
+		return (
+			<TextInput
+				icon={faIndianRupee}
+				isReadOnly
+				label={label}
+				onChange={() => {}}
+				onKeyPress={() => {}}
+				tabIndex="8"
+				value={MyGlobal.ThousandSeparator(main.quote)}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiRemarks() {
-		return <TextInput icon={faExclamationCircle} label="Remarks" onChange={(e) => setInputs("remarks", e.target.value)} tabIndex={6} value={main.remarks} width="w-full" />;
+		return (
+			<TextInput
+				icon={faExclamationCircle}
+				label="Remarks"
+				onChange={(e) => setInputs("remarks", e.target.value)}
+				tabIndex={6}
+				value={main.remarks}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiSubProjects() {
@@ -448,7 +503,9 @@ export default function NewProject({ inquiry, reload, unmount }) {
 
 	function uiTeams() {
 		return (
-			<div className="w-full" ref={teamsMenuRef}>
+			<div
+				className="w-full"
+				ref={teamsMenuRef}>
 				<ComboBoxWithChips
 					displayKey="full_name"
 					label="Teams"
@@ -499,7 +556,11 @@ export default function NewProject({ inquiry, reload, unmount }) {
 			<>
 				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
 					<div className="flex w-full space-x-2.5 justify-start items-center">
-						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
+						<FontAwesomeIcon
+							className="pr-1 cursor-pointer black-text"
+							icon={faChevronLeft}
+							onClick={() => unmount()}
+						/>
 						<div className="flex w-full justify-start items-center">
 							<span className="view-heading">New Project</span>
 						</div>
@@ -529,12 +590,20 @@ export default function NewProject({ inquiry, reload, unmount }) {
 					</div>
 				</div>
 				<footer className="w-full dialog-footer">
-					<button className={addButtonStyle} onClick={() => togglePreviewBox(false)}>
+					<button
+						className={addButtonStyle}
+						onClick={() => togglePreviewBox(false)}>
 						{uiPreview()}
 					</button>
 				</footer>
 
-				{mounted.preview && <NewProjectPreview mount={mounted.preview} project={{ ...main, inquiry }} unmount={togglePreviewBox} />}
+				{mounted.preview && (
+					<NewProjectPreview
+						mount={mounted.preview}
+						project={{ ...main, inquiry }}
+						unmount={togglePreviewBox}
+					/>
+				)}
 			</>
 		);
 	}

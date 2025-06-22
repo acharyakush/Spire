@@ -26,34 +26,35 @@ const getRandomPastel = (seed = 0) => {
 export function AvatarCircle({ name, names }) {
 	const people = Array.isArray(names) ? names : name ? [name] : [];
 
-	const renderAvatar = (person, index) => {
+	function renderAvatar(person, index) {
 		const initials = getInitials(person);
-		const bg = getRandomPastel(index);
+		let backgroundColour = getRandomPastel(index);
+
+		if (person === "Drashti Sharma") backgroundColour = "#D5E8D4";
+		if (person === "Abhishek Gor") backgroundColour = "#F2F4F4";
 
 		const style = {
-			backgroundColor: bg,
-			color: "#333",
-			width: 36,
-			height: 36,
+			backgroundColor: backgroundColour,
+			border: "1px solid rgba(0, 0, 0, 0.09)",
 			borderRadius: "50%",
-			border: "1px solid rgba(0, 0, 0, 0.05)",
-			display: "flex",
-			alignItems: "center",
-			justifyContent: "center",
-			userSelect: "none",
-			boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+			boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+			color: "#333",
 			marginLeft: index === 0 ? 0 : -7,
 			zIndex: people.length - index,
 		};
 
 		return (
-			<div className="font-medium-10" key={index} title={person} style={style}>
+			<div
+				className="flex w-9 h-9 justify-center items-center select-none font-medium-10"
+				key={index}
+				title={person}
+				style={style}>
 				{initials}
 			</div>
 		);
-	};
+	}
 
-	return <div style={{ display: "flex", alignItems: "center" }}>{people.map((person, i) => renderAvatar(person, i))}</div>;
+	return <div className="flex items-center">{people.map((m, i) => renderAvatar(m, i))}</div>;
 }
 
 export const Badge = ({ value }) => {
@@ -98,7 +99,9 @@ export const BadgeSmallGreen = ({ value }) => {
 
 export const BadgeSmallWithBackground = ({ style, value }) => {
 	return (
-		<span className={`flex min-w-7 h-7 px-2 justify-center items-center rounded-full font-medium-10 leading-none ${style.text} ${style.border} ${style.background}`} style={{ lineHeight: "1", fontFeatureSettings: "'tnum'" }}>
+		<span
+			className={`flex min-w-6 h-6 px-2 justify-center items-center rounded-full font-regular-10 leading-none ${style.text} ${style.border} ${style.background}`}
+			style={{ lineHeight: "1", fontFeatureSettings: "'tnum'" }}>
 			{value}
 		</span>
 	);
@@ -106,7 +109,9 @@ export const BadgeSmallWithBackground = ({ style, value }) => {
 
 export const BadgeSmallWithBackground2 = ({ style, value }) => {
 	return (
-		<span className={`flex min-w-5 h-5 px-1 justify-center items-center rounded-full font-medium-9 leading-none ${style.text} ${style.background}`} style={{ lineHeight: "1", fontFeatureSettings: "'tnum'" }}>
+		<span
+			className={`flex min-w-5 h-5 px-1 justify-center items-center rounded-full font-medium-9 leading-none ${style.text} ${style.background}`}
+			style={{ lineHeight: "1", fontFeatureSettings: "'tnum'" }}>
 			{value}
 		</span>
 	);
@@ -145,7 +150,9 @@ export const TooltipList = ({ payload }) => {
 					const name = String(m).trim();
 
 					return (
-						<div className="flex w-full py-1 space-x-1.5 justify-start items-center whitespace-pre" key={i}>
+						<div
+							className="flex w-full py-1 space-x-1.5 justify-start items-center whitespace-pre"
+							key={i}>
 							<span>{i + 1}.</span>
 							<span>{name}</span>
 						</div>
@@ -163,7 +170,9 @@ export const UsersTooltipList = ({ list }) => {
 		<div className="flex flex-col w-full p-1 justify-between items-center font-regular-11">
 			{_list.map((m, i) => {
 				return (
-					<div className="flex w-full space-x-2 py-px justify-between items-center whitespace-pre" key={i}>
+					<div
+						className="flex w-full space-x-2 py-px justify-between items-center whitespace-pre"
+						key={i}>
 						<span>{i + 1}</span>.<span>{m.full_name}</span>
 					</div>
 				);
@@ -174,7 +183,9 @@ export const UsersTooltipList = ({ list }) => {
 
 export const ErrorFallbackComponent = ({ error }) => {
 	return (
-		<div className="flex flex-col w-full h-full space-y-2 justify-center items-center red-background-transparent-01 font-medium-16 red-text" role="alert">
+		<div
+			className="flex flex-col w-full h-full space-y-2 justify-center items-center red-background-transparent-01 font-medium-16 red-text"
+			role="alert">
 			<span>There is a technical glitch. Contact help desk and give below message.</span>
 			<span className="flex space-x-2.5 font-regular-14">
 				<span>Reason ::</span>

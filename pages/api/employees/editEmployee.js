@@ -13,9 +13,17 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { designation, employee, employmentType, permissions, reportsTo, userId } = req.body;
+		const { designation, employee, employmentStatus, employmentType, permissions, reportsTo, userId } = req.body;
 
-		const result = await query(`UPDATE employees SET administrator_id=?, designation=?, employment_type=?, permissions=?, entry_by_id=? WHERE id=?`, [reportsTo.id, designation, employmentType, permissions, userId, employee.id]);
+		const result = await query(`UPDATE employees SET administrator_id=?, designation=?, employment_type=?, employment_status=?, permissions=?, entry_by_id=? WHERE id=?`, [
+			reportsTo.id,
+			designation,
+			employmentType,
+			employmentStatus,
+			permissions,
+			userId,
+			employee.id,
+		]);
 
 		if (result.affectedRows > 0) {
 			res.status(200).end();

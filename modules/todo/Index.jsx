@@ -13,174 +13,18 @@ import { MyGlobal } from "@/utilities/global";
 import { useEffect, useMemo, useState } from "react";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { AvatarCircle, Badge, BadgeSmall, Tooltip } from "@/components/Elements";
-import { faCheck, faClock, faClockRotateLeft, faCrown, faHistory, faHourglassEnd, faHourglassHalf, faInfoCircle, faPlusCircle, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faClockRotateLeft, faCrown, faFilterCircleXmark, faHourglassEnd, faHourglassHalf, faPencilAlt, faPlusCircle, faSearch, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, useDroppable, DragOverlay } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable, sortableKeyboardCoordinates, defaultAnimateLayoutChanges, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
 const DynamicAddToDo = dynamic(() => import("@/modals/todos/AddTodo"), { ssr: false });
+const DynamicDeleteTodo = dynamic(() => import("@/modals/todos/DeleteTodo"), { ssr: false });
+const DynamicEditTodo = dynamic(() => import("@/modals/todos/EditTodo"), { ssr: false });
 const DynamicDetails = dynamic(() => import("@/modals/todos/Details"), { ssr: false });
 
 const animateLayoutChanges = (args) => defaultAnimateLayoutChanges({ ...args, wasDragging: true });
-
-function Card({ item, column, activeCard, openDetailsBox }) {
-	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-		id: item.id,
-		data: { column },
-		animateLayoutChanges,
-	});
-
-	const isActive = activeCard?.id === item.id;
-
-	const style = {
-		boxShadow: isDragging ? "0 2px 6px rgba(0,0,0,0.1)" : "none",
-		transform: CSS.Transform.toString(transform),
-		transition: `${transition}, transform 250ms ease, margin 250ms ease`,
-		opacity: isDragging && isActive ? 0 : 1,
-		visibility: isDragging && isActive ? "hidden" : "visible",
-		zIndex: isDragging ? 999 : "auto",
-		pointerEvents: isDragging && isActive ? "none" : "auto",
-		cursor: "grab",
-		willChange: "transform, margin",
-	};
-
-	let svgFileName = "";
-	let dueDateTextColor = "";
-
-	const getAssignedToNames = MyGlobal.GetAnyDataFromId(item.assigned_to, "full_name");
-	const assignedToNames = String(getAssignedToNames).split(",");
-
-	function getBackgroundColour() {
-		switch (item.priority) {
-			case "Low":
-				svgFileName = "gray";
-				dueDateTextColor = "text-gray-800";
-				return "low-priority";
-			case "Medium":
-				svgFileName = "red";
-				dueDateTextColor = "text-red-800";
-				return "medium-priority";
-			case "High":
-				svgFileName = "orange";
-				dueDateTextColor = "text-orange-800";
-				return "high-priority";
-			case "Urgent":
-				svgFileName = "yellow";
-				dueDateTextColor = "text-yellow-800";
-				return "urgent-priority";
-		}
-	}
-
-	function getPriorityStyle() {
-		switch (item.priority) {
-			case "Low":
-				return "px-1.5 py-0.5 bg-gray-100 text-gray-800 text-xs font-medium rounded";
-			case "Medium":
-				return "px-1.5 py-0.5 bg-red-100 text-red-800 text-xs font-medium rounded";
-			case "High":
-				return "px-1.5 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded";
-			case "Urgent":
-				return "px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded";
-		}
-	}
-
-	const descriptionColour = item.priority === "Low" ? "text-black" : "text-white";
-	const descriptionStyle = `w-4/5 whitespace-pre-wrap font-medium-12 ${descriptionColour}`;
-
-	const container = `flex flex-col w-full h-full space-y-3 px-4 py-3 justify-between items-center bottom-border rounded-md transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1.5 hover:shadow-lg ${getBackgroundColour()}`;
-
-	const dueDateStyle = `font-regular-10 ${dueDateTextColor}`;
-
-	return (
-		<div
-			className={container}
-			ref={setNodeRef}
-			style={style}
-			{...attributes}
-			{...listeners}>
-			<div className="flex w-full justify-between items-center">
-				<span className={descriptionStyle}>{item.description}</span>
-				<div className="flex w-1/5 space-x-5 justify-end items-center">
-					{item.todays_task && (
-						<Tippy
-							animation="shift-away"
-							content={<Tooltip text={item.todays_task} />}
-							placement="bottom">
-							<FontAwesomeIcon
-								className="animate-bounce text-red-600"
-								icon={faCrown}
-								size="xl"
-							/>
-						</Tippy>
-					)}
-					<Tippy
-						animation="shift-away"
-						content={<Tooltip text={item.notes ?? "No notes entered."} />}
-						placement="bottom">
-						<img
-							src={`/information-circle-${svgFileName}.svg`}
-							alt="icon"
-							className="w-6 h-6 cursor-pointer"
-							onClick={(e) => {
-								e.stopPropagation();
-								openDetailsBox({ item });
-							}}
-						/>
-					</Tippy>
-				</div>
-			</div>
-			<div className="flex w-full justify-start items-center">
-				<AvatarCircle names={assignedToNames} />
-			</div>
-			<div className="flex w-full justify-between items-center">
-				<span className={dueDateStyle}>{item.due_date ? dayjs(item.due_date).format("DD MMM, YYYY") : ""}</span>
-				<span className={getPriorityStyle()}>{item.priority}</span>
-			</div>
-		</div>
-	);
-}
-
-function Column({ id, items, activeCard, openDetailsBox }) {
-	const { setNodeRef, isOver } = useDroppable({ id });
-
-	const icon = id === "pending" ? faClockRotateLeft : id === "inProgress" ? faHourglassHalf : faHourglassEnd;
-
-	const cardsAreaBackground = isOver ? "bg-[#e0f7fa]" : "bg-[#f9f9f9]";
-	const cardsAreaStyle = `flex flex-col gap-2.5 overflow-y-auto transition-all duration-200 ease-linear ${cardsAreaBackground}`;
-
-	return (
-		<div className="flex flex-col w-full h-full p-3 space-y-3 rounded justify-start bg-gray-50 border border-gray-300">
-			<div className="flex w-full px-3 justify-between items-center">
-				<div className="flex w-full space-x-2 justify-start items-center">
-					<FontAwesomeIcon icon={icon} />
-					<span className="font-semibold-14 capitalize">{id}</span>
-				</div>
-				{items.length > 0 && <Badge value={items.length} />}
-			</div>
-
-			<div
-				className={cardsAreaStyle}
-				ref={setNodeRef}>
-				<SortableContext
-					items={items.map((m) => m.id)}
-					strategy={verticalListSortingStrategy}>
-					<div className="flex flex-col px-3 space-y-4 overflow-visible">
-						{items.map((m) => (
-							<Card
-								key={m.id}
-								item={m}
-								column={id}
-								activeCard={activeCard}
-								openDetailsBox={openDetailsBox}
-							/>
-						))}
-					</div>
-				</SortableContext>
-			</div>
-		</div>
-	);
-}
 
 export default function Todos() {
 	// Business Logic
@@ -190,13 +34,15 @@ export default function Todos() {
 		completed: [],
 	};
 
+	const IsUserAdministrator = MyGlobal.IsUserAdministrator();
+
 	const [activeCard, setActiveCard] = useState(null);
 
 	const [columns, setColumns] = useState(initialTodos);
 	const [columnsCopy, setColumnsCopy] = useState(initialTodos);
 
 	const [isLoading, setIsLoading] = useState({ updateStatus: false });
-	const [mounted, setMounted] = useState({ addTodoBox: false, details: false });
+	const [mounted, setMounted] = useState({ addTodoBox: false, deleteTodo: false, editTodo: false, details: false });
 
 	const [statuses, setStatuses] = useState([
 		{ count: 0, label: "Today" },
@@ -207,7 +53,9 @@ export default function Todos() {
 	const [main, setMain] = useState({
 		find: "",
 		isLoading: false,
+		revisedStaff: [],
 		selectedTodo: {},
+		selectedStaff: { fullName: "", id: "" },
 		status: statuses.at(2).label,
 	});
 
@@ -222,33 +70,234 @@ export default function Todos() {
 		}),
 	);
 
-	const IsUserAdministrator = MyGlobal.IsUserAdministrator();
-
 	const thisView = MyConstants.Modules.Base.Todos;
 	const showFindClearButton = useMemo(() => (main.find ? "cursor-pointer primary-text" : "hidden"), [main.find]);
 
 	const totalCount = columns.completed.length + columns.inProgress.length + columns.pending.length;
 	const totalCopyCount = columnsCopy.completed.length + columnsCopy.inProgress.length + columnsCopy.pending.length;
 
+	function Card({ item, column, activeCard }) {
+		const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+			id: item.id,
+			data: { column },
+			animateLayoutChanges,
+		});
+
+		const isActive = activeCard?.id === item.id;
+
+		const style = {
+			boxShadow: isDragging ? "0 2px 6px rgba(0,0,0,0.1)" : "none",
+			transform: CSS.Transform.toString(transform),
+			transition: `${transition}, transform 250ms ease, margin 250ms ease`,
+			opacity: isDragging && isActive ? 0 : 1,
+			visibility: isDragging && isActive ? "hidden" : "visible",
+			zIndex: isDragging ? 999 : "auto",
+			pointerEvents: isDragging && isActive ? "none" : "auto",
+			cursor: "grab",
+			willChange: "transform, margin",
+		};
+
+		let svgFileName = "";
+		let dueDateTextColor = "";
+
+		const getAssignedToNames = MyGlobal.GetAnyDataFromId(item.assigned_to, "full_name");
+		const assignedToNames = String(getAssignedToNames).split(",");
+
+		function getBackgroundColour() {
+			switch (item.priority) {
+				case "Low":
+					svgFileName = "gray";
+					dueDateTextColor = "text-gray-900";
+					return "low-priority";
+				case "Medium":
+					svgFileName = "red";
+					dueDateTextColor = "text-red-900";
+					return "medium-priority";
+				case "High":
+					svgFileName = "orange";
+					dueDateTextColor = "text-orange-900";
+					return "high-priority";
+				case "Urgent":
+					svgFileName = "yellow";
+					dueDateTextColor = "text-yellow-900";
+					return "urgent-priority";
+			}
+		}
+
+		function getPriorityStyle() {
+			switch (item.priority) {
+				case "Low":
+					return "px-1.5 py-0.5 bg-gray-100 text-gray-900 text-xs font-medium rounded";
+				case "Medium":
+					return "px-1.5 py-0.5 bg-red-100 text-red-900 text-xs font-medium rounded";
+				case "High":
+					return "px-1.5 py-0.5 bg-orange-100 text-orange-900 text-xs font-medium rounded";
+				case "Urgent":
+					return "px-1.5 py-0.5 bg-yellow-100 text-yellow-900 text-xs font-medium rounded";
+			}
+		}
+
+		const descriptionColour = item.priority === "Low" ? "text-black" : "text-white";
+		const descriptionStyle = `w-4/5 h-10 font-medium-12 ${descriptionColour} overflow-hidden whitespace-nowrap text-ellipsis`;
+
+		const container = `flex flex-col w-full h-full space-y-3 px-4 py-3 justify-between items-center bottom-border rounded-md transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1.5 hover:shadow-lg ${getBackgroundColour()}`;
+
+		const dueDateStyle = `font-regular-10 ${dueDateTextColor}`;
+
+		return (
+			<div
+				className={container}
+				ref={setNodeRef}
+				style={style}
+				{...attributes}
+				{...listeners}>
+				<div className="flex w-full justify-between items-start">
+					<span
+						className={descriptionStyle}
+						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(item.description, main.find) }}
+					/>
+					<div className="flex w-1/5 space-x-3 justify-end items-center">
+						{item.todays_task && (
+							<Tippy
+								animation="shift-away"
+								content={<Tooltip text={item.todays_task} />}
+								placement="bottom">
+								<FontAwesomeIcon
+									className="animate-bounce text-red-600"
+									icon={faCrown}
+									size="xl"
+								/>
+							</Tippy>
+						)}
+						<Tippy
+							animation="shift-away"
+							content={<Tooltip text={item.notes ?? "No notes entered."} />}
+							placement="bottom">
+							<img
+								src={`/information-circle-${svgFileName}.svg`}
+								alt="icon"
+								className="w-5 h-5 cursor-pointer"
+								onClick={(e) => {
+									e.stopPropagation();
+									toggleDetails({ item });
+								}}
+							/>
+						</Tippy>
+						{IsUserAdministrator && (
+							<Tippy
+								animation="shift-away"
+								content={<Tooltip text="Edit" />}
+								placement="bottom">
+								<FontAwesomeIcon
+									className="cursor-pointer outline-none text-sky-600"
+									icon={faPencilAlt}
+									onClick={(e) => {
+										e.stopPropagation();
+										toggleEditTodo({ item });
+									}}
+								/>
+							</Tippy>
+						)}
+						{IsUserAdministrator && (
+							<Tippy
+								animation="shift-away"
+								content={<Tooltip text="Delete" />}
+								placement="bottom">
+								<FontAwesomeIcon
+									className="cursor-pointer outline-none text-red-600"
+									icon={faTrash}
+									onClick={(e) => {
+										e.stopPropagation();
+										toggleDeleteTodo({ item });
+									}}
+								/>
+							</Tippy>
+						)}
+					</div>
+				</div>
+
+				<div className="flex w-full justify-between items-center">
+					<div className="flex w-1/2 justify-start items-center">
+						<AvatarCircle names={assignedToNames} />
+					</div>
+					<div className="flex w-1/2 space-x-3 justify-end items-center">
+						<span className={dueDateStyle}>{item.due_date ? dayjs(item.due_date).format("DD MMM, YYYY") : ""}</span>
+						<span className={getPriorityStyle()}>{item.priority}</span>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	function Column({ id, items, activeCard }) {
+		const { setNodeRef, isOver } = useDroppable({ id });
+
+		const icon = id === "pending" ? faClockRotateLeft : id === "inProgress" ? faHourglassHalf : faHourglassEnd;
+
+		const cardsAreaBackground = isOver ? "bg-[#e0f7fa]" : "bg-[#f9f9f9]";
+		const cardsAreaStyle = `flex flex-col gap-2.5 overflow-y-auto transition-all duration-200 ease-linear ${cardsAreaBackground}`;
+
+		return (
+			<div className="flex flex-col w-full h-full p-3 space-y-3 rounded justify-start bg-gray-50 border border-gray-300">
+				<div className="flex w-full px-3 justify-between items-center">
+					<div className="flex w-full space-x-2 justify-start items-center">
+						<FontAwesomeIcon icon={icon} />
+						<span className="font-semibold-14 capitalize">{id}</span>
+					</div>
+					{items.length > 0 && <Badge value={items.length} />}
+				</div>
+
+				<div
+					className={cardsAreaStyle}
+					ref={setNodeRef}>
+					<SortableContext
+						items={items.map((m) => m.id)}
+						strategy={verticalListSortingStrategy}>
+						<div className="flex flex-col px-3 space-y-4 overflow-visible">
+							{items.map((m) => (
+								<Card
+									key={m.id}
+									item={m}
+									column={id}
+									activeCard={activeCard}
+								/>
+							))}
+						</div>
+					</SortableContext>
+				</div>
+			</div>
+		);
+	}
+
 	// Functions
 	function getFilteredData() {
 		return Object.fromEntries(
-			Object.entries(columnsCopy).map(([k, v]) => {
-				let filteredTodos = v;
+			Object.entries(columnsCopy).map(([key, todos]) => {
+				let filteredTodos = todos;
 
-				if (main.status === "Today") {
-					filteredTodos = v.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === dayjs().format("DD-MM-YYYY"));
-				} else if (main.status === "Tomorrow") {
-					filteredTodos = v.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === dayjs().add(1, "day").format("DD-MM-YYYY"));
+				// Step 1: filter by selected staff
+				if (main.selectedStaff.id) {
+					filteredTodos = filteredTodos.filter((todo) => String(todo.assigned_to).includes(main.selectedStaff.id));
 				}
 
-				return [k, filteredTodos];
+				if (main.find) {
+					filteredTodos = filteredTodos.filter((f) => String(f.description).toLowerCase().includes(main.find.toLowerCase()));
+				}
+
+				// Step 2: filter by due date
+				if (main.status === "Today") {
+					filteredTodos = filteredTodos.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === dayjs().format("DD-MM-YYYY"));
+				} else if (main.status === "Tomorrow") {
+					filteredTodos = filteredTodos.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === dayjs().add(1, "day").format("DD-MM-YYYY"));
+				}
+
+				return [key, filteredTodos];
 			}),
 		);
 	}
 
 	function getIconAndBadge() {
-		const count = main.status === "All" ? totalCopyCount : `${totalCount} / ${totalCopyCount}`;
+		const count = main.status === "All" && !main.selectedStaff.id && !main.find ? totalCopyCount : `${totalCount} / ${totalCopyCount}`;
 		return totalCount > 0 && <Badge value={count} />;
 	}
 
@@ -371,9 +420,27 @@ export default function Todos() {
 		setMounted((s) => ({ ...s, addTodoBox: !s.addTodoBox }));
 	}
 
+	function toggleEditTodo(todo) {
+		setMain((s) => ({ ...s, selectedTodo: todo }));
+		setMounted((s) => ({ ...s, editTodo: !s.editTodo }));
+	}
+
+	function toggleDeleteTodo(todo) {
+		setMain((s) => ({ ...s, selectedTodo: todo }));
+		setMounted((s) => ({ ...s, deleteTodo: !s.deleteTodo }));
+	}
+
 	function toggleDetails(todo) {
 		setMain((s) => ({ ...s, selectedTodo: todo }));
 		setMounted((s) => ({ ...s, details: !s.details }));
+	}
+
+	function setSearch(value) {
+		setMain((s) => ({ ...s, find: value }));
+	}
+
+	function setStaff(obj) {
+		setMain((s) => ({ ...s, selectedStaff: { fullName: obj.full_name, id: obj.id } }));
 	}
 
 	function setStatus(value) {
@@ -429,7 +496,7 @@ export default function Todos() {
 						});
 					}}
 					onDragCancel={() => setActiveCard(null)}>
-					<div className="flex w-full h-full justify-center items-center space-x-5 overflow-y-auto p-4">
+					<div className="flex w-full h-full justify-center items-center space-x-5 overflow-x-hidden overflow-y-auto p-4">
 						{Object.keys(columns).map((m) => (
 							<div
 								key={m}
@@ -438,7 +505,9 @@ export default function Todos() {
 									id={m}
 									items={columns[m]}
 									activeCard={activeCard}
+									openDeleteTodoBox={toggleDeleteTodo}
 									openDetailsBox={toggleDetails}
+									search={main.find}
 								/>
 							</div>
 						))}
@@ -462,22 +531,30 @@ export default function Todos() {
 		);
 	}
 
+	function uiClearFilter() {
+		return (
+			<FontAwesomeIcon
+				className="cursor-pointer outline-none focus:outline-none red-text"
+				icon={faFilterCircleXmark}
+				onClick={() => setStaff({ full_name: "", id: "" })}
+			/>
+		);
+	}
+
 	function uiFind() {
-		if (totalCount) {
-			return (
-				<TextInputNative
-					id="findBox"
-					icon={faSearch}
-					onChange={() => {}}
-					onClearButtonClick={() => {}}
-					placeholder="Find"
-					showClearButton={showFindClearButton}
-					tabIndex={1}
-					value={main.find}
-					width="w-36"
-				/>
-			);
-		}
+		return (
+			<TextInputNative
+				id="findBox"
+				icon={faSearch}
+				onChange={(e) => setSearch(e.target.value)}
+				onClearButtonClick={() => setSearch("")}
+				placeholder="Find"
+				showClearButton={showFindClearButton}
+				tabIndex={1}
+				value={main.find}
+				width="w-40"
+			/>
+		);
 	}
 
 	function uiNew() {
@@ -489,6 +566,43 @@ export default function Todos() {
 				<span>New</span>
 			</button>
 		);
+	}
+
+	function uiStaff() {
+		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+
+		return (
+			<Menu
+				as="div"
+				className="flex max-w-full min-w-40 justify-center items-center relative">
+				<MenuButton className={wrapper}>
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faUserAlt}
+					/>
+					<span className="gray-text">{main.selectedStaff.fullName || "Staff"}</span>
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStaffList()}</MenuItems>
+			</Menu>
+		);
+	}
+
+	function uiStaffList() {
+		return MyGlobal.GetAllUsers().map((m, i) => {
+			const isSelected = m.id === main.selectedStaff;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+
+			return (
+				<MenuItem
+					as="div"
+					className={wrapper}
+					key={i}
+					onClick={() => setStaff(m)}>
+					<span>{m.full_name}</span>
+				</MenuItem>
+			);
+		});
 	}
 
 	function uiStatus() {
@@ -535,6 +649,10 @@ export default function Todos() {
 	}, []);
 
 	useEffect(() => {
+		setColumns(getFilteredData());
+	}, [main.selectedStaff]);
+
+	useEffect(() => {
 		function calculateStatusCounts() {
 			const allTodos = Object.values(columnsCopy).flat();
 
@@ -565,21 +683,29 @@ export default function Todos() {
 
 	useEffect(() => {
 		setColumns(getFilteredData());
-	}, [main.status]);
+	}, [main.find, main.selectedStaff, main.status]);
 
 	// Main UI
 	return (
 		<div className="flex flex-col w-full justify-between items-center">
 			<div className="flex w-full px-5 py-2.5 space-x-5 justify-between items-center">
-				<div className="flex w-2/5 space-x-2 justify-start items-center">
+				<div className="flex w-1/4 space-x-2 justify-start items-center">
 					<span className="view-heading">{thisView}</span>
 					{getIconAndBadge()}
 				</div>
-				<div className="flex w-3/5 space-x-2 justify-between items-center">
-					{/* {uiFind()} */}
+				<div className="flex w-1/2 space-x-3 justify-center items-center">
 					{uiStatus()}
-					{uiNew()}
+					{uiFind()}
+					{IsUserAdministrator && uiStaff()}
+					{IsUserAdministrator && (
+						<Tippy
+							content={<Tooltip text="Clear filters" />}
+							placement="bottom">
+							{uiClearFilter()}
+						</Tippy>
+					)}
 				</div>
+				<div className="flex w-1/4 justify-end items-center">{uiNew()}</div>
 			</div>
 			<div className="flex w-full h-[calc(100vh-105px)] justify-center items-center overflow-y-auto contrast-background">{uiBody()}</div>
 
@@ -588,6 +714,24 @@ export default function Todos() {
 					mount={mounted.addTodoBox}
 					refresh={getTodos}
 					unmount={toggleAddTodo}
+				/>
+			)}
+
+			{mounted.editTodo && (
+				<DynamicEditTodo
+					mount={mounted.editTodo}
+					refresh={getTodos}
+					todo={main.selectedTodo?.item}
+					unmount={toggleEditTodo}
+				/>
+			)}
+
+			{mounted.deleteTodo && (
+				<DynamicDeleteTodo
+					mount={mounted.deleteTodo}
+					refresh={getTodos}
+					todo={main.selectedTodo?.item}
+					unmount={toggleDeleteTodo}
 				/>
 			)}
 

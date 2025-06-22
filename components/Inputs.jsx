@@ -235,7 +235,7 @@ export const ComboBoxWithChips = ({
 	fontSize = "font-regular-11",
 	height = "h-full",
 	icon,
-	iconSize = "",
+	iconSize = "sm",
 	isMenuInverted,
 	label,
 	onBlur,

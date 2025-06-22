@@ -14,7 +14,7 @@ import { MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 
-export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount }) {
+export default function EditQuotaionPreview({ inquiry, quotation, reload, unmount }) {
 	// Business Logic
 	const [main, setMain] = useState({ isPdfBeingDownloaded: false });
 
@@ -26,7 +26,7 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 	const finalAmount = totalGovernmentFees + totalProfessionalFees;
 
 	// Function
-	async function addQuotation() {
+	async function editQuotation() {
 		try {
 			const body = {
 				clientId: quotation?.client?.id,
@@ -34,26 +34,24 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 				date: quotation?.main?.date,
 				firmId: quotation?.firm?.id,
 				customId: quotation?.proposalNumber,
-				inquiryId: inquiry?.id,
 				remarks: quotation?.main?.remarks,
 				services: quotation?.services?.filter((f) => f.services && f.inclusions && f.professionalFees && f.governmentFees),
 				termsConditions: quotation?.firm?.termsConditions,
-				userId: MyGlobal.GetUserId(),
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.AddQuotation, body, MyGlobal.GetHeaders());
+			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.EditQuotation, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Generated quotation <b>${quotation?.proposalNumber}</b> for <b>${inquiry?.id}</b>`, MyConstants.Modules.Derived.NewQuotation);
+				MyGlobal.AddActivity(`Edited quotation <b>${quotation?.proposalNumber}</b> for <b>${inquiry?.id}</b>`, "Edit Quotation");
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.QuotationAdded);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.QuotationEdited);
 			} else {
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewQuotation);
+			MyGlobal.HandleErrors(error, "Inquiries > Edit Quotation Preview > Edit Quotation");
 		} finally {
 			unmount(false);
 		}
@@ -119,7 +117,7 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 					headers: { "Content-Type": "multipart/form-data" },
 				});
 			})
-			.then(() => addQuotation())
+			.then(() => editQuotation())
 			.finally(() => {
 				invoiceBody.style.height = originalStyle.height;
 				invoiceBody.style.overflow = originalStyle.overflow;
@@ -298,7 +296,7 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 						onClick={() => unmount(false)}
 					/>
 					<div className="flex w-full justify-start items-center">
-						<span className="view-heading">New Quotation Preview</span>
+						<span className="view-heading">Edit Quotation Preview</span>
 					</div>
 				</div>
 			</div>

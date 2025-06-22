@@ -1328,3 +1328,19 @@ input[type="radio"]:checked + label {
 .urgent-priority {
 	background: linear-gradient(45deg, #c1a900, #f2e300, #fff9cc);
 }
+
+@layer utilities {
+	@keyframes pulse-glow {
+		0%,
+		100% {
+			box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.5);
+		}
+		50% {
+			box-shadow: 0 0 6px 6px rgba(251, 191, 36, 0.4);
+		}
+	}
+
+	.hover-pulse-glow {
+		animation: pulse-glow 2s ease-in-out infinite;
+	}
+}

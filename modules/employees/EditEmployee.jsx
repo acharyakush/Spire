@@ -10,7 +10,7 @@ import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
 import { ComboBox, ComboBox2 } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBriefcase, faSquare, faSquareCheck, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faBriefcase, faSquare, faSquareCheck, faStar, faUsers } from "@fortawesome/free-solid-svg-icons";
 
 export default function EditEmployee() {
 	// Business Logic
@@ -31,6 +31,7 @@ export default function EditEmployee() {
 			id: "",
 			name: "",
 		},
+		employmentStatus: "Active",
 		employmentType: "",
 		permissions: [],
 		reportsTo: {
@@ -63,9 +64,27 @@ export default function EditEmployee() {
 			const response = await axios.post(MyConstants.ApiEndpoints.Employees.EditEmployee, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
+				setMain({
+					designation: "",
+					employee: {
+						id: "",
+						name: "",
+					},
+					employmentStatus: "Active",
+					employmentType: "",
+					permissions: [],
+					reportsTo: {
+						id: "",
+						name: "",
+					},
+				});
+
 				MyGlobal.AddActivity(`Edited employee <b>${main.employee.name} (${main.employee.id})</b>.`, MyConstants.Modules.Base.Employees);
 
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.EmployeeEdited);
+
+				getSupportData();
+				setEmployee();
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
 			}
@@ -147,6 +166,7 @@ export default function EditEmployee() {
 				employmentType: employee.employment_type,
 				reportsTo: employee.reports_to,
 				permissions,
+				employmentStatus: employee.employment_status,
 			}));
 		}
 	}
@@ -221,6 +241,25 @@ export default function EditEmployee() {
 		);
 	}
 
+	function uiDeactivate() {
+		return (
+			<ComboBox
+				allowCreatingNewItem={false}
+				comparisonValue=""
+				filteredData={["Active", "Ad-Hoc", "Inactive", "On Contract", "On Leave", "Probation", "Resigned", "Terminated"]}
+				icon={faStar}
+				label="Employment Status"
+				onChange={(e) => setLightInputs("employmentStatus", e)}
+				onClick={() => {}}
+				onKeyPress={() => {}}
+				searchedItem=""
+				tabIndex="4"
+				value={main.employmentStatus}
+				width="w-full"
+			/>
+		);
+	}
+
 	function uiDesignation() {
 		return (
 			<ComboBox
@@ -275,8 +314,14 @@ export default function EditEmployee() {
 			const iconColour = `cursor-pointer ${isSelected ? "primary-text" : "gray-text"}`;
 
 			return (
-				<div className="flex w-full space-x-2 justify-start items-center" key={n}>
-					<FontAwesomeIcon className={iconColour} icon={icon} onClick={() => setPermission(m)} />
+				<div
+					className="flex w-full space-x-2 justify-start items-center"
+					key={n}>
+					<FontAwesomeIcon
+						className={iconColour}
+						icon={icon}
+						onClick={() => setPermission(m)}
+					/>
 					<span className="font-regular-10 black-text">{m.name}</span>
 				</div>
 			);
@@ -323,7 +368,7 @@ export default function EditEmployee() {
 		<div className="flex flex-col w-full h-[calc(100vh-140px)] justify-between items-center relative rounded shadow overflow-y-auto scrollbar-gutter contrast-background">
 			<div className="flex w-full px-5 py-2.5 space-x-10 justify-between items-center">
 				{uiEmployees()}
-				<div className="w-full" />
+				{uiDeactivate()}
 				<div className="w-full" />
 			</div>
 			<div className="flex w-full px-5 py-2.5 space-x-10 justify-between items-center">
@@ -333,7 +378,9 @@ export default function EditEmployee() {
 			</div>
 			<div className="flex w-full px-5 py-2.5 justify-between items-center">{uiPermissions()}</div>
 			<footer className="w-full dialog-footer !px-7 !py-5">
-				<button className={editButtonStyle} onClick={() => doEditing()}>
+				<button
+					className={editButtonStyle}
+					onClick={() => doEditing()}>
 					{uiEdit()}
 				</button>
 			</footer>
