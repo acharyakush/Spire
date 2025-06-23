@@ -17,7 +17,7 @@ import { BadgeSmall, ErrorFallbackComponent, SpinnerBig } from "@/components/Ele
 import { faBell, faCheck, faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 const DynamicMySpace = dynamic(() => import("./mySpace"), { ssr: false });
-const DynamicTodos = dynamic(() => import("@/modules/todo/Index"), { ssr: false });
+const DynamicTodos = dynamic(() => import("@/modules/todo"), { ssr: false });
 const DynamicDashboard = dynamic(() => import("./dashboard/index"), { ssr: false });
 const DynamicFirms = dynamic(() => import("@/modules/firms/index"), { ssr: false });
 const DynamicClients = dynamic(() => import("@/modules/clients/index"), { ssr: false });

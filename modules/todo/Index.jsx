@@ -580,7 +580,7 @@ export default function Todos() {
 						className="primary-text"
 						icon={faUserAlt}
 					/>
-					<span className="gray-text">{main.selectedStaff.fullName || "Staff"}</span>
+					<span className="gray-text">{main.selectedStaff.fullName || "Team"}</span>
 				</MenuButton>
 				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStaffList()}</MenuItems>
 			</Menu>

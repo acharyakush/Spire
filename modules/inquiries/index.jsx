@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { getScrollPosition, MyGlobal, saveScrollPosition } from "@/utilities/global";
 import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
-import { faBolt, faCalendar, faChevronDown, faDownload, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlus, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { faBolt, faCalendar, faChevronDown, faDownload, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlus, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 const DynamicNotes = dynamic(() => import("./Notes"), { ssr: false });
 const DynamicNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
@@ -119,7 +119,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		switch (true) {
 			case event.ctrlKey && event.key === "f":
 				event.preventDefault();
-				document.getElementById("findBox").focus();
+				document.getElementById("searchBox").focus();
 				break;
 		}
 	}
@@ -237,21 +237,33 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function doSorting() {
 		const { column, isAscending } = main.sort;
 
-		if (!column) return [...inquiries.data].sort((a, b) => b.id - a.id);
+		return [...inquiries.data].sort((a, b) => {
+			const aNextFollowUp = new Date(a.next_follow_up_on);
+			const bNextFollowUp = new Date(b.next_follow_up_on);
 
-		const sortFunctions = {
-			[headers.Client]: (a, b) => (isAscending ? a.client_name.localeCompare(b.client_name) : b.client_name.localeCompare(a.client_name)),
-			[headers.Projects]: (a, b) => (isAscending ? a.main_project.localeCompare(b.main_project) : b.main_project.localeCompare(a.main_project)),
-			[headers.References]: (a, b) => (isAscending ? a.reference_name.localeCompare(b.reference_name) : b.reference_name.localeCompare(a.reference_name)),
-			[headers.FollowUps]: (a, b) => (isAscending ? a.follow_ups.localeCompare(b.follow_ups) : b.follow_ups.localeCompare(a.follow_ups)),
-			[headers.Quote]: (a, b) => (isAscending ? a.quote - b.quote : b.quote - a.quote),
-			[headers.Status]: (a, b) => (isAscending ? a.status.localeCompare(b.status) : b.status.localeCompare(a.status)),
-			default: (a, b) => b.id - a.id,
-		};
-
-		const sortFunction = sortFunctions[column] || sortFunctions.default;
-
-		return [...inquiries.data].sort(sortFunction);
+			if (column === headers.Client) {
+				if (isAscending) return String(a.client_name).localeCompare(b.client_name);
+				return String(b.client_name).localeCompare(a.client_name);
+			} else if (column === headers.Projects) {
+				if (isAscending) return String(a.sub_project).localeCompare(b.sub_project);
+				return String(b.sub_project).localeCompare(a.sub_project);
+			} else if (column === headers.FollowUps) {
+				if (isAscending) return String(a.follow_ups_initials).localeCompare(b.follow_ups_initials);
+				return String(b.follow_ups_initials).localeCompare(a.follow_ups_initials);
+			} else if (column === headers.Quote) {
+				if (isAscending) return a.quote - b.quote;
+				return b.quote - a.quote;
+			} else if (column === headers.NextFollowUpOn) {
+				if (isAscending) return aNextFollowUp - bNextFollowUp;
+				return bNextFollowUp - aNextFollowUp;
+			} else if (column === headers.Status) {
+				if (isAscending) return String(a.status).localeCompare(b.status);
+				return String(b.status).localeCompare(a.status);
+			} else if (column === headers.References) {
+				if (isAscending) return String(a.reference_name).localeCompare(b.reference_name);
+				return String(b.reference_name).localeCompare(a.reference_name);
+			}
+		});
 	}
 
 	function downloadQuotation(quotationId) {
@@ -580,7 +592,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	// UI Components
 	function uiBody() {
-		if (mounted.mainComponent && main.isLoading) {
+		if (main.isLoading) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
 					<div className="flex w-full h-9 justify-center items-center primary-background animate-pulse">
@@ -595,90 +607,35 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					<div className="w-full h-full overflow-y-auto contrast-background">{[...Array(9)].map((_, i) => uiSkeletion(i))}</div>
 				</div>
 			);
-		} else if (mounted.mainComponent && !inquiriesCopySize) {
-			return <div className={blankDataWrapper}>No inquiries generated.</div>;
-		} else if (mounted.mainComponent && !inquiriesSize) {
-			return <div className={blankDataWrapper}>No inquiries found.</div>;
-		} else {
-			const itemStyle = "flex w-full p-2 space-x-2 justify-start items-center rounded cursor-pointer hover:transition-all font-regular-11 text-white";
-
-			return (
-				<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
-					<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-					<Virtuoso
-						ref={currentScrollPositionReference}
-						rangeChanged={handleRangeChange}
-						className="w-full h-full overflow-y-auto contrast-background"
-						data={inquiries.data}
-						itemContent={(_, row) => uiRows(row)}
-						totalCount={inquiriesSize}
-						overscan={20}
-						components={{
-							Footer: () => (
-								<div className="flex fixed bottom-3 right-3 space-x-3 z-50">
-									<Tippy
-										className="!py-2"
-										content={
-											<div className="flex flex-col space-y-1 justify-center items-center">
-												{allowNewInquiry && (
-													<div
-														className={`${itemStyle} hover:bg-blue-500`}
-														onClick={() => toggleNewInquiryView()}>
-														<FontAwesomeIcon
-															className="w-5"
-															icon={faPlus}
-															size="1x"
-														/>
-														<span>New Inquiry</span>
-													</div>
-												)}
-												<div
-													className={`${itemStyle} hover:bg-emerald-500`}
-													onClick={() => doExcelExport()}>
-													<FontAwesomeIcon
-														className="w-5"
-														icon={faDownload}
-														size="1x"
-													/>
-													<span>Download Excel</span>
-												</div>
-											</div>
-										}
-										interactive
-										placement="bottom"
-										theme="dark"
-										trigger="mouseenter"
-										animation="shift-toward"
-										appendTo={() => document.body}>
-										<div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-100 via-amber-200 to-amber-300 border border-amber-600 shadow transition-all duration-300 transform hover-pulse-glow cursor-help">
-											<FontAwesomeIcon
-												icon={faBolt}
-												className="text-amber-500"
-												size="lg"
-											/>
-										</div>
-									</Tippy>
-									<div className="group relative flex items-center w-fit px-0 transition-all duration-500 ease-in-out">
-										<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
-
-										<div className="flex items-center justify-center w-10 h-10 group-hover:h-[36px] rounded-full text-white ring-1 ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
-											<FontAwesomeIcon
-												icon={faIndianRupee}
-												size="lg"
-											/>
-										</div>
-
-										<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-[300px]">
-											<div className="pl-2 pr-4 text-white font-bold-12 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out relative z-20">{getTotalQuote()}</div>
-										</div>
-									</div>
-								</div>
-							),
-						}}
-					/>
-				</div>
-			);
 		}
+
+		if (!inquiriesCopySize) {
+			return <div className={blankDataWrapper}>No inquiries generated.</div>;
+		}
+
+		if (!inquiriesSize) {
+			return <div className={blankDataWrapper}>No inquiries found.</div>;
+		}
+
+		return (
+			<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
+				<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
+				<Virtuoso
+					ref={currentScrollPositionReference}
+					rangeChanged={handleRangeChange}
+					className="w-full h-full overflow-y-auto contrast-background"
+					data={doSorting()}
+					itemContent={(_, row) => uiRows(row)}
+					totalCount={inquiriesSize}
+					overscan={20}
+				/>
+				<div className="flex fixed bottom-3 right-3 space-x-3 z-50">
+					{uiFilterOrb()}
+					{uiNewInquiryAndExportToExcelOrb()}
+					{uiTotalQuoteOrb()}
+				</div>
+			</div>
+		);
 	}
 
 	function uiClearFilter() {
@@ -754,7 +711,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		);
 	}
 
-	function uiFilter() {
+	function uiFilter(source) {
+		const topPosition = source === "orb" ? "bottom-full" : "top-full";
+		const style = `absolute w-full ${topPosition} mb-2 rounded contrast-background bottom-shadow focus:outline-none z-50`;
+
 		return (
 			<Menu
 				as="div"
@@ -763,7 +723,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					<span>{filter.status || "Status"}</span>
 					<FontAwesomeIcon icon={faChevronDown} />
 				</MenuButton>
-				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded z-50 contrast-background bottom-shadow full-border">{uiFilterMenuList()}</MenuItems>
+				<MenuItems className={style}>{uiFilterMenuList()}</MenuItems>
 			</Menu>
 		);
 	}
@@ -792,28 +752,46 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		});
 	}
 
-	function uiFind() {
-		if (inquiriesCopySize) {
-			return (
-				<TextInputNative
-					id="findBox"
-					icon={faSearch}
-					onChange={(e) => setInputs("findText", e.target.value)}
-					onClearButtonClick={() => setInputs("findText", "")}
-					placeholder="Find"
-					showClearButton={showFindClearButton}
-					tabIndex={3}
-					value={filter.search}
-					width="w-36"
-				/>
-			);
-		}
+	function uiFilterOrb() {
+		return (
+			<Tippy
+				content={
+					<div className="flex flex-col space-y-1 justify-center items-center">
+						<div className="flex w-full p-2 justify-between items-center">
+							{uiFromDate()}
+							{uiToDate()}
+						</div>
+						<div className="flex w-full p-2 space-x-5 justify-between items-center">
+							{uiSearch()}
+							{uiFilter("orb")}
+						</div>
+						<Tippy
+							content={<Tooltip text="Clear filters" />}
+							placement="bottom">
+							{uiClearFilter()}
+						</Tippy>
+					</div>
+				}
+				interactive
+				placement="left"
+				theme="dark"
+				trigger="mouseenter"
+				animation="shift-toward"
+				appendTo={() => document.body}>
+				<div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-slate-200 via-indigo-300 to-violet-400 text-indigo-900 border border-indigo-500 shadow transition-all duration-500 ease-out hover:scale-105 hover:shadow-md cursor-pointer">
+					<FontAwesomeIcon
+						icon={faFilter}
+						size="1x"
+					/>
+				</div>
+			</Tippy>
+		);
 	}
 
 	function uiFromDate() {
 		if (inquiriesCopySize) {
 			return (
-				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
+				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
 					<FontAwesomeIcon
 						className="primary-text"
 						icon={faCalendar}
@@ -924,7 +902,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						<div className="flex w-[70%] space-x-2 justify-start items-center">
 							{uiFromDate()}
 							{uiToDate()}
-							{uiFind()}
+							{uiSearch()}
 							{uiFilter()}
 							<Tippy
 								content={<Tooltip text="Clear filters" />}
@@ -937,6 +915,55 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				</>
 			);
 		}
+	}
+
+	function uiNewInquiryAndExportToExcelOrb() {
+		const itemStyle = "flex w-full p-2 space-x-2 justify-start items-center rounded cursor-pointer hover:transition-all font-regular-11 text-white";
+
+		return (
+			<Tippy
+				className="!py-2"
+				content={
+					<div className="flex flex-col space-y-1 justify-center items-center">
+						{allowNewInquiry && (
+							<div
+								className={`${itemStyle} hover:bg-blue-500`}
+								onClick={() => toggleNewInquiryView()}>
+								<FontAwesomeIcon
+									className="w-5"
+									icon={faPlus}
+									size="1x"
+								/>
+								<span>New Inquiry</span>
+							</div>
+						)}
+						<div
+							className={`${itemStyle} hover:bg-emerald-500`}
+							onClick={() => doExcelExport()}>
+							<FontAwesomeIcon
+								className="w-5"
+								icon={faDownload}
+								size="1x"
+							/>
+							<span>Download Excel</span>
+						</div>
+					</div>
+				}
+				interactive
+				placement="bottom"
+				theme="dark"
+				trigger="mouseenter"
+				animation="shift-toward"
+				appendTo={() => document.body}>
+				<div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-100 via-amber-200 to-amber-300 border border-amber-600 shadow transition-all duration-300 transform hover-pulse-glow cursor-help">
+					<FontAwesomeIcon
+						icon={faBolt}
+						className="text-amber-500"
+						size="lg"
+					/>
+				</div>
+			</Tippy>
+		);
 	}
 
 	function uiProjects(childLabelStyle, parentLabelStyle, row, style) {
@@ -1088,6 +1115,24 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		);
 	}
 
+	function uiSearch() {
+		if (inquiriesCopySize) {
+			return (
+				<TextInputNative
+					id="searchBox"
+					icon={faSearch}
+					onChange={(e) => setInputs("search", e.target.value)}
+					onClearButtonClick={() => setInputs("search", "")}
+					placeholder="Find"
+					showClearButton={showFindClearButton}
+					tabIndex={3}
+					value={filter.search}
+					width="w-36"
+				/>
+			);
+		}
+	}
+
 	function uiSkeletion(index) {
 		return (
 			<div
@@ -1192,7 +1237,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 							value={totalNotes}
 						/>
 					</span>
-					{!isConfirmed && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStatusMenuList(row)}</MenuItems>}
+					{!isConfirmed && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-[60] full-border">{uiStatusMenuList(row)}</MenuItems>}
 				</Menu>
 			</Tippy>
 		);
@@ -1252,6 +1297,25 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				</div>
 			);
 		}
+	}
+
+	function uiTotalQuoteOrb() {
+		return (
+			<div className="group relative flex items-center w-fit px-0 transition-all duration-500 ease-in-out">
+				<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
+
+				<div className="flex items-center justify-center w-10 h-10 group-hover:h-[36px] rounded-full text-white ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
+					<FontAwesomeIcon
+						icon={faIndianRupee}
+						size="1x"
+					/>
+				</div>
+
+				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-[300px]">
+					<div className="pl-2 pr-4 text-white font-bold-12 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out relative z-20">{getTotalQuote()}</div>
+				</div>
+			</div>
+		);
 	}
 
 	// Hooks
