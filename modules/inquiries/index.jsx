@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { getScrollPosition, MyGlobal, saveScrollPosition } from "@/utilities/global";
 import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
-import { faBolt, faCalendar, faChevronDown, faDownload, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlus, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { faBolt, faCalendar, faChevronDown, faDownload, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 const DynamicNotes = dynamic(() => import("./Notes"), { ssr: false });
 const DynamicNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
@@ -274,6 +274,21 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		link.download = fileName + ".pdf";
 
 		link.click();
+	}
+
+	function getFollowUpRemainingColour(value) {
+		if (value > 3) {
+			return "green-text font-semibold-10";
+		}
+
+		switch (value) {
+			case 0:
+				return "red-text font-semibold-10 blink";
+			case 1:
+				return "orange-text font-semibold-10 blink";
+			default:
+				return "gray-text font-regular-10";
+		}
 	}
 
 	function getIconOrBadge() {
@@ -630,8 +645,16 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					overscan={20}
 				/>
 				<div className="flex fixed bottom-3 right-3 space-x-3 z-50">
+					<div
+						className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 border border-blue-600 shadow transition-all duration-300 transform hover-pulse-glow cursor-pointer"
+						onClick={() => toggleNewInquiryView()}>
+						<FontAwesomeIcon
+							icon={faPlus}
+							className="text-blue-500"
+							size="lg"
+						/>
+					</div>
 					{uiFilterOrb()}
-					{uiNewInquiryAndExportToExcelOrb()}
 					{uiTotalQuoteOrb()}
 				</div>
 			</div>
@@ -917,55 +940,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		}
 	}
 
-	function uiNewInquiryAndExportToExcelOrb() {
-		const itemStyle = "flex w-full p-2 space-x-2 justify-start items-center rounded cursor-pointer hover:transition-all font-regular-11 text-white";
-
-		return (
-			<Tippy
-				className="!py-2"
-				content={
-					<div className="flex flex-col space-y-1 justify-center items-center">
-						{allowNewInquiry && (
-							<div
-								className={`${itemStyle} hover:bg-blue-500`}
-								onClick={() => toggleNewInquiryView()}>
-								<FontAwesomeIcon
-									className="w-5"
-									icon={faPlus}
-									size="1x"
-								/>
-								<span>New Inquiry</span>
-							</div>
-						)}
-						<div
-							className={`${itemStyle} hover:bg-emerald-500`}
-							onClick={() => doExcelExport()}>
-							<FontAwesomeIcon
-								className="w-5"
-								icon={faDownload}
-								size="1x"
-							/>
-							<span>Download Excel</span>
-						</div>
-					</div>
-				}
-				interactive
-				placement="bottom"
-				theme="dark"
-				trigger="mouseenter"
-				animation="shift-toward"
-				appendTo={() => document.body}>
-				<div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-100 via-amber-200 to-amber-300 border border-amber-600 shadow transition-all duration-300 transform hover-pulse-glow cursor-help">
-					<FontAwesomeIcon
-						icon={faBolt}
-						className="text-amber-500"
-						size="lg"
-					/>
-				</div>
-			</Tippy>
-		);
-	}
-
 	function uiProjects(childLabelStyle, parentLabelStyle, row, style) {
 		const mainProject = MyGlobal.HighlightText(row.main_project, filter.search);
 		const subProject = MyGlobal.HighlightText(row.sub_project, filter.search);
@@ -986,63 +960,51 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiQuote(row, style) {
 		const quote = MyGlobal.HighlightText(row.quote, filter.search);
-		const itemStyle = "flex w-full p-2 space-x-2 justify-start items-center rounded cursor-pointer hover:transition-all font-regular-11 text-white";
 
 		return (
-			<div className={`${style} cursor-help`}>
-				<Tippy
-					className="!shadow !py-2"
-					content={
-						<div className="flex flex-col space-y-1 justify-center items-center">
-							{(isAdministrator || allowQuotation) && (
-								<div
-									className={`${itemStyle} hover:bg-blue-500`}
-									onClick={() => toggleAddQuotation(row, true)}>
-									<FontAwesomeIcon
-										className="w-5"
-										icon={faPlus}
-										size="1x"
-									/>
-									<span>New Quotation</span>
-								</div>
-							)}
-							{isAdministrator && row.quotation_id && (
-								<div
-									className={`${itemStyle} hover:bg-emerald-500`}
-									onClick={() => toggleEditQuotation(row, true)}>
-									<FontAwesomeIcon
-										className="w-5"
-										icon={faPen}
-										size="1x"
-									/>
-									<span>Edit Quotation</span>
-								</div>
-							)}
-							{isAdministrator && row.quotation_id && (
-								<div
-									className={`${itemStyle} hover:bg-amber-500`}
-									onClick={() => downloadQuotation(row.quotation_id)}>
-									<FontAwesomeIcon
-										className="w-5"
-										icon={faDownload}
-										size="1x"
-									/>
-									<span>Download Quotation</span>
-								</div>
-							)}
-						</div>
-					}
-					interactive
-					placement="bottom"
-					theme="dark"
-					trigger="mouseenter"
-					animation="shift-toward"
-					appendTo={() => document.body}>
-					<span
-						className="flex w-fit justify-center items-center font-bold-12 hover:p-2 hover:bg-slate-200 hover:rounded-full hover:w-fit"
-						dangerouslySetInnerHTML={{ __html: MyGlobal.FormatCurrency(quote) }}
-					/>
-				</Tippy>
+			<div className={`${style} !justify-between space-y-2 cursor-help`}>
+				<span
+					className="font-bold-12"
+					dangerouslySetInnerHTML={{ __html: MyGlobal.FormatCurrency(quote) }}
+				/>
+				<div className="flex w-full space-x-2 justify-center items-center">
+					{(isAdministrator || allowQuotation) && (
+						<Tippy
+							content={<Tooltip text="New Quotation" />}
+							placement="bottom">
+							<FontAwesomeIcon
+								className="w-5 text-blue-500 cursor-pointer scale-100 hover:scale-150 duration-200"
+								icon={faReceipt}
+								onClick={() => toggleAddQuotation(row, true)}
+								size="1x"
+							/>
+						</Tippy>
+					)}
+					{isAdministrator && row.quotation_id && (
+						<Tippy
+							content={<Tooltip text="Edit Quotation" />}
+							placement="bottom">
+							<FontAwesomeIcon
+								className="w-5 text-emerald-500 cursor-pointer scale-100 hover:scale-150 duration-200"
+								onClick={() => toggleEditQuotation(row, true)}
+								icon={faPen}
+								size="1x"
+							/>
+						</Tippy>
+					)}
+					{isAdministrator && row.quotation_id && (
+						<Tippy
+							content={<Tooltip text="Download Quotation" />}
+							placement="bottom">
+							<FontAwesomeIcon
+								className="w-5 text-orange-500 cursor-pointer scale-100 hover:scale-150 duration-200"
+								onClick={() => downloadQuotation(row.quotation_id)}
+								icon={faDownload}
+								size="1x"
+							/>
+						</Tippy>
+					)}
+				</div>
 			</div>
 		);
 	}
@@ -1087,6 +1049,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const avatarWrapper = style + " !flex-row space-x-1";
 
 		const followUpsNames = String(row.follow_ups).split(",");
+		const nextFollowUpRemaining = dayjs(row.next_follow_up_on).diff(dayjs().format("DD MMM, YYYY"), "day");
+
+		const followUpRemainingText =
+			nextFollowUpRemaining === 1 ? "Tomorrow" : nextFollowUpRemaining === 0 ? "Today. Did you follow up?" : nextFollowUpRemaining < 0 ? Math.abs(nextFollowUpRemaining) + " days ago" : "After " + nextFollowUpRemaining + " days";
 
 		return (
 			<div
@@ -1106,7 +1072,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 				{uiQuote(row, style)}
 
-				<span className={`${style} font-bold-12`}>{row.next_follow_up_on}</span>
+				<div className={style}>
+					<span className="font-bold-12">{row.next_follow_up_on}</span>
+					{row.next_follow_up_on && <span className={getFollowUpRemainingColour(nextFollowUpRemaining)}>{followUpRemainingText}</span>}
+				</div>
 
 				{uiStatus(childStyle, row, style)}
 
@@ -1205,7 +1174,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiStatusMenu(row) {
 		const isConfirmed = row.status === statuses.Confirmed;
 
-		const wrapper = "flex w-full space-x-2.5 justify-between items-center focus:outline-none relative z-40 font-medium-10 " + getStatusSeverity(row.status);
+		const wrapper = "flex w-[94px] space-x-2.5 justify-between items-center focus:outline-none relative z-40 font-medium-10 " + getStatusSeverity(row.status);
 
 		const icon = !isConfirmed && (
 			<FontAwesomeIcon
@@ -1224,13 +1193,13 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				placement="bottom">
 				<Menu
 					as="div"
-					className="flex w-full justify-center items-center relative">
+					className="flex w-full space-x-2 justify-center items-center relative">
 					<MenuButton className={wrapper}>
 						<span dangerouslySetInnerHTML={{ __html: highlightText(true, row.status) }} />
 						{icon}
 					</MenuButton>
 					<span
-						className={`absolute ${notesWrapper} -top-3 -right-3 z-50`}
+						className={notesWrapper}
 						onClick={() => totalNotes && toggleNotesView(row, true)}>
 						<BadgeSmallWithBackground
 							style={getStatusSeverityBackground(row.status)}

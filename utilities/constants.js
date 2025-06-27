@@ -107,6 +107,8 @@ const MyConstants = Object.freeze({
 		}),
 		Tasks: Object.freeze({
 			AddTask: "api/tasks/addTask",
+			AddRVExpense: "api/tasks/addRvExpense",
+			EditRVExpense: "api/tasks/editRvExpense",
 			SortTasks: "api/tasks/sortTasks",
 		}),
 		Todos: Object.freeze({
@@ -209,6 +211,7 @@ const MyConstants = Object.freeze({
 		StatusEdited: "Status edited.",
 		SubTaskMarkedCompleted: "Sub task marked completed.",
 		TaskAdded: "New task added.",
+		RVExpenseAdded: "RV expenses added.",
 		TaskDeleted: "Task deleted",
 		TaskDisabled: "Task disabled.",
 		TaskEdited: "Task edited.",

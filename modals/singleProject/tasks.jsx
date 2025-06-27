@@ -13,7 +13,7 @@ import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { DatePicker, TextArea, TextInput } from "@/components/Inputs";
-import { faCalendar, faCoins, faFaceAngry, faListCheck, faNoteSticky, faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faCoins, faFaceAngry, faIndianRupee, faListCheck, faNoteSticky, faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function AddParticularRemark({ mount, reload, task, unmount }) {
 	// Business Logic
@@ -156,6 +156,296 @@ export function AddParticularRemark({ mount, reload, task, unmount }) {
 								<button
 									className={addButtonStyle}
 									onClick={() => doInsertion()}>
+									{uiButton()}
+								</button>
+							</footer>
+						</div>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
+export function AddRVExpense({ mount, reload, project, tasks, unmount }) {
+	// Business Logic
+	const [main, setMain] = useState({
+		entryDate: "",
+		error: "",
+		expense: 0,
+		isBoxMoved: false,
+		isLoading: false,
+		description: "",
+	});
+
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
+
+	// Functions
+	async function doInsertion() {
+		setMain((s) => ({ ...s, isLoading: true }));
+
+		const body = {
+			clientId: project.client_id,
+			projectId: project.id,
+			expense: main.expense,
+			entryDate: main.entryDate,
+			description: MyGlobal.EscapeString(main.description),
+			userId: MyGlobal.GetUserId(),
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Tasks.AddRVExpense, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reload();
+
+				MyGlobal.AddActivity(`Added RV Expense in <b>${project.id}</b>`, MyConstants.Modules.Base.Tasks);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.RVExpenseAdded);
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Add RV Expense");
+		} finally {
+			setMain((s) => ({ ...s, isLoading: false }));
+			unmount();
+		}
+	}
+
+	function setBoxDrag() {
+		setMain((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
+	}
+
+	function setInputs(key, value) {
+		if (key === "entryDate") {
+			value?.setHours(12, 0, 0, 0);
+		}
+		setMain((s) => ({ ...s, [key]: value }));
+	}
+
+	// UI Components
+	function uiButton() {
+		if (main.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Add";
+		}
+	}
+
+	function uiTitleBar() {
+		return (
+			<DialogTitle
+				as="h2"
+				className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Add RV Expense</span>
+				<FontAwesomeIcon
+					className="cursor-pointer"
+					icon={faXmark}
+					onClick={() => unmount(false)}
+				/>
+			</DialogTitle>
+		);
+	}
+
+	// Main UI
+	return (
+		<Dialog
+			as="div"
+			className="relative z-50"
+			open={mount}
+			onClose={() => unmount()}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable
+					handle=".draggable-handle"
+					onStart={() => setBoxDrag()}
+					onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
+						{uiTitleBar()}
+						<div className="flex flex-col w-full h-full justify-between items-center">
+							<div className="flex flex-col w-full h-full p-5 space-y-2.5 justify-start items-center">
+								<DatePicker
+									icon={faCalendar}
+									label="Date"
+									onChange={(e) => setInputs("entryDate", e)}
+									tabIndex={1}
+									value={main.entryDate}
+									width="w-full"
+								/>
+								<TextInput
+									icon={faIndianRupee}
+									label="Amount"
+									onChange={(e) => setInputs("expense", e.target.value)}
+									onKeyPress={() => {}}
+									tabIndex={2}
+									value={main.expense}
+									width="w-full"
+								/>
+								<TextArea
+									icon={faStickyNote}
+									label="Description"
+									onChange={(e) => setInputs("description", e.target.value)}
+									onKeyDown={() => {}}
+									rows={2}
+									tabIndex={3}
+									value={main.description}
+									width="w-full"
+								/>
+							</div>
+							<footer className="dialog-footer w-full">
+								<button
+									className="primary-button-condensed"
+									onClick={() => doInsertion()}>
+									{uiButton()}
+								</button>
+							</footer>
+						</div>
+					</DialogPanel>
+				</Draggable>
+			</div>
+		</Dialog>
+	);
+}
+
+export function EditRVExpense({ mount, reload, project, rv, unmount }) {
+	// Business Logic
+	const [main, setMain] = useState({
+		entryDate: rv.entry_date,
+		error: "",
+		expense: rv.expense,
+		isBoxMoved: false,
+		isLoading: false,
+		description: rv.description,
+	});
+
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
+
+	// Functions
+	async function doEditing() {
+		setMain((s) => ({ ...s, isLoading: true }));
+
+		const body = {
+			id: rv.id,
+			projectId: project.id,
+			expense: main.expense,
+			entryDate: main.entryDate,
+			description: MyGlobal.EscapeString(main.description),
+			userId: MyGlobal.GetUserId(),
+		};
+
+		try {
+			const response = await axios.post(MyConstants.ApiEndpoints.Tasks.EditRVExpense, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reload();
+
+				MyGlobal.AddActivity(`Edited RV Expense in <b>${project.id}</b>`, MyConstants.Modules.Base.Tasks);
+				MyGlobal.ShowSuccessToast("RV expense edited");
+			} else {
+				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Edit RV Expense");
+		} finally {
+			setMain((s) => ({ ...s, isLoading: false }));
+			unmount();
+		}
+	}
+
+	function setBoxDrag() {
+		setMain((s) => ({ ...s, isBoxMoved: !s.isBoxMoved }));
+	}
+
+	function setInputs(key, value) {
+		if (key === "entryDate") {
+			value?.setHours(12, 0, 0, 0);
+		}
+		setMain((s) => ({ ...s, [key]: value }));
+	}
+
+	// UI Components
+	function uiButton() {
+		if (main.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Edit";
+		}
+	}
+
+	function uiTitleBar() {
+		return (
+			<DialogTitle
+				as="h2"
+				className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Edit RV Expense</span>
+				<FontAwesomeIcon
+					className="cursor-pointer"
+					icon={faXmark}
+					onClick={() => unmount(false)}
+				/>
+			</DialogTitle>
+		);
+	}
+
+	// Main UI
+	return (
+		<Dialog
+			as="div"
+			className="relative z-50"
+			open={mount}
+			onClose={() => unmount()}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<Draggable
+					handle=".draggable-handle"
+					onStart={() => setBoxDrag()}
+					onStop={() => setBoxDrag()}>
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
+						{uiTitleBar()}
+						<div className="flex flex-col w-full h-full justify-between items-center">
+							<div className="flex flex-col w-full h-full p-5 space-y-2.5 justify-start items-center">
+								<DatePicker
+									icon={faCalendar}
+									label="Date"
+									onChange={(e) => setInputs("entryDate", e)}
+									tabIndex={1}
+									value={main.entryDate}
+									width="w-full"
+								/>
+								<TextInput
+									icon={faIndianRupee}
+									label="Amount"
+									onChange={(e) => setInputs("expense", e.target.value)}
+									onKeyPress={() => {}}
+									tabIndex={2}
+									value={main.expense}
+									width="w-full"
+								/>
+								<TextArea
+									icon={faStickyNote}
+									label="Description"
+									onChange={(e) => setInputs("description", e.target.value)}
+									onKeyDown={() => {}}
+									rows={2}
+									tabIndex={3}
+									value={main.description}
+									width="w-full"
+								/>
+							</div>
+							<footer className="dialog-footer w-full">
+								<button
+									className="primary-button-condensed"
+									onClick={() => doEditing()}>
 									{uiButton()}
 								</button>
 							</footer>

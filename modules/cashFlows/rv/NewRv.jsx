@@ -70,6 +70,8 @@ export default function NewRv({ project, reload, unmount }) {
 		transactions: [],
 	});
 
+	console.log(project);
+
 	const totalParticularsAmount = main.particulars.reduce((pv, cv) => pv + Number(cv.amount), 0);
 	const totalPendingAmount = Math.abs(totalParticularsAmount - main.totalAmountReceived);
 	const finalPendingAmount = `${String.fromCharCode(8377)} ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;
@@ -316,7 +318,11 @@ export default function NewRv({ project, reload, unmount }) {
 					bankObj.upiId = bank.upi_id;
 				}
 
-				const totalExpenses = response.data.tasks.reduce((pv, cv) => {
+				let totalExpenses = response.data.tasks.reduce((pv, cv) => {
+					return pv + Number(cv.expense);
+				}, 0);
+
+				totalExpenses = response.data.expenses.reduce((pv, cv) => {
 					return pv + Number(cv.expense);
 				}, 0);
 
@@ -345,10 +351,19 @@ export default function NewRv({ project, reload, unmount }) {
 					companies: response.data.companies,
 				});
 
-				const particulars = response.data.tasks.map((m, i) => {
+				let particulars = response.data.tasks.map((m, i) => {
 					return {
 						amount: Number(m.expense),
 						particulars: m.task,
+						professionalService: project.main_project_name,
+						rowId: i,
+					};
+				});
+
+				particulars = response.data.expenses.map((m, i) => {
+					return {
+						amount: Number(m.expense),
+						particulars: m.description,
 						professionalService: project.main_project_name,
 						rowId: i,
 					};
@@ -443,15 +458,44 @@ export default function NewRv({ project, reload, unmount }) {
 	}
 
 	function uiInputRvDate() {
-		return <DatePicker icon={faCalendar} label="RV Date" onChange={(e) => setInputs("rvDate", e)} tabIndex={1} value={main.rvDate} width="w-full" />;
+		return (
+			<DatePicker
+				icon={faCalendar}
+				label="RV Date"
+				onChange={(e) => setInputs("rvDate", e)}
+				tabIndex={1}
+				value={main.rvDate}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiInputRvDueDate() {
-		return <DatePicker icon={faCalendar} label="Due Date" onChange={(e) => setInputs("rvDueDate", e)} tabIndex={2} value={main.rvDueDate} width="w-full" />;
+		return (
+			<DatePicker
+				icon={faCalendar}
+				label="Due Date"
+				onChange={(e) => setInputs("rvDueDate", e)}
+				tabIndex={2}
+				value={main.rvDueDate}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiInputRvId() {
-		return <TextInput icon={faHashtag} label="ID" maxLength={5} onChange={(e) => setInputs("rvId", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={main.rvId} width="w-full" />;
+		return (
+			<TextInput
+				icon={faHashtag}
+				label="ID"
+				maxLength={5}
+				onChange={(e) => setInputs("rvId", e.target.value)}
+				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
+				tabIndex={2}
+				value={main.rvId}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiInputParticulars(object) {
@@ -498,7 +542,9 @@ export default function NewRv({ project, reload, unmount }) {
 				const buttonsWrapper = `flex ${reverseButtons} w-fit space-x-3 justify-center items-end`;
 
 				return (
-					<div className="flex w-full space-x-3 justify-between items-end" key={m.rowId}>
+					<div
+						className="flex w-full space-x-3 justify-between items-end"
+						key={m.rowId}>
 						<div className="flex w-fit h-10 justify-center items-start">
 							<Badge value={i + 1} />
 						</div>
@@ -506,10 +552,20 @@ export default function NewRv({ project, reload, unmount }) {
 						{uiInputAmount(m)}
 						<div className={buttonsWrapper}>
 							<div className={addButtonWrapper}>
-								<FontAwesomeIcon className="cursor-pointer green-text" icon={faPlusCircle} onClick={() => addRow()} size="lg" />
+								<FontAwesomeIcon
+									className="cursor-pointer green-text"
+									icon={faPlusCircle}
+									onClick={() => addRow()}
+									size="lg"
+								/>
 							</div>
 							<div className={deleteButtonWrapper}>
-								<FontAwesomeIcon className="cursor-pointer red-text" icon={faMinusCircle} onClick={() => deleteRow(m)} size="lg" />
+								<FontAwesomeIcon
+									className="cursor-pointer red-text"
+									icon={faMinusCircle}
+									onClick={() => deleteRow(m)}
+									size="lg"
+								/>
 							</div>
 						</div>
 					</div>
@@ -586,7 +642,9 @@ export default function NewRv({ project, reload, unmount }) {
 				<span className="w-full text-left font-medium-12 logo-green-text">Raised By</span>
 				<span className="w-full text-left font-medium-14">{name}</span>
 				<span className="w-full text-left font-regular-10">
-					<Tippy content={<Tooltip text={address} />} placement="bottom">
+					<Tippy
+						content={<Tooltip text={address} />}
+						placement="bottom">
 						<span>{_address}</span>
 					</Tippy>
 				</span>
@@ -608,7 +666,9 @@ export default function NewRv({ project, reload, unmount }) {
 				<span className="w-full text-left font-medium-12 logo-green-text">Reimbursing Party</span>
 				<span className="w-full text-left font-medium-14">{name === "null" ? "" : name}</span>
 				<span className="w-full text-left font-regular-10">
-					<Tippy content={<Tooltip text={_address} />} placement="bottom">
+					<Tippy
+						content={<Tooltip text={_address} />}
+						placement="bottom">
 						<span>{_address}</span>
 					</Tippy>
 				</span>
@@ -647,7 +707,10 @@ export default function NewRv({ project, reload, unmount }) {
 
 		return (
 			<div className="flex w-1/5 pt-2 justify-end items-center">
-				<QRCode quietZone={0} value={qrCodeContent} />
+				<QRCode
+					quietZone={0}
+					value={qrCodeContent}
+				/>
 			</div>
 		);
 	}
@@ -693,12 +756,20 @@ export default function NewRv({ project, reload, unmount }) {
 		}
 
 		return (
-			<div className="flex w-1/2 h-full justify-center items-center" id="rvWrapper">
-				<div className="flex flex-col w-full h-full px-4 py-2 space-y-4 justify-start items-center overflow-y-auto bg-white" id="rvBody">
+			<div
+				className="flex w-1/2 h-full justify-center items-center"
+				id="rvWrapper">
+				<div
+					className="flex flex-col w-full h-full px-4 py-2 space-y-4 justify-start items-center overflow-y-auto bg-white"
+					id="rvBody">
 					<div className="flex w-full justify-between items-center bg-white">
 						{uiRv()}
 						<div className="flex w-full justify-end items-center">
-							<img src={imageSource} width="55" height="75" />
+							<img
+								src={imageSource}
+								width="55"
+								height="75"
+							/>
 						</div>
 					</div>
 					<div className="flex w-full space-x-5 justify-between items-start">
@@ -736,7 +807,9 @@ export default function NewRv({ project, reload, unmount }) {
 
 		if (typeof main.firm.termsConditions === "string") {
 			termsConditions = main.firm.termsConditions.split("\\n").map((m, i) => (
-				<span className="whitespace-pre-line" key={i}>
+				<span
+					className="whitespace-pre-line"
+					key={i}>
 					{m}
 				</span>
 			));
@@ -756,7 +829,9 @@ export default function NewRv({ project, reload, unmount }) {
 			const wrapper = `flex w-full justify-center items-center ${bottomBorder} font-regular-11`;
 
 			return (
-				<div className={wrapper} key={i}>
+				<div
+					className={wrapper}
+					key={i}>
 					<div className="flex w-1/3 py-2 justify-center items-center">{m.entry_at}</div>
 					<div className="flex w-1/3 justify-center items-center">{m.amount}</div>
 					<div className="flex w-1/3 justify-center items-center">{m.source}</div>
@@ -768,7 +843,9 @@ export default function NewRv({ project, reload, unmount }) {
 	function uiTransactionHistoryHeaders() {
 		return ["Payment Received On", "Payment Amount", "Payment Via"].map((m, i) => {
 			return (
-				<span className="flex w-full py-2 justify-center items-center font-semibold-11 primary-text" key={i}>
+				<span
+					className="flex w-full py-2 justify-center items-center font-semibold-11 primary-text"
+					key={i}>
 					{m}
 				</span>
 			);
@@ -807,7 +884,11 @@ export default function NewRv({ project, reload, unmount }) {
 		<div className="flex flex-col w-full h-full justify-center items-center">
 			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
 				<div className="flex w-full space-x-2.5 justify-start items-center">
-					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
+					<FontAwesomeIcon
+						className="pr-1 cursor-pointer black-text"
+						icon={faChevronLeft}
+						onClick={() => unmount()}
+					/>
 					<div className="flex w-full justify-start items-center">
 						<span className="view-heading">New RV</span>
 					</div>
@@ -818,7 +899,9 @@ export default function NewRv({ project, reload, unmount }) {
 				{uiRvSheet()}
 			</div>
 			<footer className="w-full dialog-footer">
-				<button className={generateButton} onClick={() => downloadPdf()}>
+				<button
+					className={generateButton}
+					onClick={() => downloadPdf()}>
 					Generate
 				</button>
 			</footer>

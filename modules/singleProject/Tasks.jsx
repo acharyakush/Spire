@@ -13,12 +13,12 @@ import MyConstants from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { useEffect, useRef, useState } from "react";
-import { AvatarCircle, SpinnerBig, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { useDragAndDrop } from "@/utilities/useDragAndDrop";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ComboBoxWithChips, DatePicker, TextInputNative } from "@/components/Inputs";
-import { AddParticularRemark, AddTask, DeleteParticularRemark, DeleteTask, EditParticularRemark, EditTask, EditTaskStatus, MarkSubTaskCompleted } from "@/modals/singleProject/tasks";
+import { AvatarCircle, SpinnerBig, SpinnerSmall, Tooltip } from "@/components/Elements";
+import { AddParticularRemark, AddRVExpense, AddTask, DeleteParticularRemark, DeleteTask, EditParticularRemark, EditRVExpense, EditTask, EditTaskStatus, MarkSubTaskCompleted } from "@/modals/singleProject/tasks";
 import {
 	faBan,
 	faBars,
@@ -32,6 +32,7 @@ import {
 	faClock,
 	faIndianRupee,
 	faListAlt,
+	faPen,
 	faPencil,
 	faPlus,
 	faPlusCircle,
@@ -47,6 +48,7 @@ export default function Tasks({ project }) {
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 	const notesHeaders = MyConstants.TableHeaders.Notes;
 	const remarksHeaders = MyConstants.TableHeaders.TasksRemarks;
+	const rvHeaders = { date: "Date", description: "Description", amount: "Amount", entryBy: "Entry By", _: "Actions" };
 	const taskHeaders = MyConstants.TableHeaders.Tasks;
 
 	const tippyReference = useRef(null);
@@ -54,6 +56,7 @@ export default function Tasks({ project }) {
 
 	const [api, setApi] = useState({
 		notes: { copy: [], data: [] },
+		rv: { copy: [], data: [] },
 		remarks: { copy: [], data: [] },
 		tasks: { copy: [], data: [] },
 	});
@@ -63,8 +66,10 @@ export default function Tasks({ project }) {
 		findText: "",
 		selectedModuleId: 1,
 		selectedRemark: {},
+		selectedRv: {},
 		selectedTask: {},
 		selectedTaskForActions: {},
+		sortRv: { column: rvHeaders.date, isAscending: false },
 		sortNotes: { column: remarksHeaders.DueDate, isAscending: false },
 		sortRemarks: { column: remarksHeaders.DueDate, isAscending: false },
 		sortTasks: { column: "", isAscending: false },
@@ -72,6 +77,8 @@ export default function Tasks({ project }) {
 
 	const [mounted, setMounted] = useState({
 		addParticularRemark: false,
+		addRvExpense: false,
+		editRVExpense: false,
 		addTask: false,
 		deleteParticularRemark: false,
 		deleteTask: false,
@@ -237,6 +244,8 @@ export default function Tasks({ project }) {
 				return { ...m, particulars_remarks: details };
 			});
 
+			const rv = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ projectId: project.id, type: "get-project-expenses" }));
+
 			const _tasksRemarks = tasksDetails.data.map((m) => {
 				let taskName = "";
 				const object = tasks.data.find((f) => f.id == m.task_id);
@@ -260,6 +269,7 @@ export default function Tasks({ project }) {
 			setApi((s) => ({
 				...s,
 				tasks: { copy: _tasks, data: _tasks },
+				rv: { copy: rv.data, data: rv.data },
 				remarks: { copy: _tasksRemarks, data: _tasksRemarks },
 			}));
 		} catch (error) {
@@ -333,6 +343,33 @@ export default function Tasks({ project }) {
 		});
 	}
 
+	function sortRV() {
+		return api.rv.data.sort((a, b) => {
+			const aEntryDate = new Date(a.entry_at);
+			const bEntryDate = new Date(b.entry_at);
+
+			const { column, isAscending } = main.sortRv;
+
+			if (column == rvHeaders.date && isAscending) {
+				return aEntryDate - bEntryDate;
+			} else if (column == rvHeaders.date && !isAscending) {
+				return bEntryDate - aEntryDate;
+			} else if (column == rvHeaders.description && isAscending) {
+				return a.description.localeCompare(b.description);
+			} else if (column == rvHeaders.description && !isAscending) {
+				return b.description.localeCompare(a.description);
+			} else if (column == rvHeaders.amount && isAscending) {
+				return a.expense - b.expense;
+			} else if (column == rvHeaders.amount && !isAscending) {
+				return b.expense - a.expense;
+			}
+		});
+	}
+
+	function setAllRvSorting(column) {
+		setMain((s) => ({ ...s, sortRv: { column, isAscending: !s.sortRv.isAscending } }));
+	}
+
 	function setNotesSorting(column) {
 		setMain((s) => ({ ...s, sortNotes: { column, isAscending: !s.sortNotes.isAscending } }));
 	}
@@ -397,6 +434,10 @@ export default function Tasks({ project }) {
 		setMounted((s) => ({ ...s, addParticularRemark: !s.addParticularRemark }));
 	}
 
+	function toggleAddRVExpenseBox() {
+		setMounted((s) => ({ ...s, addRvExpense: !s.addRvExpense }));
+	}
+
 	function toggleAddTaskBox() {
 		setMounted((s) => ({ ...s, addTask: !s.addTask }));
 	}
@@ -427,6 +468,11 @@ export default function Tasks({ project }) {
 	function toggleEditParticularRemarkBox(remark) {
 		setMain((s) => ({ ...s, selectedRemark: remark ?? {} }));
 		setMounted((s) => ({ ...s, editParticularRemark: remark ? true : false }));
+	}
+
+	function toggleEditRVExpenseBox(remark) {
+		setMain((s) => ({ ...s, selectedRv: remark ?? {} }));
+		setMounted((s) => ({ ...s, editRVExpense: remark ? true : false }));
 	}
 
 	function toggleEditTaskBox(task) {
@@ -476,7 +522,8 @@ export default function Tasks({ project }) {
 										size="xl"
 									/>
 								)}
-								<div className="flex flex-col w-full h-[calc(100vh-265px)] px-5 space-y-2.5 justify-start items-center overflow-y-auto scrollbar-gutter">{uiTaskList()}</div>
+								<div className="flex flex-col w-full h-[calc(100vh-315px)] px-5 space-y-2.5 justify-start items-center overflow-y-auto scrollbar-gutter">{uiTaskList()}</div>
+								{uiAllRVButton()}
 								{uiNotesButton()}
 								{uiRemarksButton()}
 							</div>
@@ -529,7 +576,7 @@ export default function Tasks({ project }) {
 	function uiSelectedModuleDataContainer() {
 		const isTaskSelected = main.selectedModuleId === -1 || main.selectedModuleId === 1;
 
-		if (!api.remarks.copy.length && !api.tasks.copy.length && !isTaskSelected) {
+		if (main.selectedModuleId !== 2 && !api.remarks.copy.length && !api.tasks.copy.length && !isTaskSelected) {
 			return uiNoDataFound();
 		}
 
@@ -543,6 +590,10 @@ export default function Tasks({ project }) {
 
 		if (main.selectedModuleId === 1) {
 			return uiRemarks();
+		}
+
+		if (main.selectedModuleId === 2) {
+			return uiRV();
 		}
 
 		if (!api.tasks.data.length) {
@@ -848,6 +899,96 @@ export default function Tasks({ project }) {
 					className={style}
 					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.entry_by, main.findText) }}
 				/>
+			</div>
+		);
+	}
+
+	// RV
+	function uiAllRVButton() {
+		const showTotalNotes = api.rv.data.length > 0 ? "font-regular-10 gray-text" : "hidden";
+
+		const selectedAesthetics = main.selectedModuleId === 2 ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+
+		const wrapper = `flex w-full h-10 px-5 justify-between items-center rounded shadow ${selectedAesthetics} font-regular-11 hovered-rows`;
+
+		return (
+			<button
+				className={wrapper}
+				onClick={() => setModule(2)}>
+				<span>RV</span>
+				<span className={showTotalNotes}>
+					{api.rv.data.length} @ {MyGlobal.FormatCurrency(api.rv.data.reduce((p, v) => p + +v.expense, 0))}
+				</span>
+			</button>
+		);
+	}
+
+	function uiRV() {
+		return (
+			<div className="flex flex-col w-full h-full justify-between items-center contrast-background">
+				<div className="flex w-full px-4 justify-center items-center primary-background">{uiAllRVHeaders()}</div>
+				<div className="flex flex-col w-full h-[calc(100vh-146px)] overflow-y-auto">{sortRV().map((m, i) => uiAllRVRows(m, i))}</div>
+
+				<div
+					className="absolute right-10 bottom-5 cursor-pointer"
+					onClick={() => toggleAddRVExpenseBox()}>
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faPlusCircle}
+						size="3x"
+					/>
+				</div>
+			</div>
+		);
+	}
+
+	function uiAllRVHeaders() {
+		return Object.values(rvHeaders).map((m, i) => {
+			const showSortArrow = m == main.sortRv.column ? "visible" : "invisible";
+
+			return (
+				<span
+					className="flex w-1/5 h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-11"
+					onClick={() => setAllRvSorting(m)}
+					key={i}>
+					<span>{m}</span>
+					<span className={showSortArrow}>{uiAllRVHeadersSortArrows(m)}</span>
+				</span>
+			);
+		});
+	}
+
+	function uiAllRVHeadersSortArrows(column) {
+		if (main.sortRv.column == column) {
+			if (main.sortRv.isAscending) {
+				return <FontAwesomeIcon icon={faSortAmountAsc} />;
+			} else {
+				return <FontAwesomeIcon icon={faSortAmountDesc} />;
+			}
+		}
+	}
+
+	function uiAllRVRows(row, i) {
+		const style = `flex w-1/5 justify-center items-center whitespace-pre-wrap`;
+
+		return (
+			<div
+				className="flex w-full px-4 py-2 justify-center items-center contrast-background bottom-border font-regular-11"
+				key={i}>
+				<span className={style}>{row.entry_date && dayjs(row.entry_date).format("DD MMM, YYYY")}</span>
+
+				<span className={style}>{row.description}</span>
+				<span className={style}>{row.expense}</span>
+
+				<span className={style}>{MyGlobal.GetAnyDataFromId(row.entry_by_id, "full_name")}</span>
+				<span className={style}>
+					<FontAwesomeIcon
+						className="green-text cursor-pointer"
+						icon={faPen}
+						onClick={() => toggleEditRVExpenseBox(row)}
+						size="1x"
+					/>
+				</span>
 			</div>
 		);
 	}
@@ -1192,6 +1333,16 @@ export default function Tasks({ project }) {
 				/>
 			)}
 
+			{mounted.addRvExpense && (
+				<AddRVExpense
+					mount={mounted.addRvExpense}
+					reload={getTasks}
+					project={project}
+					tasks={api.tasks.copy}
+					unmount={toggleAddRVExpenseBox}
+				/>
+			)}
+
 			{mounted.addTask && (
 				<AddTask
 					mount={mounted.addTask}
@@ -1217,6 +1368,16 @@ export default function Tasks({ project }) {
 					reload={getTasks}
 					task={main.selectedTaskForActions}
 					unmount={toggleDeleteTaskBox}
+				/>
+			)}
+
+			{mounted.editRVExpense && (
+				<EditRVExpense
+					mount={mounted.editRVExpense}
+					reload={getTasks}
+					project={project}
+					rv={main.selectedRv}
+					unmount={toggleEditRVExpenseBox}
 				/>
 			)}
 

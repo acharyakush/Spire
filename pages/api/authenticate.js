@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
 			if (!response.length) {
 				res.status(404).end();
-			} else if (response[0].access_revoked == 1) {
+			} else if (response[0].access_revoked == 1 || response[0].employment_status !== "Active") {
 				res.status(403).end();
 			} else {
 				const jsonResponse = JSON.stringify(response[0]);
