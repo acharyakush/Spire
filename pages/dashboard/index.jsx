@@ -13,7 +13,7 @@ import useInvoices from "@/hooks/useDashboardInvoices";
 import useProjects from "@/hooks/useDashboardProjects";
 import useInquiries from "@/hooks/useDashboardInquiries";
 
-import { MyGlobal } from "@/utilities/global";
+import { isDevelopment, MyGlobal } from "@/utilities/global";
 import { useEffect, useState, useMemo, useCallback, startTransition } from "react";
 
 const DynamicConfirmedProjects = dynamic(() => import("./ConfirmedProjects"), { ssr: false });
@@ -29,9 +29,9 @@ const DynamicRVs = dynamic(() => import("./RVs"), { ssr: false });
 export default function Dashboard({ setModuleProps }) {
 	// Business Logic
 	const [data, setData] = useState({
-		showRow1: false,
-		showRow2: false,
-		showRow3: false,
+		showRow1: isDevelopment,
+		showRow2: isDevelopment,
+		showRow3: isDevelopment,
 	});
 
 	const today = useMemo(() => dayjs(), []);
@@ -64,6 +64,7 @@ export default function Dashboard({ setModuleProps }) {
 						const status = prjs.apiCopy.filter((f) => f.id === m.project_id).at(0).status;
 						return { ...m, status };
 					});
+
 					updateTasks(_tasks);
 					updateInquiries(inquiries);
 					updateInvoices(invoices, prjs.paymentOverdue, prjs.paymentPending, prjs.paymentReceived, projects);
@@ -82,7 +83,7 @@ export default function Dashboard({ setModuleProps }) {
 	// Memoized UI functions
 	const uiRow1 = useCallback(() => {
 		if (data.showRow1) {
-			const transition = `row-fade ${data.showRow1 ? "shown" : ""}`;
+			const transition = !isDevelopment ? `row-fade ${data.showRow1 ? "shown" : ""}` : "";
 
 			return (
 				<div className={transition}>
@@ -109,7 +110,7 @@ export default function Dashboard({ setModuleProps }) {
 
 	const uiRow2 = useCallback(() => {
 		if (data.showRow2) {
-			const transition = `row-fade ${data.showRow2 ? "shown" : ""}`;
+			const transition = !isDevelopment ? `row-fade ${data.showRow2 ? "shown" : ""}` : "";
 
 			return (
 				<div className={transition}>
@@ -133,7 +134,7 @@ export default function Dashboard({ setModuleProps }) {
 
 	const uiRow3 = useCallback(() => {
 		if (data.showRow3) {
-			const transition = `row-fade ${data.showRow3 ? "shown" : ""}`;
+			const transition = !isDevelopment ? `row-fade ${data.showRow3 ? "shown" : ""}` : "";
 
 			return (
 				<div className={transition}>
@@ -173,15 +174,17 @@ export default function Dashboard({ setModuleProps }) {
 	useEffect(() => {
 		getSupportData();
 
-		const delay1 = setTimeout(() => setValues("showRow1", true), 200);
-		const delay2 = setTimeout(() => setValues("showRow2", true), 600);
-		const delay3 = setTimeout(() => setValues("showRow3", true), 1000);
+		if (!isDevelopment) {
+			const delay1 = setTimeout(() => setValues("showRow1", true), 200);
+			const delay2 = setTimeout(() => setValues("showRow2", true), 600);
+			const delay3 = setTimeout(() => setValues("showRow3", true), 1000);
 
-		return () => {
-			clearTimeout(delay1);
-			clearTimeout(delay2);
-			clearTimeout(delay3);
-		};
+			return () => {
+				clearTimeout(delay1);
+				clearTimeout(delay2);
+				clearTimeout(delay3);
+			};
+		}
 	}, []);
 
 	// Main UI

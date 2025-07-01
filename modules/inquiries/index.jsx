@@ -645,17 +645,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					overscan={20}
 				/>
 				<div className="flex fixed bottom-3 right-3 space-x-3 z-50">
-					<div
-						className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 border border-blue-600 shadow transition-all duration-300 transform hover-pulse-glow cursor-pointer"
-						onClick={() => toggleNewInquiryView()}>
-						<FontAwesomeIcon
-							icon={faPlus}
-							className="text-blue-500"
-							size="lg"
-						/>
-					</div>
+					{uiNewInquiry()}
 					{uiFilterOrb()}
-					{uiTotalQuoteOrb()}
+					{uiTotalQuote()}
 				</div>
 			</div>
 		);
@@ -936,6 +928,22 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					</div>
 					<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
 				</>
+			);
+		}
+	}
+
+	function uiNewInquiry() {
+		if (isAdministrator || allowNewInquiry) {
+			return (
+				<div
+					className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 border border-blue-600 shadow transition-all duration-300 transform hover-pulse-glow cursor-pointer"
+					onClick={() => toggleNewInquiryView()}>
+					<FontAwesomeIcon
+						icon={faPlus}
+						className="text-blue-500"
+						size="lg"
+					/>
+				</div>
 			);
 		}
 	}
@@ -1268,7 +1276,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		}
 	}
 
-	function uiTotalQuoteOrb() {
+	function uiTotalQuote() {
 		return (
 			<div className="group relative flex items-center w-fit px-0 transition-all duration-500 ease-in-out">
 				<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />

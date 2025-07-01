@@ -6,6 +6,7 @@ import SlotCounter from "react-slot-counter";
 import MyConstants from "@/utilities/constants";
 
 import { BadgeLarge2 } from "@/components/Elements";
+import { isDevelopment } from "@/utilities/global";
 import { faCheckDouble, faCirclePause, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ projects, setModuleProps }) {
@@ -48,26 +49,30 @@ export default function Projects({ projects, setModuleProps }) {
 		let effect = "";
 		let zoomRotate = "";
 
-		if (key === projectsStatus.Active) {
-			effect = "anim fade-in-top-left";
-			zoomRotate = "zoom-rotate-right";
-		} else if (key === projectsStatus.Closed) {
-			effect = "anim fade-in-left";
-			zoomRotate = "zoom-rotate-left";
-		} else if (key === projectsStatus.Hold) {
-			effect = "anim fade-in-bottom-right";
-			zoomRotate = "zoom-rotate-right";
-		} else if (key === projectsStatus.Completed) {
-			effect = "anim fade-in-top-right";
-			zoomRotate = "zoom-rotate-left";
-		} else {
-			effect = "anim fade-in-bottom-right";
+		if (!isDevelopment) {
+			if (key === projectsStatus.Active) {
+				effect = "anim fade-in-top-left";
+				zoomRotate = "zoom-rotate-right";
+			} else if (key === projectsStatus.Closed) {
+				effect = "anim fade-in-left";
+				zoomRotate = "zoom-rotate-left";
+			} else if (key === projectsStatus.Hold) {
+				effect = "anim fade-in-bottom-right";
+				zoomRotate = "zoom-rotate-right";
+			} else if (key === projectsStatus.Completed) {
+				effect = "anim fade-in-top-right";
+				zoomRotate = "zoom-rotate-left";
+			} else {
+				effect = "anim fade-in-bottom-right";
+			}
 		}
 
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
+			<div
+				className={wrapper}
+				onClick={() => setModuleProps("projectsOrTasks", key)}>
 				<div className={`flex w-full py-6 justify-center items-center rounded shadow-md ${zoomRotate} ${aesthetics.background}`}>
 					<div className="flex flex-col justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
@@ -81,8 +86,11 @@ export default function Projects({ projects, setModuleProps }) {
 	}
 
 	function uiMain() {
+		const transition = isDevelopment ? "" : "anim slide-in-down";
+		const wrapper = "flex flex-col w-full justify-between items-center " + transition;
+
 		return (
-			<div className="flex flex-col w-full justify-between items-center anim slide-in-down">
+			<div className={wrapper}>
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-16 primary-text">
 					<span>{MyConstants.Modules.Base.Projects}</span>
 					<BadgeLarge2>

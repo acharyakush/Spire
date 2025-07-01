@@ -5,6 +5,7 @@
 import SlotCounter from "react-slot-counter";
 import MyConstants from "@/utilities/constants";
 
+import { isDevelopment } from "@/utilities/global";
 import { BadgeLarge2 } from "@/components/Elements";
 import { faCheckDouble, faCirclePause, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
 
@@ -49,24 +50,28 @@ export default function Inquiries({ inquiries, setModuleProps }) {
 		let effect = "";
 		let zoomRotate = "";
 
-		if (key === inquiriesStatus.Open) {
-			effect = "anim fade-in-top-left";
-			zoomRotate = "zoom-rotate-right";
-		} else if (key === inquiriesStatus.Closed) {
-			effect = "anim fade-in-top-left";
-			zoomRotate = "zoom-rotate-left";
-		} else if (key === inquiriesStatus.Hold) {
-			effect = "anim fade-in-top-right";
-			zoomRotate = "zoom-rotate-left";
-		} else {
-			effect = "anim fade-in-down";
-			zoomRotate = "zoom-rotate-right";
+		if (!isDevelopment) {
+			if (key === inquiriesStatus.Open) {
+				effect = "anim fade-in-top-left";
+				zoomRotate = "zoom-rotate-right";
+			} else if (key === inquiriesStatus.Closed) {
+				effect = "anim fade-in-top-left";
+				zoomRotate = "zoom-rotate-left";
+			} else if (key === inquiriesStatus.Hold) {
+				effect = "anim fade-in-top-right";
+				zoomRotate = "zoom-rotate-left";
+			} else {
+				effect = "anim fade-in-down";
+				zoomRotate = "zoom-rotate-right";
+			}
 		}
 
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div className={wrapper} onClick={() => setModuleProps(baseModules.Inquiries, key)}>
+			<div
+				className={wrapper}
+				onClick={() => setModuleProps(baseModules.Inquiries, key)}>
 				<div className={`flex w-full py-6 justify-center items-center rounded shadow-md ${zoomRotate} ${aesthetics.background}`}>
 					<div className="flex flex-col px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
@@ -80,8 +85,11 @@ export default function Inquiries({ inquiries, setModuleProps }) {
 	}
 
 	function uiMain() {
+		const transition = isDevelopment ? "" : "anim slide-in-down";
+		const wrapper = "flex flex-col w-full justify-between items-start " + transition;
+
 		return (
-			<div className="flex flex-col w-full justify-between items-start anim slide-in-down">
+			<div className={wrapper}>
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-16 primary-text ">
 					<span>{baseModules.Inquiries}</span>
 					<BadgeLarge2>

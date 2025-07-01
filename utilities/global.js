@@ -12,7 +12,7 @@ const encryptionIv = CryptoJS.enc.Hex.parse("00000000000000000000000000000000");
 const encryptionKey = CryptoJS.enc.Hex.parse(process.env.NEXT_PUBLIC_SECRET_KEY);
 
 export const applicationName = process.env.NEXT_PUBLIC_APPLICATION_NAME;
-export const isDevelopment = process.env.NODE_ENV !== "production";
+export const isDevelopment = process.env.NODE_ENV === "development";
 export const allowedKeysForOnKeyPressEvent = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
 
 const thisFinancialYear = `${dayjs(new Date()).format("YYYY")}-${dayjs(new Date()).add(1, "y").format("YY")}`;

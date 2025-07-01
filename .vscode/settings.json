@@ -1,5 +1,5 @@
 {
-	"debug.console.fontFamily": "'Droid Sans Mono', Consolas, 'Courier New', monospace",
+	"debug.console.fontFamily": "'Fira Code Retina', Consolas, 'Courier New', monospace",
 	"debug.console.fontSize": 14,
 	"editor.acceptSuggestionOnEnter": "smart",
 	"editor.autoClosingBrackets": "always",
@@ -15,7 +15,7 @@
 	"editor.cursorBlinking": "smooth",
 	"editor.cursorSmoothCaretAnimation": "on",
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.fontFamily": "'Droid Sans Mono', Consolas, 'Courier New', monospace",
+	"editor.fontFamily": "'Fira Code Retina', Consolas, 'Courier New', monospace",
 	"editor.fontLigatures": true,
 	"editor.fontSize": 14,
 	"editor.formatOnSave": true,
@@ -65,7 +65,7 @@
 	"search.exclude": {
 		"**/node_modules": true
 	},
-	"terminal.integrated.fontFamily": "'Droid Sans Mono', Consolas, 'Courier New', monospace",
+	"terminal.integrated.fontFamily": "'Fira Code Retina', Consolas, 'Courier New', monospace",
 	"terminal.integrated.fontSize": 14,
 	"window.autoDetectColorScheme": true
 }

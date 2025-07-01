@@ -7,8 +7,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import ReactDatePicker from "react-datepicker";
 
 import { useEffect, useState } from "react";
-import { MyGlobal } from "@/utilities/global";
 import { BadgeLarge2 } from "@/components/Elements";
+import { isDevelopment, MyGlobal } from "@/utilities/global";
 import { Menu, MenuButton, MenuItems } from "@headlessui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar, faFilter, faMultiply, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
@@ -64,18 +64,25 @@ export default function PaymentsReceived({ invoices }) {
 
 	function setSort(header) {
 		if (header === "Amount") {
-			setMain((s) => ({ ...s, sort: { column: header, isAscending: !main.sort.isAscending } }));
+			setMain((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
 	}
 
 	// UI Components
 	function uiFilter() {
 		return (
-			<Menu as="div" className="relative z-50 inline-block text-left">
+			<Menu
+				as="div"
+				className="relative z-50 inline-block text-left">
 				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
-					<FontAwesomeIcon className="primary-text" icon={faFilter} />
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faFilter}
+					/>
 				</MenuButton>
-				<MenuItems anchor="bottom end" className="absolute w-max h-auto right-5 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
+				<MenuItems
+					anchor="bottom end"
+					className="absolute w-max h-auto right-5 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
 					<div className="flex w-full p-5 space-x-5 justify-center items-center">
 						{uiFromDate()}
 						{uiToDate()}
@@ -88,7 +95,11 @@ export default function PaymentsReceived({ invoices }) {
 	function uiFromDate() {
 		return (
 			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow bg-[var(--primary-transparent-01)]">
-				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<FontAwesomeIcon
+					className="primary-text"
+					icon={faCalendar}
+					size="sm"
+				/>
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-regular-10"
 					dateFormat="dd-MM-YYYY"
@@ -105,7 +116,11 @@ export default function PaymentsReceived({ invoices }) {
 					showYearDropdown
 					withPortal
 				/>
-				<FontAwesomeIcon className="cursor-pointer primary-text" onClick={() => setInputs("from", "")} icon={faMultiply} />
+				<FontAwesomeIcon
+					className="cursor-pointer primary-text"
+					onClick={() => setInputs("from", "")}
+					icon={faMultiply}
+				/>
 			</div>
 		);
 	}
@@ -118,7 +133,10 @@ export default function PaymentsReceived({ invoices }) {
 			const wrapper = `flex ${width} pr-2.5 space-x-2 justify-center items-center text-white ${cursor} font-medium-9`;
 
 			return (
-				<span className={wrapper} key={i} onClick={() => setSort(m)}>
+				<span
+					className={wrapper}
+					key={i}
+					onClick={() => setSort(m)}>
 					<span>{m}</span>
 					<span className={showSortArrow}>{uiSortArrows(m)}</span>
 				</span>
@@ -131,8 +149,11 @@ export default function PaymentsReceived({ invoices }) {
 			"text-[16px] [@media(max-width:1351px)]:text-[15px] [@media(max-width:1299px)]:text-[14px]  [@media(max-width:1251px)]:text-[13px] [@media(max-width:1201px)]:text-[12px] [@media(max-width:1152px)]:text-[11px] [@media(max-width:1104px)]:text-[10px]";
 		const firstRowStyle = `flex w-full space-x-2.5 justify-start items-center font-bold-16 ${fontSize} primary-text`;
 
+		const transition = isDevelopment ? "" : "anim zoom-in";
+		const wrapper = "flex flex-col w-full space-y-2 justify-start items-center " + transition;
+
 		return (
-			<div className="flex flex-col w-full space-y-2 justify-start items-center anim zoom-in">
+			<div className={wrapper}>
 				<div className="flex w-full justify-between items-center">
 					<div className={firstRowStyle}>
 						<span>Payments Received</span>
@@ -158,7 +179,9 @@ export default function PaymentsReceived({ invoices }) {
 			const style = `flex min-h-9 items-center`;
 
 			return (
-				<div className={wrapper} key={i}>
+				<div
+					className={wrapper}
+					key={i}>
 					<span className={`${style} w-[5%]`}>{i + 1}</span>
 					<span className={`${style} w-[95%] px-5`}>{m.company_name}</span>
 					<span className={`${style} w-[95%] justify-center`}>{MyGlobal.FormatCurrency(m.amount_received)}</span>
@@ -170,9 +193,21 @@ export default function PaymentsReceived({ invoices }) {
 	function uiSortArrows(column) {
 		if (main.sort.column == column) {
 			if (main.sort.isAscending) {
-				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} size="sm" />;
+				return (
+					<FontAwesomeIcon
+						className="text-white"
+						icon={faSortAmountDesc}
+						size="sm"
+					/>
+				);
 			} else {
-				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} size="sm" />;
+				return (
+					<FontAwesomeIcon
+						className="text-white"
+						icon={faSortAmountAsc}
+						size="sm"
+					/>
+				);
 			}
 		}
 	}
@@ -180,7 +215,11 @@ export default function PaymentsReceived({ invoices }) {
 	function uiToDate() {
 		return (
 			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow bg-[var(--primary-transparent-01)]">
-				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<FontAwesomeIcon
+					className="primary-text"
+					icon={faCalendar}
+					size="sm"
+				/>
 				<ReactDatePicker
 					className="w-20 h-6 bg-transparent outline-none font-regular-10"
 					dateFormat="dd-MM-YYYY"
@@ -197,7 +236,11 @@ export default function PaymentsReceived({ invoices }) {
 					tabIndex={2}
 					withPortal
 				/>
-				<FontAwesomeIcon className="cursor-pointer primary-text" onClick={() => setInputs("to", "")} icon={faMultiply} />
+				<FontAwesomeIcon
+					className="cursor-pointer primary-text"
+					onClick={() => setInputs("to", "")}
+					icon={faMultiply}
+				/>
 			</div>
 		);
 	}

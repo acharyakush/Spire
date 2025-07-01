@@ -22,7 +22,11 @@ export default function App({ Component, pageProps }) {
 	// Main UI
 	return (
 		<>
-			<ToastContainer newestOnTop pauseOnFocusLoss transition={Zoom} />
+			<ToastContainer
+				newestOnTop
+				pauseOnFocusLoss
+				transition={Zoom}
+			/>
 			<Component {...pageProps} />
 		</>
 	);

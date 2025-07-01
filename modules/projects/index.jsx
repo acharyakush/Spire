@@ -1237,22 +1237,32 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							data={sortedProjects}
 							itemContent={(i, row) => uiRows(row)}
 							totalCount={sortedProjects.length}
-							components={{
-								Footer: () => (
-									<div className="fixed bottom-2.5 right-2.5 space-x-2.5 px-5 py-1 flex justify-between items-center rounded-tr-full rounded-br-full green-background-transparent-01 green-border">
-										<span className="text-white flex justify-center items-center w-10 h-10 rounded-full green-background absolute -left-5">
-											<FontAwesomeIcon icon={faIndianRupee} />
-										</span>
-										<span className="text-center green-text font-bold-12">{getTotalQuote()}</span>
-									</div>
-								),
-							}}
 						/>
+						<div className="fixed bottom-3 right-3 z-50">{uiTotalQuote()}</div>
 					</div>
 				</div>
 			</div>
 		);
 	}, [uiList, uiHeaders, sortedProjects, uiRows]);
+
+	function uiTotalQuote() {
+		return (
+			<div className="group relative flex items-center w-fit px-0 transition-all duration-500 ease-in-out">
+				<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
+
+				<div className="flex items-center justify-center w-10 h-10 group-hover:h-[36px] rounded-full text-white ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
+					<FontAwesomeIcon
+						icon={faIndianRupee}
+						size="1x"
+					/>
+				</div>
+
+				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-[300px]">
+					<div className="pl-2 pr-4 text-white font-bold-12 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out relative z-20">{getTotalQuote()}</div>
+				</div>
+			</div>
+		);
+	}
 
 	const uiMain = useCallback(() => {
 		if (main.isLoading.supportData) {

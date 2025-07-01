@@ -15,7 +15,7 @@ import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { AvatarCircle, Badge, BadgeSmall, Tooltip } from "@/components/Elements";
-import { faClock, faClockRotateLeft, faCrown, faFilterCircleXmark, faHourglassEnd, faHourglassHalf, faPencilAlt, faPlusCircle, faSearch, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faClockRotateLeft, faCrown, faFilter, faFilterCircleXmark, faHourglassEnd, faHourglassHalf, faPencilAlt, faPlusCircle, faSearch, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, useDroppable, DragOverlay } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable, sortableKeyboardCoordinates, defaultAnimateLayoutChanges, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
@@ -45,6 +45,7 @@ export default function Todos() {
 	const [mounted, setMounted] = useState({ addTodoBox: false, deleteTodo: false, editTodo: false, details: false });
 
 	const [statuses, setStatuses] = useState([
+		{ count: 0, label: "Overdue" },
 		{ count: 0, label: "Today" },
 		{ count: 0, label: "Tomorrow" },
 		{ count: 0, label: "All" },
@@ -55,8 +56,8 @@ export default function Todos() {
 		isLoading: false,
 		revisedStaff: [],
 		selectedTodo: {},
-		selectedStaff: { fullName: "", id: "" },
-		status: statuses.at(2).label,
+		selectedStaff: { fullName: "", id: "", type: "" },
+		status: statuses.at(-1).label,
 	});
 
 	const sensors = useSensors(
@@ -277,7 +278,13 @@ export default function Todos() {
 
 				// Step 1: filter by selected staff
 				if (main.selectedStaff.id) {
-					filteredTodos = filteredTodos.filter((todo) => String(todo.assigned_to).includes(main.selectedStaff.id));
+					filteredTodos = filteredTodos.filter((f) => {
+						if (main.selectedStaff.type && main.selectedStaff.type === "Assigned alone") {
+							return String(f.assigned_to) === main.selectedStaff.id;
+						}
+
+						return String(f.assigned_to).includes(main.selectedStaff.id);
+					});
 				}
 
 				if (main.find) {
@@ -287,6 +294,8 @@ export default function Todos() {
 				// Step 2: filter by due date
 				if (main.status === "Today") {
 					filteredTodos = filteredTodos.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === dayjs().format("DD-MM-YYYY"));
+				} else if (main.status === "Overdue") {
+					filteredTodos = filteredTodos.filter((f) => dayjs(f.due_date, "DD-MM-YYYY").isBefore(dayjs().startOf("day")));
 				} else if (main.status === "Tomorrow") {
 					filteredTodos = filteredTodos.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === dayjs().add(1, "day").format("DD-MM-YYYY"));
 				}
@@ -440,7 +449,11 @@ export default function Todos() {
 	}
 
 	function setStaff(obj) {
-		setMain((s) => ({ ...s, selectedStaff: { fullName: obj.full_name, id: obj.id } }));
+		setMain((s) => ({ ...s, selectedStaff: { ...s.selectedStaff, fullName: obj.full_name, id: obj.id } }));
+	}
+
+	function setStaffType(value) {
+		setMain((s) => ({ ...s, selectedStaff: { ...s.selectedStaff, type: value } }));
 	}
 
 	function setStatus(value) {
@@ -536,7 +549,7 @@ export default function Todos() {
 			<FontAwesomeIcon
 				className="cursor-pointer outline-none focus:outline-none red-text"
 				icon={faFilterCircleXmark}
-				onClick={() => setStaff({ full_name: "", id: "" })}
+				onClick={() => setMain((s) => ({ ...s, selectedStaff: { full_name: "", id: "", type: "" } }))}
 			/>
 		);
 	}
@@ -605,6 +618,43 @@ export default function Todos() {
 		});
 	}
 
+	function uiStaffAdvanced() {
+		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+
+		return (
+			<Menu
+				as="div"
+				className="flex max-w-full min-w-40 justify-center items-center relative">
+				<MenuButton className={wrapper}>
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faFilter}
+					/>
+					<span className="gray-text">{main.selectedStaff.type || "Type"}</span>
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStaffListAdvanced()}</MenuItems>
+			</Menu>
+		);
+	}
+
+	function uiStaffListAdvanced() {
+		return ["Assigned alone", "Assigned with team"].map((m, i) => {
+			const isSelected = m.id === main.selectedStaff.type;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+
+			return (
+				<MenuItem
+					as="div"
+					className={wrapper}
+					key={i}
+					onClick={() => setStaffType(m)}>
+					<span>{m}</span>
+				</MenuItem>
+			);
+		});
+	}
+
 	function uiStatus() {
 		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
 
@@ -661,6 +711,10 @@ export default function Todos() {
 
 			const statusCounts = [
 				{
+					label: "Overdue",
+					count: allTodos.filter((f) => dayjs(f.due_date, "DD-MM-YYYY").isBefore(dayjs().startOf("day"))).length,
+				},
+				{
 					label: "Today",
 					count: allTodos.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === todayStr).length,
 				},
@@ -697,6 +751,7 @@ export default function Todos() {
 					{uiStatus()}
 					{uiFind()}
 					{IsUserAdministrator && uiStaff()}
+					{IsUserAdministrator && uiStaffAdvanced()}
 					{IsUserAdministrator && (
 						<Tippy
 							content={<Tooltip text="Clear filters" />}

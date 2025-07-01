@@ -580,16 +580,16 @@ export default function Tasks({ project }) {
 			return uiNoDataFound();
 		}
 
+		if (main.selectedModuleId === 1) {
+			return uiRemarks();
+		}
+
 		if (!api.remarks.copy.length && main.selectedModuleId === 1) {
 			return <span className="flex flex-col w-full h-full space-y-2 justify-center items-center rounded shadow font-medium-12 gray-text contrast-background">No sub tasks found</span>;
 		}
 
 		if (main.selectedModuleId === -1) {
 			return uiNotes();
-		}
-
-		if (main.selectedModuleId === 1) {
-			return uiRemarks();
 		}
 
 		if (main.selectedModuleId === 2) {

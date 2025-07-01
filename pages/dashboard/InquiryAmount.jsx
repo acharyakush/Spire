@@ -5,7 +5,7 @@
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
 
-import { MyGlobal } from "@/utilities/global";
+import { isDevelopment, MyGlobal } from "@/utilities/global";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -106,8 +106,11 @@ export default function InquiryAmount({ inquiries }) {
 
 	// UI Components
 	function uiMain() {
+		const transition = isDevelopment ? "" : "anim zoom-in";
+		const wrapper = "flex flex-col w-full space-y-2 justify-between items-center " + transition;
+
 		return (
-			<div className="flex flex-col w-full space-y-2 justify-between items-center anim zoom-in">
+			<div className={wrapper}>
 				<span className="flex w-full justify-start items-center font-bold-16 primary-text">Inquiry Amount</span>
 				<div className="flex flex-col w-full p-4 justify-between items-center full-border rounded shadow-md contrast-background">
 					<div className="flex w-full p-2 justify-between items-center">
@@ -115,7 +118,13 @@ export default function InquiryAmount({ inquiries }) {
 					</div>
 					<div className="w-full">
 						<div id="chart">
-							<ReactApexChart options={getChartOptions()} series={getChartSeries()} height={175} type="line" width="100%" />
+							<ReactApexChart
+								options={getChartOptions()}
+								series={getChartSeries()}
+								height={175}
+								type="line"
+								width="100%"
+							/>
 						</div>
 						<div id="html-dist" />
 					</div>
