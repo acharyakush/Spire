@@ -9,11 +9,11 @@ import MyConstants from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ComboBox2, ComboBoxWithChips, DatePicker, TextArea } from "@/components/Inputs";
-import { faCalendar, faNoteSticky, faStar, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faDiagramProject, faNoteSticky, faStar, faUser, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export default function AddTodo({ mount, refresh, unmount }) {
 	// Business Logic
@@ -26,10 +26,21 @@ export default function AddTodo({ mount, refresh, unmount }) {
 		priority: "Medium",
 	});
 
+	const [selectedClient, setSelectedClient] = useState({});
+	const [clientSearch, setClientSearch] = useState("");
+
+	const [selectedProject, setSelectedProject] = useState({});
+	const [projectSearch, setProjectSearch] = useState("");
+
+	const [supportData, setSupportData] = useState({ clients: [], clientsCopy: [], projects: [] });
+
+	const [isFetching, setIsFetching] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isBoxDragged, setIsBoxDragged] = useState(false);
 
 	const [mounted, setMounted] = useState({ assignedToMenu: false });
+
+	const isUserAdministrator = useMemo(() => MyGlobal.IsUserAdministrator(), []);
 
 	const disableAddButton = isLoading || !data.description || !data.assignedTo.length ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
@@ -40,10 +51,12 @@ export default function AddTodo({ mount, refresh, unmount }) {
 			setIsLoading(true);
 
 			const body = {
+				clientId: selectedClient?.id,
 				description: data.description,
 				assignedTo: data.assignedTo.map((m) => m.id).join(","),
 				dueDate: data.dueDate,
 				priority: data.priority,
+				projectId: selectedProject?.id,
 				userId: MyGlobal.GetUserId(),
 			};
 
@@ -75,6 +88,63 @@ export default function AddTodo({ mount, refresh, unmount }) {
 	function detectOutsideClick(event) {
 		if (assignedToMenuRef.current && !assignedToMenuRef.current.contains(event.target)) {
 			setMounted((s) => ({ ...s, assignedToMenu: false }));
+		}
+	}
+
+	function getFilteredClients() {
+		let list = !supportData.clientsCopy.length ? [] : supportData.clientsCopy;
+
+		if (list.length) {
+			if (clientSearch) {
+				list = supportData.clientsCopy.filter((f) => {
+					return String(f.name).toLowerCase().includes(clientSearch.toLowerCase());
+				});
+			}
+		}
+
+		return list;
+	}
+
+	function getFilteredProjects() {
+		let list = !selectedClient?.projects?.length ? [] : selectedClient?.projects;
+
+		if (list.length) {
+			if (projectSearch) {
+				list = selectedClient?.projects?.filter((f) => {
+					return String(f.main_project_name).toLowerCase().includes(projectSearch.toLowerCase());
+				});
+			}
+		}
+
+		return list;
+	}
+
+	async function getSupportData() {
+		try {
+			setIsFetching(true);
+
+			const response = await axios.get(MyConstants.ApiEndpoints.Todos.GetAddTodoSupportData, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				const clients = response.data.clients.map((m) => {
+					const projects = response.data.projects
+						.filter((f) => f.client_id === m.id)
+						.map((m) => {
+							const mainProjectName = response.data.mainProjects.filter((f) => f.id === m.main_project_id).at(0).name;
+
+							const subProjectName = response.data.subProjects.filter((f) => f.id === m.sub_project_id).at(0).name;
+
+							return { ...m, name: mainProjectName, sub_project_name: subProjectName };
+						});
+
+					return { ...m, projects };
+				});
+				setSupportData({ clients, clientsCopy: clients, projects: response.data.projects });
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Add Todo > getSupportData()");
+		} finally {
+			setIsFetching(false);
 		}
 	}
 
@@ -127,10 +197,38 @@ export default function AddTodo({ mount, refresh, unmount }) {
 					onSelectedItemClick={(e) => setValues("assignedTo", e)}
 					selectedItems={data.assignedTo}
 					showList={showMenu}
-					source={MyGlobal.GetAllUsers()}
+					source={MyGlobal.GetAllUsers().filter((f) => {
+						if (isUserAdministrator) return f;
+						return !String(f.id).startsWith("A");
+					})}
 					toggleMenu={() => toggleAssignedToMenu()}
 				/>
 			</div>
+		);
+	}
+
+	function uiClient() {
+		return (
+			<ComboBox2
+				allowCreatingNewItem={false}
+				comparingValue1="name"
+				comparingValue2={selectedClient?.name}
+				displayValue="name"
+				filteredData={getFilteredClients}
+				hasDataObject
+				icon={faUser}
+				isReadOnly={false}
+				label="Clients"
+				onChange={(e) => setSelectedClient(e)}
+				onClick={() => {}}
+				onInputChange={(e) => setClientSearch(!e.target.value ? "" : e.target.value)}
+				onKeyPress={() => {}}
+				searchedItem={clientSearch}
+				showFullObject
+				tabIndex={1}
+				value={selectedClient?.name ?? ""}
+				width="w-full"
+			/>
 		);
 	}
 
@@ -185,6 +283,33 @@ export default function AddTodo({ mount, refresh, unmount }) {
 		);
 	}
 
+	function uiSelectedClientsProjects() {
+		return (
+			<ComboBox2
+				allowCreatingNewItem={false}
+				comparingValue1={["id", "name"]}
+				comparingValue2={selectedProject?.id + " - " + selectedProject?.name}
+				displayValue={["id", "name"]}
+				filteredData={getFilteredProjects}
+				hasDataObject
+				icon={faDiagramProject}
+				isMultipleDisplayValue
+				multipleDisplayValue={["id", "name"]}
+				isReadOnly={false}
+				label="Projects"
+				onChange={(e) => setSelectedProject(e)}
+				onClick={() => {}}
+				onInputChange={(e) => setProjectSearch(!e.target.value ? "" : e.target.value)}
+				onKeyPress={() => {}}
+				searchedItem={projectSearch}
+				showFullObject
+				tabIndex={1}
+				value={selectedProject ? selectedProject?.id + " - " + selectedProject?.name : ""}
+				width="w-full"
+			/>
+		);
+	}
+
 	function uiTitleBar() {
 		const titleBarCursor = isBoxDragged ? "cursor-grabbing" : "cursor-grab";
 		const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -204,6 +329,15 @@ export default function AddTodo({ mount, refresh, unmount }) {
 	}
 
 	// Hooks
+	useEffect(() => {
+		getSupportData();
+	}, []);
+
+	useEffect(() => {
+		setProjectSearch("");
+		setSelectedProject(!selectedClient ? {} : selectedClient?.projects?.at(0));
+	}, [selectedClient]);
+
 	useEffect(() => {
 		if (mounted.assignedToMenu) {
 			document.addEventListener("mousedown", detectOutsideClick);
@@ -228,6 +362,10 @@ export default function AddTodo({ mount, refresh, unmount }) {
 					<DialogPanel className="w-3/5 transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full p-6 space-y-6 justify-between items-center">
+							<div className="flex w-full space-x-6 justify-between items-center">
+								{uiClient()}
+								{uiSelectedClientsProjects()}
+							</div>
 							{uiAssignedTo()}
 							<div className="flex w-full space-x-6 justify-between items-start">
 								<div className="flex flex-col w-1/2 h-full justify-center items-center">{uiDescription()}</div>

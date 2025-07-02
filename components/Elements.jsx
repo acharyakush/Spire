@@ -1,11 +1,36 @@
 "use client";
 
-const getInitials = (name) => {
-	if (!name) return "";
-	const words = name.trim().split(" ");
-	const initials = words.map((word) => word[0].toUpperCase());
-	return initials.slice(0, 2).join("");
-};
+function getInitials(namesArray) {
+	const result = [];
+	const used = new Set();
+
+	namesArray.forEach((fullName) => {
+		const [firstRaw, lastRaw] = fullName.trim().split(/\s+/);
+		const first = firstRaw || "";
+		const last = lastRaw || "";
+
+		if (!first || !last) {
+			result.push("??");
+			return;
+		}
+
+		let baseInitial = (first[0] + last[0]).toUpperCase();
+		let initials = baseInitial;
+
+		// Try to make it unique
+		let i = 1;
+		while (used.has(initials)) {
+			// Try taking more letters from first name or fallback to numbered suffix
+			initials = (first.substring(0, i + 1) + last[0]).toUpperCase();
+			i++;
+		}
+
+		used.add(initials);
+		result.push(initials);
+	});
+
+	return result;
+}
 
 const getRandomPastel = (seed = 0) => {
 	const pastelColors = [
@@ -26,12 +51,17 @@ const getRandomPastel = (seed = 0) => {
 export function AvatarCircle({ name, names }) {
 	const people = Array.isArray(names) ? names : name ? [name] : [];
 
+	// Get all initials in one pass, with uniqueness detection
+	const initialsList = getInitials(people);
+
 	function renderAvatar(person, index) {
-		const initials = getInitials(person);
+		const initials = initialsList[index];
 		let backgroundColour = getRandomPastel(index);
 
 		if (person === "Drashti Sharma") backgroundColour = "#D5E8D4";
 		if (person === "Abhishek Gor") backgroundColour = "#F2F4F4";
+
+		const isWide = initials.length > 2;
 
 		const style = {
 			backgroundColor: backgroundColour,
@@ -39,13 +69,15 @@ export function AvatarCircle({ name, names }) {
 			borderRadius: "50%",
 			boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
 			color: "#333",
-			marginLeft: index === 0 ? 0 : -7,
+			marginLeft: index === 0 ? 0 : isWide ? -5 : -7,
 			zIndex: people.length - index,
 		};
 
+		const avatarClass = `flex w-9 h-9 justify-center items-center select-none font-medium ${isWide ? "text-[0.7rem]" : "text-[0.9rem]"}`;
+
 		return (
 			<div
-				className="flex w-9 h-9 justify-center items-center select-none font-medium-10"
+				className={avatarClass}
 				key={index}
 				title={person}
 				style={style}>

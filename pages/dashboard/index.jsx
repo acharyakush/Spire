@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 import MyConstants from "@/utilities/constants";
 
 import useRv from "@/hooks/useDashboardRv";
-import useTasks from "@/hooks/useDashboardTasks";
+import useTodos from "@/hooks/useDashboardTodos";
 import useInvoices from "@/hooks/useDashboardInvoices";
 import useProjects from "@/hooks/useDashboardProjects";
 import useInquiries from "@/hooks/useDashboardInquiries";
@@ -23,7 +23,7 @@ const DynamicInquiryAmount = dynamic(() => import("./InquiryAmount"), { ssr: fal
 const DynamicInquiries = dynamic(() => import("./Inquiries"), { ssr: false });
 const DynamicProjects = dynamic(() => import("./Projects"), { ssr: false });
 const DynamicInvoices = dynamic(() => import("./Invoices"), { ssr: false });
-const DynamicTasks = dynamic(() => import("./Tasks"), { ssr: false });
+const DynamicTodos = dynamic(() => import("./Todos"), { ssr: false });
 const DynamicRVs = dynamic(() => import("./RVs"), { ssr: false });
 
 export default function Dashboard({ setModuleProps }) {
@@ -40,12 +40,12 @@ export default function Dashboard({ setModuleProps }) {
 	const { invoices, updateInvoices } = useInvoices(today);
 	const { projects, updateProjects } = useProjects();
 	const { rv, updateRv } = useRv();
-	const { tasks, updateTasks } = useTasks();
+	const { todos, updateTodos } = useTodos();
 
 	// Memoized values
 	const memoizedProjects = useMemo(() => projects, [projects]);
 	const memoizedInvoices = useMemo(() => invoices, [invoices]);
-	const memoizedTasks = useMemo(() => tasks, [tasks]);
+	const memoizedTodos = useMemo(() => todos, [todos]);
 	const memoizedInquiries = useMemo(() => inquiries, [inquiries]);
 	const memoizedRv = useMemo(() => rv, [rv]);
 
@@ -55,17 +55,12 @@ export default function Dashboard({ setModuleProps }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Dashboard, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const { companies, inquiries, invoices, projects, rv, tasks, transactions } = response.data;
+				const { companies, inquiries, invoices, projects, rv, tasks, todos, transactions } = response.data;
 
 				startTransition(() => {
 					const prjs = updateProjects(companies, invoices, transactions, projects);
 
-					const _tasks = tasks.map((m) => {
-						const status = prjs.apiCopy.filter((f) => f.id === m.project_id).at(0).status;
-						return { ...m, status };
-					});
-
-					updateTasks(_tasks);
+					updateTodos(todos);
 					updateInquiries(inquiries);
 					updateInvoices(invoices, prjs.paymentOverdue, prjs.paymentPending, prjs.paymentReceived, projects);
 					updateRv(rv, tasks);
@@ -96,9 +91,9 @@ export default function Dashboard({ setModuleProps }) {
 							<DynamicConfirmedProjects projects={memoizedProjects} />
 						</div>
 						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicTasks
+							<DynamicTodos
 								setModuleProps={setModuleProps}
-								tasks={memoizedTasks}
+								todos={memoizedTodos}
 							/>
 							<DynamicPendingPayments invoices={memoizedInvoices.pending} />
 						</div>
@@ -106,7 +101,7 @@ export default function Dashboard({ setModuleProps }) {
 				</div>
 			);
 		}
-	}, [data.showRow1, memoizedProjects, memoizedTasks, memoizedInvoices, setModuleProps]);
+	}, [data.showRow1, memoizedProjects, memoizedTodos, memoizedInvoices, setModuleProps]);
 
 	const uiRow2 = useCallback(() => {
 		if (data.showRow2) {

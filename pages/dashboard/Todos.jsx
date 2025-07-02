@@ -11,9 +11,9 @@ import MyConstants from "@/utilities/constants";
 import { isDevelopment } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { BadgeLarge2, TooltipList } from "@/components/Elements";
-import { faCalendarCheck, faCalendarPlus, faCalendarWeek, faCalendarXmark, faStar } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarCheck, faCalendarWeek, faCalendarXmark, faStar } from "@fortawesome/free-solid-svg-icons";
 
-export default function Tasks({ setModuleProps, tasks }) {
+export default function Todos({ setModuleProps, todos }) {
 	// Functions
 	function getBackgroundAndIcon(status) {
 		const object = { background: "", icon: "" };
@@ -26,10 +26,6 @@ export default function Tasks({ setModuleProps, tasks }) {
 			case status == "Today":
 				object.background = "dashboard-orange-2";
 				object.icon = faCalendarCheck;
-				break;
-			case status == "Upcoming":
-				object.background = "dashboard-blue-4";
-				object.icon = faCalendarPlus;
 				break;
 			case status == "Overdue":
 				object.background = "dashboard-orange-1";
@@ -45,7 +41,7 @@ export default function Tasks({ setModuleProps, tasks }) {
 		const aesthetics = getBackgroundAndIcon(key);
 
 		const _key = String(key).toLowerCase();
-		const value = tasks?.[_key] ?? 0;
+		const value = todos?.[_key] ?? 0;
 
 		let effect = "";
 		let zoomRotate = "";
@@ -60,9 +56,6 @@ export default function Tasks({ setModuleProps, tasks }) {
 			} else if (key === "Tomorrow") {
 				effect = "anim fade-in-top-right";
 				zoomRotate = "zoom-rotate-left";
-			} else {
-				effect = "anim fade-in-bottom-right";
-				zoomRotate = "zoom-rotate-right";
 			}
 		}
 
@@ -71,7 +64,7 @@ export default function Tasks({ setModuleProps, tasks }) {
 		return (
 			<div
 				className={wrapper}
-				onClick={() => setModuleProps("projectsOrTasks", key)}>
+				onClick={() => setModuleProps("todos", key)}>
 				<div className={`flex w-full py-6 justify-center items-center rounded shadow-md ${zoomRotate} ${aesthetics.background}`}>
 					<div className="flex flex-col justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
@@ -92,14 +85,12 @@ export default function Tasks({ setModuleProps, tasks }) {
 			<div className={wrapper}>
 				<div className="flex w-full space-x-2.5 justify-between items-center font-bold-16 primary-text">
 					<div className="flex w-full space-x-2.5 justify-start items-center">
-						<span>{MyConstants.Modules.Base.Tasks}</span>
-						<BadgeLarge2>
-							<SlotCounter value={tasks?.total ?? 0} />
-						</BadgeLarge2>
+						<span>{MyConstants.Modules.Base.Todos}</span>
+						<BadgeLarge2>{todos?.all ?? 0}</BadgeLarge2>
 					</div>
 					<Tippy
 						animation="shift-away"
-						content={<TooltipList payload={[`Completed: ${tasks?.completed}`, `Disabled: ${tasks?.disabled}`, `Others: ${tasks?.others}`]} />}
+						content={<TooltipList payload={[`Completed :: ${todos?.completed}`, `In Progress :: ${todos?.inProgress}`, `Pending :: ${todos?.pending}`]} />}
 						placement="bottom">
 						<FontAwesomeIcon
 							className="text-yellow-500"
@@ -111,7 +102,6 @@ export default function Tasks({ setModuleProps, tasks }) {
 					{uiBlock("Overdue")}
 					{uiBlock("Today")}
 					{uiBlock("Tomorrow")}
-					{uiBlock("Upcoming")}
 				</div>
 			</div>
 		);

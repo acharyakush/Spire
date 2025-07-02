@@ -1,6 +1,6 @@
 @font-face {
 	font-family: "Regular";
-	src: url("/fonts/inter/regular.woff2") format("woff2");
+	src: url("/fonts/geist/regular.woff2") format("woff2");
 	font-weight: 400;
 	font-style: normal;
 	font-display: swap;
@@ -8,7 +8,7 @@
 
 @font-face {
 	font-family: "Medium";
-	src: url("/fonts/inter/medium.woff2") format("woff2");
+	src: url("/fonts/geist/medium.woff2") format("woff2");
 	font-weight: 500;
 	font-style: normal;
 	font-display: swap;
@@ -16,7 +16,7 @@
 
 @font-face {
 	font-family: "SemiBold";
-	src: url("/fonts/inter/semi_bold.woff2") format("woff2");
+	src: url("/fonts/geist/semi_bold.woff2") format("woff2");
 	font-weight: 600;
 	font-style: normal;
 	font-display: swap;
@@ -24,6 +24,38 @@
 
 @font-face {
 	font-family: "Bold";
+	src: url("/fonts/geist/bold.woff2") format("woff2");
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "InterRegular";
+	src: url("/fonts/inter/regular.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "InterMedium";
+	src: url("/fonts/inter/medium.woff2") format("woff2");
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "InterSemiBold";
+	src: url("/fonts/inter/semi_bold.woff2") format("woff2");
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "InterBold";
 	src: url("/fonts/inter/bold.woff2") format("woff2");
 	font-weight: 700;
 	font-style: normal;
@@ -31,10 +63,10 @@
 }
 
 :root {
-	--bold: "Bold", Arial, sans-serif;
-	--medium: "Medium", Arial, sans-serif;
-	--regular: "Regular", Arial, sans-serif;
-	--semibold: "SemiBold", Arial, sans-serif;
+	--bold: "Bold", "InterBold", Arial, sans-serif;
+	--medium: "Medium", "InterMedium", Arial, sans-serif;
+	--regular: "Regular", "InterRegular", Arial, sans-serif;
+	--semibold: "SemiBold", "InterSemiBold", Arial, sans-serif;
 }
 
 @tailwind base;
@@ -1331,16 +1363,18 @@ input[type="radio"]:checked + label {
 
 @layer utilities {
 	@keyframes pulse-glow {
-		0%,
-		100% {
-			box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.5);
+		0% {
+			box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5);
 		}
-		50% {
-			box-shadow: 0 0 6px 6px rgba(251, 191, 36, 0.4);
+		70% {
+			box-shadow: 0 0 10px 20px rgba(37, 99, 235, 0);
+		}
+		100% {
+			box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
 		}
 	}
 
 	.hover-pulse-glow {
-		animation: pulse-glow 2s ease-in-out infinite;
+		animation: pulse-glow 2s ease-out infinite;
 	}
 }

@@ -61,6 +61,7 @@ export default function Home() {
 			inquiries: "",
 			invoicesOrRv: { find: "", module: "" },
 			projectsOrTasks: "",
+			todos: "",
 		},
 		unreadTodos: 0,
 		user: {
@@ -328,6 +329,8 @@ export default function Home() {
 			setMain((s) => ({ ...s, status: { ...s.status, invoicesOrRv: { find: value, module: value ? key : null } } }));
 		} else if (key === "projectsOrTasks") {
 			setMain((s) => ({ ...s, status: { ...s.status, projectsOrTasks: value } }));
+		} else if (key === "todos") {
+			setMain((s) => ({ ...s, status: { ...s.status, todos: value } }));
 		} else {
 			setMain((s) => ({ ...s, status: { ...s.status, [_key]: value } }));
 		}
@@ -570,7 +573,10 @@ export default function Home() {
 						key={`ErrorBoundary_${baseModules.Todos}`}
 						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Todos)}
 						FallbackComponent={ErrorFallbackComponent}>
-						<DynamicTodos />
+						<DynamicTodos
+							presetStatus={main.status.todos}
+							setModuleProps={setModuleProps}
+						/>
 					</ErrorBoundary>
 				);
 		}
@@ -580,7 +586,7 @@ export default function Home() {
 		return (
 			<Menu
 				as="div"
-				className="relative z-50 inline-block text-left">
+				className="relative z-[1000] inline-block text-left">
 				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
 					{/* {main.unreadTodos > 0 && (
 						<div className="absolute -top-1 -right-4">
@@ -764,6 +770,8 @@ export default function Home() {
 			setModule(5, { name: baseModules.CashFlow });
 		} else if (main.status.projectsOrTasks) {
 			setModule(3, { name: baseModules.Projects });
+		} else if (main.status.todos) {
+			setModule(7, { name: baseModules.Todos });
 		}
 	}, [main.status]);
 

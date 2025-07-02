@@ -26,7 +26,7 @@ const DynamicDetails = dynamic(() => import("@/modals/todos/Details"), { ssr: fa
 
 const animateLayoutChanges = (args) => defaultAnimateLayoutChanges({ ...args, wasDragging: true });
 
-export default function Todos() {
+export default function Todos({ presetStatus, setModuleProps }) {
 	// Business Logic
 	const initialTodos = {
 		pending: [],
@@ -57,7 +57,7 @@ export default function Todos() {
 		revisedStaff: [],
 		selectedTodo: {},
 		selectedStaff: { fullName: "", id: "", type: "" },
-		status: statuses.at(-1).label,
+		status: presetStatus || statuses.at(-1).label,
 	});
 
 	const sensors = useSensors(
@@ -143,7 +143,19 @@ export default function Todos() {
 
 		const container = `flex flex-col w-full h-full space-y-3 px-4 py-3 justify-between items-center bottom-border rounded-md transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1.5 hover:shadow-lg ${getBackgroundColour()}`;
 
-		const dueDateStyle = `font-regular-10 ${dueDateTextColor}`;
+		const dueDateStyle = `font-regular-9 ${dueDateTextColor}`;
+
+		let isDelayed = false;
+
+		if (item.description_timeline) {
+			if (typeof item.description_timeline === "string") {
+				const parsed = JSON.parse(item.description_timeline);
+
+				if (Array.isArray(parsed) && parsed.length) {
+					isDelayed = parsed.length > 1;
+				}
+			}
+		}
 
 		return (
 			<div
@@ -218,11 +230,20 @@ export default function Todos() {
 				</div>
 
 				<div className="flex w-full justify-between items-center">
-					<div className="flex w-1/2 justify-start items-center">
+					<div className="flex w-2/ justify-start items-center">
 						<AvatarCircle names={assignedToNames} />
 					</div>
-					<div className="flex w-1/2 space-x-3 justify-end items-center">
+					<div className="flex w-1/2 space-x-2 justify-end items-center">
 						<span className={dueDateStyle}>{item.due_date ? dayjs(item.due_date).format("DD MMM, YYYY") : ""}</span>
+
+						{isDelayed && (
+							<span
+								className="px-1.5 py-0.5 bg-purple-900 text-purple-100 text-xs 
+						font-medium rounded">
+								Delayed
+							</span>
+						)}
+
 						<span className={getPriorityStyle()}>{item.priority}</span>
 					</div>
 				</div>
@@ -293,11 +314,11 @@ export default function Todos() {
 
 				// Step 2: filter by due date
 				if (main.status === "Today") {
-					filteredTodos = filteredTodos.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === dayjs().format("DD-MM-YYYY"));
+					filteredTodos = filteredTodos.filter((f) => dayjs(f.due_date).format("DD-MM-YYYY") === dayjs().format("DD-MM-YYYY"));
 				} else if (main.status === "Overdue") {
-					filteredTodos = filteredTodos.filter((f) => dayjs(f.due_date, "DD-MM-YYYY").isBefore(dayjs().startOf("day")));
+					filteredTodos = filteredTodos.filter((f) => f.status !== "Completed" && dayjs(f.due_date, "DD-MM-YYYY").isBefore(dayjs().startOf("day")));
 				} else if (main.status === "Tomorrow") {
-					filteredTodos = filteredTodos.filter((todo) => dayjs(todo.due_date).format("DD-MM-YYYY") === dayjs().add(1, "day").format("DD-MM-YYYY"));
+					filteredTodos = filteredTodos.filter((f) => dayjs(f.due_date).format("DD-MM-YYYY") === dayjs().add(1, "day").format("DD-MM-YYYY"));
 				}
 
 				return [key, filteredTodos];
@@ -712,7 +733,7 @@ export default function Todos() {
 			const statusCounts = [
 				{
 					label: "Overdue",
-					count: allTodos.filter((f) => dayjs(f.due_date, "DD-MM-YYYY").isBefore(dayjs().startOf("day"))).length,
+					count: allTodos.filter((f) => f.status !== "Completed" && dayjs(f.due_date, "DD-MM-YYYY").isBefore(dayjs().startOf("day"))).length,
 				},
 				{
 					label: "Today",

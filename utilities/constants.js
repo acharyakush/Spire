@@ -116,6 +116,7 @@ const MyConstants = Object.freeze({
 			DeleteTodo: "api/todos/deleteTodo",
 			EditTodo: "api/todos/editTodo",
 			EditDetails: "api/todos/editDetails",
+			GetAddTodoSupportData: "api/todos/getAddTodoSupportData",
 			GetTodos: "api/todos/getTodos",
 			UpdateStatus: "api/todos/updateStatus",
 		}),

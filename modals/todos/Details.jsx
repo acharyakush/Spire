@@ -71,10 +71,12 @@ export default function Details({ mount, refresh, todo, unmount }) {
 	}
 
 	function uiDescription() {
+		const timeline = todo.description_timeline ? JSON.parse(todo.description_timeline) : "";
+
 		return (
 			<div className="flex flex-col w-full justify-center items-start">
 				<span className="font-regular-10 gray-text">Description</span>
-				<span className="font-medium-12 black-text">{todo.description}</span>
+				<span className="font-medium-12 black-text">{timeline ? timeline?.join(", ") : todo.description}</span>
 			</div>
 		);
 	}

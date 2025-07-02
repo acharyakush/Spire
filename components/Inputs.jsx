@@ -115,13 +115,16 @@ export const ComboBox2 = ({
 	hasDataObject,
 	icon,
 	isMenuInverted = false,
+	isMultipleDisplayValue = false,
 	isReadOnly,
 	label,
+	multipleDisplayValue = [],
 	onChange,
 	onClick,
 	onInputChange,
 	onKeyPress,
 	searchedItem,
+	showFullObject = false,
 	tabIndex,
 	value,
 	width,
@@ -200,12 +203,16 @@ export const ComboBox2 = ({
 			);
 		} else {
 			return _filteredData?.map((m, n) => {
-				const _comparingValue1 = comparingValue1 ? m?.[comparingValue1] : m;
-				const _displayValue = displayValue ? m?.[displayValue] : m;
+				const _comparingValue1 = comparingValue1 ? (isMultipleDisplayValue ? comparingValue1?.map((_m) => m?.[_m]).join(" - ") : m?.[comparingValue1]) : m;
+
+				const _displayValue = displayValue ? (isMultipleDisplayValue ? multipleDisplayValue.map((_m) => m?.[_m]).join(" - ") : m?.[displayValue]) : m;
+
 				const isSelected = _comparingValue1 == comparingValue2;
-				const dataObject = hasDataObject ? { id: m.id, name: m.name } : m;
+
+				const dataObject = hasDataObject ? (showFullObject ? m : { id: m.id, name: m.name }) : m;
 
 				const nameStyle = isSelected ? "font-regular-10 primary-text" : "font-regular-10 black-text";
+
 				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y hovered-rows ${isSelected && `primary-background-transparent-01`}`;
 
 				return (
