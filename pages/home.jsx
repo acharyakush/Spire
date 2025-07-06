@@ -187,7 +187,7 @@ export default function Home() {
 
 			if (response.status === 200) {
 				const pending = [];
-				const result = response.data;
+				const result = response.data.todos;
 
 				if (Array.isArray(result)) {
 					for (let i = 0; i < result.length; i++) {
@@ -395,7 +395,7 @@ export default function Home() {
 	}
 
 	function uiModules() {
-		return api.modules
+		const _modules = api.modules
 			.filter((f) => f.name != baseModules.Affiliates && f.name != baseModules.Invoices)
 			.filter((f) => f.sequence >= 0)
 			.filter((f) => {
@@ -428,6 +428,8 @@ export default function Home() {
 					</span>
 				);
 			});
+
+		return _modules;
 	}
 
 	function uiOtherModules() {
@@ -550,7 +552,7 @@ export default function Home() {
 						key={`ErrorBoundary_${baseModules.Projects}`}
 						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Projects)}
 						FallbackComponent={ErrorFallbackComponent}>
-						{/* {isDevelopment ? (
+						{isDevelopment ? (
 							<DynamicProjects2
 								presetStatus={main.status.projectsOrTasks}
 								setModuleProps={setModuleProps}
@@ -560,11 +562,11 @@ export default function Home() {
 								presetStatus={main.status.projectsOrTasks}
 								setModuleProps={setModuleProps}
 							/>
-						)} */}
-						<DynamicProjects
+						)}
+						{/* <DynamicProjects
 							presetStatus={main.status.projectsOrTasks}
 							setModuleProps={setModuleProps}
-						/>
+						/> */}
 					</ErrorBoundary>
 				);
 			case baseModules.Todos:

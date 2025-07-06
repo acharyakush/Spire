@@ -1,6 +1,6 @@
 @font-face {
 	font-family: "Regular";
-	src: url("/fonts/geist/regular.woff2") format("woff2");
+	src: url("/fonts/roboto-flex/variable.ttf") format("truetype");
 	font-weight: 400;
 	font-style: normal;
 	font-display: swap;
@@ -8,7 +8,7 @@
 
 @font-face {
 	font-family: "Medium";
-	src: url("/fonts/geist/medium.woff2") format("woff2");
+	src: url("/fonts/roboto-flex/variable.ttf") format("truetype");
 	font-weight: 500;
 	font-style: normal;
 	font-display: swap;
@@ -16,7 +16,7 @@
 
 @font-face {
 	font-family: "SemiBold";
-	src: url("/fonts/geist/semi_bold.woff2") format("woff2");
+	src: url("/fonts/roboto-flex/variable.ttf") format("truetype");
 	font-weight: 600;
 	font-style: normal;
 	font-display: swap;
@@ -24,7 +24,7 @@
 
 @font-face {
 	font-family: "Bold";
-	src: url("/fonts/geist/bold.woff2") format("woff2");
+	src: url("/fonts/roboto-flex/variable.ttf") format("truetype");
 	font-weight: 700;
 	font-style: normal;
 	font-display: swap;
@@ -91,45 +91,6 @@
 @tailwind components;
 @tailwind utilities;
 
-[app-theme="dark"] {
-	--contrast: #333333;
-
-	--blue: #0e72cf;
-
-	--gray: #444444;
-	--gray-transparent-01: rgba(68, 68, 68, 0.1);
-
-	--green: #107c10;
-	--green-transparent-01: rgba(16, 124, 16, 0.1);
-	--green-transparent-50: rgba(16, 124, 16, 0.5);
-
-	--light-slate-gray: #666666;
-
-	--logo-green: #455526;
-	--logo-green-transparent-01: rgba(69, 85, 38, 0.1);
-
-	--orange: #ff9900;
-	--orange-transparent-01: rgba(255, 153, 0, 0.1);
-	--orange-transparent-50: rgba(255, 153, 0, 0.5);
-
-	--primary: #193a6f;
-	--primary-background: #2e2e2e;
-	--primary-border: #222222;
-	--primary-light: rgba(51, 102, 153, 0.05);
-	--primary-transparent-01: rgba(25, 58, 111, 0.1);
-	--primary-transparent-05: rgba(25, 58, 111, 0.5);
-
-	--red: #e31937;
-	--red-transparent-01: rgba(227, 25, 55, 0.1);
-	--red-transparent-05: rgba(227, 25, 55, 0.5);
-
-	--text: #ffffff;
-	--white: #ffffff;
-
-	--yellow: #ffda03;
-	--yellow-transparent-01: rgba(255, 218, 3, 0.1);
-}
-
 [app-theme="light"] {
 	--contrast: #fff;
 
@@ -182,6 +143,8 @@ html {
 	scrollbar-width: thin;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
+	font-stretch: 100%;
+	font-optical-sizing: auto;
 }
 
 .black-text {

@@ -156,7 +156,7 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 								selectedProject = { ...m, name: mainProjectName, sub_project_name: subProjectName };
 							}
 
-							return { ...m, name: mainProjectName, sub_project_name: subProjectName };
+							return { ...m, main_project_name: mainProjectName, name: subProjectName };
 						});
 
 					if (m.id === todo.client_id) {

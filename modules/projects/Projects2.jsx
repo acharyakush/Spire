@@ -14,11 +14,12 @@ import { useEffect, useMemo, useState } from "react";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { Badge, BadgeSmall, Spinner, Tooltip } from "@/components/Elements";
-import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilterCircleXmark, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { AvatarCircle, Badge, BadgeSmall, Spinner, Tooltip } from "@/components/Elements";
+import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const DynamicMyProjects = dynamic(() => import("./MyProjects"), { ssr: false });
 const DynamicEditProject = dynamic(() => import("./EditProject"), { ssr: false });
+const DynamicTodo = dynamic(() => import("@/modals/projects/Todo"), { ssr: false });
 const DynamicSingleProject = dynamic(() => import("../singleProject"), { ssr: false });
 
 const DynamicEditStatus = dynamic(() => import("@/modals/projects/miscellaneous").then((t) => t.EditStatus), { ssr: false });
@@ -53,17 +54,18 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		myProjects: presetStatus === "my-projects" || String(presetStatus).includes("MySpace"),
 		projectStatus: false,
 		singleProject: false,
+		todo: false,
 	});
 
 	const [projects, setProjects] = useState({ api: [], copy: [] });
 
 	const today = useMemo(() => dayjs(), []);
-	const statuses = useMemo(() => MyConstants.Statuses.Projects, []);
+	const statuses = useMemo(() => MyConstants.Statuses.Projects2, []);
 	const thisView = useMemo(() => MyConstants.Modules.Base.Projects, []);
-	const tableHeaders = useMemo(() => MyConstants.TableHeaders.Projects, []);
+	const tableHeaders = useMemo(() => MyConstants.TableHeaders.Projects2, []);
 	const isUserAdministrator = useMemo(() => MyGlobal.IsUserAdministrator(), []);
 
-	const { Active: stActive, Cancelled: stCancelled, Closed: stClosed, Completed: stCompleted, Hold: stHold } = statuses;
+	const { Active: stActive, Cancelled: stCancelled, Closed: stClosed, Completed: stCompleted, Hold: stHold, Overdue: stOverdue, Today: stToday, Tomorrow: stTomorrow, Upcoming: stUpcoming } = statuses;
 
 	const apiSize = useMemo(() => projects.api.length, [projects.api]);
 	const apiCopySize = useMemo(() => projects.copy.length, [projects.copy]);
@@ -208,12 +210,44 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 			});
 	}
 
+	function getClientNameColourByStatus(status) {
+		switch (status) {
+			case stActive:
+				return "orange-text";
+			case stClosed:
+			case stCancelled:
+				return "gray-text";
+			case stHold:
+				return "red-text";
+			case stCompleted:
+				return "green-text";
+			default:
+				return "orange-background";
+		}
+	}
+
 	function getEmptyDataMessage(message) {
 		return (
 			<div className={blankDataWrapper}>
 				<span className="font-regular-12 gray-text">{message}</span>
 			</div>
 		);
+	}
+
+	function getFancyBorderBackgroundByStatus(status) {
+		switch (status) {
+			case stActive:
+				return "orange-background";
+			case stClosed:
+			case stCancelled:
+				return "gray-background";
+			case stHold:
+				return "red-background";
+			case stCompleted:
+				return "green-background";
+			default:
+				return "orange-background";
+		}
 	}
 
 	function getIconOrBadge() {
@@ -230,7 +264,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		if (!Array.isArray(source)) return [];
 		if (!source.length) return [];
 
-		const object = { [stActive]: 0, [stCancelled]: 0, [stClosed]: 0, [stCompleted]: 0, [stHold]: 0 };
+		const object = { [stActive]: 0, [stCancelled]: 0, [stClosed]: 0, [stCompleted]: 0, [stHold]: 0, [stOverdue]: 0, [stToday]: 0, [stTomorrow]: 0, [stUpcoming]: 0 };
 
 		source.forEach((fe) => {
 			if (fe.status === stActive) object.Active++;
@@ -238,6 +272,10 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 			if (fe.status === stClosed) object.Closed++;
 			if (fe.status === stCompleted) object.Completed++;
 			if (fe.status === stHold) object.Hold++;
+			if (fe.has_tasks_overdue) object.Overdue++;
+			if (fe.has_tasks_due_today) object.Today++;
+			if (fe.has_tasks_due_tomorrow) object.Tomorrow++;
+			if (fe.has_tasks_upcoming) object.Upcoming++;
 		});
 
 		return object;
@@ -299,6 +337,22 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		}
 
 		return data;
+	}
+
+	function getStatusTags(status) {
+		switch (status) {
+			case stActive:
+				return "orange-tag-transparent-01";
+			case stClosed:
+			case stCancelled:
+				return "gray-tag-transparent-01";
+			case stHold:
+				return "red-tag-transparent-02";
+			case stCompleted:
+				return "green-tag-transparent-01 cursor-pointer";
+			default:
+				return "orange-tag-transparent-01";
+		}
 	}
 
 	async function getSupportData(projectId) {
@@ -381,6 +435,25 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		}
 	}
 
+	function getTotalQuote() {
+		let total = 0;
+		let fullTotal = 0;
+
+		for (const i of doSorting()) {
+			total += Number(i.quote);
+		}
+
+		for (const i of projects.copy) {
+			fullTotal += Number(i.quote);
+		}
+
+		if (main.filter || main.search) {
+			return MyGlobal.ThousandSeparator(total) + " / " + MyGlobal.ThousandSeparator(fullTotal);
+		}
+
+		return MyGlobal.ThousandSeparator(fullTotal);
+	}
+
 	function setFilter(value) {
 		setMain((s) => ({ ...s, filter: value }));
 	}
@@ -439,6 +512,11 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		setMounted((s) => ({ ...s, singleProject: project ? true : false }));
 	}
 
+	function toggleTodoBox(project) {
+		setMain((s) => ({ ...s, selectedProject: project ?? {} }));
+		setMounted((s) => ({ ...s, todo: project ? true : false }));
+	}
+
 	// UI Components
 	function uiBody() {
 		return (
@@ -450,9 +528,10 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 						<Virtuoso
 							className="w-full h-full overflow-y-auto bottom-border contrast-background"
 							data={doSorting()}
-							itemContent={(i, row) => uiRows(row)}
+							itemContent={(_, row) => uiRows(row)}
 							totalCount={doSorting().length}
 						/>
+						<div className="fixed bottom-3 right-3 z-50">{uiTotalQuote()}</div>
 					</div>
 				</div>
 			</div>
@@ -471,6 +550,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 
 	function uiClientName(row, tooltipText) {
 		const clientName = MyGlobal.HighlightText(row.client_name, main.search);
+		const textColour = getClientNameColourByStatus(row.status);
 
 		return (
 			<Tippy
@@ -479,6 +559,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				content={<Tooltip text={tooltipText} />}
 				placement="bottom">
 				<span
+					className={textColour}
 					dangerouslySetInnerHTML={{ __html: clientName }}
 					onClick={() => toggleSingleProjectView(row)}
 				/>
@@ -570,7 +651,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 
 			return (
 				<span
-					className="w-[12.5%] space-x-1 cursor-pointer text-center text-white font-medium-10"
+					className="w-[16.66%] space-x-1 cursor-pointer text-center text-white font-medium-10"
 					onClick={() => setSort(m)}
 					key={i}>
 					<span>{m}</span>
@@ -656,22 +737,29 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 	}
 
 	function uiRows(row) {
-		const style = `flex w-[12.5%] min-h-9 justify-center items-center text-center`;
+		const { client_id, company_name, government_id, id, main_project_name, quote, remarks, started_on, status, sub_project_name, team_names, todos } = row;
 
-		const { client_id, company_name, government_id, id, main_project_name, remarks, status, sub_project_name } = row;
+		const style = `flex flex-col w-[16.66%] justify-center items-center text-center`;
+		const childStyle = "flex w-full justify-center items-center";
+
+		const parentLabelStyle = childStyle + " font-bold-12";
+		const childLabelStyle = childStyle + " gray-text";
+
+		const fancyRightBorderStyle = "absolute w-3 h-[50px] rounded-tr-full rounded-br-full " + getFancyBorderBackgroundByStatus(status) + " -left-1";
 
 		const governmentId = MyGlobal.HighlightText(government_id ?? "", main.search);
-		const governmentIdTextColour = !government_id ? "gray-text" : "primary-text";
 
-		const clientIdAndName = [`Client ID - ${client_id}`, <br />, `Project ID - ${id}`];
+		const clientIdAndName = [`Client ID - ${client_id}`, <br key="br" />, `Project ID - ${id}`];
 		const companyName = MyGlobal.HighlightText(company_name, main.search);
 
 		const mainProjectName = MyGlobal.HighlightText(main_project_name, main.search);
 		const subProjectName = MyGlobal.HighlightText(sub_project_name, main.search);
 
-		const background = status === stCompleted ? "green-background-transparent-01" : "contrast-background";
+		const background = status == stCompleted ? "green-background-transparent-01" : "contrast-background";
 
-		const wrapper = `flex w-full justify-center items-center ${background} bottom-border font-regular-11 black-text`;
+		const wrapper = `flex w-full py-3 justify-center items-center ${background} bottom-border font-regular-11 black-text`;
+
+		const avatarWrapper = style + " !flex-row space-x-1";
 
 		return (
 			<div
@@ -679,34 +767,81 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				key={id}
 				onMouseEnter={() => setMouseEnter(id)}
 				onMouseLeave={() => setMouseLeave(id)}>
-				<div className={`${style} cursor-help primary-text`}>{uiStartedOn(row)}</div>
+				<div className={`${style} cursor-help primary-text`}>
+					<span className={fancyRightBorderStyle} />
+					<Tippy
+						content={
+							<div className="flex flex-col py-1 justify-start items-center">
+								{allowDeletingProject && (
+									<div
+										className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text"
+										onClick={() => toggleDeleteProjectBox(row)}>
+										<FontAwesomeIcon icon={faTrash} />
+										<span>Delete Project</span>
+									</div>
+								)}
+								<div
+									className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text"
+									onClick={() => toggleEditProjectView(row)}>
+									<FontAwesomeIcon icon={faPencil} />
+									<span>Edit Project</span>
+								</div>
+							</div>
+						}
+						interactive
+						placement="right"
+						theme="light"
+						trigger="mouseenter"
+						appendTo={() => document.body}>
+						<span>{dayjs(started_on).format("DD MMM, YYYY")}</span>
+					</Tippy>
+				</div>
 
-				<span
-					className={`${style} wrap-text ${governmentIdTextColour}`}
-					dangerouslySetInnerHTML={{ __html: governmentId || "NA" }}
-				/>
+				<div className={style}>
+					<div className={`${parentLabelStyle} cursor-pointer hover:underline hover:underline-offset-4 space-x-5`}>
+						{uiClientName(row, clientIdAndName)}
+						{todos?.length > 0 && (
+							<FontAwesomeIcon
+								className="text-rose-800 cursor-pointer scale-100 hover:scale-125 duration-200"
+								icon={faListUl}
+								onClick={() => toggleTodoBox(row)}
+							/>
+						)}
+					</div>
+					<Tippy
+						content={<Tooltip text={`Gov ID: ${governmentId || "NA"}`} />}
+						placement="bottom"
+						trigger="mouseenter"
+						appendTo={() => document.body}>
+						<span
+							className={childLabelStyle}
+							dangerouslySetInnerHTML={{ __html: companyName }}
+						/>
+					</Tippy>
+				</div>
 
-				<span className={`${style} space-x-5 cursor-pointer relative primary-text`}>{uiClientName(row, clientIdAndName)}</span>
-
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: companyName }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: mainProjectName }}
-				/>
-
-				<Tippy
-					content={<Tooltip text={`Remarks ${remarks}`} />}
-					placement="bottom">
+				<div className={style}>
 					<span
-						className={style}
+						className={parentLabelStyle}
 						dangerouslySetInnerHTML={{ __html: subProjectName }}
 					/>
-				</Tippy>
+					<Tippy
+						content={<Tooltip text={`Remarks ${remarks}`} />}
+						placement="bottom"
+						trigger="mouseenter"
+						appendTo={() => document.body}>
+						<span
+							className={childLabelStyle}
+							dangerouslySetInnerHTML={{ __html: mainProjectName }}
+						/>
+					</Tippy>
+				</div>
 
-				<span className={`${style} space-x-1`}>{uiTeams(row)}</span>
+				<span className={avatarWrapper}>
+					<AvatarCircle names={String(team_names).split(",")} />
+				</span>
+
+				<span className={`${style} font-bold-12`}>{MyGlobal.FormatCurrency(quote)}</span>
 				<span className={style}>{uiStatusMenu(row)}</span>
 			</div>
 		);
@@ -741,65 +876,32 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		}
 	}
 
-	function uiStartedOn(row) {
-		const actionButtonStyle = "flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 text-white";
-
-		return (
-			<Tippy
-				content={
-					<div className="flex flex-col py-1 justify-start items-center">
-						{allowDeletingProject && (
-							<div
-								className={actionButtonStyle}
-								onClick={() => toggleDeleteProjectBox(row)}>
-								<FontAwesomeIcon icon={faTrash} />
-								<span>Delete Project</span>
-							</div>
-						)}
-						<div
-							className={actionButtonStyle}
-							onClick={() => toggleEditProjectView(row)}>
-							<FontAwesomeIcon icon={faPencil} />
-							<span>Edit Project</span>
-						</div>
-					</div>
-				}
-				interactive
-				placement="right"
-				theme="dark">
-				<span>{dayjs(row.started_on).format("DD MMM, YYYY")}</span>
-			</Tippy>
-		);
-	}
-
 	function uiStatusMenu(row) {
 		const isCompleted = row.status === stCompleted;
-		const wrapper = `flex w-full px-4 justify-between items-center focus:outline-none font-regular-11 !py-0`;
+		const wrapper = `flex w-full px-4 space-x-2 justify-between items-center focus:outline-none font-regular-12 ${getStatusTags(row.status)}`;
 
 		return (
 			<Menu
 				as="div"
-				className="flex w-24 justify-center items-center relative">
+				className="flex w-fit justify-center items-center relative">
 				<MenuButton className={wrapper}>
 					{isCompleted && (
 						<FontAwesomeIcon
-							className="green-text mr-1.5"
+							className="green-text"
 							icon={faCheckCircle}
 						/>
 					)}
 					<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.search) }} />
 					{!isCompleted && <FontAwesomeIcon icon={faChevronDown} />}
 				</MenuButton>
-				{!isCompleted ? (
-					<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusList(row)}</MenuItems>
-				) : (
-					isUserAdministrator && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusList(row)}</MenuItems>
+				{(!isCompleted || isUserAdministrator) && (
+					<MenuItems className="absolute w-full top-9 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>
 				)}
 			</Menu>
 		);
 	}
 
-	function uiStatusList(row) {
+	function uiStatusMenuList(row) {
 		return Object.values(statuses).map((m, i) => {
 			const isSelected = m === row.status;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
@@ -823,60 +925,16 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		});
 	}
 
-	function uiTeams(row) {
-		const names = String(row.team_names);
-		const singleUserInitials = row.team_names_initials;
-		const total = names.split(",").length;
-
-		if (names.includes(",")) {
-			if (total > 2) {
-				return (
-					<Tippy
-						content={uiTeamsListTooltip(names)}
-						placement="bottom">
-						<span className="cursor-help primary-text">{total}</span>
-					</Tippy>
-				);
-			} else {
-				return names.split(",").map((m) => uiTeamsTooltip(MyGlobal.GetInitials(m), m));
-			}
-		} else {
-			return uiTeamsTooltip(singleUserInitials, names);
-		}
-	}
-
-	function uiTeamsListTooltip(teams) {
-		const splitted = String(teams).split(",");
+	function uiTodos() {
+		if (!mounted.todo) return null;
 
 		return (
-			<div className="flex flex-col w-full p-1 justify-between items-center font-regular-9">
-				{!teams
-					? "No teams involved"
-					: splitted.map((m, i) => {
-							const bottomBorder = i !== splitted.length - 1 ? "bottom-border" : "border-transparent";
-							const wrapper = `flex w-full justify-start items-center ${bottomBorder}`;
-
-							return (
-								<div
-									className={wrapper}
-									key={i}>
-									{i + 1}. {m}
-								</div>
-							);
-					  })}
-			</div>
-		);
-	}
-
-	function uiTeamsTooltip(badgeText, tooltipText) {
-		return (
-			<Tippy
-				content={<Tooltip text={tooltipText} />}
-				placement="bottom">
-				<span className="cursor-help">
-					<BadgeSmall value={badgeText} />
-				</span>
-			</Tippy>
+			<DynamicTodo
+				mount={mounted.todo}
+				project={main.selectedProject}
+				reload={getSupportData}
+				unmount={toggleTodoBox}
+			/>
 		);
 	}
 
@@ -904,6 +962,25 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		}
 	}
 
+	function uiTotalQuote() {
+		return (
+			<div className="group relative flex items-center w-fit px-0 transition-all duration-500 ease-in-out">
+				<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
+
+				<div className="flex items-center justify-center w-10 h-10 group-hover:h-[36px] rounded-full text-white ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
+					<FontAwesomeIcon
+						icon={faIndianRupee}
+						size="1x"
+					/>
+				</div>
+
+				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-[300px]">
+					<div className="pl-2 pr-4 text-white font-bold-12 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out relative z-20">{getTotalQuote()}</div>
+				</div>
+			</div>
+		);
+	}
+
 	// Hooks
 	useEffect(() => {
 		getSupportData();
@@ -926,6 +1003,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 			{uiMain()}
 			{uiDeleteProject()}
 			{uiEditStatus()}
+			{uiTodos()}
 			{uiProjectStatus()}
 		</div>
 	);

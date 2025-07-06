@@ -134,7 +134,7 @@ export default function AddTodo({ mount, refresh, unmount }) {
 
 							const subProjectName = response.data.subProjects.filter((f) => f.id === m.sub_project_id).at(0).name;
 
-							return { ...m, name: mainProjectName, sub_project_name: subProjectName };
+							return { ...m, main_project_name: mainProjectName, name: subProjectName };
 						});
 
 					return { ...m, projects };

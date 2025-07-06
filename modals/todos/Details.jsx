@@ -17,19 +17,31 @@ import { faNoteSticky, faStar, faXmark } from "@fortawesome/free-solid-svg-icons
 
 export default function Details({ mount, refresh, todo, unmount }) {
 	// Business Logic
-	const [data, setData] = useState({ notes: todo.notes, status: todo.status });
+	const [data, setData] = useState({ notes: "", status: todo.status });
 
 	const [isLoading, setIsLoading] = useState(false);
 	const [isBoxDragged, setIsBoxDragged] = useState(false);
+
+	const notesTimeline = todo.notes_timeline ? JSON.parse(todo.notes_timeline) : "";
 
 	// Functions
 	async function saveTodo() {
 		try {
 			setIsLoading(true);
 
+			let notesTimeline = [data.notes, todo.notes];
+
+			if (todo.notes_timeline) {
+				const parsed = JSON.parse(todo.notes_timeline);
+				parsed.unshift(data.notes);
+
+				notesTimeline = parsed;
+			}
+
 			const body = {
 				id: todo.id,
 				notes: data.notes,
+				notesTimeline,
 				status: data.status,
 			};
 
@@ -76,7 +88,15 @@ export default function Details({ mount, refresh, todo, unmount }) {
 		return (
 			<div className="flex flex-col w-full justify-center items-start">
 				<span className="font-regular-10 gray-text">Description</span>
-				<span className="font-medium-12 black-text">{timeline ? timeline?.join(", ") : todo.description}</span>
+				<div className="w-full font-medium-12 black-text">
+					{timeline
+						? timeline?.map((m, i) => (
+								<div className="w-full">
+									{i + 1}. {m}
+								</div>
+						  ))
+						: todo.description}
+				</div>
 			</div>
 		);
 	}
@@ -198,6 +218,18 @@ export default function Details({ mount, refresh, todo, unmount }) {
 							<div className="flex w-full justify-between items-center">
 								{uiPriority()}
 								{uiStatus()}
+							</div>
+							<div className="flex flex-col w-full justify-start items-center">
+								<span className="w-full text-left font-regular-10 gray-text">Notes</span>
+								<div className="w-full text-left font-medium-12 black-text">
+									{todo.notes_timeline
+										? notesTimeline?.map((m, i) => (
+												<div className="w-full">
+													{i + 1}. {m}
+												</div>
+										  ))
+										: todo.notes}
+								</div>
 							</div>
 							{uiNotes()}
 						</div>

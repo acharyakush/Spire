@@ -13,13 +13,17 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const response = await query("SELECT * FROM todos WHERE is_deleted=0 ORDER BY id DESC", []);
+		const [todos, projects, subProjects] = await Promise.all([
+			query("SELECT * FROM todos WHERE is_deleted=0 ORDER BY id DESC", []),
+			query("SELECT * FROM projects WHERE is_deleted=0 AND status='Active' ORDER BY id DESC", []),
+			query("SELECT * FROM sub_projects", []),
+		]);
 
-		if (!response.length) {
+		if (!todos.length) {
 			return res.status(204).end();
 		}
 
-		return res.status(200).json(response);
+		return res.status(200).json({ todos, projects, subProjects });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");

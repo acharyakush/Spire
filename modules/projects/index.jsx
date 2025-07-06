@@ -10,6 +10,7 @@ import EditProject from "./EditProject";
 import writeXlsxFile from "write-excel-file";
 import SingleProject from "../singleProject";
 import MyConstants from "@/utilities/constants";
+import ProjectTodos from "@/modals/projects/Todo";
 
 import { Virtuoso } from "react-virtuoso";
 import { MyGlobal } from "@/utilities/global";
@@ -19,7 +20,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
-import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilterCircleXmark, faIndianRupee, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -49,6 +50,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		myProjects: presetStatus === "my-projects" || String(presetStatus).includes("MySpace"),
 		projectStatus: false,
 		singleProject: false,
+		todo: false,
 	});
 
 	const today = useMemo(() => dayjs(), []);
@@ -307,6 +309,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							}
 						});
 
+						const todos = response.data.todos.filter((f) => project.id === f.project_id);
+
 						return {
 							...project,
 							client_name: clientName,
@@ -321,6 +325,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							team_names: teamNames,
 							team_names_initials: MyGlobal.GetInitials(teamNames),
 							teams_data: MyGlobal.GetFullDetailsFromIds(project.teams),
+							todos,
 						};
 					});
 
@@ -887,29 +892,40 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		}));
 	}, []);
 
+	function toggleTodoBox(project) {
+		const newProject = project ?? {};
+		setMain((s) => ({
+			...s,
+			selectedProject: newProject,
+		}));
+		setMounted((s) => ({
+			...s,
+			todo: Boolean(project),
+		}));
+	}
+
 	// Optimized row rendering logic
 	const uiClientName = useCallback(
 		(row, tooltipText) => {
 			if (main.isLoading.selectedProject == row.id) {
 				return <SpinnerSmall />;
-			} else {
-				const clientName = MyGlobal.HighlightText(row.client_name, main.findText);
-				const textColour = getStatusSeverityBackground(row.status);
-
-				return (
-					<Tippy
-						allowHTML
-						className={`whitespace-pre-line`}
-						content={<Tooltip text={tooltipText} />}
-						placement="bottom">
-						<span
-							className={textColour}
-							dangerouslySetInnerHTML={{ __html: clientName }}
-							onClick={() => toggleSingleProjectView(row)}
-						/>
-					</Tippy>
-				);
 			}
+			const clientName = MyGlobal.HighlightText(row.client_name, main.findText);
+			const textColour = getStatusSeverityBackground(row.status);
+
+			return (
+				<Tippy
+					allowHTML
+					className={`whitespace-pre-line`}
+					content={<Tooltip text={tooltipText} />}
+					placement="bottom">
+					<span
+						className={textColour}
+						dangerouslySetInnerHTML={{ __html: clientName }}
+						onClick={() => toggleSingleProjectView(row)}
+					/>
+				</Tippy>
+			);
 		},
 		[main.isLoading.selectedProject, main.findText, toggleSingleProjectView],
 	);
@@ -1104,7 +1120,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const fancyRightBorderStyle = "absolute w-3 h-[50px] rounded-tr-full rounded-br-full " + getStatusSeverityBackground2(row.status) + " -left-1";
 
 			const governmentId = MyGlobal.HighlightText(row.government_id ?? "", main.findText);
-			const governmentIdTextColour = !row.government_id ? "gray-text" : "primary-text";
 
 			const clientIdAndName = [`Client ID - ${row.client_id}`, <br key="br" />, `Project ID - ${row.id}`];
 			const companyName = MyGlobal.HighlightText(row.company_name, main.findText);
@@ -1118,7 +1133,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 			const avatarWrapper = style + " !flex-row space-x-1";
 
-			// Optimize Tippy usage - only show Tippy when needed
 			const handleMouseEnter = () => setMouseEnter(row.id);
 
 			return (
@@ -1129,7 +1143,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 					onMouseLeave={setMouseLeave}>
 					<div className={`${style} cursor-help primary-text`}>
 						<span className={fancyRightBorderStyle} />
-						{/* Lazy Tippy only renders when hovered */}
 						<Tippy
 							content={
 								<div className="flex flex-col py-1 justify-start items-center">
@@ -1159,7 +1172,16 @@ export default function Projects({ presetStatus, setModuleProps }) {
 					</div>
 
 					<div className={style}>
-						<span className={`${parentLabelStyle} cursor-pointer hover:underline hover:underline-offset-4`}>{uiClientName(row, clientIdAndName)}</span>
+						<div className={`${parentLabelStyle} cursor-pointer hover:underline hover:underline-offset-4 space-x-5`}>
+							{uiClientName(row, clientIdAndName)}
+							{row.todos?.length > 0 && (
+								<FontAwesomeIcon
+									className="text-rose-800 cursor-pointer scale-100 hover:scale-125 duration-200"
+									icon={faListUl}
+									onClick={() => toggleTodoBox(row)}
+								/>
+							)}
+						</div>
 						<Tippy
 							content={<Tooltip text={`Gov ID: ${governmentId || "NA"}`} />}
 							placement="bottom"
@@ -1188,8 +1210,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							/>
 						</Tippy>
 					</div>
-
-					{/* <span className={`${style} space-x-1`}>{uiTeams(row)}</span> */}
 
 					<span className={avatarWrapper}>
 						<AvatarCircle names={String(row.team_names).split(",")} />
@@ -1223,9 +1243,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}
 
 	const uiBody = useCallback(() => {
-		// For debugging
-		//logProjectCounts();
-
 		return (
 			<div className="flex w-full h-full justify-center items-start">
 				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiList()}</div>
@@ -1321,10 +1338,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	// Hooks
 	useEffect(() => {
-		// Delay the initial data loading to ensure component is fully mounted
 		const initializationDelay = setTimeout(() => {
 			setSupportData();
-		}, 100);
+		}, 200);
 
 		window.addEventListener("keydown", autoFocusFindBox);
 
@@ -1332,15 +1348,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			clearTimeout(initializationDelay);
 			setModuleProps("projectsOrTasks", "");
 			window.removeEventListener("keydown", autoFocusFindBox);
-
-			// Clean up search timeout on unmount
-			if (window.searchTimeout) {
-				clearTimeout(window.searchTimeout);
-			}
 		};
 	}, [setSupportData, autoFocusFindBox, setModuleProps]);
 
-	// Use debouncedFindText in useEffect
 	useEffect(() => {
 		if (mounted.mainComponent) {
 			// For "Overdue" filter specifically, we need to make sure the source is filtered for tasks_overdue
@@ -1456,10 +1466,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		}
 	}, [debouncedFindText, main.filter, main.activeModule, api.projects.copy, mounted.mainComponent, statuses, calculateStatusCounts]);
 
-	// Add a windowed approach for list rendering
 	useEffect(() => {
-		// Add passive event listeners for scroll events
 		const scrollElements = document.querySelectorAll(".overflow-y-auto");
+
 		scrollElements.forEach((element) => {
 			element.addEventListener("scroll", null, { passive: true });
 		});
@@ -1471,9 +1480,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		};
 	}, []);
 
-	// Debugging helper function
-
-	// Main UI render with optimized components
+	// Main UI
 	return mounted.myProjects ? (
 		<MyProjects
 			presetStatus={presetStatus}
@@ -1510,6 +1517,15 @@ export default function Projects({ presetStatus, setModuleProps }) {
 					projectId={main.selectedProject.id}
 					reload={setSupportData}
 					unmount={toggleDeleteProjectBox}
+				/>
+			)}
+
+			{mounted.todo && (
+				<ProjectTodos
+					mount={mounted.todo}
+					project={main.selectedProject}
+					reload={setSupportData}
+					unmount={toggleTodoBox}
 				/>
 			)}
 

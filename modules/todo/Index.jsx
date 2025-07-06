@@ -37,6 +37,8 @@ export default function Todos({ presetStatus, setModuleProps }) {
 	const IsUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const [activeCard, setActiveCard] = useState(null);
+	const [projects, setProjects] = useState([]);
+	const [subProjects, setSubProjects] = useState([]);
 
 	const [columns, setColumns] = useState(initialTodos);
 	const [columnsCopy, setColumnsCopy] = useState(initialTodos);
@@ -63,7 +65,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
 			activationConstraint: {
-				distance: 8, // drag starts after 8px movement
+				distance: 8,
 			},
 		}),
 		useSensor(KeyboardSensor, {
@@ -139,7 +141,6 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		}
 
 		const descriptionColour = item.priority === "Low" ? "text-black" : "text-white";
-		const descriptionStyle = `w-4/5 h-10 font-medium-12 ${descriptionColour} overflow-hidden whitespace-nowrap text-ellipsis`;
 
 		const container = `flex flex-col w-full h-full space-y-3 px-4 py-3 justify-between items-center bottom-border rounded-md transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1.5 hover:shadow-lg ${getBackgroundColour()}`;
 
@@ -157,6 +158,9 @@ export default function Todos({ presetStatus, setModuleProps }) {
 			}
 		}
 
+		const project = item.project_id ? projects.find((f) => f.id === item.project_id) : "";
+		const subProjectId = item.project_id && project ? subProjects.find((f) => f.id === project.sub_project_id).name : "";
+
 		return (
 			<div
 				className={container}
@@ -165,26 +169,17 @@ export default function Todos({ presetStatus, setModuleProps }) {
 				{...attributes}
 				{...listeners}>
 				<div className="flex w-full justify-between items-start">
-					<span
-						className={descriptionStyle}
-						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(item.description, main.find) }}
-					/>
+					<div className="w-4/5 h-11 flex flex-col font-medium-12 overflow-hidden whitespace-nowrap">
+						<span
+							className={descriptionColour}
+							dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(item.description, main.find) }}
+						/>
+						<span className={descriptionColour + " text-xs !font-normal"}>{subProjectId}</span>
+					</div>
 					<div className="flex w-1/5 space-x-3 justify-end items-center">
-						{item.todays_task && (
-							<Tippy
-								animation="shift-away"
-								content={<Tooltip text={item.todays_task} />}
-								placement="bottom">
-								<FontAwesomeIcon
-									className="animate-bounce text-red-600"
-									icon={faCrown}
-									size="xl"
-								/>
-							</Tippy>
-						)}
 						<Tippy
 							animation="shift-away"
-							content={<Tooltip text={item.notes ?? "No notes entered."} />}
+							content={<Tooltip text={item.notes_timeline ? JSON.parse(item.notes_timeline)?.at(0) : item.notes ?? "No notes entered."} />}
 							placement="bottom">
 							<img
 								src={`/information-circle-${svgFileName}.svg`}
@@ -342,7 +337,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 				const inProgress = [];
 				const pending = [];
 
-				const result = response.data;
+				const result = response.data.todos;
 
 				if (Array.isArray(result)) {
 					for (let i = 0; i < result.length; i++) {
@@ -365,6 +360,9 @@ export default function Todos({ presetStatus, setModuleProps }) {
 
 					setColumnsCopy({ pending, inProgress, completed });
 				}
+
+				setProjects(response.data.projects);
+				setSubProjects(response.data.subProjects);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Todos > Get Todos");

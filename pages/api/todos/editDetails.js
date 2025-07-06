@@ -13,9 +13,9 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { id, notes, status } = req.body;
+		const { id, status, notesTimeline } = req.body;
 
-		const updateQueryResult = await query("UPDATE todos SET status = ?, notes = ? WHERE id = ?", [status, String(notes).trim(), id]);
+		const updateQueryResult = await query("UPDATE todos SET status=?, notes_timeline=? WHERE id = ?", [status, JSON.stringify(notesTimeline), id]);
 
 		if (updateQueryResult.affectedRows > 0) {
 			res.status(200).end();
