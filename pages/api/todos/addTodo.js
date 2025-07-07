@@ -22,8 +22,8 @@ export default async function handler(req, res) {
 
 		const todoInsertQueryResult = await query("INSERT INTO todos (custom_id, client_id, project_id, description, description_timeline, assigned_to, due_date, priority, entry_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
 			storedProcedureResult.new_id,
-			clientId,
-			projectId,
+			clientId ?? "",
+			projectId ?? "",
 			_description,
 			JSON.stringify([_description]),
 			assignedTo,

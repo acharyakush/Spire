@@ -57,6 +57,8 @@ export default async function handler(req, res) {
 		} else if (request.type === "get-rv-list") {
 			queryString = "SELECT * FROM rv WHERE project_id=?";
 			queryParameters = [request.projectId];
+		} else if (request.type === "get-deleted-todos") {
+			queryString = "SELECT * FROM todos WHERE is_deleted=1";
 		} else {
 			return res.status(400).send({ error: "Invalid request type" });
 		}

@@ -102,6 +102,9 @@ export default async function handler(req, res) {
 			} else if (request.type == "mark-project-completed") {
 				queryString = "UPDATE projects SET status=?, completed_on=NOW() WHERE id=?";
 				queryParameters = ["Completed", request.projectId];
+			} else if (request.type == "restore-todo") {
+				queryString = "UPDATE todos SET is_deleted=0 WHERE id=?";
+				queryParameters = [request.todoId];
 			}
 
 			const response = await query(queryString, queryParameters);

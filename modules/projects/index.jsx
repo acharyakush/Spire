@@ -1267,7 +1267,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			<div className="group relative flex items-center w-fit px-0 transition-all duration-500 ease-in-out">
 				<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
 
-				<div className="flex items-center justify-center w-10 h-10 group-hover:h-[36px] rounded-full text-white ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
+				<div className="flex items-center justify-center w-10 h-10 group-hover:h-10 rounded-full text-white ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
 					<FontAwesomeIcon
 						icon={faIndianRupee}
 						size="1x"

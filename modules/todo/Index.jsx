@@ -15,7 +15,7 @@ import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { AvatarCircle, Badge, BadgeSmall, Tooltip } from "@/components/Elements";
-import { faClock, faClockRotateLeft, faCrown, faFilter, faFilterCircleXmark, faHourglassEnd, faHourglassHalf, faPencilAlt, faPlusCircle, faSearch, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faClockRotateLeft, faFilter, faFilterCircleXmark, faHourglassEnd, faHourglassHalf, faPencilAlt, faPlusCircle, faSearch, faTrash, faTrashRestore, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, useDroppable, DragOverlay } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable, sortableKeyboardCoordinates, defaultAnimateLayoutChanges, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
@@ -23,6 +23,7 @@ const DynamicAddToDo = dynamic(() => import("@/modals/todos/AddTodo"), { ssr: fa
 const DynamicDeleteTodo = dynamic(() => import("@/modals/todos/DeleteTodo"), { ssr: false });
 const DynamicEditTodo = dynamic(() => import("@/modals/todos/EditTodo"), { ssr: false });
 const DynamicDetails = dynamic(() => import("@/modals/todos/Details"), { ssr: false });
+const DynamicRestoreTodos = dynamic(() => import("@/modals/todos/RestoreTodos"), { ssr: false });
 
 const animateLayoutChanges = (args) => defaultAnimateLayoutChanges({ ...args, wasDragging: true });
 
@@ -44,7 +45,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 	const [columnsCopy, setColumnsCopy] = useState(initialTodos);
 
 	const [isLoading, setIsLoading] = useState({ updateStatus: false });
-	const [mounted, setMounted] = useState({ addTodoBox: false, deleteTodo: false, editTodo: false, details: false });
+	const [mounted, setMounted] = useState({ addTodoBox: false, deleteTodo: false, editTodo: false, details: false, restoreTodos: false });
 
 	const [statuses, setStatuses] = useState([
 		{ count: 0, label: "Overdue" },
@@ -463,6 +464,10 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		setMounted((s) => ({ ...s, details: !s.details }));
 	}
 
+	function toggleRestoreTodos() {
+		setMounted((s) => ({ ...s, restoreTodos: !s.restoreTodos }));
+	}
+
 	function setSearch(value) {
 		setMain((s) => ({ ...s, find: value }));
 	}
@@ -507,6 +512,29 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		}
 	}
 
+	function uiRestoreTodos() {
+		return (
+			<div className="group relative flex items-center w-fit px-0 transition-all duration-500 ease-in-out">
+				<div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-600 via-rose-500 to-rose-400 border border-rose-700 shadow-md z-0" />
+
+				<div className="flex items-center justify-center w-10 h-10 group-hover:h-10 rounded-full text-white ring-rose-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
+					<FontAwesomeIcon
+						icon={faTrashRestore}
+						size="1x"
+					/>
+				</div>
+
+				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-[300px]">
+					<div
+						className="pl-2 pr-4 text-white font-semibold-12 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out relative z-20 cursor-pointer"
+						onClick={() => toggleRestoreTodos()}>
+						Restore Todos
+					</div>
+				</div>
+			</div>
+		);
+	}
+
 	// UI Components
 	function uiBody() {
 		const activeItem = Object.values(columns)
@@ -514,7 +542,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 			.find((f) => f.id === activeCard?.id);
 
 		return (
-			<div className="flex flex-col w-full h-full justify-center items-center full-border">
+			<div className="flex flex-col relative w-full h-full justify-center items-center full-border">
 				<DndContext
 					sensors={sensors}
 					collisionDetection={closestCenter}
@@ -559,6 +587,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 						) : null}
 					</DragOverlay>
 				</DndContext>
+				<div className="fixed bottom-3 right-3 z-50">{uiRestoreTodos()}</div>
 			</div>
 		);
 	}
@@ -815,6 +844,15 @@ export default function Todos({ presetStatus, setModuleProps }) {
 					refresh={getTodos}
 					todo={main.selectedTodo?.item}
 					unmount={toggleDetails}
+				/>
+			)}
+
+			{mounted.restoreTodos && (
+				<DynamicRestoreTodos
+					mount={mounted.restoreTodos}
+					refresh={getTodos}
+					_todos={columnsCopy}
+					unmount={toggleRestoreTodos}
 				/>
 			)}
 		</div>
