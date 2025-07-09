@@ -305,8 +305,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				let revised = [];
 				const revisedCopy = [];
 
-				for (let i = 0; i < response.data.length; i++) {
-					const obj = response.data[i];
+				for (let i = 0; i < response.data.inquiries.length; i++) {
+					const obj = response.data.inquiries[i];
 
 					const clientName = MyGlobal.GetNameFromId(obj.client_id, supportData.clients);
 					const referenceName = MyGlobal.GetNameFromId(obj.reference_id, supportData.references);
@@ -316,6 +316,13 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					let phoneNumber = obj.phone_number;
 
 					const client = supportData.clients.find((f) => f.id === obj.client_id);
+					const quotation = response.data.quotations_services.find((f) => f.quotation_id === obj.quotation_id);
+
+					let quotationAmount = 0;
+
+					if (quotation) {
+						quotationAmount = +quotation.professional_fees + +quotation.government_fees;
+					}
 
 					if (typeof client === "object") {
 						if (client.is_edited == 1) {
@@ -342,6 +349,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						next_follow_up_on: abc?.length ? dayjs(abc?.[0]?.next_follow_up_on).format("DD MMM, YYYY") : "",
 						notes: "",
 						phone_number: phoneNumber,
+						quotationAmount,
 						reference_id_and_name: `${obj.reference_id} - ${referenceName}`,
 						reference_name: referenceName,
 						sub_project: MyGlobal.GetNameFromId(obj.sub_project_id, supportData.subProjects),
@@ -981,7 +989,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 							content={<Tooltip text="New Quotation" />}
 							placement="bottom">
 							<FontAwesomeIcon
-								className="w-5 text-blue-500 cursor-pointer scale-100 hover:scale-150 duration-200"
+								className="w-5 text-blue-600 cursor-pointer scale-100 hover:scale-150 duration-200"
 								icon={faReceipt}
 								onClick={() => toggleAddQuotation(row, true)}
 								size="1x"
@@ -993,7 +1001,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 							content={<Tooltip text="Edit Quotation" />}
 							placement="bottom">
 							<FontAwesomeIcon
-								className="w-5 text-emerald-500 cursor-pointer scale-100 hover:scale-150 duration-200"
+								className="w-5 text-emerald-600 cursor-pointer scale-100 hover:scale-150 duration-200"
 								onClick={() => toggleEditQuotation(row, true)}
 								icon={faPen}
 								size="1x"
@@ -1005,9 +1013,20 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 							content={<Tooltip text="Download Quotation" />}
 							placement="bottom">
 							<FontAwesomeIcon
-								className="w-5 text-orange-500 cursor-pointer scale-100 hover:scale-150 duration-200"
+								className="w-5 text-orange-600 cursor-pointer scale-100 hover:scale-150 duration-200"
 								onClick={() => downloadQuotation(row.quotation_id)}
 								icon={faDownload}
+								size="1x"
+							/>
+						</Tippy>
+					)}
+					{row.quotationAmount && (
+						<Tippy
+							content={<Tooltip text={MyGlobal.ThousandSeparator(row.quotationAmount)} />}
+							placement="bottom">
+							<FontAwesomeIcon
+								className="w-5 text-amber-600 cursor-pointer scale-100 hover:scale-150 duration-200"
+								icon={faIndianRupee}
 								size="1x"
 							/>
 						</Tippy>

@@ -176,6 +176,24 @@ export default function Details({ mount, refresh, todo, unmount }) {
 		}
 	}
 
+	function uiClient() {
+		return (
+			<div className="flex flex-col w-full justify-center items-start">
+				<span className="font-regular-10 gray-text">Client</span>
+				<div className="w-full font-medium-12 black-text">{todo.client_name}</div>
+			</div>
+		);
+	}
+
+	function uiSubProject() {
+		return (
+			<div className="flex flex-col w-full justify-center items-start">
+				<span className="font-regular-10 gray-text">Project</span>
+				<div className="w-full font-medium-12 black-text">{todo.sub_project_name}</div>
+			</div>
+		);
+	}
+
 	function uiTitleBar() {
 		const titleBarCursor = isBoxDragged ? "cursor-grabbing" : "cursor-grab";
 		const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -210,7 +228,11 @@ export default function Details({ mount, refresh, todo, unmount }) {
 					<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full p-6 space-y-6 justify-between items-center">
-							{uiDescription()}
+							<div className="flex w-full justify-between items-center">
+								{uiDescription()}
+								{todo.client_name && uiClient()}
+								{todo.sub_project_name && uiSubProject()}
+							</div>
 							<div className="flex w-full justify-between items-center">
 								{uiAssignedTo()}
 								{uiDueDate()}
@@ -220,7 +242,7 @@ export default function Details({ mount, refresh, todo, unmount }) {
 								{uiStatus()}
 							</div>
 							<div className="flex flex-col w-full justify-start items-center">
-								<span className="w-full text-left font-regular-10 gray-text">Notes</span>
+								{(todo.notes || todo.notes_timeline) && <span className="w-full text-left font-regular-10 gray-text">Notes</span>}
 								<div className="w-full text-left font-medium-12 black-text">
 									{todo.notes_timeline
 										? notesTimeline?.map((m, i) => (

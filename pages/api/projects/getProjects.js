@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 			query("SELECT * FROM projects WHERE is_deleted=0 ORDER BY id DESC", []),
 			query("SELECT * FROM sub_projects", []),
 			query("SELECT * FROM tasks", []),
-			query("SELECT * FROM todos", []),
+			query("SELECT * FROM todos WHERE is_deleted=0", []),
 		]);
 
 		return res.status(200).json({ clients, companies, mainProjects, notes, projects, subProjects, tasks, todos });

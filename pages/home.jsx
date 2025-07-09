@@ -552,7 +552,7 @@ export default function Home() {
 						key={`ErrorBoundary_${baseModules.Projects}`}
 						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Projects)}
 						FallbackComponent={ErrorFallbackComponent}>
-						{isDevelopment ? (
+						{/* {isDevelopment ? (
 							<DynamicProjects2
 								presetStatus={main.status.projectsOrTasks}
 								setModuleProps={setModuleProps}
@@ -562,11 +562,11 @@ export default function Home() {
 								presetStatus={main.status.projectsOrTasks}
 								setModuleProps={setModuleProps}
 							/>
-						)}
-						{/* <DynamicProjects
+						)} */}
+						<DynamicProjects
 							presetStatus={main.status.projectsOrTasks}
 							setModuleProps={setModuleProps}
-						/> */}
+						/>
 					</ErrorBoundary>
 				);
 			case baseModules.Todos:

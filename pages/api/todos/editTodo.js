@@ -13,10 +13,11 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { assignedTo, clientId, customId, description, descriptionTimeline, dueDate, id, isDescriptionEdited, oldDescriptionTimeline, priority, projectId } = req.body;
+		const { assignedTo, clientId, companyId, customId, description, descriptionTimeline, dueDate, id, isDescriptionEdited, oldDescriptionTimeline, priority, projectId } = req.body;
 
-		const updateQueryResult = await query("UPDATE todos set client_id=?, project_id=?, description=?, description_timeline=?, assigned_to=?, due_date=?, priority=? WHERE id=? AND custom_id=?", [
+		const updateQueryResult = await query("UPDATE todos set client_id=?, company_id=?, project_id=?, description=?, description_timeline=?, assigned_to=?, due_date=?, priority=? WHERE id=? AND custom_id=?", [
 			clientId ?? "",
+			companyId ?? "",
 			projectId ?? "",
 			String(description).trim(),
 			isDescriptionEdited ? JSON.stringify(descriptionTimeline) : oldDescriptionTimeline,

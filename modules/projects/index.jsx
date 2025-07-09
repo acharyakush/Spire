@@ -20,7 +20,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
-import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -38,6 +38,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		revisedStatuses: {},
 		selectedClient: {},
 		selectedProject: {},
+		selectedStaff: { fullName: "", id: "", type: "" },
 		showIconButton: { deleteProject: 0, editProject: 0 },
 		sort: { column: "ID", isAscending: false },
 	});
@@ -146,6 +147,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				...s,
 				filter: "",
 				revisedStatuses,
+				selectedStaff: { fullName: "", id: "", type: "" },
 			}));
 		} else {
 			// If no text filter, just use the entire source
@@ -155,6 +157,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				...s,
 				filter: "",
 				revisedStatuses,
+				selectedStaff: { fullName: "", id: "", type: "" },
 			}));
 		}
 	}, [api.projects.copy, main.activeModule, main.findText, calculateStatusCounts]);
@@ -370,7 +373,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			setMain((s) => ({
 				...s,
 				activeModule: { items: module?.items, name: module?.key },
-				filter: "",
 				revisedStatuses,
 			}));
 		},
@@ -443,34 +445,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			});
 	}, [api.projects.copy, main.findText, statuses]);
 
-	// Setup cache for expensive data operations
-	const dataCache = useMemo(
-		() => ({
-			projectDataCache: null,
-			lastParams: {
-				activeModuleName: "",
-				filter: "",
-				findText: "",
-			},
-		}),
-		[],
-	);
-
 	const getSelectedProjectData = useCallback(() => {
-		// Check if we can use cached data
-		const currentParams = {
-			activeModuleName: main.activeModule.name,
-			filter: main.filter,
-			findText: main.findText,
-		};
-
-		const paramsMatch = dataCache.lastParams.activeModuleName === currentParams.activeModuleName && dataCache.lastParams.filter === currentParams.filter && dataCache.lastParams.findText === currentParams.findText;
-
-		if (dataCache.projectDataCache && paramsMatch) {
-			return dataCache.projectDataCache;
-		}
-
-		// Otherwise compute the data
 		let source = [];
 
 		if (!api.projects.copy.length) return source;
@@ -483,38 +458,39 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		}
 
 		// Apply all filters
-		const filtered = source.filter((project) => {
+		const filtered = source.filter((f) => {
 			let matchesTextFilter = true;
 			let matchesStatusFilter = true;
+			let matchesTeamFilter = true;
 
 			// Text filter logic
 			if (main.findText) {
 				if (Object.values(statuses).includes(main.findText)) {
-					matchesTextFilter = project.status.includes(main.findText);
+					matchesTextFilter = f.status.includes(main.findText);
 				} else if (main.findText === "Overdue" || presetStatus === "Overdue") {
 					// Important: This filter is coming from the dashboard
-					matchesTextFilter = project.has_tasks_overdue;
+					matchesTextFilter = f.has_tasks_overdue;
 				} else if (main.findText === "Today" || presetStatus === "Today") {
-					matchesTextFilter = project.has_tasks_due_today;
+					matchesTextFilter = f.has_tasks_due_today;
 				} else if (main.findText === "Tomorrow" || presetStatus === "Tomorrow") {
-					matchesTextFilter = project.has_tasks_due_tomorrow;
+					matchesTextFilter = f.has_tasks_due_tomorrow;
 				} else if (main.findText === "Upcoming" || presetStatus === "Upcoming") {
-					matchesTextFilter = project.has_tasks_upcoming;
+					matchesTextFilter = f.has_tasks_upcoming;
 				} else {
 					const findText = main.findText.toLowerCase();
 					matchesTextFilter =
-						String(project.id).toLowerCase().includes(findText) ||
-						String(project.government_id || "")
+						String(f.id).toLowerCase().includes(findText) ||
+						String(f.government_id || "")
 							.toLowerCase()
 							.includes(findText) ||
-						String(project.client_id).toLowerCase().includes(findText) ||
-						project.client_name.toLowerCase().includes(findText) ||
-						project.company_name.toLowerCase().includes(findText) ||
-						project.main_project_name.toLowerCase().includes(findText) ||
-						project.sub_project_name.toLowerCase().includes(findText) ||
-						String(project.team_names).toLowerCase().includes(findText) ||
-						String(project.team_names_initials).toLowerCase().includes(findText) ||
-						project.status.toLowerCase().includes(findText);
+						String(f.client_id).toLowerCase().includes(findText) ||
+						f.client_name.toLowerCase().includes(findText) ||
+						f.company_name.toLowerCase().includes(findText) ||
+						f.main_project_name.toLowerCase().includes(findText) ||
+						f.sub_project_name.toLowerCase().includes(findText) ||
+						String(f.team_names).toLowerCase().includes(findText) ||
+						String(f.team_names_initials).toLowerCase().includes(findText) ||
+						f.status.toLowerCase().includes(findText);
 				}
 			}
 
@@ -522,29 +498,34 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			if (main.filter) {
 				if ([statuses.Overdue, statuses.Today, statuses.Tomorrow, statuses.Upcoming].includes(main.filter)) {
 					if (main.filter === statuses.Overdue) {
-						matchesStatusFilter = project.has_tasks_overdue;
+						matchesStatusFilter = f.has_tasks_overdue;
 					} else if (main.filter === statuses.Today) {
-						matchesStatusFilter = project.has_tasks_due_today;
+						matchesStatusFilter = f.has_tasks_due_today;
 					} else if (main.filter === statuses.Tomorrow) {
-						matchesStatusFilter = project.has_tasks_due_tomorrow;
+						matchesStatusFilter = f.has_tasks_due_tomorrow;
 					} else if (main.filter === statuses.Upcoming) {
-						matchesStatusFilter = project.has_tasks_upcoming;
+						matchesStatusFilter = f.has_tasks_upcoming;
 					}
 				} else {
-					matchesStatusFilter = project.status === main.filter;
+					matchesStatusFilter = f.status === main.filter;
+				}
+			}
+
+			// Team filter logic
+			if (main.selectedStaff.id) {
+				if (main.selectedStaff.type === "Assigned alone") {
+					matchesTeamFilter = f.teams === main.selectedStaff.id;
+				} else {
+					matchesStatusFilter = String(f.teams).split(",").includes(main.selectedStaff.id);
 				}
 			}
 
 			// Both filters must match
-			return matchesTextFilter && matchesStatusFilter;
+			return matchesTextFilter && matchesStatusFilter && matchesTeamFilter;
 		});
 
-		// Update cache
-		dataCache.projectDataCache = filtered;
-		dataCache.lastParams = { ...currentParams };
-
 		return filtered;
-	}, [api.projects.copy, main.activeModule.name, main.filter, main.findText, statuses, aggregatedProjects, dataCache]);
+	}, [api.projects.copy, main.activeModule.name, main.filter, main.findText, statuses, main.selectedStaff, aggregatedProjects]);
 
 	const filteredProjects = useMemo(() => {
 		return getSelectedProjectData();
@@ -746,7 +727,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 					showClearButton={showFindBoxClearButton}
 					tabIndex={1}
 					value={main.findText}
-					width="w-60"
+					width="w-40"
 				/>
 			);
 		}
@@ -902,6 +883,88 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			...s,
 			todo: Boolean(project),
 		}));
+	}
+
+	function setStaff(obj) {
+		setMain((s) => ({ ...s, selectedStaff: { ...s.selectedStaff, fullName: obj.full_name, id: obj.id } }));
+	}
+
+	function setStaffType(value) {
+		setMain((s) => ({ ...s, selectedStaff: { ...s.selectedStaff, type: value } }));
+	}
+
+	function uiStaff() {
+		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+
+		return (
+			<Menu
+				as="div"
+				className="flex max-w-full min-w-40 justify-center items-center relative">
+				<MenuButton className={wrapper}>
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faUserAlt}
+					/>
+					<span className="gray-text">{main.selectedStaff.fullName || "Team"}</span>
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStaffList()}</MenuItems>
+			</Menu>
+		);
+	}
+
+	function uiStaffList() {
+		return MyGlobal.GetAllUsers().map((m, i) => {
+			const isSelected = m.id === main.selectedStaff.id;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+
+			return (
+				<MenuItem
+					as="div"
+					className={wrapper}
+					key={i}
+					onClick={() => setStaff(m)}>
+					<span>{m.full_name}</span>
+				</MenuItem>
+			);
+		});
+	}
+
+	function uiStaffAdvanced() {
+		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+
+		return (
+			<Menu
+				as="div"
+				className="flex max-w-full min-w-40 justify-center items-center relative">
+				<MenuButton className={wrapper}>
+					<FontAwesomeIcon
+						className="primary-text"
+						icon={faFilter}
+					/>
+					<span className="gray-text">{main.selectedStaff.type || "Type"}</span>
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStaffListAdvanced()}</MenuItems>
+			</Menu>
+		);
+	}
+
+	function uiStaffListAdvanced() {
+		return ["Assigned alone", "Assigned with team"].map((m, i) => {
+			const isSelected = m === main.selectedStaff.type;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+
+			return (
+				<MenuItem
+					as="div"
+					className={wrapper}
+					key={i}
+					onClick={() => setStaffType(m)}>
+					<span>{m}</span>
+				</MenuItem>
+			);
+		});
 	}
 
 	// Optimized row rendering logic
@@ -1247,16 +1310,22 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			<div className="flex w-full h-full justify-center items-start">
 				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiList()}</div>
 				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center">
-					<div className="flex flex-col w-full h-full justify-center items-start full-border">
-						<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-						<Virtuoso
-							className="w-full h-full overflow-y-auto bottom-border contrast-background"
-							data={sortedProjects}
-							itemContent={(i, row) => uiRows(row)}
-							totalCount={sortedProjects.length}
-						/>
-						<div className="fixed bottom-3 right-3 z-50">{uiTotalQuote()}</div>
-					</div>
+					{!filteredProjects.length && api.projects.copy.length ? (
+						<div className={blankDataWrapper}>
+							<span className="font-regular-12 gray-text">No projects found.</span>
+						</div>
+					) : (
+						<div className="flex flex-col w-full h-full justify-center items-start full-border">
+							<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
+							<Virtuoso
+								className="w-full h-full overflow-y-auto bottom-border contrast-background"
+								data={sortedProjects}
+								itemContent={(i, row) => uiRows(row)}
+								totalCount={sortedProjects.length}
+							/>
+							<div className="fixed bottom-3 right-3 z-50">{uiTotalQuote()}</div>
+						</div>
+					)}
 				</div>
 			</div>
 		);
@@ -1286,12 +1355,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			return (
 				<div className={blankDataWrapper}>
 					<span className="font-regular-12 gray-text">Loading Projects ...</span>
-				</div>
-			);
-		} else if (!filteredProjects.length && api.projects.copy.length) {
-			return (
-				<div className={blankDataWrapper}>
-					<span className="font-regular-12 gray-text">No projects found.</span>
 				</div>
 			);
 		} else if (!filteredProjects.length && !api.projects.copy.length) {
@@ -1401,37 +1464,38 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			}
 
 			// Now, apply both filters for the actual displayed data
-			const filteredData = source.filter((project) => {
+			const filteredData = source.filter((f) => {
 				let matchesTextFilter = true;
 				let matchesStatusFilter = true;
+				let matchesTeamFilter = true;
 
 				// Text filter logic
 				if (debouncedFindText) {
 					if (Object.values(statuses).includes(debouncedFindText)) {
-						matchesTextFilter = project.status.includes(debouncedFindText);
+						matchesTextFilter = f.status.includes(debouncedFindText);
 					} else if (debouncedFindText === "Overdue") {
-						matchesTextFilter = project.has_tasks_overdue;
+						matchesTextFilter = f.has_tasks_overdue;
 					} else if (debouncedFindText === "Today") {
-						matchesTextFilter = project.has_tasks_due_today;
+						matchesTextFilter = f.has_tasks_due_today;
 					} else if (debouncedFindText === "Tomorrow") {
-						matchesTextFilter = project.has_tasks_due_tomorrow;
+						matchesTextFilter = f.has_tasks_due_tomorrow;
 					} else if (debouncedFindText === "Upcoming") {
-						matchesTextFilter = project.has_tasks_upcoming;
+						matchesTextFilter = f.has_tasks_upcoming;
 					} else {
 						const findText = debouncedFindText.toLowerCase();
 						matchesTextFilter =
-							String(project.id).toLowerCase().includes(findText) ||
-							String(project.government_id || "")
+							String(f.id).toLowerCase().includes(findText) ||
+							String(f.government_id || "")
 								.toLowerCase()
 								.includes(findText) ||
-							String(project.client_id).toLowerCase().includes(findText) ||
-							project.client_name.toLowerCase().includes(findText) ||
-							project.company_name.toLowerCase().includes(findText) ||
-							project.main_project_name.toLowerCase().includes(findText) ||
-							project.sub_project_name.toLowerCase().includes(findText) ||
-							String(project.team_names).toLowerCase().includes(findText) ||
-							String(project.team_names_initials).toLowerCase().includes(findText) ||
-							project.status.toLowerCase().includes(findText);
+							String(f.client_id).toLowerCase().includes(findText) ||
+							f.client_name.toLowerCase().includes(findText) ||
+							f.company_name.toLowerCase().includes(findText) ||
+							f.main_project_name.toLowerCase().includes(findText) ||
+							f.sub_project_name.toLowerCase().includes(findText) ||
+							String(f.team_names).toLowerCase().includes(findText) ||
+							String(f.team_names_initials).toLowerCase().includes(findText) ||
+							f.status.toLowerCase().includes(findText);
 					}
 				}
 
@@ -1439,21 +1503,30 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				if (main.filter) {
 					if ([statuses.Overdue, statuses.Today, statuses.Tomorrow, statuses.Upcoming].includes(main.filter)) {
 						if (main.filter === statuses.Overdue) {
-							matchesStatusFilter = project.has_tasks_overdue;
+							matchesStatusFilter = f.has_tasks_overdue;
 						} else if (main.filter === statuses.Today) {
-							matchesStatusFilter = project.has_tasks_due_today;
+							matchesStatusFilter = f.has_tasks_due_today;
 						} else if (main.filter === statuses.Tomorrow) {
-							matchesStatusFilter = project.has_tasks_due_tomorrow;
+							matchesStatusFilter = f.has_tasks_due_tomorrow;
 						} else if (main.filter === statuses.Upcoming) {
-							matchesStatusFilter = project.has_tasks_upcoming;
+							matchesStatusFilter = f.has_tasks_upcoming;
 						}
 					} else {
-						matchesStatusFilter = project.status === main.filter;
+						matchesStatusFilter = f.status === main.filter;
+					}
+				}
+
+				// Team filter logic
+				if (main.selectedStaff.id) {
+					if (main.selectedStaff.type === "Assigned alone") {
+						matchesTeamFilter = f.teams === main.selectedStaff.id;
+					} else {
+						matchesStatusFilter = String(f.teams).split(",").includes(main.selectedStaff.id);
 					}
 				}
 
 				// Both filters must match
-				return matchesTextFilter && matchesStatusFilter;
+				return matchesTextFilter && matchesStatusFilter && matchesTeamFilter;
 			});
 
 			setApi((prev) => ({
@@ -1464,7 +1537,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				},
 			}));
 		}
-	}, [debouncedFindText, main.filter, main.activeModule, api.projects.copy, mounted.mainComponent, statuses, calculateStatusCounts]);
+	}, [debouncedFindText, main.selectedStaff, main.filter, main.activeModule, api.projects.copy, mounted.mainComponent, statuses, calculateStatusCounts]);
 
 	useEffect(() => {
 		const scrollElements = document.querySelectorAll(".overflow-y-auto");
@@ -1492,20 +1565,22 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			<>
 				{!mounted.editProject && !mounted.singleProject && (
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
-						<div className="flex w-1/3 space-x-2 justify-start items-center">
+						<div className="flex w-1/5 space-x-2 justify-start items-center">
 							<span className="view-heading">{thisView}</span>
 							{getIconOrBadge()}
 						</div>
-						<div className="flex w-1/3 space-x-5 justify-center items-center">
+						<div className="flex w-3/5 space-x-5 justify-center items-center">
 							{uiFind()}
 							{uiFilter()}
+							{uiStaff()}
+							{uiStaffAdvanced()}
 							<Tippy
 								content={<Tooltip text={`Clear filters of ${main.activeModule.name}`} />}
 								placement="bottom">
 								{uiClearFilter()}
 							</Tippy>
 						</div>
-						<div className="flex w-1/3 justify-end items-center">{uiExport()}</div>
+						<div className="flex w-1/5 justify-end items-center">{uiExport()}</div>
 					</div>
 				)}
 				{uiMain()}

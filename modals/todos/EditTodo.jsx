@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ComboBox2, ComboBoxWithChips, DatePicker, TextArea } from "@/components/Inputs";
-import { faCalendar, faDiagramProject, faNoteSticky, faStar, faUser, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faBriefcase, faCalendar, faDiagramProject, faNoteSticky, faStar, faUser, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export default function EditTodo({ mount, refresh, todo, unmount }) {
 	// Business Logic
@@ -39,10 +39,13 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 	const [selectedClient, setSelectedClient] = useState({});
 	const [clientSearch, setClientSearch] = useState("");
 
+	const [selectedCompany, setSelectedCompany] = useState({});
+	const [companySearch, setCompanySearch] = useState("");
+
 	const [selectedProject, setSelectedProject] = useState({});
 	const [projectSearch, setProjectSearch] = useState("");
 
-	const [supportData, setSupportData] = useState({ clients: [], clientsCopy: [], projects: [] });
+	const [supportData, setSupportData] = useState({ clients: [], clientsCopy: [], companies: [], projects: [] });
 
 	const [isFetching, setIsFetching] = useState(false);
 
@@ -71,6 +74,7 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 			const body = {
 				id: todo.id,
 				clientId: selectedClient?.id,
+				companyId: selectedCompany?.id,
 				customId: todo.custom_id,
 				description: data.description,
 				oldDescription: todo.description,
@@ -120,6 +124,20 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 		return list;
 	}
 
+	function getFilteredCompanies() {
+		let list = !selectedClient?.companies?.length ? [] : selectedClient?.companies;
+
+		if (list.length) {
+			if (companySearch) {
+				list = selectedClient?.companies?.filter((f) => {
+					return String(f.company_name).toLowerCase().includes(companySearch.toLowerCase());
+				});
+			}
+		}
+
+		return list;
+	}
+
 	function getFilteredProjects() {
 		let list = !selectedClient?.projects?.length ? [] : selectedClient?.projects;
 
@@ -142,6 +160,7 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 
 			if (response.status === 200) {
 				let selectedClient = {};
+				let selectedCompany = {};
 				let selectedProject = {};
 
 				const clients = response.data.clients.map((m) => {
@@ -159,18 +178,26 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 							return { ...m, main_project_name: mainProjectName, name: subProjectName };
 						});
 
+					const companies = response.data.companies
+						.filter((f) => f.client_id === todo.client_id)
+						.map((m) => {
+							selectedCompany = m;
+							return m;
+						});
+
 					if (m.id === todo.client_id) {
-						selectedClient = { ...m, projects };
+						selectedClient = { ...m, companies, projects };
 					}
 
-					return { ...m, projects };
+					return { ...m, companies, projects };
 				});
 
 				setClientSearch(selectedClient?.name);
 				setSelectedClient(selectedClient);
+				setSelectedCompany(selectedCompany);
 				setSelectedProject(selectedProject);
 
-				setSupportData({ clients, clientsCopy: clients, projects: response.data.projects });
+				setSupportData({ clients, clientsCopy: clients, companies: response.data.companies, projects: response.data.projects });
 
 				setTimeout(() => setData((s) => ({ ...s, hasMounted: true })), 2000);
 			}
@@ -313,12 +340,37 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 		);
 	}
 
+	function uiSelectedClientsCompanies() {
+		return (
+			<ComboBox2
+				allowCreatingNewItem={false}
+				comparingValue1="name"
+				comparingValue2={selectedCompany ? selectedCompany?.name : ""}
+				displayValue="name"
+				filteredData={getFilteredCompanies}
+				hasDataObject
+				icon={faBriefcase}
+				isReadOnly={false}
+				label="Company"
+				onChange={(e) => setSelectedCompany(e)}
+				onClick={() => {}}
+				onInputChange={(e) => setCompanySearch(!e.target.value ? "" : e.target.value)}
+				onKeyPress={() => {}}
+				searchedItem={companySearch}
+				showFullObject
+				tabIndex={1}
+				value={selectedCompany ? selectedCompany?.name : ""}
+				width="w-full"
+			/>
+		);
+	}
+
 	function uiSelectedClientsProjects() {
 		return (
 			<ComboBox2
 				allowCreatingNewItem={false}
 				comparingValue1={["id", "name"]}
-				comparingValue2={selectedProject?.id + " - " + selectedProject?.name}
+				comparingValue2={selectedProject ? selectedProject?.id + " - " + selectedProject?.name : ""}
 				displayValue={["id", "name"]}
 				filteredData={getFilteredProjects}
 				hasDataObject
@@ -366,7 +418,10 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 	useEffect(() => {
 		if (data.hasMounted) {
 			setProjectSearch("");
-			setSelectedProject(!selectedClient ? {} : selectedClient?.projects?.at(0));
+			setSelectedProject(!selectedClient ? null : selectedClient?.projects?.at(0));
+
+			setCompanySearch("");
+			setSelectedCompany(!selectedClient ? null : selectedClient?.companies?.at(0));
 		}
 	}, [selectedClient]);
 
@@ -397,6 +452,7 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 							<div className="flex w-full space-x-6 justify-between items-center">
 								{uiClient()}
 								{uiSelectedClientsProjects()}
+								{uiSelectedClientsCompanies()}
 							</div>
 							{uiAssignedTo()}
 							<div className="flex w-full space-x-6 justify-between items-start">

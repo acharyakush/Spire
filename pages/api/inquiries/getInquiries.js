@@ -14,12 +14,13 @@ export default async function handler(req, res) {
 
 	try {
 		const response = await query("SELECT * FROM inquiries ORDER BY id DESC", []);
+		const response1 = await query("SELECT * FROM inquiries_quotations_services ORDER BY id DESC", []);
 
 		if (!response.length) {
 			return res.status(204).end();
 		}
 
-		return res.status(200).json(response);
+		return res.status(200).json({ inquiries: response, quotations_services: response1 });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).send("Internal Server Error");

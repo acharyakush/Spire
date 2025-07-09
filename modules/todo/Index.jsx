@@ -38,6 +38,8 @@ export default function Todos({ presetStatus, setModuleProps }) {
 	const IsUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const [activeCard, setActiveCard] = useState(null);
+
+	const [clients, setClients] = useState([]);
 	const [projects, setProjects] = useState([]);
 	const [subProjects, setSubProjects] = useState([]);
 
@@ -362,6 +364,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 					setColumnsCopy({ pending, inProgress, completed });
 				}
 
+				setClients(response.data.clients);
 				setProjects(response.data.projects);
 				setSubProjects(response.data.subProjects);
 			}
@@ -460,7 +463,26 @@ export default function Todos({ presetStatus, setModuleProps }) {
 	}
 
 	function toggleDetails(todo) {
-		setMain((s) => ({ ...s, selectedTodo: todo }));
+		let _todo = todo;
+
+		if (todo) {
+			const _clients = clients.find((f) => f.id === todo.item.client_id);
+			const _projects = projects.find((f) => f.id === todo.item.project_id);
+
+			if (_clients) {
+				_todo.item.client_name = _clients.name;
+			}
+
+			if (_projects) {
+				const subProject = subProjects.find((f) => f.id === _projects.sub_project_id);
+
+				if (subProject) {
+					_todo.item.sub_project_name = subProject.name;
+				}
+			}
+		}
+
+		setMain((s) => ({ ...s, selectedTodo: _todo }));
 		setMounted((s) => ({ ...s, details: !s.details }));
 	}
 
@@ -587,7 +609,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 						) : null}
 					</DragOverlay>
 				</DndContext>
-				<div className="fixed bottom-3 right-3 z-50">{uiRestoreTodos()}</div>
+				{IsUserAdministrator && <div className="fixed bottom-3 right-3 z-50">{uiRestoreTodos()}</div>}
 			</div>
 		);
 	}
@@ -650,7 +672,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 
 	function uiStaffList() {
 		return MyGlobal.GetAllUsers().map((m, i) => {
-			const isSelected = m.id === main.selectedStaff;
+			const isSelected = m.id === main.selectedStaff.id;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
 
@@ -687,7 +709,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 
 	function uiStaffListAdvanced() {
 		return ["Assigned alone", "Assigned with team"].map((m, i) => {
-			const isSelected = m.id === main.selectedStaff.type;
+			const isSelected = m === main.selectedStaff.type;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
 
