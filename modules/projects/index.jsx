@@ -18,8 +18,8 @@ import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
+import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
@@ -514,9 +514,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			// Team filter logic
 			if (main.selectedStaff.id) {
 				if (main.selectedStaff.type === "Assigned alone") {
-					matchesTeamFilter = f.teams === main.selectedStaff.id;
+					matchesTeamFilter = f.teams === main.selectedStaff.id && f.status === statuses.Active;
 				} else {
-					matchesStatusFilter = String(f.teams).split(",").includes(main.selectedStaff.id);
+					matchesStatusFilter = String(f.teams).split(",").includes(main.selectedStaff.id) && f.status === statuses.Active;
 				}
 			}
 

@@ -1020,7 +1020,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 							/>
 						</Tippy>
 					)}
-					{row.quotationAmount && (
+					{row.quotationAmount > 0 && (
 						<Tippy
 							content={<Tooltip text={MyGlobal.ThousandSeparator(row.quotationAmount)} />}
 							placement="bottom">

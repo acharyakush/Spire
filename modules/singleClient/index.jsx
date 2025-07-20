@@ -6,39 +6,21 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Files from "./Files";
 import Tippy from "@tippyjs/react";
+import html2canvas from "html2canvas";
 import writeXlsxFile from "write-excel-file";
 import SingleProject from "../singleProject";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
-import { useEffect, useRef, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
+import { useEffect, useRef, useState } from "react";
 import { EditCompany } from "@/modals/singleClient";
 import { TextInputNative } from "@/components/Inputs";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SpinnerSmall, Tooltip, UsersTooltipList } from "@/components/Elements";
-import {
-	faCalendar,
-	faCamera,
-	faCameraAlt,
-	faCameraRetro,
-	faCameraRotate,
-	faChevronLeft,
-	faCloudUpload,
-	faEnvelope,
-	faFileExcel,
-	faIdBadge,
-	faMultiply,
-	faPencil,
-	faSearch,
-	faSortAmountAsc,
-	faSortAmountDesc,
-	faUserTag,
-	faVideoCamera,
-} from "@fortawesome/free-solid-svg-icons";
-import html2canvas from "html2canvas";
+import { faCalendar, faCamera, faChevronLeft, faCloudUpload, faEnvelope, faFileExcel, faIdBadge, faMultiply, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faUserTag } from "@fortawesome/free-solid-svg-icons";
 
 export default function SingleClient({ client, unmount }) {
 	// Business Logic
@@ -90,8 +72,9 @@ export default function SingleClient({ client, unmount }) {
 	// Functions
 	async function captureScreenshot() {
 		const element = captureRef.current;
-
 		if (!element) return;
+
+		await new Promise((res) => setTimeout(res, 500));
 
 		const canvas = await html2canvas(element, {
 			scale: 1,
@@ -99,16 +82,22 @@ export default function SingleClient({ client, unmount }) {
 		});
 
 		canvas.toBlob(async (blob) => {
+			if (!blob) {
+				console.error("Screenshot failed: blob is null");
+				MyGlobal.ShowErrorToast("Screenshot failed. Try again.");
+				return;
+			}
+
 			try {
 				await navigator.clipboard.write([
 					new ClipboardItem({
 						[blob.type]: blob,
 					}),
 				]);
-
 				MyGlobal.ShowSuccessToast("Screenshot copied to clipboard.");
 			} catch (err) {
 				console.error("Failed to copy screenshot: ", err);
+				MyGlobal.ShowErrorToast("Failed to copy screenshot.");
 			}
 		});
 	}
@@ -518,7 +507,8 @@ export default function SingleClient({ client, unmount }) {
 				setApi((s) => ({ ...s, uploadedFiles: response.data }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, "Single Client => Set Uploaded Files");
+			console.log("");
+			// MyGlobal.HandleErrors(error, "Single Client => Set Uploaded Files");
 		} finally {
 			setLoading((s) => ({ ...s, uploadedFiles: false }));
 		}
@@ -917,12 +907,9 @@ export default function SingleClient({ client, unmount }) {
 	}
 
 	function uiSortArrows(column) {
-		if (main.sort.column == column) {
-			if (main.sort.isAscending) {
-				return <FontAwesomeIcon icon={faSortAmountAsc} />;
-			} else {
-				return <FontAwesomeIcon icon={faSortAmountDesc} />;
-			}
+		if (main.sort.column === column) {
+			if (main.sort.isAscending) return <FontAwesomeIcon icon={faSortAmountAsc} />;
+			return <FontAwesomeIcon icon={faSortAmountDesc} />;
 		}
 	}
 
@@ -960,17 +947,15 @@ export default function SingleClient({ client, unmount }) {
 
 	function uiUploadedFiles() {
 		if (!loading.uploadedFiles) {
-			if (api.uploadedFiles.length) {
-				const label = api.uploadedFiles.length == 1 ? "File" : "Files";
+			if (!api.uploadedFiles.length) return <span>Upload</span>;
 
-				return (
-					<div>
-						{api.uploadedFiles.length} {label}
-					</div>
-				);
-			} else {
-				return <span>Upload</span>;
-			}
+			const label = api.uploadedFiles.length == 1 ? "File" : "Files";
+
+			return (
+				<div>
+					{api.uploadedFiles.length} {label}
+				</div>
+			);
 		}
 	}
 

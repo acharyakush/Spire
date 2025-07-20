@@ -1,7 +1,6 @@
 ==============
 Server Details
 ==============
-GoDaddy Domain Transfer Code:		T^O855@:^$3846DC
 Root Password:						SpireCrmBySigniixAdvisors#2024
 SSH VPS Access:						ssh root@145.223.23.76
 Hostname:							srv797550.hstgr.cloud
@@ -47,3 +46,10 @@ PhpMyAdmin
 ==========
 Username:							spire
 Password:							SpireCrmBySigniixAdvisors#2024
+
+
+=======
+Account
+=======
+Email Address:						signiixadvisors@gmail.com\
+Password:							TopNotchAdvisors#2024

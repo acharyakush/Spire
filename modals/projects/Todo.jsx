@@ -10,7 +10,7 @@ import MyConstants from "@/utilities/constants";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextArea } from "@/components/Inputs";
-import { Spinner } from "@/components/Elements";
+import { AvatarCircle, Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
@@ -50,11 +50,13 @@ export default function ProjectTodos({ mount, project, reload, unmount }) {
 		try {
 			setMain((s) => ({ ...s, isLoading: true }));
 
-			let notesTimeline = main.activeModuleData.notes ? [main.newNote, main.activeModuleData.notes] : [main.newNote];
+			const suffix = "::" + MyGlobal.GetUserId() + "::" + dayjs().format("HH:MM a, DD MMM, YYYY");
+
+			let notesTimeline = main.activeModuleData.notes ? [main.newNote + suffix, main.activeModuleData.notes + suffix] : [main.newNote + suffix];
 
 			if (main.activeModuleData.notes_timeline) {
 				const parsed = JSON.parse(main.activeModuleData.notes_timeline);
-				parsed.unshift(main.newNote);
+				parsed.unshift(main.newNote + suffix);
 
 				notesTimeline = parsed;
 			}
@@ -185,13 +187,30 @@ export default function ProjectTodos({ mount, project, reload, unmount }) {
 		return (
 			<div className="flex flex-col w-full justify-start items-center ">
 				<span className="w-full text-left font-regular-10 gray-text">Notes</span>
-				<div className="w-full font-regular-12 px-4">
+				<div className="w-full h-[200px] divide-y overflow-y-auto font-regular-12 space-y-2 p-4 bg-white rounded full-border">
 					{notesTimeline
-						? notesTimeline?.map((m, i) => (
-								<ul className="list-disc">
-									<li>{m}</li>
-								</ul>
-						  ))
+						? notesTimeline?.map((m, i) => {
+								const [note, userId, timestamp] = String(m).split("::");
+								const userFullName = MyGlobal.GetAnyDataFromId(userId, "full_name");
+
+								return (
+									<ul
+										className="list-item"
+										key={i}>
+										<li>
+											<div className="flex w-full justify-between items-center">
+												<span className="w-3/5">
+													{i + 1}. {note}
+												</span>
+												<div className="flex w-2/5 space-x-5 justify-end items-center">
+													<span className="gray-text text-sm">{timestamp}</span>
+													<AvatarCircle name={userFullName} />
+												</div>
+											</div>
+										</li>
+									</ul>
+								);
+						  })
 						: main.activeModuleData.notes}
 				</div>
 			</div>
