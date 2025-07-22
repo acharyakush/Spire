@@ -351,7 +351,7 @@ export default function SingleClient({ client, unmount }) {
 			if (response.status === 200) {
 				const companies = response.data.companies;
 				const projects = response.data.projects;
-				const tasks = response.data.tasks;
+				const projectExpenses = response.data.projectExpenses;
 
 				const revisedProjects = [];
 
@@ -394,7 +394,7 @@ export default function SingleClient({ client, unmount }) {
 
 						const totalAmountReceived = invoiceAmountReceived + rvAmountReceived;
 
-						const reimburseVoucher = tasks.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.expense), 0);
+						const reimburseVoucher = projectExpenses.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.expense), 0);
 
 						const teamNames = MyGlobal.GetAnyDataFromId(fe.teams, "full_name");
 
@@ -484,7 +484,7 @@ export default function SingleClient({ client, unmount }) {
 						data: revisedProjects,
 					},
 					referenceName,
-					tasks,
+					tasks: projectExpenses,
 				}));
 
 				setMain((s) => ({ ...s, projects: revisedProjects, selectedCompany }));

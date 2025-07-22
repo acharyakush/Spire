@@ -301,18 +301,18 @@ export default function RV({ unmount }) {
 						}
 					});
 
-					response.data.tasks.filter((f) => {
-						if (f.project_id === m.id) {
-							amount += Number(f.expense);
-							originalAmount += Number(f.expense);
-						}
-					});
+					// response.data.tasks.filter((f) => {
+					// 	if (f.project_id === m.id) {
+					// 		amount += Number(f.expense);
+					// 		originalAmount += Number(f.expense);
+					// 	}
+					// });
 
-					const sameRvs = response.data.rv.filter((f) => f.project_id === m.id);
+					const sameRvs = response.data.expenses.filter((f) => f.project_id === m.id);
 
 					if (Array.isArray(sameRvs) && sameRvs.length) {
 						amount = 0;
-						amount = sameRvs.reduce((pv, cv) => pv + Number(cv.amount), 0);
+						amount = sameRvs.reduce((pv, cv) => pv + Number(cv.expense), 0);
 					}
 
 					amountPending = amount - amountReceived;
