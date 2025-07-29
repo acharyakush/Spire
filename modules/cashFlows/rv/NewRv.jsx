@@ -70,8 +70,6 @@ export default function NewRv({ project, reload, unmount }) {
 		transactions: [],
 	});
 
-	console.log(project);
-
 	const totalParticularsAmount = main.particulars.reduce((pv, cv) => pv + Number(cv.amount), 0);
 	const totalPendingAmount = Math.abs(totalParticularsAmount - main.totalAmountReceived);
 	const finalPendingAmount = `${String.fromCharCode(8377)} ${MyGlobal.ThousandSeparator(totalPendingAmount)}`;

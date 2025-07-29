@@ -61,9 +61,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
-	const showFollowUpsMenu = mounted.followUpsMenu
-		? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border"
-		: "hidden";
+	const showFollowUpsMenu = mounted.followUpsMenu ? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border" : "hidden";
 
 	const disableEditButton = other.isLoading ? "pointer-events-none" : "pointer-events-auto";
 	const editButtonStyle = `primary-button-condensed ${disableEditButton}`;
@@ -142,7 +140,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.EditInquiry, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				reload();
+				reload("edit-inquiry");
 
 				MyGlobal.AddActivity(`Edited <b>${inquiry.id}</b>.`, MyConstants.Modules.Base.Inquiries);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryEdited);
@@ -423,7 +421,16 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 	}
 
 	function uiDate() {
-		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryDate", e)} tabIndex={7} value={main.entryDate} width="w-full" />;
+		return (
+			<DatePicker
+				icon={faCalendar}
+				label="Date"
+				onChange={(e) => setInputs("entryDate", e)}
+				tabIndex={7}
+				value={main.entryDate}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiEmailAddress() {
@@ -441,7 +448,9 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 
 	function uiFollowUps() {
 		return (
-			<div className="w-full" ref={followUpsMenuRef}>
+			<div
+				className="w-full"
+				ref={followUpsMenuRef}>
 				<ComboBoxWithChips
 					displayKey="full_name"
 					label="Follow Ups"
@@ -601,7 +610,11 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 			<>
 				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
 					<div className="flex w-full space-x-2.5 justify-start items-center">
-						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
+						<FontAwesomeIcon
+							className="pr-1 cursor-pointer black-text"
+							icon={faChevronLeft}
+							onClick={() => unmount()}
+						/>
 						<div className="flex w-full justify-start items-center">
 							<span className="view-heading">Edit Inquiry</span>
 						</div>
@@ -627,12 +640,21 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 					</div>
 				</div>
 				<footer className="w-full dialog-footer">
-					<button className={editButtonStyle} onClick={() => togglePreviewBox("")}>
+					<button
+						className={editButtonStyle}
+						onClick={() => togglePreviewBox("")}>
 						{uiPreview()}
 					</button>
 				</footer>
 
-				{mounted.preview && <EditInquiryPreview editInquiry={main} mount={mounted.preview} oldInquiry={oldData} unmount={togglePreviewBox} />}
+				{mounted.preview && (
+					<EditInquiryPreview
+						editInquiry={main}
+						mount={mounted.preview}
+						oldInquiry={oldData}
+						unmount={togglePreviewBox}
+					/>
+				)}
 			</>
 		);
 	}

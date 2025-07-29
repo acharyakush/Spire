@@ -224,7 +224,7 @@ export default function EditQuotation({ clients, inquiry, reload, unmount }) {
 	}
 
 	function unmountAndReloadRoot() {
-		reload();
+		reload("edit-quotation");
 		unmount({}, false);
 	}
 

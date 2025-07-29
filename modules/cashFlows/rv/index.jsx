@@ -56,6 +56,7 @@ export default function RV({ unmount }) {
 	});
 
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
+	const allowEditRv = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditRv);
 	const allowNewRv = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewRv);
 
 	const showClearCompanyButton = Object.values(main.company).length ? "cursor-pointer primary-text visible" : "invisible";
@@ -689,7 +690,7 @@ export default function RV({ unmount }) {
 
 		let generateRvTooltip = "";
 
-		if (rvId) {
+		if (rvId && allowEditRv) {
 			generateRvTooltip = "Edit this RV";
 		} else if (!allowNewRv) {
 			generateRvTooltip = "You do not have permission to generate RV";
@@ -748,7 +749,7 @@ export default function RV({ unmount }) {
 						dangerouslySetInnerHTML={{ __html: _rvId }}
 						onClick={() => {
 							if (row.rv_id) {
-								if (isUserAdministrator) {
+								if (isUserAdministrator || allowEditRv) {
 									toggleEditRv(row);
 								}
 							} else {

@@ -18,9 +18,9 @@ import { TextInputNative } from "@/components/Inputs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { getScrollPosition, MyGlobal, saveScrollPosition } from "@/utilities/global";
+import { clearScrollPosition, getScrollPosition, MyGlobal, saveScrollPosition } from "@/utilities/global";
 import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
-import { faBolt, faCalendar, faChevronDown, faDownload, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronDown, faDownload, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 const DynamicNotes = dynamic(() => import("./Notes"), { ssr: false });
 const DynamicNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
@@ -650,6 +650,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 					data={doSorting()}
 					itemContent={(_, row) => uiRows(row)}
 					totalCount={inquiriesSize}
+					followOutput="auto"
 					overscan={20}
 				/>
 				<div className="flex fixed bottom-3 right-3 space-x-3 z-50">
@@ -1321,12 +1322,23 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		return () => {
 			setModuleProps(thisView, "");
+			clearScrollPosition("inquiries");
 			globalThis.removeEventListener("keydown", detectKeystrokes);
 		};
 	}, []);
 
 	useEffect(() => {
 		if (inquiries.merged.length) {
+			if (currentScrollPositionReference.current) {
+				const savedIndex = getScrollPosition("inquiries");
+
+				currentScrollPositionReference.current.scrollToIndex({
+					index: savedIndex,
+					align: "start",
+					behavior: "auto",
+				});
+			}
+
 			const filtered = doFiltering(inquiries.merged);
 			setInquiries((s) => ({ ...s, data: filtered }));
 		}

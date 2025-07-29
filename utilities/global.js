@@ -458,8 +458,11 @@ export const MyGlobal = Object.freeze({
 					const splitCustomId = String(m.custom_id).split("/");
 
 					if (splitCustomId.at(1) === thisFinancialYear) {
-						const extractNumber = +splitCustomId.at(2).match(/\d+$/)[0].replace(/0/g, "");
-						extractedIds.push(extractNumber);
+						const extractNumber = +splitCustomId.at(2).match(/\d+$/)[0].replace(/^0+/, "");
+
+						if (!extractedIds.includes(extractNumber)) {
+							extractedIds.push(extractNumber);
+						}
 					}
 				});
 

@@ -54,6 +54,7 @@ export default function Invoices({ presetStatus, unmount }) {
 	});
 
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
+	const allowEditInvoice = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditInvoice);
 	const allowNewInvoice = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInvoice);
 
 	const showClearCompanyButton = Object.values(main.company).length ? "cursor-pointer primary-text visible" : "invisible";
@@ -673,7 +674,9 @@ export default function Invoices({ presetStatus, unmount }) {
 		if (!allowNewInvoice) {
 			generateInvoiceTooltip = "You do not have permission to generate invoice.";
 		} else if (invoiceId != "Generate") {
-			generateInvoiceTooltip = "Edit this invoice.";
+			if (isUserAdministrator || allowEditInvoice) {
+				generateInvoiceTooltip = "Edit this invoice.";
+			}
 		}
 
 		const hideGenerateButton = ["PJ000018", "PJ000016", "PJ000015", "PJ000012", "PJ000011", "PJ000010", "PJ000009", "PJ000004", "PJ000003", "PJ000002", "PJ000034", "PJ000024", "PJ000026"].includes(row.id);
@@ -742,7 +745,7 @@ export default function Invoices({ presetStatus, unmount }) {
 							dangerouslySetInnerHTML={{ __html: invoiceId }}
 							onClick={() => {
 								if (row.invoice_id) {
-									if (isUserAdministrator) {
+									if (isUserAdministrator || allowEditInvoice) {
 										toggleEditInvoice(row);
 									}
 								} else {

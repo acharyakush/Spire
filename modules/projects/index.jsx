@@ -13,17 +13,19 @@ import MyConstants from "@/utilities/constants";
 import ProjectTodos from "@/modals/projects/Todo";
 
 import { Virtuoso } from "react-virtuoso";
-import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { clearScrollPosition, getScrollPosition, MyGlobal, saveScrollPosition } from "@/utilities/global";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
 import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
+	const currentScrollPositionReference = useRef(null);
+
 	const [api, setApi] = useState({
 		notes: [],
 		projects: { data: [], copy: [] },
@@ -187,6 +189,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const setSort = useCallback((column) => {
 		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
 	}, []);
+
+	function handleRangeChange(range) {
+		saveScrollPosition("projects", range.startIndex);
+	}
 
 	const setFilter = useCallback(
 		(value) => {
@@ -1318,10 +1324,13 @@ export default function Projects({ presetStatus, setModuleProps }) {
 						<div className="flex flex-col w-full h-full justify-center items-start full-border">
 							<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
 							<Virtuoso
+								ref={currentScrollPositionReference}
 								className="w-full h-full overflow-y-auto bottom-border contrast-background"
 								data={sortedProjects}
 								itemContent={(i, row) => uiRows(row)}
 								totalCount={sortedProjects.length}
+								followOutput="auto"
+								rangeChanged={handleRangeChange}
 							/>
 							<div className="fixed bottom-3 right-3 z-50">{uiTotalQuote()}</div>
 						</div>
@@ -1416,6 +1425,16 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	useEffect(() => {
 		if (mounted.mainComponent) {
+			if (currentScrollPositionReference.current) {
+				const savedIndex = getScrollPosition("projects");
+
+				currentScrollPositionReference.current.scrollToIndex({
+					index: savedIndex,
+					align: "start",
+					behavior: "auto",
+				});
+			}
+
 			// For "Overdue" filter specifically, we need to make sure the source is filtered for tasks_overdue
 			// before we apply further filtering
 			const source = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items || [];
@@ -1550,6 +1569,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			scrollElements.forEach((element) => {
 				element.removeEventListener("scroll", null);
 			});
+
+			clearScrollPosition("projects");
 		};
 	}, []);
 
