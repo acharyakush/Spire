@@ -21,6 +21,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { clearScrollPosition, getScrollPosition, MyGlobal, saveScrollPosition } from "@/utilities/global";
 import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
 import { faCalendar, faChevronDown, faDownload, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import HoverPreviewWrapper from "@/components/HoverPreviewPdf";
 
 const DynamicNotes = dynamic(() => import("./Notes"), { ssr: false });
 const DynamicNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
@@ -40,15 +41,15 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	const [filter, setFilter] = useState({
 		from: "",
 		to: "",
-		search: presetStatus ?? "",
-		status: "",
+		search: "",
+		status: presetStatus ?? "",
 	});
 
 	const [inquiries, setInquiries] = useState({ copy: [], data: [], merged: [] });
 
 	const [main, setMain] = useState({
 		isLoading: false,
-		isStatus: false,
+		isStatus: presetStatus ?? false,
 		revisedStatuses: {},
 		selectedInquiryForNotes: {},
 		selectedInquiryForStatusChange: {},
@@ -376,7 +377,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				setMain((s) => ({ ...s, revisedStatuses }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, thisView + "> getInquiries()");
+			MyGlobal.HandleErrors(error, thisView + " > getInquiries()");
 		} finally {
 			setMain((s) => ({ ...s, isLoading: false }));
 			setMounted((s) => ({ ...s, mainComponent: true }));
@@ -977,6 +978,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiQuote(row, style) {
 		const quote = MyGlobal.HighlightText(row.quote, filter.search);
+		const quotationFile = String(row.quotation_id).replace("/", "_").replace("/", "_");
 
 		return (
 			<div className={`${style} !justify-between space-y-2 cursor-help`}>
@@ -1021,17 +1023,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 							/>
 						</Tippy>
 					)}
-					{row.quotationAmount > 0 && (
-						<Tippy
-							content={<Tooltip text={MyGlobal.ThousandSeparator(row.quotationAmount)} />}
-							placement="bottom">
-							<FontAwesomeIcon
-								className="w-5 text-amber-600 cursor-pointer scale-100 hover:scale-150 duration-200"
-								icon={faIndianRupee}
-								size="1x"
-							/>
-						</Tippy>
-					)}
+					{row.quotationAmount > 0 && <HoverPreviewWrapper fileUrl={`/quotations/${quotationFile}.pdf`} />}
 				</div>
 			</div>
 		);
@@ -1074,9 +1066,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const parentLabelStyle = childStyle + " font-bold-12";
 		const childLabelStyle = childStyle + " gray-text";
 
-		const avatarWrapper = style + " !flex-row space-x-1";
+		const admins = row.follow_ups_data.filter((f) => f.role === "Administrator").map((m) => m.full_name);
+		const teams = row.follow_ups_data.filter((f) => f.role !== "Administrator").map((m) => m.full_name);
 
-		const followUpsNames = String(row.follow_ups).split(",");
+		const spaceX = admins.length && teams.length ? "space-x-5" : "space-x-0";
+		const avatarWrapper = style + " !flex-row " + spaceX;
 		const nextFollowUpRemaining = dayjs(row.next_follow_up_on).diff(dayjs().format("DD MMM, YYYY"), "day");
 
 		const followUpRemainingText =
@@ -1095,7 +1089,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				{uiProjects(childLabelStyle, parentLabelStyle, row, style)}
 
 				<span className={avatarWrapper}>
-					<AvatarCircle names={followUpsNames} />
+					<AvatarCircle names={admins} />
+					<AvatarCircle names={teams} />
 				</span>
 
 				{uiQuote(row, style)}

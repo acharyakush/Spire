@@ -1,5 +1,5 @@
 {
-	"debug.console.fontFamily": "Consolas, 'Courier New', monospace",
+	"debug.console.fontFamily": "Monotional, Consolas, 'Courier New', monospace",
 	"debug.console.fontSize": 14,
 	"editor.acceptSuggestionOnEnter": "smart",
 	"editor.autoClosingBrackets": "always",
@@ -15,7 +15,7 @@
 	"editor.cursorBlinking": "smooth",
 	"editor.cursorSmoothCaretAnimation": "on",
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.fontFamily": "Consolas, 'Courier New', monospace",
+	"editor.fontFamily": "Monotional, Consolas, 'Courier New', monospace",
 	"editor.fontSize": 14,
 	"editor.formatOnSave": true,
 	"editor.formatOnSaveMode": "file",
@@ -26,6 +26,7 @@
 	"editor.guides.highlightActiveIndentation": true,
 	"editor.indentSize": "tabSize",
 	"editor.insertSpaces": true,
+	"editor.lineHeight": 24,
 	"editor.linkedEditing": true,
 	"editor.parameterHints.enabled": true,
 	"editor.quickSuggestions": {
@@ -64,7 +65,7 @@
 	"search.exclude": {
 		"**/node_modules": true
 	},
-	"terminal.integrated.fontFamily": "Consolas, 'Courier New', monospace",
+	"terminal.integrated.fontFamily": "Monotional, Consolas, 'Courier New', monospace",
 	"terminal.integrated.fontSize": 14,
 	"window.autoDetectColorScheme": true
 }

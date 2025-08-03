@@ -194,10 +194,10 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 
 	function uiServicesProposalHeaders() {
 		return (
-			<div className="flex w-full py-3 justify-center items-center logo-green-background bottom-border rounded-tr rounded-tl font-bold-12 text-white">
-				<span className="flex justify-center items-center w-[5%]">SN</span>
-				<span className="flex justify-center items-center w-[30%]">Services</span>
-				<span className="flex justify-center items-center w-[30%]">Inclusions</span>
+			<div className="flex w-full py-3 justify-center items-center logo-green-background bottom-border rounded-tr rounded-tl font-bold-11 text-white">
+				<span className="flex justify-center items-center w-[5%]"></span>
+				<span className="flex items-center text-left w-[30%]">Services</span>
+				<span className="flex items-center text-left w-[30%]">Inclusions</span>
 				<span className="flex justify-center items-center w-[15%]">Prof Fees</span>
 				<span className="flex justify-center items-center w-[15%]">Gov/Other Cost</span>
 				<span className="flex justify-center items-center w-[10%]">Total</span>
@@ -214,9 +214,9 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 
 			return (
 				<div className={wrapper}>
-					<span className="flex justify-center items-center w-[5%]">{i + 1}</span>
-					<span className="flex w-[30%] justify-center items-center">{m?.services}</span>
-					<span className="flex w-[30%] justify-center items-center">{m?.inclusions}</span>
+					<span className="flex w-[5%] justify-center items-center">{i + 1}</span>
+					<span className="w-[30%] flex items-center text-left">{m?.services}</span>
+					<span className="w-[30%] flex items-center text-left">{m?.inclusions}</span>
 					<span className="flex w-[15%] justify-center items-center">{MyGlobal.FormatCurrency(m?.professionalFees)}</span>
 					<span className="flex w-[15%] justify-center items-center">{MyGlobal.FormatCurrency(m?.governmentFees)}</span>
 					<span className="flex w-[10%] justify-center items-center">{MyGlobal.FormatCurrency(total)}</span>
