@@ -14,12 +14,12 @@ import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { MyGlobal } from "@/utilities/global";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { EditCompany } from "@/modals/singleClient";
 import { TextInputNative } from "@/components/Inputs";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { SpinnerSmall, Tooltip, UsersTooltipList } from "@/components/Elements";
+import { AvatarCircle, BadgeSmallWithBackground, BadgeSmallWithBackground2, SpinnerSmall, Tooltip, UsersTooltipList } from "@/components/Elements";
 import { faCalendar, faCamera, faChevronLeft, faCloudUpload, faEnvelope, faFileExcel, faIdBadge, faMultiply, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faUserTag } from "@fortawesome/free-solid-svg-icons";
 
 export default function SingleClient({ client, unmount }) {
@@ -223,19 +223,12 @@ export default function SingleClient({ client, unmount }) {
 
 	function doSorting() {
 		return main.projects.sort((a, b) => {
-			const aStartedOn = new Date(a.started_on);
-			const bStartedOn = new Date(b.started_on);
-
 			const { column, isAscending } = main.sort;
 
 			if (column == headers.Id && isAscending) {
 				return a.id.localeCompare(b.id);
 			} else if (column == headers.Id && !isAscending) {
 				return b.id.localeCompare(a.id);
-			} else if (column == headers.StartedOn && isAscending) {
-				return aStartedOn - bStartedOn;
-			} else if (column == headers.StartedOn && !isAscending) {
-				return bStartedOn - aStartedOn;
 			} else if (column == headers.SubProject && isAscending) {
 				return a.sub_project.localeCompare(b.sub_project);
 			} else if (column == headers.SubProject && !isAscending) {
@@ -310,7 +303,10 @@ export default function SingleClient({ client, unmount }) {
 
 	function setInputs(key, value) {
 		if (key == "from" || key == "to") {
-			setMain((s) => ({ ...s, filter: { ...s.filter, date: { ...s.filter.date, [key]: value } } }));
+			setMain((s) => ({
+				...s,
+				filter: { ...s.filter, date: { ...s.filter.date, [key]: value } },
+			}));
 		} else {
 			setMain((s) => ({ ...s, filter: { ...s.filter, find: value } }));
 		}
@@ -339,7 +335,10 @@ export default function SingleClient({ client, unmount }) {
 	}
 
 	function setSort(column) {
-		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
+		setMain((s) => ({
+			...s,
+			sort: { column, isAscending: !s.sort.isAscending },
+		}));
 	}
 
 	async function setSupportData(action) {
@@ -613,7 +612,7 @@ export default function SingleClient({ client, unmount }) {
 					className={wrapper}
 					key={i}
 					onClick={() => setSelectedCompany(m, i)}>
-					<span>{m.name}</span>
+					<span>{m.name || "Unnamed"}</span>
 				</button>
 			);
 		});
@@ -649,25 +648,25 @@ export default function SingleClient({ client, unmount }) {
 				if (main.selectedCompany.id != 0) {
 					return (
 						<span
-							className="flex w-[9.09%] justify-center items-center text-white font-medium-12"
+							className="flex w-[11.11%] justify-center items-center text-white font-medium-12"
+							key={i}>
+							<span>{i == 4 && totalValues.invoiceFees}</span>
+							<span>{i == 5 && totalValues.reimburseVoucher}</span>
+							<span>{i == 6 && totalValues.amountReceived}</span>
+							<span>{i == 7 && totalValues.amountPending}</span>
+							<span>{i == 8 && totalValues.totalFees}</span>
+						</span>
+					);
+				} else {
+					return (
+						<span
+							className="flex w-[10%] justify-center items-center text-white font-medium-12"
 							key={i}>
 							<span>{i == 5 && totalValues.invoiceFees}</span>
 							<span>{i == 6 && totalValues.reimburseVoucher}</span>
 							<span>{i == 7 && totalValues.amountReceived}</span>
 							<span>{i == 8 && totalValues.amountPending}</span>
 							<span>{i == 9 && totalValues.totalFees}</span>
-						</span>
-					);
-				} else {
-					return (
-						<span
-							className="flex w-[8.33%] justify-center items-center text-white font-medium-12"
-							key={i}>
-							<span>{i == 6 && totalValues.invoiceFees}</span>
-							<span>{i == 7 && totalValues.reimburseVoucher}</span>
-							<span>{i == 8 && totalValues.amountReceived}</span>
-							<span>{i == 9 && totalValues.amountPending}</span>
-							<span>{i == 10 && totalValues.totalFees}</span>
 						</span>
 					);
 				}
@@ -716,7 +715,7 @@ export default function SingleClient({ client, unmount }) {
 			})
 			.map((m, i) => {
 				const showArrow = m == main.sort.column ? "visible" : "invisible";
-				const width = main.selectedCompany.id != 0 ? "w-[14.28%]" : "w-[8.33%]";
+				const width = main.selectedCompany.id != 0 ? "w-[11.11%]" : "w-[10%]";
 				const wrapper = `flex ${width} h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-10`;
 
 				return (
@@ -793,12 +792,68 @@ export default function SingleClient({ client, unmount }) {
 		}
 	}
 
+	const statuses = useMemo(() => MyConstants.Statuses.Projects2, []);
+
+	function getStatusSeverityBackground2(status) {
+		switch (status) {
+			case statuses.Open:
+				return {
+					background: "orange-background",
+					border: "orange-border",
+					text: "text-white",
+				};
+			case statuses.Closed:
+			case statuses.Cancelled:
+				return {
+					background: "gray-background",
+					border: "gray-border",
+					text: "text-white",
+				};
+			case statuses.Hold:
+				return {
+					background: "red-background",
+					border: "red-border",
+					text: "text-white",
+				};
+			case statuses.Completed:
+				return {
+					background: "green-background",
+					border: "green-border",
+					text: "text-white",
+				};
+			default:
+				return {
+					background: "orange-background",
+					border: "orange-border",
+					text: "text-white",
+				};
+		}
+	}
+
+	function getStatusSeverityBackground(status) {
+		switch (status) {
+			case statuses.Active:
+				return "orange-background";
+			case statuses.Closed:
+			case statuses.Cancelled:
+				return "gray-background";
+			case statuses.Hold:
+				return "red-background";
+			case statuses.Completed:
+				return "green-background";
+			default:
+				return "orange-background";
+		}
+	}
+
 	function uiRows(row, i) {
-		const width = main.selectedCompany.id != 0 ? "w-[14.28%]" : "w-[8.33%]";
-		const style = `flex flex-wrap ${width} min-h-9 justify-center items-center text-center`;
+		const width = main.selectedCompany.id != 0 ? "w-[11.11%]" : "w-[10%]";
+		const style = `flex flex-wrap ${width} justify-center items-center text-center`;
 
 		const tooltipStyle = `${style} cursor-help primary-text`;
 		const tooltipStyle2 = `${style} cursor-help`;
+
+		const fancyRightBorderStyle = "absolute w-3 h-[50px] rounded-tr-full rounded-br-full " + getStatusSeverityBackground(row.status) + " -left-1";
 
 		const invoiceFeesColour = row.invoice_fees == 0 ? "text-gray-300" : "primary-text";
 		const invoiceFeesStyle = `${tooltipStyle2} ${invoiceFeesColour}`;
@@ -817,59 +872,82 @@ export default function SingleClient({ client, unmount }) {
 
 		return (
 			<div
-				className="flex w-full justify-center items-center black-white-background bottom-border font-regular-11 black-text"
+				className="flex w-full py-3 justify-center items-center black-white-background bottom-border font-regular-10 black-text"
 				key={i}>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.id, main.filter.find) }}
-				/>
-
-				<Tippy
-					content={<Tooltip text={dayjs(row.started_on).format("hh:mm:ss A")} />}
-					placement="bottom">
-					<span className={tooltipStyle}>{dayjs(row.started_on).format("DD/MM/YYYY")}</span>
-				</Tippy>
+				<div className={`${style} !flex-col`}>
+					<span className={fancyRightBorderStyle} />
+					<span
+						className="font-semibold-11"
+						dangerouslySetInnerHTML={{
+							__html: MyGlobal.HighlightText(row.id, main.filter.find),
+						}}
+					/>
+					<Tippy
+						content={<Tooltip text={dayjs(row.started_on).format("hh:mm:ss A")} />}
+						placement="bottom">
+						<span className={`${tooltipStyle2} font-regular-9 gray-text`}>{dayjs(row.started_on).format("DD/MM/YYYY")}</span>
+					</Tippy>
+				</div>
 
 				<Tippy
 					content={<Tooltip text={row.main_project_name} />}
 					placement="bottom">
 					<span
-						className={`${tooltipStyle} cursor-pointer`}
-						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.sub_project_name, main.filter.find) }}
+						className={`${tooltipStyle2} cursor-pointer font-semibold-10 primary-text`}
+						dangerouslySetInnerHTML={{
+							__html: MyGlobal.HighlightText(row.sub_project_name, main.filter.find),
+						}}
 						onClick={() => toggleSingleProjectView(row)}
 					/>
 				</Tippy>
 
 				{main.selectedCompany.id == 0 && (
 					<span
-						className={style}
-						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.company_name, main.filter.find) }}
+						className={`${style} overflow-hidden text-ellipsis [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]`}
+						dangerouslySetInnerHTML={{
+							__html: MyGlobal.HighlightText(row.company_name, main.filter.find),
+						}}
 					/>
 				)}
 
-				<Tippy
-					content={<UsersTooltipList list={row.teams} />}
-					placement="bottom">
-					<span className={`${style} space-x-1 cursor-help primary-text`}>{row.teams.length}</span>
-				</Tippy>
+				<span className={`${style} space-x-1 cursor-help primary-text`}>
+					<AvatarCircle names={row.teams.map((m) => m.full_name)} />
+				</span>
 
-				<Tippy
-					content={<Tooltip text={row.invoice_firm_name} />}
-					placement="bottom">
-					<span
-						className={style}
-						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_firm_initials, main.filter.find) }}
-					/>
-				</Tippy>
+				<div className={`${style} !flex-col`}>
+					<Tippy
+						content={<Tooltip text={row.invoice_firm_name} />}
+						placement="bottom">
+						<span
+							className="font-semibold-10"
+							dangerouslySetInnerHTML={{
+								__html: MyGlobal.HighlightText(row.invoice_firm_name, main.filter.find),
+							}}
+						/>
+					</Tippy>
+					<Tippy
+						content={<Tooltip text={row.completed_on} />}
+						disabled={row.status != "Completed"}
+						placement="bottom">
+						<BadgeSmallWithBackground2
+							style={getStatusSeverityBackground2(row.status)}
+							value={row.status}
+						/>
+					</Tippy>
+				</div>
 
 				<span
 					className={invoiceFeesStyle}
-					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.invoice_fees, main.filter.find) }}
+					dangerouslySetInnerHTML={{
+						__html: MyGlobal.HighlightText(row.invoice_fees, main.filter.find),
+					}}
 				/>
 
 				<span
 					className={rvFeesStyle}
-					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.reimburse_voucher, main.filter.find) }}
+					dangerouslySetInnerHTML={{
+						__html: MyGlobal.HighlightText(row.reimburse_voucher, main.filter.find),
+					}}
 				/>
 
 				<div className={`${style} space-x-2 relative`}>
@@ -878,30 +956,26 @@ export default function SingleClient({ client, unmount }) {
 						placement="bottom">
 						<span
 							className={`${amountReceivedStyle} w-4/5 underline underline-offset-4 cursor-help`}
-							dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_received, main.filter.find) }}
+							dangerouslySetInnerHTML={{
+								__html: MyGlobal.HighlightText(row.amount_received, main.filter.find),
+							}}
 						/>
 					</Tippy>
 				</div>
 
 				<span
 					className={amountPendingStyle}
-					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.amount_pending, main.filter.find) }}
+					dangerouslySetInnerHTML={{
+						__html: MyGlobal.HighlightText(row.amount_pending, main.filter.find),
+					}}
 				/>
 
 				<span
 					className={totalFeesStyle}
-					dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.total_fees, main.filter.find) }}
+					dangerouslySetInnerHTML={{
+						__html: MyGlobal.HighlightText(row.total_fees, main.filter.find),
+					}}
 				/>
-
-				<Tippy
-					content={<Tooltip text={row.completed_on} />}
-					disabled={row.status != "Completed"}
-					placement="bottom">
-					<span
-						className={tooltipStyle}
-						dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.filter.find) }}
-					/>
-				</Tippy>
 			</div>
 		);
 	}

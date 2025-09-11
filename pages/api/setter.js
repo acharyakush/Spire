@@ -70,8 +70,8 @@ export default async function handler(req, res) {
 				queryString = "UPDATE projects SET quote=?, invoice_fees=? WHERE id=?";
 				queryParameters = [request.quote, request.quote, request.projectId];
 			} else if (request.type == "edit-task") {
-				queryString = "UPDATE tasks SET task=?, due_on=?, expense=? WHERE id=?";
-				queryParameters = [request.task, request.dueOn, request.expense, request.taskId];
+				queryString = "UPDATE tasks SET task=? WHERE id=?";
+				queryParameters = [request.task, request.taskId];
 			} else if (request.type == "edit-task-status") {
 				queryString = "UPDATE tasks SET is_completed=?, is_disabled=?, reason=? WHERE id=?";
 				queryParameters = [request.isCompleted, request.isDisabled, request.reason, request.taskId];
@@ -102,6 +102,9 @@ export default async function handler(req, res) {
 			} else if (request.type == "mark-project-completed") {
 				queryString = "UPDATE projects SET status=?, completed_on=NOW() WHERE id=?";
 				queryParameters = ["Completed", request.projectId];
+			} else if (request.type == "update-todo-status") {
+				queryString = "UPDATE todos SET status=? WHERE custom_id=? AND id=? AND project_id=?";
+				queryParameters = [request.status, request.customId, request.id, request.projectId];
 			} else if (request.type == "restore-todo") {
 				queryString = "UPDATE todos SET is_deleted=0 WHERE id=?";
 				queryParameters = [request.todoId];

@@ -9,7 +9,7 @@ import Tippy from "@tippyjs/react";
 import MyConstants from "@/utilities/constants";
 
 import { CSS } from "@dnd-kit/utilities";
-import { MyGlobal } from "@/utilities/global";
+import { MyGlobal, safeJsonParse } from "@/utilities/global";
 import { useEffect, useMemo, useState } from "react";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -124,8 +124,8 @@ export default function Todos({ presetStatus, setModuleProps }) {
 					dueDateTextColor = "text-orange-900";
 					return "high-priority";
 				case "Urgent":
-					svgFileName = "yellow";
-					dueDateTextColor = "text-yellow-900";
+					svgFileName = "red";
+					dueDateTextColor = "text-red-900";
 					return "urgent-priority";
 			}
 		}
@@ -135,15 +135,15 @@ export default function Todos({ presetStatus, setModuleProps }) {
 				case "Low":
 					return "px-1.5 py-0.5 bg-gray-100 text-gray-900 text-xs font-medium rounded";
 				case "Medium":
-					return "px-1.5 py-0.5 bg-red-100 text-red-900 text-xs font-medium rounded";
+					return "px-1.5 py-0.5 bg-gray-100 text-gray-900 text-xs font-medium rounded";
 				case "High":
 					return "px-1.5 py-0.5 bg-orange-100 text-orange-900 text-xs font-medium rounded";
 				case "Urgent":
-					return "px-1.5 py-0.5 bg-yellow-100 text-yellow-900 text-xs font-medium rounded";
+					return "px-1.5 py-0.5 bg-red-100 text-red-900 text-xs font-medium rounded";
 			}
 		}
 
-		const descriptionColour = item.priority === "Low" ? "text-black" : "text-white";
+		const descriptionColour = item.priority === "Low" ? "text-black" : "text-black";
 
 		const container = `flex flex-col w-full h-full space-y-3 px-4 py-3 justify-between items-center bottom-border rounded-md transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1.5 hover:shadow-lg ${getBackgroundColour()}`;
 
@@ -161,6 +161,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 			}
 		}
 
+		const client = item.client_id ? clients.find((f) => f.id === item.client_id) : "";
 		const project = item.project_id ? projects.find((f) => f.id === item.project_id) : "";
 		const subProjectId = item.project_id && project ? subProjects.find((f) => f.id === project.sub_project_id).name : "";
 
@@ -177,12 +178,16 @@ export default function Todos({ presetStatus, setModuleProps }) {
 							className={descriptionColour}
 							dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(item.description, main.find) }}
 						/>
-						<span className={descriptionColour + " text-xs !font-normal"}>{subProjectId}</span>
+						<div className={descriptionColour + " space-x-2 text-xs !font-normal"}>
+							<span>{client.name}</span>
+							<span>|</span>
+							<span>{subProjectId}</span>
+						</div>
 					</div>
 					<div className="flex w-1/5 space-x-3 justify-end items-center">
 						<Tippy
 							animation="shift-away"
-							content={<Tooltip text={item.notes_timeline ? JSON.parse(item.notes_timeline)?.at(0) : item.notes ?? "No notes entered."} />}
+							content={<Tooltip text={item.notes_timeline ? String(safeJsonParse(item.notes_timeline)?.at(0)).split(":")[0] : item.notes ?? "No notes entered."} />}
 							placement="bottom">
 							<img
 								src={`/information-circle-${svgFileName}.svg`}
@@ -271,7 +276,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 					className={cardsAreaStyle}
 					ref={setNodeRef}>
 					<SortableContext
-						items={items.map((m) => m.id)}
+						items={items.sort((a, b) => b.priority.localeCompare(a.priority)).map((m) => m.id)}
 						strategy={verticalListSortingStrategy}>
 						<div className="flex flex-col px-3 space-y-4 overflow-visible">
 							{items.map((m) => (

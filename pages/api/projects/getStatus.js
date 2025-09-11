@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const response = await query(`SELECT * FROM tasks WHERE project_id=?`, [req.query.projectId]);
+		const response = await query(`SELECT * FROM project_expenses WHERE project_id=?`, [req.query.projectId]);
 
 		return res.status(200).json(response);
 	} catch (error) {

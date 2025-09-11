@@ -176,10 +176,16 @@ export default function MySpace({ setModuleProps }) {
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div className={wrapper} onClick={() => setModuleProps(baseModules.Inquiries, `MySpace${key}`)}>
+			<div
+				className={wrapper}
+				onClick={() => setModuleProps(baseModules.Inquiries, `MySpace${key}`)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
+						<FontAwesomeIcon
+							className="text-white"
+							icon={aesthetics.icon}
+							size="xl"
+						/>
 					</div>
 					<div className="flex flex-col px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
@@ -259,10 +265,16 @@ export default function MySpace({ setModuleProps }) {
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", `MySpace${key}`)}>
+			<div
+				className={wrapper}
+				onClick={() => setModuleProps("projectsOrTasks", `MySpace${key}`)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
+						<FontAwesomeIcon
+							className="text-white"
+							icon={aesthetics.icon}
+							size="xl"
+						/>
 					</div>
 					<div className="flex flex-col px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
@@ -301,10 +313,16 @@ export default function MySpace({ setModuleProps }) {
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", `MySpace${key}`)}>
+			<div
+				className={wrapper}
+				onClick={() => setModuleProps("projectsOrTasks", `MySpace${key}`)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
+						<FontAwesomeIcon
+							className="text-white"
+							icon={aesthetics.icon}
+							size="xl"
+						/>
 					</div>
 					<div className="flex flex-col px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>

@@ -142,8 +142,8 @@ export const BadgeSmallWithBackground = ({ style, value }) => {
 export const BadgeSmallWithBackground2 = ({ style, value }) => {
 	return (
 		<span
-			className={`flex min-w-5 h-5 px-1 justify-center items-center rounded-full font-medium-9 leading-none ${style.text} ${style.background}`}
-			style={{ lineHeight: "1", fontFeatureSettings: "'tnum'" }}>
+			className={`flex h-5 px-2 justify-center items-center rounded-full font-regular-9 leading-none ${style.text} ${style.background}`}
+			style={{ fontFeatureSettings: "'tnum'" }}>
 			{value}
 		</span>
 	);

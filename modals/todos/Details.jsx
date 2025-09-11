@@ -8,9 +8,9 @@ import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useState } from "react";
-import { MyGlobal } from "@/utilities/global";
-import { Spinner } from "@/components/Elements";
+import { AvatarCircle, Spinner } from "@/components/Elements";
 import { ComboBox2, TextArea } from "@/components/Inputs";
+import { MyGlobal, safeJsonParse } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { faNoteSticky, faStar, faXmark } from "@fortawesome/free-solid-svg-icons";
@@ -22,7 +22,7 @@ export default function Details({ mount, refresh, todo, unmount }) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isBoxDragged, setIsBoxDragged] = useState(false);
 
-	const notesTimeline = todo.notes_timeline ? JSON.parse(todo.notes_timeline) : "";
+	const notesTimeline = todo.notes_timeline ? safeJsonParse(todo.notes_timeline) : "";
 
 	// Functions
 	async function saveTodo() {
@@ -33,7 +33,7 @@ export default function Details({ mount, refresh, todo, unmount }) {
 
 			if (todo.notes_timeline) {
 				const parsed = JSON.parse(todo.notes_timeline);
-				parsed.unshift(data.notes);
+				parsed.unshift(data.notes + "::" + MyGlobal.GetUserId() + "::" + dayjs().format("hh:mm a, DD MMM, YYYY"));
 
 				notesTimeline = parsed;
 			}
@@ -225,7 +225,7 @@ export default function Details({ mount, refresh, todo, unmount }) {
 					handle=".draggable-handle"
 					onStart={() => setIsBoxDragged(!isBoxDragged)}
 					onStop={() => setIsBoxDragged(!isBoxDragged)}>
-					<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
+					<DialogPanel className="w-4/5 transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
 						<div className="flex flex-col w-full p-6 space-y-6 justify-between items-center">
 							<div className="flex w-full justify-between items-center">
@@ -243,13 +243,34 @@ export default function Details({ mount, refresh, todo, unmount }) {
 							</div>
 							<div className="flex flex-col w-full justify-start items-center">
 								{(todo.notes || todo.notes_timeline) && <span className="w-full text-left font-regular-10 gray-text">Notes</span>}
-								<div className="w-full text-left font-medium-12 black-text">
+								<div className="w-full h-[150px] overflow-y-auto text-left font-medium-12 black-text">
 									{todo.notes_timeline
-										? notesTimeline?.map((m, i) => (
-												<div className="w-full">
-													{i + 1}. {m}
-												</div>
-										  ))
+										? notesTimeline?.map((m, i) => {
+												const [note, clientId, timestamp] = String(m).split("::");
+												let clientName = "";
+
+												if (clientId) {
+													clientName = MyGlobal.GetAnyDataFromId(clientId, "full_name");
+												}
+
+												return (
+													<ul
+														className="py-1 pr-5"
+														key={i}>
+														<li>
+															<div className="flex w-full justify-between items-center">
+																<div className="flex w-3/5 items-center">
+																	{i + 1}. {note}
+																</div>
+																<div className="flex w-2/5 space-x-5 justify-end items-center">
+																	<span className="gray-text text-sm">{timestamp}</span>
+																	<AvatarCircle name={clientName} />
+																</div>
+															</div>
+														</li>
+													</ul>
+												);
+										  })
 										: todo.notes}
 								</div>
 							</div>

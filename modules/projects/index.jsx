@@ -17,9 +17,9 @@ import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { clearScrollPosition, getScrollPosition, MyGlobal, saveScrollPosition } from "@/utilities/global";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
 import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
+import { MyGlobal } from "@/utilities/global";
 import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
@@ -34,7 +34,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const [main, setMain] = useState({
 		activeModule: { items: [], name: "All" },
 		dueDate: { from: "", to: "" },
-		filter: presetStatus || "",
+		filter: presetStatus ? String(presetStatus).replace("MySpace", "") : "",
 		findText: "",
 		isLoading: { selectedProject: false, supportData: false },
 		revisedStatuses: {},
@@ -50,7 +50,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		editProject: false,
 		editStatus: false,
 		mainComponent: false,
-		myProjects: presetStatus === "my-projects" || String(presetStatus).includes("MySpace"),
 		projectStatus: false,
 		singleProject: false,
 		todo: false,
@@ -164,11 +163,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		}
 	}, [api.projects.copy, main.activeModule, main.findText, calculateStatusCounts]);
 
-	const closeMyProjects = useCallback(() => {
-		setMain((s) => ({ ...s, findText: "" }));
-		setMounted((s) => ({ ...s, myProjects: false }));
-	}, []);
-
 	const setMouseEnter = useCallback(
 		(projectId) => {
 			if (allowDeletingProject) {
@@ -191,7 +185,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}, []);
 
 	function handleRangeChange(range) {
-		saveScrollPosition("projects", range.startIndex);
+		setTimeout(() => {
+			localStorage.setItem("projectsScrollPosition", range.startIndex);
+		}, 1000);
 	}
 
 	const setFilter = useCallback(
@@ -281,7 +277,14 @@ export default function Projects({ presetStatus, setModuleProps }) {
 						return acc;
 					}, {});
 
-					const revised = response.data.projects.map((project) => {
+					const isSingleUser = String(presetStatus).includes("MySpace");
+
+					const source = response.data.projects.filter((f) => {
+						if (isSingleUser) return String(f.teams).includes(MyGlobal.GetUserId()) || f.entry_by_id === MyGlobal.GetUserId();
+						return f;
+					});
+
+					const revised = source.map((project) => {
 						// Get project details from maps
 						const clientName = clientsMap.get(project.client_id) || "";
 						const companyName = companiesMap.get(project.company_id) || "";
@@ -1200,7 +1203,11 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 			const wrapper = `flex w-full py-3 justify-center items-center ${background} bottom-border font-regular-11 black-text`;
 
-			const avatarWrapper = style + " !flex-row space-x-1";
+			const admins = row.teams_data.filter((f) => f.role === "Administrator").map((m) => m.full_name);
+			const teams = row.teams_data.filter((f) => f.role !== "Administrator").map((m) => m.full_name);
+
+			const spaceX = admins.length && teams.length ? "space-x-2.5" : "space-x-0";
+			const avatarWrapper = style + " !flex-row " + spaceX;
 
 			const handleMouseEnter = () => setMouseEnter(row.id);
 
@@ -1281,7 +1288,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 					</div>
 
 					<span className={avatarWrapper}>
-						<AvatarCircle names={String(row.team_names).split(",")} />
+						<AvatarCircle names={admins} />
+						{admins.length && teams.length ? <span className="text-gray-300">|</span> : <></>}
+						<AvatarCircle names={teams} />
 					</span>
 
 					<span className={`${style} font-bold-12`}>{MyGlobal.FormatCurrency(row.quote)}</span>
@@ -1426,7 +1435,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	useEffect(() => {
 		if (mounted.mainComponent) {
 			if (currentScrollPositionReference.current) {
-				const savedIndex = getScrollPosition("projects");
+				const savedIndex = localStorage.getItem("projectsScrollPosition");
 
 				currentScrollPositionReference.current.scrollToIndex({
 					index: savedIndex,
@@ -1570,18 +1579,12 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				element.removeEventListener("scroll", null);
 			});
 
-			clearScrollPosition("projects");
+			localStorage.removeItem("projectsScrollPositions");
 		};
 	}, []);
 
 	// Main UI
-	return mounted.myProjects ? (
-		<MyProjects
-			presetStatus={presetStatus}
-			setModuleProps={setModuleProps}
-			unmount={closeMyProjects}
-		/>
-	) : (
+	return (
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<>
 				{!mounted.editProject && !mounted.singleProject && (

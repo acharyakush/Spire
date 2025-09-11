@@ -217,10 +217,7 @@ export default function AddTodo({ mount, refresh, unmount }) {
 					onSelectedItemClick={(e) => setValues("assignedTo", e)}
 					selectedItems={data.assignedTo}
 					showList={showMenu}
-					source={MyGlobal.GetAllUsers().filter((f) => {
-						if (isUserAdministrator) return f;
-						return !String(f.id).startsWith("A");
-					})}
+					source={MyGlobal.GetAllUsers()}
 					toggleMenu={() => toggleAssignedToMenu()}
 				/>
 			</div>

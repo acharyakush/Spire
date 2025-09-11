@@ -1,5 +1,6 @@
 {
-	"debug.console.fontFamily": "Monotional, Consolas, 'Courier New', monospace",
+	"cssVariables.lookupFiles": ["**/*.css", "**/*.scss", "**/*.sass", "**/*.less", "node_modules/@mantine/core/styles.css"],
+	"debug.console.fontFamily": "Monotional, Consolas, monospace",
 	"debug.console.fontSize": 14,
 	"editor.acceptSuggestionOnEnter": "smart",
 	"editor.autoClosingBrackets": "always",
@@ -12,16 +13,18 @@
 		"source.fixAll": "always",
 		"source.organizeImports": "never"
 	},
+	"editor.codeLens": true,
 	"editor.cursorBlinking": "smooth",
 	"editor.cursorSmoothCaretAnimation": "on",
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.fontFamily": "Monotional, Consolas, 'Courier New', monospace",
+	"editor.foldingImportsByDefault": true,
+	"editor.foldingStrategy": "indentation",
+	"editor.fontFamily": "Monotional, Consolas, monospace",
+	"editor.fontLigatures": true,
 	"editor.fontSize": 14,
 	"editor.formatOnSave": true,
 	"editor.formatOnSaveMode": "file",
 	"editor.formatOnType": true,
-	"editor.foldingImportsByDefault": true,
-	"editor.foldingStrategy": "indentation",
 	"editor.guides.bracketPairs": true,
 	"editor.guides.highlightActiveIndentation": true,
 	"editor.indentSize": "tabSize",
@@ -39,17 +42,16 @@
 	"editor.suggestSelection": "first",
 	"editor.tabCompletion": "on",
 	"editor.tabSize": 4,
+	"editor.wordWrap": "on",
 	"editor.wrappingIndent": "indent",
 	"editor.wrappingStrategy": "advanced",
-	"editor.wordWrap": "on",
-	"files.autoSave": "off",
-	"files.watcherExclude": {
-		"**/.git/objects/**": true,
-		"**/.git/subtree-cache/**": true,
-		"**/node_modules/**": true
+	"editor.suggest.showStatusBar": false,
+	"files.associations": {
+		"*.css": "tailwindcss"
 	},
+	"javascript.preferences.importModuleSpecifier": "non-relative",
+	"javascript.preferences.quoteStyle": "double",
 	"javascript.referencesCodeLens.enabled": true,
-	"javascript.suggest.autoImports": true,
 	"javascript.suggest.completeFunctionCalls": true,
 	"javascript.updateImportsOnFileMove.enabled": "always",
 	"javascript.validate.enable": true,
@@ -65,7 +67,10 @@
 	"search.exclude": {
 		"**/node_modules": true
 	},
-	"terminal.integrated.fontFamily": "Monotional, Consolas, 'Courier New', monospace",
+	"terminal.integrated.fontFamily": "Monotional, Consolas, monospace",
+	"terminal.integrated.fontLigatures.enabled": true,
 	"terminal.integrated.fontSize": 14,
-	"window.autoDetectColorScheme": true
+	"terminal.integrated.lineHeight": 1.5,
+	"workbench.list.smoothScrolling": true,
+	"workbench.list.scrollByPage": true
 }

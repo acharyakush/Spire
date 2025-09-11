@@ -1,37 +1,5 @@
 @font-face {
 	font-family: "Regular";
-	src: url("/fonts/roboto-flex/variable.ttf") format("truetype");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "Medium";
-	src: url("/fonts/roboto-flex/variable.ttf") format("truetype");
-	font-weight: 500;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "SemiBold";
-	src: url("/fonts/roboto-flex/variable.ttf") format("truetype");
-	font-weight: 600;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "Bold";
-	src: url("/fonts/roboto-flex/variable.ttf") format("truetype");
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "InterRegular";
 	src: url("/fonts/inter/regular.woff2") format("woff2");
 	font-weight: 400;
 	font-style: normal;
@@ -39,7 +7,7 @@
 }
 
 @font-face {
-	font-family: "InterMedium";
+	font-family: "Medium";
 	src: url("/fonts/inter/medium.woff2") format("woff2");
 	font-weight: 500;
 	font-style: normal;
@@ -47,7 +15,7 @@
 }
 
 @font-face {
-	font-family: "InterSemiBold";
+	font-family: "SemiBold";
 	src: url("/fonts/inter/semi_bold.woff2") format("woff2");
 	font-weight: 600;
 	font-style: normal;
@@ -55,7 +23,7 @@
 }
 
 @font-face {
-	font-family: "InterBold";
+	font-family: "Bold";
 	src: url("/fonts/inter/bold.woff2") format("woff2");
 	font-weight: 700;
 	font-style: normal;
@@ -63,10 +31,10 @@
 }
 
 :root {
-	--bold: "Bold", "InterBold", Arial, sans-serif;
-	--medium: "Medium", "InterMedium", Arial, sans-serif;
-	--regular: "Regular", "InterRegular", Arial, sans-serif;
-	--semibold: "SemiBold", "InterSemiBold", Arial, sans-serif;
+	--bold: "Bold", Arial, sans-serif;
+	--medium: "Medium", Arial, sans-serif;
+	--regular: "Regular", Arial, sans-serif;
+	--semibold: "SemiBold", Arial, sans-serif;
 }
 
 @tailwind base;
@@ -76,9 +44,11 @@
 		@apply inline-block;
 	}
 	body {
-		font-family: var(--font-family);
-		font-feature-settings: "cpsp" 1, /* Capital spacing */ "cv05" 1, /* Custom stylistic variant 5 */ "cv06" 1, /* Custom stylistic variant 6 */ "cv08" 1, /* Custom stylistic variant 8 */ "cv11" 1,
-			/* Custom stylistic variant 11 */ "cv13" 1, /* Custom stylistic variant 13 */ "kern" 1, /* Kerning */ "ss03" 1; /* Stylistic set 3 */
+		font-family: var(--font-family); /* Always applied */
+	}
+
+	body.production-font-features {
+		font-feature-settings: "cpsp" 1, "cv05" 1, "cv06" 1, "cv08" 1, "cv11" 1, "cv13" 1, "kern" 1, "ss03" 1;
 	}
 }
 
@@ -1313,15 +1283,15 @@ input[type="radio"]:checked + label {
 }
 
 .medium-priority {
-	background: linear-gradient(45deg, #e06666, #f6a5a5, #fbdcdc);
+	background: linear-gradient(45deg, #f8f9fa, #e9ecef, #f1f3f5);
 }
 
 .high-priority {
-	background: linear-gradient(45deg, #e65c00, #ffa94d, #fff0e0);
+	background: linear-gradient(45deg, #c1a900, #f2e300, #fff9cc);
 }
 
 .urgent-priority {
-	background: linear-gradient(45deg, #c1a900, #f2e300, #fff9cc);
+	background: linear-gradient(45deg, #e65c00, #ffa94d, #fff0e0);
 }
 
 @layer utilities {

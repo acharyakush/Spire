@@ -1,11 +1,12 @@
 ==============
 Server Details
 ==============
-Root Password:						SpireCrmBySigniixAdvisors#2024
-SSH VPS Access:						ssh root@145.223.23.76
+Root Username:					root
+Root Password:					SpireCrmBySigniixAdvisors#2024
+SSH VPS Access:					ssh root@145.223.23.76
 Hostname:						srv797550.hstgr.cloud
-IPv4 Address:						145.223.23.76
-IPv6 Address:						2a02:4780:12:f2d9::1
+IPv4 Address:					145.223.23.76
+IPv6 Address:					2a02:4780:12:f2d9::1
 
 
 ===================
@@ -37,7 +38,7 @@ Sa@Connect@2024
 =========
 WordPress
 =========
-Email Address:						admin@signiixadvisors.com
+Email Address:					admin@signiixadvisors.com
 Password:						Vj%%CuzSbPWszuJd6B
 
 
@@ -51,5 +52,5 @@ Password:						SpireCrmBySigniixAdvisors#2024
 =======
 Account
 =======
-Email Address:						signiixadvisors@gmail.com
+Email Address:					signiixadvisors@gmail.com
 Password:						TopNotchAdvisors#2024

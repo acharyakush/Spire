@@ -1,5 +1,3 @@
-"use client";
-
 const MyConstants = Object.freeze({
 	ApiEndpoints: Object.freeze({
 		Activities: "/api/activities",
@@ -448,7 +446,6 @@ const MyConstants = Object.freeze({
 		}),
 		SingleClient: Object.freeze({
 			Id: "ID",
-			StartedOn: "Started On",
 			SubProject: "Sub Project",
 			Company: "Company",
 			Teams: "Teams",
@@ -458,7 +455,6 @@ const MyConstants = Object.freeze({
 			AmountReceived: "Received",
 			AmountPending: "Pending",
 			Total: "Total",
-			Status: "Status",
 		}),
 		Tasks: Object.freeze({
 			Particulars: "Particulars",

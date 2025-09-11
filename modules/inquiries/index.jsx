@@ -12,21 +12,20 @@ import dynamic from "next/dynamic";
 import writeXlsxFile from "write-excel-file";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
+import HoverPreviewWrapper from "@/components/HoverPreviewPdf";
 
 import { Virtuoso } from "react-virtuoso";
 import { TextInputNative } from "@/components/Inputs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { clearScrollPosition, getScrollPosition, MyGlobal, saveScrollPosition } from "@/utilities/global";
+import { MyGlobal } from "@/utilities/global";
 import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
 import { faCalendar, faChevronDown, faDownload, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
-import HoverPreviewWrapper from "@/components/HoverPreviewPdf";
 
 const DynamicNotes = dynamic(() => import("./Notes"), { ssr: false });
 const DynamicNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
 const DynamicEditInquiry = dynamic(() => import("./EditInquiry"), { ssr: false });
-const DynamicMyInquiries = dynamic(() => import("./MyInquiries"), { ssr: false });
 const DynamicNewQuotation = dynamic(() => import("./NewQuotation"), { ssr: false });
 const DynamicEditQuotation = dynamic(() => import("./EditQuotation"), { ssr: false });
 const DynamicNewProject = dynamic(() => import("../projects/NewProject"), { ssr: false });
@@ -42,7 +41,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		from: "",
 		to: "",
 		search: "",
-		status: presetStatus ?? "",
+		status: presetStatus ? String(presetStatus).replace("MySpace", "") : "",
 	});
 
 	const [inquiries, setInquiries] = useState({ copy: [], data: [], merged: [] });
@@ -62,7 +61,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		editInquiry: false,
 		editQuotation: false,
 		mainComponent: false,
-		myInquiries: presetStatus === "my-inquiries" || String(presetStatus).startsWith("MySpace"),
 		newInquiry: false,
 		newProject: false,
 		notes: false,
@@ -105,11 +103,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		});
 
 		return counts;
-	}
-
-	function closeMyInquiries() {
-		setFilter((s) => ({ ...s, search: "" }));
-		setMounted((s) => ({ ...s, myInquiries: false }));
 	}
 
 	function closeNewProjectView() {
@@ -306,8 +299,17 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				let revised = [];
 				const revisedCopy = [];
 
-				for (let i = 0; i < response.data.inquiries.length; i++) {
-					const obj = response.data.inquiries[i];
+				const isSingleUser = String(presetStatus).includes("MySpace");
+
+				const source = response.data.inquiries.filter((f) => {
+					if (isSingleUser) return String(f.follow_ups).includes(MyGlobal.GetUserId()) || f.entry_by_id === MyGlobal.GetUserId();
+					return f;
+				});
+
+				const sourceLength = source.length;
+
+				for (let i = 0; i < sourceLength; i++) {
+					const obj = source[i];
 
 					const clientName = MyGlobal.GetNameFromId(obj.client_id, supportData.clients);
 					const referenceName = MyGlobal.GetNameFromId(obj.reference_id, supportData.references);
@@ -513,7 +515,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function handleRangeChange(range) {
-		saveScrollPosition("inquiries", range.startIndex);
+		setTimeout(() => {
+			localStorage.setItem("inquiriesScrollPosition", range.startIndex);
+		}, 1000);
 	}
 
 	function highlightText(isTag, text) {
@@ -1069,7 +1073,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const admins = row.follow_ups_data.filter((f) => f.role === "Administrator").map((m) => m.full_name);
 		const teams = row.follow_ups_data.filter((f) => f.role !== "Administrator").map((m) => m.full_name);
 
-		const spaceX = admins.length && teams.length ? "space-x-5" : "space-x-0";
+		const spaceX = admins.length && teams.length ? "space-x-2.5" : "space-x-0";
 		const avatarWrapper = style + " !flex-row " + spaceX;
 		const nextFollowUpRemaining = dayjs(row.next_follow_up_on).diff(dayjs().format("DD MMM, YYYY"), "day");
 
@@ -1090,6 +1094,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 				<span className={avatarWrapper}>
 					<AvatarCircle names={admins} />
+					{admins.length && teams.length ? <span className="text-gray-300">|</span> : <></>}
 					<AvatarCircle names={teams} />
 				</span>
 
@@ -1317,7 +1322,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		return () => {
 			setModuleProps(thisView, "");
-			clearScrollPosition("inquiries");
+			localStorage.clear("inquiriesScrollPosition");
 			globalThis.removeEventListener("keydown", detectKeystrokes);
 		};
 	}, []);
@@ -1325,7 +1330,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	useEffect(() => {
 		if (inquiries.merged.length) {
 			if (currentScrollPositionReference.current) {
-				const savedIndex = getScrollPosition("inquiries");
+				const savedIndex = localStorage.getItem("inquiriesScrollPosition");
 
 				currentScrollPositionReference.current.scrollToIndex({
 					index: savedIndex,
@@ -1349,7 +1354,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	useEffect(() => {
 		if (!mounted.notes && currentScrollPositionReference.current) {
-			const savedIndex = getScrollPosition("inquiries");
+			const savedIndex = localStorage.getItem("inquiriesScrollPosition");
 
 			currentScrollPositionReference.current.scrollToIndex({
 				index: savedIndex,
@@ -1358,16 +1363,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			});
 		}
 	}, [mounted.notes]);
-
-	if (mounted.myInquiries) {
-		return (
-			<DynamicMyInquiries
-				presetStatus={presetStatus}
-				setModuleProps={setModuleProps}
-				unmount={closeMyInquiries}
-			/>
-		);
-	}
 
 	return (
 		<div className="flex flex-col w-full h-full justify-start items-center primary-light-background">

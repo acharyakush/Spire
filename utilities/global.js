@@ -53,6 +53,33 @@ export const clearScrollPosition = (key = "default") => {
 	delete scrollMap[key];
 };
 
+export function safeJsonParse(input) {
+	if (typeof input !== "string") return null;
+
+	try {
+		// First attempt — normal parse
+		return JSON.parse(input);
+	} catch (err) {
+		// Try to repair common issues
+		let repaired = input
+			.replace(/\\(?!["\\/bfnrtu])/g, "\\\\") // Fix bad backslashes
+			.replace(/\"\s*:\s*\"?([^\"]*)\n/g, '": "$1\\n') // Escape newlines inside values
+			.replace(/,\s*([\]}])/g, "$1") // Remove trailing commas
+			.replace(/\"$/g, '"') // Add missing closing quote if last char isn't closed
+			.replace(/\]$/g, "]"); // Ensure array ends properly
+
+		// If string ends abruptly in middle of array, try to close it
+		if (!repaired.trim().endsWith("]")) repaired += '"]';
+
+		try {
+			return JSON.parse(repaired);
+		} catch (err2) {
+			console.error("Could not parse even after repair:", err2.message);
+			return null; // Graceful fail
+		}
+	}
+}
+
 export const MyGlobal = Object.freeze({
 	AddActivity: async (activity, module = "General") => {
 		try {

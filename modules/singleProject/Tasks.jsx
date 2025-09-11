@@ -967,7 +967,7 @@ export default function Tasks({ project }) {
 	}
 
 	function uiAllRVRows(row, i) {
-		const style = `flex w-1/5 justify-center items-center whitespace-pre-wrap`;
+		const style = `flex w-1/5 justify-center text-center items-center whitespace-pre-wrap`;
 
 		return (
 			<div

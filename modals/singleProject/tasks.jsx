@@ -13,7 +13,7 @@ import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { DatePicker, TextArea, TextInput } from "@/components/Inputs";
-import { faCalendar, faCoins, faFaceAngry, faIndianRupee, faListCheck, faNoteSticky, faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faFaceAngry, faIndianRupee, faListCheck, faNoteSticky, faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function AddParticularRemark({ mount, reload, task, unmount }) {
 	// Business Logic
@@ -1016,8 +1016,6 @@ export function EditTask({ mount, reload, task, unmount }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		const editTaskBody = {
-			dueOn: dayjs(main.due_on).format("YYYY-MM-DD"),
-			expense: Number(main.expense),
 			task: MyGlobal.EscapeString(main.task),
 			taskId: task.id,
 			type: "edit-task",
@@ -1111,10 +1109,10 @@ export function EditTask({ mount, reload, task, unmount }) {
 					handle=".draggable-handle"
 					onStart={() => setBoxDrag()}
 					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] h-[510px] transform overflow-hidden rounded contrast-background shadow">
+					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
 						{uiTitleBar()}
-						<div className="flex flex-col w-full h-[calc(100%-45px)] justify-between items-center">
-							<div className="flex flex-col w-full h-full p-5 space-y-2.5 justify-start items-center">
+						<div className="flex flex-col w-full justify-between items-center">
+							<div className="flex flex-col w-full h-full p-5 justify-start items-center">
 								<TextInput
 									icon={faListCheck}
 									label="Task"
@@ -1122,23 +1120,6 @@ export function EditTask({ mount, reload, task, unmount }) {
 									onKeyPress={() => {}}
 									tabIndex={1}
 									value={main.task}
-									width="w-full"
-								/>
-								<DatePicker
-									icon={faCalendar}
-									label="Due On"
-									onChange={(e) => setInputs("due_on", e)}
-									tabIndex={2}
-									value={main.due_on}
-									width="w-full"
-								/>
-								<TextInput
-									icon={faCoins}
-									label="Expense"
-									onChange={(e) => setInputs("expense", e.target.value)}
-									onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-									tabIndex={3}
-									value={main.expense}
 									width="w-full"
 								/>
 							</div>

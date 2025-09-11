@@ -9,11 +9,11 @@ import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { TextArea } from "@/components/Inputs";
+import { ComboBox2, TextArea } from "@/components/Inputs";
 import { AvatarCircle, Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle, faStar, faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export default function ProjectTodos({ mount, project, reload, unmount }) {
 	// Business Logic
@@ -50,7 +50,7 @@ export default function ProjectTodos({ mount, project, reload, unmount }) {
 		try {
 			setMain((s) => ({ ...s, isLoading: true }));
 
-			const suffix = "::" + MyGlobal.GetUserId() + "::" + dayjs().format("HH:MM a, DD MMM, YYYY");
+			const suffix = "::" + MyGlobal.GetUserId() + "::" + dayjs().format("hh:mm a, DD MMM, YYYY");
 
 			let notesTimeline = main.activeModuleData.notes ? [main.newNote + suffix, main.activeModuleData.notes + suffix] : [main.newNote + suffix];
 
@@ -86,8 +86,35 @@ export default function ProjectTodos({ mount, project, reload, unmount }) {
 		}
 	}
 
+	async function updateStatus(status) {
+		try {
+			const body = {
+				customId: main.activeModuleData.custom_id,
+				id: main.activeModuleData.id,
+				projectId: project.id,
+				status,
+				type: "update-todo-status",
+			};
+
+			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reload();
+
+				const activityMessage = `Edited Todo status from <b>${main.activeModuleData.status}</b> to <b>${status}</b>.`;
+
+				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Projects);
+				MyGlobal.ShowSuccessToast(MyConstants.Messages.TodoEdited);
+
+				unmount();
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Projects > Todos > Update Status");
+		}
+	}
+
 	function setBoxDrag() {
-		setMain((s) => ({ ...s, isBoxMoving: !main.isBoxMoving }));
+		setMain((s) => ({ ...s, isBoxMoving: !s.isBoxMoving }));
 	}
 
 	function setModule(module, index) {
@@ -116,10 +143,12 @@ export default function ProjectTodos({ mount, project, reload, unmount }) {
 			<div className="flex flex-col w-full p-5 space-y-5 justify-center items-center">
 				<div className="flex w-full justify-between items-center">
 					{uiDescription()}
-					<div className="flex flex-col w-1/2 justify-center items-end">
-						<span className="font-regular-10 gray-text">Due Date</span>
-						<span className="font-medium-12 text-red-500">{dayjs(main.activeModuleData.due_date).format("DD MMM, YYYY")}</span>
-					</div>
+					{main.activeModuleData.due_date && (
+						<div className="flex flex-col w-1/2 justify-center items-end">
+							<span className="font-regular-10 gray-text">Due Date</span>
+							<span className="font-medium-12 text-red-500">{dayjs(main.activeModuleData.due_date).format("DD MMM, YYYY")}</span>
+						</div>
+					)}
 				</div>
 				<div className="flex w-full justify-between items-center">
 					{uiAssignedTo()}
@@ -165,20 +194,34 @@ export default function ProjectTodos({ mount, project, reload, unmount }) {
 	}
 
 	function uiList() {
-		return project.todos.map((m, i) => {
-			const style = m.description == main.activeModule ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+		return project.todos
+			.sort((a, b) => String(b.status).localeCompare(a.status))
+			.map((m, i) => {
+				const style =
+					m.status === "Completed"
+						? "border border-gray-500 bg-gray-100 text-gray-400"
+						: m.description == main.activeModule
+						? "primary-border primary-background-transparent-01 primary-text hovered-rows"
+						: "full-border bg-white black-text hovered-rows";
 
-			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${style} font-regular-10 hovered-rows`;
+				const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded relative shadow ${style} font-regular-10`;
 
-			return (
-				<button
-					className={wrapper}
-					key={i}
-					onClick={() => setModule(m, i)}>
-					<span className="text-left">{m.description}</span>
-				</button>
-			);
-		});
+				return (
+					<button
+						className={wrapper}
+						key={i}
+						onClick={() => setModule(m, i)}>
+						{m.status === "Completed" && (
+							<FontAwesomeIcon
+								className="absolute -top-2 -left-3 bg-white rounded-full text-green-500"
+								icon={faCheckCircle}
+								size="2x"
+							/>
+						)}
+						<span className="text-left">{m.description}</span>
+					</button>
+				);
+			});
 	}
 
 	function uiNotes() {
@@ -219,7 +262,7 @@ export default function ProjectTodos({ mount, project, reload, unmount }) {
 
 	function uiPriority() {
 		return (
-			<div className="flex flex-col w-full justify-center items-end">
+			<div className="flex flex-col w-full h-[77px] justify-center items-start">
 				<span className="font-regular-10 gray-text">Priority</span>
 				<span className="font-medium-12 black-text">{main.activeModuleData.priority}</span>
 			</div>
@@ -229,8 +272,24 @@ export default function ProjectTodos({ mount, project, reload, unmount }) {
 	function uiStatus() {
 		return (
 			<div className="flex flex-col w-full justify-center items-end">
-				<span className="font-regular-10 gray-text">Status</span>
-				<span className="font-medium-12 black-text">{main.activeModuleData.status}</span>
+				<ComboBox2
+					allowCreatingNewItem
+					comparingValue1=""
+					comparingValue2={main.activeModuleData.status}
+					displayValue=""
+					filteredData={["Completed", "InProgress", "Pending"]}
+					icon={faStar}
+					isReadOnly={main.activeModuleData.status === "Completed"}
+					label="Status"
+					onChange={(e) => updateStatus(e)}
+					onClick={() => {}}
+					onInputChange={() => {}}
+					onKeyPress={() => {}}
+					searchedItem={{}}
+					tabIndex={4}
+					value={main.activeModuleData.status}
+					width="w-full"
+				/>
 			</div>
 		);
 	}
@@ -278,7 +337,7 @@ export default function ProjectTodos({ mount, project, reload, unmount }) {
 						{uiTitleBar()}
 						<div className="flex flex-col w-full py-6 space-y-3 justify-between items-center">
 							<div className="flex w-full px-6 justify-center items-start space-x-5">
-								<div className="flex flex-col w-[10%] space-y-2.5 justify-start items-center">{uiList()}</div>
+								<div className="flex flex-col w-[10%] space-y-3 justify-start items-center">{uiList()}</div>
 								<div className="flex flex-col w-[90%] h-full justify-start items-center full-border rounded bg-gray-50">{uiBody()}</div>
 							</div>
 							<div className="flex w-full px-6 justify-center items-end space-x-5">
