@@ -312,6 +312,7 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 		isBoxMoved: false,
 		isLoading: false,
 		isMarking: false,
+		expenses: 0,
 		status: {
 			tasks: { allCompleted: false, disabled: 0, total: 0, completed: 0 },
 		},
@@ -364,7 +365,7 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetStatus, MyGlobal.GetHeaders({ projectId: project.id }));
 
 			if (response.status === 200) {
-				const rv = response.data;
+				const rv = response.data.tasks;
 
 				const completedTasks = rv.filter((f) => f.is_completed == 1 || f.is_disabled == 1).length;
 				const totalTasks = rv.filter((f) => f.is_disabled != 1).length;
@@ -373,6 +374,7 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 
 				setMain((s) => ({
 					...s,
+					expenses: response.data.project_expenses.length,
 					status: {
 						tasks: {
 							allCompleted: areAllTasksCompleted,
@@ -410,7 +412,7 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 
 			return (
 				<div className="flex flex-col w-full px-5 py-4 space-y-3 justify-between items-center">
-					{project.reimburse_voucher === 0 && (
+					{main.expenses === 0 && (
 						<div className="flex flex-col w-full p-5 space-y-3 justify-center items-start rounded font-regular-11 red-text red-background-transparent-01 red-bottom-border">
 							<span>This project has no expenses added.</span>
 							<span>Did you forget to add? Or you are sure that this project has been finished seamlessly in the given quotation?</span>

@@ -14,7 +14,7 @@ export default function Document() {
 					href="/favicon.png"
 				/>
 			</Head>
-			<body className={`antialiased ${isProd ? "production-font-features" : ""}`}>
+			<body className={`antialiased production-font-features`}>
 				<Main />
 				<NextScript />
 			</body>
