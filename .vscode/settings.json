@@ -1,7 +1,8 @@
 {
-	"cssVariables.lookupFiles": ["**/*.css", "**/*.scss", "**/*.sass", "**/*.less", "node_modules/@mantine/core/styles.css"],
-	"debug.console.fontFamily": "Monotional, Consolas, monospace",
+	"cssVariables.lookupFiles": ["**/*.css"],
+	"debug.console.fontFamily": "'Fira Code', Monotional, Consolas, monospace",
 	"debug.console.fontSize": 14,
+	"debug.console.lineHeight": 1.5,
 	"editor.acceptSuggestionOnEnter": "smart",
 	"editor.autoClosingBrackets": "always",
 	"editor.autoClosingComments": "always",
@@ -19,8 +20,7 @@
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.foldingImportsByDefault": true,
 	"editor.foldingStrategy": "indentation",
-	"editor.fontFamily": "Monotional, Consolas, monospace",
-	"editor.fontLigatures": true,
+	"editor.fontFamily": "'Fira Code', Monotional, Consolas, monospace",
 	"editor.fontSize": 14,
 	"editor.formatOnSave": true,
 	"editor.formatOnSaveMode": "file",
@@ -29,7 +29,7 @@
 	"editor.guides.highlightActiveIndentation": true,
 	"editor.indentSize": "tabSize",
 	"editor.insertSpaces": true,
-	"editor.lineHeight": 24,
+	"editor.lineHeight": 26,
 	"editor.linkedEditing": true,
 	"editor.parameterHints.enabled": true,
 	"editor.quickSuggestions": {
@@ -37,6 +37,7 @@
 		"comments": "off",
 		"strings": "on"
 	},
+	"editor.rename.enablePreview": true,
 	"editor.smoothScrolling": true,
 	"editor.suggest.snippetsPreventQuickSuggestions": false,
 	"editor.suggestSelection": "first",
@@ -45,30 +46,40 @@
 	"editor.wordWrap": "on",
 	"editor.wrappingIndent": "indent",
 	"editor.wrappingStrategy": "advanced",
+	"editor.suggest.preview": true,
 	"editor.suggest.showStatusBar": false,
 	"files.associations": {
 		"*.css": "tailwindcss"
 	},
+	"files.autoSave": "off",
+	"files.exclude": {
+		"**/.next": true
+	},
+	"files.watcherExclude": {
+		"**/.git/objects/**": true,
+		"**/.git/subtree-cache/**": true,
+		"**/node_modules/**": true
+	},
 	"javascript.preferences.importModuleSpecifier": "non-relative",
 	"javascript.preferences.quoteStyle": "double",
 	"javascript.referencesCodeLens.enabled": true,
+	"javascript.suggest.autoImports": true,
 	"javascript.suggest.completeFunctionCalls": true,
 	"javascript.updateImportsOnFileMove.enabled": "always",
 	"javascript.validate.enable": true,
-	"prettier.bracketSameLine": true,
-	"prettier.htmlWhitespaceSensitivity": "ignore",
-	"prettier.printWidth": 240,
-	"prettier.semi": true,
-	"prettier.singleAttributePerLine": true,
-	"prettier.singleQuote": false,
-	"prettier.tabWidth": 4,
-	"prettier.trailingComma": "all",
-	"prettier.useTabs": true,
+	"markdown.validate.enabled": true,
 	"search.exclude": {
-		"**/node_modules": true
+		"**/node_modules": true,
+		"/Manager": true,
+		"/public/charts/*": true
 	},
-	"terminal.integrated.fontFamily": "Monotional, Consolas, monospace",
-	"terminal.integrated.fontLigatures.enabled": true,
+	"search.useIgnoreFiles": true,
+	"search.useGlobalIgnoreFiles": true,
+	"tailwindCSS.includeLanguages": {
+		"javascript": "html",
+		"javascriptreact": "html"
+	},
+	"terminal.integrated.fontFamily": "'Fira Code', Monotional, Consolas, monospace",
 	"terminal.integrated.fontSize": 14,
 	"terminal.integrated.lineHeight": 1.5,
 	"workbench.list.smoothScrolling": true,

@@ -166,28 +166,45 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const setMouseEnter = useCallback(
 		(projectId) => {
 			if (allowDeletingProject) {
-				setMain((s) => ({ ...s, showIconButton: { ...s.showIconButton, deleteProject: projectId } }));
+				setMain((s) => ({
+					...s,
+					showIconButton: { ...s.showIconButton, deleteProject: projectId },
+				}));
 			}
 
 			if (allowEditingProject) {
-				setMain((s) => ({ ...s, showIconButton: { ...s.showIconButton, editProject: projectId } }));
+				setMain((s) => ({
+					...s,
+					showIconButton: { ...s.showIconButton, editProject: projectId },
+				}));
 			}
 		},
 		[allowDeletingProject, allowEditingProject],
 	);
 
 	const setMouseLeave = useCallback(() => {
-		setMain((s) => ({ ...s, showIconButton: { deleteProject: 0, editProject: 0 } }));
+		setMain((s) => ({
+			...s,
+			showIconButton: { deleteProject: 0, editProject: 0 },
+		}));
 	}, []);
 
 	const setSort = useCallback((column) => {
-		setMain((s) => ({ ...s, sort: { column, isAscending: !s.sort.isAscending } }));
+		setMain((s) => ({
+			...s,
+			sort: { column, isAscending: !s.sort.isAscending },
+		}));
 	}, []);
 
 	function handleRangeChange(range) {
-		setTimeout(() => {
-			localStorage.setItem("projectsScrollPosition", range.startIndex);
-		}, 1000);
+		// range.startIndex can be a number — ensure we store a string
+		const indexToSave = String(range.startIndex);
+
+		// Debounce slightly to avoid too-frequent writes
+		clearTimeout(handleRangeChange._timer);
+		handleRangeChange._timer = setTimeout(() => {
+			localStorage.setItem("projectsScrollPosition", indexToSave);
+		}, 500);
 	}
 
 	const setFilter = useCallback(
@@ -256,7 +273,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	// Define setSupportData earlier in the component
 	const setSupportData = useCallback(
 		async (projectId) => {
-			setMain((s) => ({ ...s, isLoading: { ...s.isLoading, supportData: true } }));
+			setMain((s) => ({
+				...s,
+				isLoading: { ...s.isLoading, supportData: true },
+			}));
 
 			try {
 				const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetProjects, MyGlobal.GetHeaders());
@@ -365,7 +385,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				}
 			} catch (error) {
 				MyGlobal.HandleErrors(error, `${thisView} => Get Support Data`);
-				setMain((s) => ({ ...s, isLoading: { ...s.isLoading, supportData: false } }));
+				setMain((s) => ({
+					...s,
+					isLoading: { ...s.isLoading, supportData: false },
+				}));
 			}
 		},
 		[today, calculateStatusCounts, thisView],
@@ -607,18 +630,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				.sort((a, b) => b.id - a.id)
 				.at(0);
 
-			records.push(
-				project.id,
-				!project.government_id ? "" : project.government_id,
-				project.client_id_and_name,
-				project.company_name,
-				project.main_project_name,
-				project.sub_project_name,
-				project.team_names,
-				dayjs(project.due_on).format("DD MMM, YYYY"),
-				`${dayjs(lastNote?.entry_date).format("hh:mm:ss A - DD MMM YYYY")}\n${lastNote?.content || ""}`,
-				project.status,
-			);
+			records.push(project.id, !project.government_id ? "" : project.government_id, project.client_id_and_name, project.company_name, project.main_project_name, project.sub_project_name, project.team_names, dayjs(project.due_on).format("DD MMM, YYYY"), `${dayjs(lastNote?.entry_date).format("hh:mm:ss A - DD MMM YYYY")}\n${lastNote?.content || ""}`, project.status);
 		});
 
 		// Batch process records into _records
@@ -699,25 +711,14 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	// Memoized UI components
 	const uiClearFilter = useCallback(() => {
-		return (
-			<FontAwesomeIcon
-				className="cursor-pointer outline-none focus:outline-none red-text"
-				icon={faFilterCircleXmark}
-				onClick={clearFilter}
-			/>
-		);
+		return <FontAwesomeIcon className="cursor-pointer outline-none focus:outline-none red-text" icon={faFilterCircleXmark} onClick={clearFilter} />;
 	}, [clearFilter]);
 
 	const uiExport = useCallback(() => {
 		if (filteredProjects.length && api.projects.copy.length) {
 			return (
-				<button
-					className="primary-button-transparent-background"
-					onClick={doExcelExport}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faFileExcel}
-					/>
+				<button className="primary-button-transparent-background" onClick={doExcelExport}>
+					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 				</button>
 			);
 		}
@@ -726,19 +727,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const uiFind = useCallback(() => {
 		if (api.projects.copy.length) {
-			return (
-				<TextInputNative
-					id="findBox"
-					icon={faSearch}
-					onChange={(e) => setInputs("findText", e.target.value)}
-					onClearButtonClick={() => setInputs("findText", "")}
-					placeholder="Find"
-					showClearButton={showFindBoxClearButton}
-					tabIndex={1}
-					value={main.findText}
-					width="w-40"
-				/>
-			);
+			return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setInputs("findText", e.target.value)} onClearButtonClick={() => setInputs("findText", "")} placeholder="Find" showClearButton={showFindBoxClearButton} tabIndex={1} value={main.findText} width="w-40" />;
 		}
 		return null;
 	}, [api.projects.copy.length, main.findText, setInputs, showFindBoxClearButton]);
@@ -751,11 +740,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
 
 			return (
-				<MenuItem
-					as="div"
-					className={wrapper}
-					key={i}
-					onClick={() => setFilter(key)}>
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setFilter(key)}>
 					<span className="flex w-full justify-between items-center font-regular-11">
 						<span>{key}</span>
 						{value > 0 && <BadgeSmall value={value} />}
@@ -767,9 +752,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const uiFilter = useCallback(() => {
 		return (
-			<Menu
-				as="div"
-				className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
+			<Menu as="div" className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
 				<MenuButton className="flex w-full h-[30px] px-2 justify-between items-center font-regular-10 gray-text">
 					<span>{main.filter || "Status"}</span>
 					<FontAwesomeIcon icon={faChevronDown} />
@@ -785,16 +768,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const sortIcon = main.sort.isAscending ? faSortAmountDesc : faSortAmountAsc;
 
 			return (
-				<span
-					className="w-[16.66%] space-x-1 cursor-pointer text-center text-white font-medium-10"
-					onClick={() => setSort(header)}
-					key={i}>
+				<span className="w-[16.66%] space-x-1 cursor-pointer text-center text-white font-medium-10" onClick={() => setSort(header)} key={i}>
 					<span>{header}</span>
 					<span className={showArrow}>
-						<FontAwesomeIcon
-							className="text-white"
-							icon={sortIcon}
-						/>
+						<FontAwesomeIcon className="text-white" icon={sortIcon} />
 					</span>
 				</span>
 			);
@@ -810,10 +787,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${style} font-regular-10 hovered-rows`;
 
 			return (
-				<button
-					className={wrapper}
-					key={i}
-					onClick={() => setModule(module)}>
+				<button className={wrapper} key={i} onClick={() => setModule(module)}>
 					<span className="text-left">{module.key}</span>
 					{module.key != "All" && module?.items?.length > 0 && <span className="font-regular-10 gray-text">{module.items.length}</span>}
 				</button>
@@ -895,25 +869,30 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}
 
 	function setStaff(obj) {
-		setMain((s) => ({ ...s, selectedStaff: { ...s.selectedStaff, fullName: obj.full_name, id: obj.id } }));
+		setMain((s) => ({
+			...s,
+			selectedStaff: {
+				...s.selectedStaff,
+				fullName: obj.full_name,
+				id: obj.id,
+			},
+		}));
 	}
 
 	function setStaffType(value) {
-		setMain((s) => ({ ...s, selectedStaff: { ...s.selectedStaff, type: value } }));
+		setMain((s) => ({
+			...s,
+			selectedStaff: { ...s.selectedStaff, type: value },
+		}));
 	}
 
 	function uiStaff() {
 		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
 
 		return (
-			<Menu
-				as="div"
-				className="flex max-w-full min-w-40 justify-center items-center relative">
+			<Menu as="div" className="flex max-w-full min-w-40 justify-center items-center relative">
 				<MenuButton className={wrapper}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faUserAlt}
-					/>
+					<FontAwesomeIcon className="primary-text" icon={faUserAlt} />
 					<span className="gray-text">{main.selectedStaff.fullName || "Team"}</span>
 				</MenuButton>
 				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStaffList()}</MenuItems>
@@ -928,11 +907,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
-				<MenuItem
-					as="div"
-					className={wrapper}
-					key={i}
-					onClick={() => setStaff(m)}>
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setStaff(m)}>
 					<span>{m.full_name}</span>
 				</MenuItem>
 			);
@@ -943,14 +918,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
 
 		return (
-			<Menu
-				as="div"
-				className="flex max-w-full min-w-40 justify-center items-center relative">
+			<Menu as="div" className="flex max-w-full min-w-40 justify-center items-center relative">
 				<MenuButton className={wrapper}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faFilter}
-					/>
+					<FontAwesomeIcon className="primary-text" icon={faFilter} />
 					<span className="gray-text">{main.selectedStaff.type || "Type"}</span>
 				</MenuButton>
 				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStaffListAdvanced()}</MenuItems>
@@ -965,11 +935,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
-				<MenuItem
-					as="div"
-					className={wrapper}
-					key={i}
-					onClick={() => setStaffType(m)}>
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setStaffType(m)}>
 					<span>{m}</span>
 				</MenuItem>
 			);
@@ -986,16 +952,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const textColour = getStatusSeverityBackground(row.status);
 
 			return (
-				<Tippy
-					allowHTML
-					className={`whitespace-pre-line`}
-					content={<Tooltip text={tooltipText} />}
-					placement="bottom">
-					<span
-						className={textColour}
-						dangerouslySetInnerHTML={{ __html: clientName }}
-						onClick={() => toggleSingleProjectView(row)}
-					/>
+				<Tippy allowHTML className={`whitespace-pre-line`} content={<Tooltip text={tooltipText} />} placement="bottom">
+					<span className={textColour} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleProjectView(row)} />
 				</Tippy>
 			);
 		},
@@ -1004,11 +962,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const uiTeamsTooltip = useCallback((badgeText, tooltipText) => {
 		return (
-			<Tippy
-				content={<Tooltip text={tooltipText} />}
-				placement="bottom"
-				trigger="mouseenter"
-				appendTo={() => document.body}>
+			<Tippy content={<Tooltip text={tooltipText} />} placement="bottom" trigger="mouseenter" appendTo={() => document.body}>
 				<span className="cursor-help">
 					<BadgeSmall value={badgeText} />
 				</span>
@@ -1028,9 +982,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							const wrapper = `flex w-full justify-start items-center ${bottomBorder}`;
 
 							return (
-								<div
-									className={wrapper}
-									key={i}>
+								<div className={wrapper} key={i}>
 									{i + 1}. {m}
 								</div>
 							);
@@ -1048,9 +1000,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			if (names.includes(",")) {
 				if (total > 2) {
 					return (
-						<Tippy
-							content={uiTeamsListTooltip(names)}
-							placement="bottom">
+						<Tippy content={uiTeamsListTooltip(names)} placement="bottom">
 							<span className="cursor-help primary-text">{total}</span>
 						</Tippy>
 					);
@@ -1102,18 +1052,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
 
 				return (
-					<MenuItem
-						as="div"
-						className={wrapper}
-						key={i}
-						onClick={() => editStatus(row, status)}>
+					<MenuItem as="div" className={wrapper} key={i} onClick={() => editStatus(row, status)}>
 						<span className="font-regular-11">{status}</span>
-						{isSelected && (
-							<FontAwesomeIcon
-								className="primary-text"
-								icon={faCheck}
-							/>
-						)}
+						{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
 					</MenuItem>
 				);
 			});
@@ -1127,22 +1068,17 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full px-4 space-x-2 justify-between items-center focus:outline-none font-regular-12 ${getStatusSeverity(row.status)}`;
 
 			return (
-				<Menu
-					as="div"
-					className="flex w-fit justify-center items-center relative">
+				<Menu as="div" className="flex w-fit justify-center items-center relative">
 					<MenuButton className={wrapper}>
-						{isCompleted && (
-							<FontAwesomeIcon
-								className="green-text"
-								icon={faCheckCircle}
-							/>
-						)}
-						<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.findText) }} />
+						{isCompleted && <FontAwesomeIcon className="green-text" icon={faCheckCircle} />}
+						<span
+							dangerouslySetInnerHTML={{
+								__html: MyGlobal.HighlightText(row.status, main.findText),
+							}}
+						/>
 						{!isCompleted && <FontAwesomeIcon icon={faChevronDown} />}
 					</MenuButton>
-					{(!isCompleted || isUserAdministrator) && (
-						<MenuItems className="absolute w-full top-9 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>
-					)}
+					{(!isCompleted || isUserAdministrator) && <MenuItems className="absolute w-full top-9 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>}
 				</Menu>
 			);
 		},
@@ -1212,27 +1148,19 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const handleMouseEnter = () => setMouseEnter(row.id);
 
 			return (
-				<div
-					className={wrapper}
-					key={row.id}
-					onMouseEnter={handleMouseEnter}
-					onMouseLeave={setMouseLeave}>
+				<div className={wrapper} key={row.id} onMouseEnter={handleMouseEnter} onMouseLeave={setMouseLeave}>
 					<div className={`${style} cursor-help primary-text`}>
 						<span className={fancyRightBorderStyle} />
 						<Tippy
 							content={
 								<div className="flex flex-col py-1 justify-start items-center">
 									{allowDeletingProject && (
-										<div
-											className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text"
-											onClick={() => toggleDeleteProjectBox(row)}>
+										<div className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text" onClick={() => toggleDeleteProjectBox(row)}>
 											<FontAwesomeIcon icon={faTrash} />
 											<span>Delete Project</span>
 										</div>
 									)}
-									<div
-										className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text"
-										onClick={() => toggleEditProjectView(row)}>
+									<div className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text" onClick={() => toggleEditProjectView(row)}>
 										<FontAwesomeIcon icon={faPencil} />
 										<span>Edit Project</span>
 									</div>
@@ -1250,40 +1178,17 @@ export default function Projects({ presetStatus, setModuleProps }) {
 					<div className={style}>
 						<div className={`${parentLabelStyle} cursor-pointer hover:underline hover:underline-offset-4 space-x-5`}>
 							{uiClientName(row, clientIdAndName)}
-							{row.todos?.length > 0 && (
-								<FontAwesomeIcon
-									className="text-rose-800 cursor-pointer scale-100 hover:scale-125 duration-200"
-									icon={faListUl}
-									onClick={() => toggleTodoBox(row)}
-								/>
-							)}
+							{row.todos?.length > 0 && <FontAwesomeIcon className="text-rose-800 cursor-pointer scale-100 hover:scale-125 duration-200" icon={faListUl} onClick={() => toggleTodoBox(row)} />}
 						</div>
-						<Tippy
-							content={<Tooltip text={`Gov ID: ${governmentId || "NA"}`} />}
-							placement="bottom"
-							trigger="mouseenter"
-							appendTo={() => document.body}>
-							<span
-								className={childLabelStyle}
-								dangerouslySetInnerHTML={{ __html: companyName }}
-							/>
+						<Tippy content={<Tooltip text={`Gov ID: ${governmentId || "NA"}`} />} placement="bottom" trigger="mouseenter" appendTo={() => document.body}>
+							<span className={childLabelStyle} dangerouslySetInnerHTML={{ __html: companyName }} />
 						</Tippy>
 					</div>
 
 					<div className={style}>
-						<span
-							className={parentLabelStyle}
-							dangerouslySetInnerHTML={{ __html: subProjectName }}
-						/>
-						<Tippy
-							content={<Tooltip text={`Remarks ${row.remarks}`} />}
-							placement="bottom"
-							trigger="mouseenter"
-							appendTo={() => document.body}>
-							<span
-								className={childLabelStyle}
-								dangerouslySetInnerHTML={{ __html: mainProjectName }}
-							/>
+						<span className={parentLabelStyle} dangerouslySetInnerHTML={{ __html: subProjectName }} />
+						<Tippy content={<Tooltip text={`Remarks ${row.remarks}`} />} placement="bottom" trigger="mouseenter" appendTo={() => document.body}>
+							<span className={childLabelStyle} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
 						</Tippy>
 					</div>
 
@@ -1321,6 +1226,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}
 
 	const uiBody = useCallback(() => {
+		const savedIndexStr = localStorage.getItem("projectsScrollPosition");
+		const savedIndex = savedIndexStr ? Math.max(0, Math.min(Number(savedIndexStr), sortedProjects.length - 1)) : 0;
+
 		return (
 			<div className="flex w-full h-full justify-center items-start">
 				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiList()}</div>
@@ -1332,15 +1240,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 					) : (
 						<div className="flex flex-col w-full h-full justify-center items-start full-border">
 							<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-							<Virtuoso
-								ref={currentScrollPositionReference}
-								className="w-full h-full overflow-y-auto bottom-border contrast-background"
-								data={sortedProjects}
-								itemContent={(i, row) => uiRows(row)}
-								totalCount={sortedProjects.length}
-								followOutput="auto"
-								rangeChanged={handleRangeChange}
-							/>
+							<Virtuoso ref={currentScrollPositionReference} className="w-full h-full overflow-y-auto bottom-border contrast-background" data={sortedProjects} itemContent={(i, row) => uiRows(row)} totalCount={sortedProjects.length} followOutput="auto" rangeChanged={handleRangeChange} initialTopMostItemIndex={savedIndex} />
 							<div className="fixed bottom-3 right-3 z-50">{uiTotalQuote()}</div>
 						</div>
 					)}
@@ -1355,10 +1255,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
 
 				<div className="flex items-center justify-center w-10 h-10 group-hover:h-10 rounded-full text-white ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
-					<FontAwesomeIcon
-						icon={faIndianRupee}
-						size="1x"
-					/>
+					<FontAwesomeIcon icon={faIndianRupee} size="1x" />
 				</div>
 
 				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-[300px]">
@@ -1382,40 +1279,13 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				</div>
 			);
 		} else if (mounted.editProject) {
-			return (
-				<EditProject
-					project={main.selectedProject}
-					reload={setSupportData}
-					unmount={toggleEditProjectView}
-				/>
-			);
+			return <EditProject project={main.selectedProject} reload={setSupportData} unmount={toggleEditProjectView} />;
 		} else if (mounted.singleProject) {
-			return (
-				<SingleProject
-					client={main.selectedClient}
-					project={main.selectedProject}
-					reload={setSupportData}
-					source="Single Project"
-					unmount={toggleSingleProjectView}
-				/>
-			);
+			return <SingleProject client={main.selectedClient} project={main.selectedProject} reload={setSupportData} source="Single Project" unmount={toggleSingleProjectView} />;
 		} else {
 			return uiBody();
 		}
-	}, [
-		main.isLoading.supportData,
-		filteredProjects.length,
-		api.projects.copy.length,
-		mounted.editProject,
-		mounted.singleProject,
-		main.selectedProject,
-		main.selectedClient,
-		setSupportData,
-		toggleEditProjectView,
-		toggleSingleProjectView,
-		uiBody,
-		blankDataWrapper,
-	]);
+	}, [main.isLoading.supportData, filteredProjects.length, api.projects.copy.length, mounted.editProject, mounted.singleProject, main.selectedProject, main.selectedClient, setSupportData, toggleEditProjectView, toggleSingleProjectView, uiBody, blankDataWrapper]);
 
 	// Hooks
 	useEffect(() => {
@@ -1433,17 +1303,17 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}, [setSupportData, autoFocusFindBox, setModuleProps]);
 
 	useEffect(() => {
+		if (currentScrollPositionReference.current) {
+			const savedIndex = localStorage.getItem("projectsScrollPosition");
+
+			currentScrollPositionReference.current.scrollToIndex({
+				index: savedIndex,
+				align: "start",
+				behavior: "auto",
+			});
+		}
+
 		if (mounted.mainComponent) {
-			if (currentScrollPositionReference.current) {
-				const savedIndex = localStorage.getItem("projectsScrollPosition");
-
-				currentScrollPositionReference.current.scrollToIndex({
-					index: savedIndex,
-					align: "start",
-					behavior: "auto",
-				});
-			}
-
 			// For "Overdue" filter specifically, we need to make sure the source is filtered for tasks_overdue
 			// before we apply further filtering
 			const source = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items || [];
@@ -1568,6 +1438,16 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}, [debouncedFindText, main.selectedStaff, main.filter, main.activeModule, api.projects.copy, mounted.mainComponent, statuses, calculateStatusCounts]);
 
 	useEffect(() => {
+		// if (currentScrollPositionReference.current) {
+		// 	const savedIndex = localStorage.getItem("projectsScrollPosition");
+
+		// 	currentScrollPositionReference.current.scrollToIndex({
+		// 		index: savedIndex,
+		// 		align: "start",
+		// 		behavior: "auto",
+		// 	});
+		// }
+
 		const scrollElements = document.querySelectorAll(".overflow-y-auto");
 
 		scrollElements.forEach((element) => {
@@ -1579,7 +1459,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				element.removeEventListener("scroll", null);
 			});
 
-			localStorage.removeItem("projectsScrollPositions");
+			//localStorage.removeItem("projectsScrollPosition");
 		};
 	}, []);
 
@@ -1598,9 +1478,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							{uiFilter()}
 							{uiStaff()}
 							{uiStaffAdvanced()}
-							<Tippy
-								content={<Tooltip text={`Clear filters of ${main.activeModule.name}`} />}
-								placement="bottom">
+							<Tippy content={<Tooltip text={`Clear filters of ${main.activeModule.name}`} />} placement="bottom">
 								{uiClearFilter()}
 							</Tippy>
 						</div>
@@ -1610,41 +1488,13 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				{uiMain()}
 			</>
 
-			{mounted.deleteProject && (
-				<DeleteProject
-					mount={mounted.deleteProject}
-					projectId={main.selectedProject.id}
-					reload={setSupportData}
-					unmount={toggleDeleteProjectBox}
-				/>
-			)}
+			{mounted.deleteProject && <DeleteProject mount={mounted.deleteProject} projectId={main.selectedProject.id} reload={setSupportData} unmount={toggleDeleteProjectBox} />}
 
-			{mounted.todo && (
-				<ProjectTodos
-					mount={mounted.todo}
-					project={main.selectedProject}
-					reload={setSupportData}
-					unmount={toggleTodoBox}
-				/>
-			)}
+			{mounted.todo && <ProjectTodos mount={mounted.todo} project={main.selectedProject} reload={setSupportData} unmount={toggleTodoBox} />}
 
-			{mounted.editStatus && (
-				<EditStatus
-					mount={mounted.editStatus}
-					project={main.selectedProject}
-					reload={setSupportData}
-					unmount={toggleEditStatusBox}
-				/>
-			)}
+			{mounted.editStatus && <EditStatus mount={mounted.editStatus} project={main.selectedProject} reload={setSupportData} unmount={toggleEditStatusBox} />}
 
-			{mounted.projectStatus && (
-				<ProjectStatus
-					mount={mounted.projectStatus}
-					project={main.selectedProject}
-					reload={setSupportData}
-					unmount={toggleProjectStatusBox}
-				/>
-			)}
+			{mounted.projectStatus && <ProjectStatus mount={mounted.projectStatus} project={main.selectedProject} reload={setSupportData} unmount={toggleProjectStatusBox} />}
 		</div>
 	);
 }
