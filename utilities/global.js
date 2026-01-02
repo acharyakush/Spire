@@ -325,16 +325,7 @@ export const MyGlobal = Object.freeze({
 	GetRevisedPaymentSourceList: (payload) => {
 		const list = [...payload];
 
-		list.push(
-			{ id: "CASH", name: "Cash" },
-			{ id: "CHEQUE", name: "Cheque" },
-			{ id: "CC", name: "Credit Card" },
-			{ id: "DC", name: "Debit Card" },
-			{ id: "INSTAMOJO", name: "InstaMojo" },
-			{ id: "NETBANKING", name: "NetBanking" },
-			{ id: "TDS", name: "TDS Deducted" },
-			{ id: "UPI", name: "UPI" },
-		);
+		list.push({ id: "CASH", name: "Cash" }, { id: "CHEQUE", name: "Cheque" }, { id: "CC", name: "Credit Card" }, { id: "DC", name: "Debit Card" }, { id: "INSTAMOJO", name: "InstaMojo" }, { id: "NETBANKING", name: "NetBanking" }, { id: "TDS", name: "TDS Deducted" }, { id: "UPI", name: "UPI" });
 
 		return list;
 	},
@@ -471,6 +462,7 @@ export const MyGlobal = Object.freeze({
 			const target = [...payload].filter((f) => {
 				const customIdInitials = String(f.custom_id).split("/").at(0);
 
+				if (initials === "SCL") return customIdInitials === "PSCL";
 				if (String(initials).startsWith(customIdInitials)) {
 					return f;
 				}

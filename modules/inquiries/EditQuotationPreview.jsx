@@ -57,7 +57,37 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 		}
 	}
 
-	function downloadPdf() {
+	function addImagePage(pdf, src) {
+		return new Promise((resolve) => {
+			const img = new Image();
+			img.onload = () => {
+				const pageWidth = pdf.internal.pageSize.getWidth();
+				const pageHeight = pdf.internal.pageSize.getHeight();
+
+				const imgRatio = img.width / img.height;
+				const pageRatio = pageWidth / pageHeight;
+
+				let width, height;
+
+				if (imgRatio > pageRatio) {
+					width = pageWidth;
+					height = pageWidth / imgRatio;
+				} else {
+					height = pageHeight;
+					width = pageHeight * imgRatio;
+				}
+
+				const x = (pageWidth - width) / 2;
+				const y = (pageHeight - height) / 2;
+
+				pdf.addImage(img, "PNG", x, y, width, height);
+				resolve();
+			};
+			img.src = src;
+		});
+	}
+
+	async function downloadPdf() {
 		setMain((s) => ({ ...s, isPdfBeingDownloaded: true }));
 
 		const pdf = new jsPDF("p", "mm", "a4", true);
@@ -66,6 +96,20 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 		const pageWidth = pdf.internal.pageSize.getWidth();
 		const pageHeight = pdf.internal.pageSize.getHeight();
 		const margin = 10;
+
+		/* ================= PREPEND IMAGE PAGES ================= */
+
+		// Page 1
+		await addImagePage(pdf, "/quotation-page-1.jpg");
+
+		// Page 2
+		pdf.addPage();
+		await addImagePage(pdf, "/quotation-page-2.jpg");
+
+		// Invoice must start on a NEW page
+		pdf.addPage();
+
+		/* ======================================================= */
 
 		const originalStyle = {
 			height: invoiceBody.style.height,
@@ -83,6 +127,7 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 				const pageHeightPx = (pageHeight * canvas.width) / imgWidth;
 				let remainingHeight = canvas.height;
 				let sourceY = 0;
+				let firstInvoicePage = true;
 
 				while (remainingHeight > 0) {
 					const cropHeight = Math.min(pageHeightPx, remainingHeight);
@@ -96,15 +141,17 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 
 					const imgData = pageCanvas.toDataURL("image/png", 1);
 
-					pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight, "", "FAST");
+					// IMPORTANT: avoid blank page before first invoice image
+					if (!firstInvoicePage) pdf.addPage();
+					firstInvoicePage = false;
+
+					pdf.addImage(imgData, "PNG", margin, margin, imgWidth, imgHeight, "", "FAST");
 
 					remainingHeight -= cropHeight;
 					sourceY += cropHeight;
-
-					if (remainingHeight > 0) pdf.addPage();
 				}
 
-				const fileName = String(quotation?.proposalNumber).replace("/", "_").replace("/", "_");
+				const fileName = String(quotation?.proposalNumber).replaceAll("/", "_");
 
 				pdf.save(`${fileName}.pdf`);
 
@@ -113,15 +160,12 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 				const formData = new FormData();
 				formData.append("file", pdfBlob, `${fileName}.pdf`);
 
-				return axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData, {
-					headers: { "Content-Type": "multipart/form-data" },
-				});
+				return axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData, { headers: { "Content-Type": "multipart/form-data" } });
 			})
 			.then(() => editQuotation())
 			.finally(() => {
 				invoiceBody.style.height = originalStyle.height;
 				invoiceBody.style.overflow = originalStyle.overflow;
-
 				setMain((s) => ({ ...s, isPdfBeingDownloaded: false }));
 			});
 	}
@@ -252,10 +296,7 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 
 		return (
 			<div className="flex w-full justify-start items-center">
-				<QRCode
-					quietZone={0}
-					value={qrCodeContent}
-				/>
+				<QRCode quietZone={0} value={qrCodeContent} />
 			</div>
 		);
 	}
@@ -265,9 +306,7 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 
 		if (typeof quotation?.firm?.termsConditions === "string") {
 			termsConditions = quotation?.firm?.termsConditions.split("\\n").map((m, i) => (
-				<span
-					className="py-1 whitespace-pre-line"
-					key={i}>
+				<span className="py-1 whitespace-pre-line" key={i}>
 					{m}
 				</span>
 			));
@@ -290,19 +329,13 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 		<div className="flex flex-col w-full h-full justify-center items-center contrast-background">
 			<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
 				<div className="flex w-full space-x-2.5 justify-start items-center">
-					<FontAwesomeIcon
-						className="pr-1 cursor-pointer black-text"
-						icon={faChevronLeft}
-						onClick={() => unmount(false)}
-					/>
+					<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount(false)} />
 					<div className="flex w-full justify-start items-center">
 						<span className="view-heading">Edit Quotation Preview</span>
 					</div>
 				</div>
 			</div>
-			<div
-				className="flex flex-col w-3/5 h-[calc(100vh-148px)] p-5 space-y-7 justify-start items-start overflow-y-auto contrast-background"
-				id="invoiceBody">
+			<div className="flex flex-col w-3/5 h-[calc(100vh-148px)] p-5 space-y-7 justify-start items-start overflow-y-auto contrast-background" id="invoiceBody">
 				<div className="flex w-full justify-between items-center">
 					{uiProposal()}
 					<div className="flex flex-col w-full justify-center items-end">
@@ -339,9 +372,7 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 				</div>
 			</div>
 			<footer className="w-full dialog-footer">
-				<button
-					className={generateButton}
-					onClick={() => downloadPdf()}>
+				<button className={generateButton} onClick={() => downloadPdf()}>
 					Generate
 				</button>
 			</footer>

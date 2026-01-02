@@ -5,7 +5,6 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
-import MyProjects from "./MyProjects";
 import EditProject from "./EditProject";
 import writeXlsxFile from "write-excel-file";
 import SingleProject from "../singleProject";
@@ -1438,16 +1437,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}, [debouncedFindText, main.selectedStaff, main.filter, main.activeModule, api.projects.copy, mounted.mainComponent, statuses, calculateStatusCounts]);
 
 	useEffect(() => {
-		// if (currentScrollPositionReference.current) {
-		// 	const savedIndex = localStorage.getItem("projectsScrollPosition");
-
-		// 	currentScrollPositionReference.current.scrollToIndex({
-		// 		index: savedIndex,
-		// 		align: "start",
-		// 		behavior: "auto",
-		// 	});
-		// }
-
 		const scrollElements = document.querySelectorAll(".overflow-y-auto");
 
 		scrollElements.forEach((element) => {
@@ -1458,8 +1447,6 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			scrollElements.forEach((element) => {
 				element.removeEventListener("scroll", null);
 			});
-
-			//localStorage.removeItem("projectsScrollPosition");
 		};
 	}, []);
 
