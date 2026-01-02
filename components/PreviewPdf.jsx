@@ -17,7 +17,7 @@ export default function PreviewPdf({ fileUrl, visible }) {
 			try {
 				const loadingTask = getDocument(fileUrl);
 				const pdf = await loadingTask.promise;
-				const page = await pdf.getPage(1);
+				const page = await pdf.getPage(pdf.numPages);
 
 				const viewport = page.getViewport({ scale: 1.5 });
 				const canvas = canvasRef.current;

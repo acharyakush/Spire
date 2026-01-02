@@ -99,62 +99,92 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 		const pageHeight = pdf.internal.pageSize.getHeight();
 		const margin = 10;
 
-		/* -------- PREPEND IMAGE PAGE 1 -------- */
-		await addImagePage(pdf, "/quotation-page-1.jpg");
-
-		/* -------- PREPEND IMAGE PAGE 2 -------- */
-		pdf.addPage();
-		await addImagePage(pdf, "/quotation-page-2.jpg");
-
-		/* -------- INVOICE STARTS -------- */
-		pdf.addPage();
-
 		const originalStyle = {
 			height: invoiceBody.style.height,
 			overflow: invoiceBody.style.overflow,
 		};
 
-		invoiceBody.style.height = "auto";
-		invoiceBody.style.overflow = "visible";
+		try {
+			/* -------- PREPEND IMAGE PAGE 1 -------- */
+			await addImagePage(pdf, "/quotation-page-1.jpg");
 
-		html2canvas(invoiceBody, { scale: 3 })
-			.then((canvas) => {
-				const imgWidth = pageWidth - 2 * margin;
-				const imgHeight = (canvas.height * imgWidth) / canvas.width;
-				const pageHeightPx = (pageHeight * canvas.width) / imgWidth;
+			/* -------- PREPEND IMAGE PAGE 2 -------- */
+			pdf.addPage();
+			await addImagePage(pdf, "/quotation-page-2.jpg");
 
-				let remainingHeight = canvas.height;
-				let sourceY = 0;
-				let firstInvoicePage = true;
+			/* -------- INVOICE STARTS -------- */
+			pdf.addPage();
 
-				while (remainingHeight > 0) {
-					const cropHeight = Math.min(pageHeightPx, remainingHeight);
+			invoiceBody.style.height = "auto";
+			invoiceBody.style.overflow = "visible";
 
-					const pageCanvas = document.createElement("canvas");
-					pageCanvas.width = canvas.width;
-					pageCanvas.height = cropHeight;
+			/* -------- RENDER INVOICE -------- */
+			const canvas = await html2canvas(invoiceBody, { scale: 3 });
 
-					pageCanvas.getContext("2d").drawImage(canvas, 0, sourceY, canvas.width, cropHeight, 0, 0, canvas.width, cropHeight);
+			const imgWidth = pageWidth - 2 * margin;
+			const pageHeightPx = (pageHeight * canvas.width) / imgWidth;
 
-					const imgData = pageCanvas.toDataURL("image/png", 1);
+			let remainingHeight = canvas.height;
+			let sourceY = 0;
+			let firstInvoicePage = true;
 
-					if (!firstInvoicePage) pdf.addPage();
-					firstInvoicePage = false;
+			/* ---- REUSED PAGE CANVAS ---- */
+			const pageCanvas = document.createElement("canvas");
+			const ctx = pageCanvas.getContext("2d");
+			pageCanvas.width = canvas.width;
 
-					pdf.addImage(imgData, "PNG", margin, margin, imgWidth, imgHeight, "", "FAST");
+			while (remainingHeight > 0) {
+				const cropHeight = Math.min(pageHeightPx, remainingHeight);
 
-					remainingHeight -= cropHeight;
-					sourceY += cropHeight;
-				}
+				pageCanvas.height = cropHeight;
+				ctx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
 
-				const fileName = String(quotation?.proposalNumber).replaceAll("/", "_");
-				pdf.save(`${fileName}.pdf`);
-			})
-			.finally(() => {
-				invoiceBody.style.height = originalStyle.height;
-				invoiceBody.style.overflow = originalStyle.overflow;
-				setMain((s) => ({ ...s, isPdfBeingDownloaded: false }));
+				ctx.drawImage(canvas, 0, sourceY, canvas.width, cropHeight, 0, 0, canvas.width, cropHeight);
+
+				const imgData = pageCanvas.toDataURL("image/png");
+
+				if (!firstInvoicePage) pdf.addPage();
+				firstInvoicePage = false;
+
+				const imgHeight = (cropHeight * imgWidth) / canvas.width;
+
+				pdf.addImage(imgData, "PNG", margin, margin, imgWidth, imgHeight, "", "FAST");
+
+				remainingHeight -= cropHeight;
+				sourceY += cropHeight;
+
+				await yieldToUI();
+			}
+
+			/* ---- FREE CANVAS MEMORY ---- */
+			canvas.width = 0;
+			canvas.height = 0;
+			pageCanvas.width = 0;
+			pageCanvas.height = 0;
+
+			/* -------- SAVE + UPLOAD -------- */
+			const fileName = String(quotation?.proposalNumber).replaceAll("/", "_");
+
+			const pdfBlob = pdf.output("blob");
+
+			const formData = new FormData();
+			formData.append("file", pdfBlob, `${fileName}.pdf`);
+
+			await axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData, {
+				headers: { "Content-Type": "multipart/form-data" },
 			});
+
+			await addQuotation();
+
+			/* -------- DOWNLOAD LAST -------- */
+			pdf.save(`${fileName}.pdf`);
+		} catch (error) {
+			console.error("downloadPdf failed:", error);
+		} finally {
+			invoiceBody.style.height = originalStyle.height;
+			invoiceBody.style.overflow = originalStyle.overflow;
+			setMain((s) => ({ ...s, isPdfBeingDownloaded: false }));
+		}
 	}
 
 	// UI Components
@@ -310,6 +340,8 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 			</div>
 		);
 	}
+
+	const yieldToUI = () => new Promise((resolve) => requestAnimationFrame(resolve));
 
 	// Main UI
 	return (
