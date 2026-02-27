@@ -125,6 +125,7 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 				scale: 3,
 				scrollX: 0,
 				scrollY: 0,
+				useCORS: true,
 			});
 
 			const imgWidth = pageWidth - 2 * margin;
@@ -175,7 +176,7 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 			const formData = new FormData();
 			formData.append("file", pdfBlob, `${fileName}.pdf`);
 
-			await axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData, { headers: { "Content-Type": "multipart/form-data" } });
+			await axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData);
 
 			await editQuotation();
 
