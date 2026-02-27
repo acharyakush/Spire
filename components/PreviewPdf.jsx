@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/build/pdf.mjs";
 
-GlobalWorkerOptions.workerSrc = "/pdf.worker.js";
+GlobalWorkerOptions.workerSrc = new URL(
+	"pdfjs-dist/build/pdf.worker.min.mjs",
+	import.meta.url
+).toString();
 
 export default function PreviewPdf({ fileUrl, visible }) {
 	const canvasRef = useRef(null);

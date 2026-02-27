@@ -3,7 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
@@ -140,33 +139,11 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 
 	// UI Components
 	function uiAccountHolderName() {
-		return (
-			<TextInput
-				icon={faFont}
-				id="accountHolderName"
-				label="Account Holder Name"
-				onChange={(e) => setInputs("accountHolderName", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="5"
-				value={main.bank.accountHolderName}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faFont} id="accountHolderName" label="Account Holder Name" onChange={(e) => setInputs("accountHolderName", e.target.value)} onKeyPress={() => {}} tabIndex="5" value={main.bank.accountHolderName} width="w-full" />;
 	}
 
 	function uiAccountNumber() {
-		return (
-			<TextInput
-				icon={faHashtag}
-				id="accountNumber"
-				label="Account Number"
-				onChange={(e) => setInputs("accountNumber", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="5"
-				value={main.bank.accountNumber}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faHashtag} id="accountNumber" label="Account Number" onChange={(e) => setInputs("accountNumber", e.target.value)} onKeyPress={() => {}} tabIndex="5" value={main.bank.accountNumber} width="w-full" />;
 	}
 
 	function uiAdd() {
@@ -184,7 +161,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 	function uiBody() {
 		if (loading.supportData) {
 			return (
-				<div className="flex w-full h-[460px] justify-center items-center">
+				<div className="flex w-full h-115 justify-center items-center">
 					<SpinnerBig />
 				</div>
 			);
@@ -219,16 +196,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 	}
 
 	function uiEmailAddress() {
-		return (
-			<EmailAddress
-				label="Email Address (Optional)"
-				onChange={(e) => setInputs("emailAddress", e.target.value)}
-				suffix=""
-				tabIndex="3"
-				value={main.emailAddress}
-				width="w-full"
-			/>
-		);
+		return <EmailAddress label="Email Address (Optional)" onChange={(e) => setInputs("emailAddress", e.target.value)} suffix="" tabIndex="3" value={main.emailAddress} width="w-full" />;
 	}
 
 	function uiEntryAt() {
@@ -246,63 +214,19 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 	}
 
 	function uiIfsc() {
-		return (
-			<TextInput
-				icon={faCode}
-				id="ifsc"
-				label="IFS Code"
-				onChange={(e) => setInputs("ifsc", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="5"
-				value={main.bank.ifsc}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faCode} id="ifsc" label="IFS Code" onChange={(e) => setInputs("ifsc", e.target.value)} onKeyPress={() => {}} tabIndex="5" value={main.bank.ifsc} width="w-full" />;
 	}
 
 	function uiName() {
-		return (
-			<TextInput
-				icon={faFont}
-				id="name"
-				label="Name"
-				onChange={(e) => setInputs("name", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="2"
-				value={main.name}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faFont} id="name" label="Name" onChange={(e) => setInputs("name", e.target.value)} onKeyPress={() => {}} tabIndex="2" value={main.name} width="w-full" />;
 	}
 
 	function uiPhoneNumber() {
-		return (
-			<TextInput
-				icon={faPhone}
-				label="Phone Number (Optional)"
-				maxLength={12}
-				onChange={(e) => setInputs("phoneNumber", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex="4"
-				value={main.phoneNumber}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faPhone} label="Phone Number (Optional)" maxLength={12} onChange={(e) => setInputs("phoneNumber", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex="4" value={main.phoneNumber} width="w-full" />;
 	}
 
 	function uiPurpose() {
-		return (
-			<TextInput
-				icon={faClipboardQuestion}
-				id="purpose"
-				label="Purpose"
-				onChange={(e) => setInputs("purpose", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="7"
-				value={main.purpose}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faClipboardQuestion} id="purpose" label="Purpose" onChange={(e) => setInputs("purpose", e.target.value)} onKeyPress={() => {}} tabIndex="7" value={main.purpose} width="w-full" />;
 	}
 
 	function uiTitleBar() {
@@ -315,18 +239,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 	}
 
 	function uiUpiId() {
-		return (
-			<TextInput
-				icon={faGooglePay}
-				id="upiId"
-				label="UPI ID (Optional)"
-				onChange={(e) => setInputs("upiId", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="8"
-				value={main.upiId}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faGooglePay} id="upiId" label="UPI ID (Optional)" onChange={(e) => setInputs("upiId", e.target.value)} onKeyPress={() => {}} tabIndex="8" value={main.upiId} width="w-full" />;
 	}
 
 	// Main UI
@@ -335,13 +248,11 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						{uiBody()}
-						{uiFooter()}
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					{uiBody()}
+					{uiFooter()}
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

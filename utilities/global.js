@@ -13,9 +13,15 @@ const encryptionKey = CryptoJS.enc.Hex.parse(process.env.NEXT_PUBLIC_SECRET_KEY)
 
 export const applicationName = process.env.NEXT_PUBLIC_APPLICATION_NAME;
 export const isDevelopment = process.env.NODE_ENV === "development";
-export const allowedKeysForOnKeyPressEvent = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
 
-const thisFinancialYear = `${dayjs(new Date()).format("YYYY")}-${dayjs(new Date()).add(1, "y").format("YY")}`;
+export function getFinancialYear() {
+	const today = dayjs();
+	const fyStart = dayjs().month(3).date(1); // April 1
+
+	const startYear = today.isBefore(fyStart) ? today.year() - 1 : today.year();
+
+	return `${startYear}-${String(startYear + 1).slice(-2)}`;
+}
 
 let allUsers = [];
 let fullName = "";
@@ -40,18 +46,6 @@ const getSafeRegex = (() => {
 })();
 
 let scrollMap = {};
-
-export const saveScrollPosition = (key = "default", scrollTop = 0) => {
-	scrollMap[key] = scrollTop;
-};
-
-export const getScrollPosition = (key = "default") => {
-	return scrollMap[key] || 0;
-};
-
-export const clearScrollPosition = (key = "default") => {
-	delete scrollMap[key];
-};
 
 export function safeJsonParse(input) {
 	if (typeof input !== "string") return null;
@@ -476,11 +470,15 @@ export const MyGlobal = Object.freeze({
 				target.forEach((m) => {
 					const splitCustomId = String(m.custom_id).split("/");
 
-					if (splitCustomId.at(1) === thisFinancialYear) {
-						const extractNumber = +splitCustomId.at(2).match(/\d+$/)[0].replace(/^0+/, "");
+					if (splitCustomId.at(1) === getFinancialYear()) {
+						try {
+							const extractNumber = +splitCustomId.at(2).match(/\d+$/)[0].replace(/^0+/, "");
 
-						if (!extractedIds.includes(extractNumber)) {
-							extractedIds.push(extractNumber);
+							if (!extractedIds.includes(extractNumber)) {
+								extractedIds.push(extractNumber);
+							}
+						} catch (error) {
+							console.log(m.custom_id + " > ", error);
 						}
 					}
 				});

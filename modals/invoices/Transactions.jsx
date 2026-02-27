@@ -5,8 +5,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
-import Draggable from "react-draggable";
-import writeXlsxFile from "write-excel-file";
+import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
@@ -382,20 +381,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiAmountReceived() {
-		return (
-			<TextInput
-				errorText={other.errorText}
-				hasError={other.hasError}
-				icon={faIndianRupee}
-				id="amountReceived"
-				label="Amount Received"
-				onChange={(e) => setInputs("amountReceived", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex="3"
-				value={main.amountReceived}
-				width="w-full"
-			/>
-		);
+		return <TextInput errorText={other.errorText} hasError={other.hasError} icon={faIndianRupee} id="amountReceived" label="Amount Received" onChange={(e) => setInputs("amountReceived", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex="3" value={main.amountReceived} width="w-full" />;
 	}
 
 	function uiBody() {
@@ -444,20 +430,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiFind() {
-		return (
-			<TextInputNative
-				id="findBox"
-				icon={faSearch}
-				onChange={(e) => setInputs("transaction", e.target.value)}
-				onClearButtonClick={() => setInputs("transaction", "")}
-				placeholder="Find"
-				source="InvoiceTransaction"
-				showClearButton={showFindClearButton}
-				tabIndex={3}
-				value={other.find.transaction}
-				width="w-36"
-			/>
-		);
+		return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setInputs("transaction", e.target.value)} onClearButtonClick={() => setInputs("transaction", "")} placeholder="Find" source="InvoiceTransaction" showClearButton={showFindClearButton} tabIndex={3} value={other.find.transaction} width="w-36" />;
 	}
 
 	function uiFooter() {
@@ -475,23 +448,9 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 	function uiFromDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow primary-background-transparent-01 full-border">
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-start items-center rounded bottom-shadow primary-background-transparent-01 full-border">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.entryAt.to}
-					onChange={(e) => setInputs("from", e)}
-					peekNextMonth
-					placeholderText="From"
-					tabIndex={1}
-					selected={other.find.entryAt.from}
-					selectsStart
-					startDate={other.find.entryAt.from}
-					showMonthDropdown
-					showYearDropdown
-				/>
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.entryAt.to} onChange={(e) => setInputs("from", e)} peekNextMonth placeholderText="From" tabIndex={1} selected={other.find.entryAt.from} selectsStart startDate={other.find.entryAt.from} showMonthDropdown showYearDropdown />
 				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
 			</div>
 		);
@@ -517,27 +476,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiPaymentSource() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.paymentSource.name}
-				displayValue="name"
-				filteredData={getPaymentSources}
-				hasDataObject
-				icon={faBank}
-				isReadOnly={false}
-				label="Payment Source"
-				onChange={(e) => setInputs("paymentSource", e)}
-				onClick={() => {}}
-				onInputChange={(e) => findPaymentSource(e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.paymentSource}
-				tabIndex="2"
-				value={main.paymentSource.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.paymentSource.name} displayValue="name" filteredData={getPaymentSources} hasDataObject icon={faBank} isReadOnly={false} label="Payment Source" onChange={(e) => setInputs("paymentSource", e)} onClick={() => {}} onInputChange={(e) => findPaymentSource(e.target.value)} onKeyPress={() => {}} searchedItem={other.find.paymentSource} tabIndex="2" value={main.paymentSource.name} width="w-full" />;
 	}
 
 	function uiRows(row, i) {
@@ -634,23 +573,9 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 	function uiToDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow  primary-background-transparent-01 full-border">
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-center items-center rounded bottom-shadow  primary-background-transparent-01 full-border">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.entryAt.to}
-					onChange={(e) => setInputs("to", e)}
-					placeholderText="To"
-					peekNextMonth
-					selected={other.find.entryAt.to}
-					selectsEnd
-					startDate={other.find.entryAt.to}
-					showMonthDropdown
-					showYearDropdown
-					tabIndex={2}
-				/>
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.entryAt.to} onChange={(e) => setInputs("to", e)} placeholderText="To" peekNextMonth selected={other.find.entryAt.to} selectsEnd startDate={other.find.entryAt.to} showMonthDropdown showYearDropdown tabIndex={2} />
 				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
 			</div>
 		);
@@ -676,34 +601,32 @@ export function Transactions({ mount, project, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full h-[calc(100%-45px)] p-5 justify-center items-center primary-light-background">
-							<div className="flex w-full pb-4 space-x-2 justify-start items-center font-medium-16 primary-text">
-								<span>{project.company_name}</span>
-								<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
-								<span>{project.main_project_name}</span>
-								<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
-								<span>{project.sub_project_name}</span>
-							</div>
-							<div className="flex w-full h-full p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter">
-								<div className="flex w-3/4 h-full justify-center items-start">{uiBody()}</div>
-								<div className="flex flex-col w-1/4 h-full justify-center items-start">
-									{uiDate()}
-									{uiPaymentSource()}
-									{uiAmountReceived()}
-									{uiParticulars()}
-									<div className="w-full px-2 mt-5">
-										<button className={isAddEligible()} onClick={() => doAddition()}>
-											{uiAdd()}
-										</button>
-									</div>
+				<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full h-[calc(100%-45px)] p-5 justify-center items-center primary-light-background">
+						<div className="flex w-full pb-4 space-x-2 justify-start items-center font-medium-16 primary-text">
+							<span>{project.company_name}</span>
+							<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
+							<span>{project.main_project_name}</span>
+							<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
+							<span>{project.sub_project_name}</span>
+						</div>
+						<div className="flex w-full h-full p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter">
+							<div className="flex w-3/4 h-full justify-center items-start">{uiBody()}</div>
+							<div className="flex flex-col w-1/4 h-full justify-center items-start">
+								{uiDate()}
+								{uiPaymentSource()}
+								{uiAmountReceived()}
+								{uiParticulars()}
+								<div className="w-full px-2 mt-5">
+									<button className={isAddEligible()} onClick={() => doAddition()}>
+										{uiAdd()}
+									</button>
 								</div>
 							</div>
 						</div>
-					</DialogPanel>
-				</Draggable>
+					</div>
+				</DialogPanel>
 			</div>
 
 			{other.isDeleteBoxOpen.status && <DeleteTransaction transaction={other.isDeleteBoxOpen.obj} mount={other.isDeleteBoxOpen.status} reload={unmountAndReload} unmount={toggleDeleteTransaction} />}

@@ -3,7 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
@@ -245,151 +244,34 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 		const showMenu = mounted.assignedToMenu ? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border" : "hidden";
 
 		return (
-			<div
-				className="w-full"
-				ref={assignedToMenuRef}>
-				<ComboBoxWithChips
-					displayKey="full_name"
-					label="Assigned To"
-					icon={faUserGroup}
-					onBlur={() => toggleAssignedToMenu()}
-					onItemClick={(e) => setValues("assignedTo", e)}
-					onSelectedItemClick={(e) => setValues("assignedTo", e)}
-					selectedItems={data.assignedTo}
-					showList={showMenu}
-					source={MyGlobal.GetAllUsers()}
-					toggleMenu={() => toggleAssignedToMenu()}
-				/>
+			<div className="w-full" ref={assignedToMenuRef}>
+				<ComboBoxWithChips displayKey="full_name" label="Assigned To" icon={faUserGroup} onBlur={() => toggleAssignedToMenu()} onItemClick={(e) => setValues("assignedTo", e)} onSelectedItemClick={(e) => setValues("assignedTo", e)} selectedItems={data.assignedTo} showList={showMenu} source={MyGlobal.GetAllUsers()} toggleMenu={() => toggleAssignedToMenu()} />
 			</div>
 		);
 	}
 
 	function uiClient() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={selectedClient?.name}
-				displayValue="name"
-				filteredData={getFilteredClients}
-				hasDataObject
-				icon={faUser}
-				isReadOnly={false}
-				label="Clients"
-				onChange={(e) => setSelectedClient(e)}
-				onClick={() => {}}
-				onInputChange={(e) => setClientSearch(!e.target.value ? "" : e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={clientSearch}
-				showFullObject
-				tabIndex={1}
-				value={selectedClient?.name ?? ""}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={selectedClient?.name} displayValue="name" filteredData={getFilteredClients} hasDataObject icon={faUser} isReadOnly={false} label="Clients" onChange={(e) => setSelectedClient(e)} onClick={() => {}} onInputChange={(e) => setClientSearch(!e.target.value ? "" : e.target.value)} onKeyPress={() => {}} searchedItem={clientSearch} showFullObject tabIndex={1} value={selectedClient?.name ?? ""} width="w-full" />;
 	}
 
 	function uiDescription() {
-		return (
-			<TextArea
-				icon={faNoteSticky}
-				label="Description"
-				onChange={(e) => setValues("description", e.target.value)}
-				onKeyDown={() => {}}
-				rows={5}
-				tabIndex={1}
-				value={data.description}
-				width="w-full"
-			/>
-		);
+		return <TextArea icon={faNoteSticky} label="Description" onChange={(e) => setValues("description", e.target.value)} onKeyDown={() => {}} rows={5} tabIndex={1} value={data.description} width="w-full" />;
 	}
 
 	function uiDueDate() {
-		return (
-			<DatePicker
-				icon={faCalendar}
-				label="Due Date"
-				onChange={(e) => setValues("dueDate", e)}
-				tabIndex={4}
-				value={data.dueDate}
-				width="w-full"
-			/>
-		);
+		return <DatePicker icon={faCalendar} label="Due Date" onChange={(e) => setValues("dueDate", e)} tabIndex={4} value={data.dueDate} width="w-full" />;
 	}
 
 	function uiPriority() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem
-				comparingValue1=""
-				comparingValue2={data.priority}
-				displayValue=""
-				filteredData={["Low", "Medium", "High", "Urgent"]}
-				icon={faStar}
-				isReadOnly={false}
-				label="Priority"
-				onChange={(e) => setValues("priority", e)}
-				onClick={() => {}}
-				onInputChange={() => {}}
-				onKeyPress={() => {}}
-				searchedItem={{}}
-				tabIndex={3}
-				value={data.priority}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem comparingValue1="" comparingValue2={data.priority} displayValue="" filteredData={["Low", "Medium", "High", "Urgent"]} icon={faStar} isReadOnly={false} label="Priority" onChange={(e) => setValues("priority", e)} onClick={() => {}} onInputChange={() => {}} onKeyPress={() => {}} searchedItem={{}} tabIndex={3} value={data.priority} width="w-full" />;
 	}
 
 	function uiSelectedClientsCompanies() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={selectedCompany ? selectedCompany?.name : ""}
-				displayValue="name"
-				filteredData={getFilteredCompanies}
-				hasDataObject
-				icon={faBriefcase}
-				isReadOnly={false}
-				label="Company"
-				onChange={(e) => setSelectedCompany(e)}
-				onClick={() => {}}
-				onInputChange={(e) => setCompanySearch(!e.target.value ? "" : e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={companySearch}
-				showFullObject
-				tabIndex={1}
-				value={selectedCompany ? selectedCompany?.name : ""}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={selectedCompany ? selectedCompany?.name : ""} displayValue="name" filteredData={getFilteredCompanies} hasDataObject icon={faBriefcase} isReadOnly={false} label="Company" onChange={(e) => setSelectedCompany(e)} onClick={() => {}} onInputChange={(e) => setCompanySearch(!e.target.value ? "" : e.target.value)} onKeyPress={() => {}} searchedItem={companySearch} showFullObject tabIndex={1} value={selectedCompany ? selectedCompany?.name : ""} width="w-full" />;
 	}
 
 	function uiSelectedClientsProjects() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1={["id", "name"]}
-				comparingValue2={selectedProject ? selectedProject?.id + " - " + selectedProject?.name : ""}
-				displayValue={["id", "name"]}
-				filteredData={getFilteredProjects}
-				hasDataObject
-				icon={faDiagramProject}
-				isMultipleDisplayValue
-				multipleDisplayValue={["id", "name"]}
-				isReadOnly={false}
-				label="Projects"
-				onChange={(e) => setSelectedProject(e)}
-				onClick={() => {}}
-				onInputChange={(e) => setProjectSearch(!e.target.value ? "" : e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={projectSearch}
-				showFullObject
-				tabIndex={1}
-				value={selectedProject ? selectedProject?.id + " - " + selectedProject?.name : ""}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1={["id", "name"]} comparingValue2={selectedProject ? selectedProject?.id + " - " + selectedProject?.name : ""} displayValue={["id", "name"]} filteredData={getFilteredProjects} hasDataObject icon={faDiagramProject} isMultipleDisplayValue multipleDisplayValue={["id", "name"]} isReadOnly={false} label="Projects" onChange={(e) => setSelectedProject(e)} onClick={() => {}} onInputChange={(e) => setProjectSearch(!e.target.value ? "" : e.target.value)} onKeyPress={() => {}} searchedItem={projectSearch} showFullObject tabIndex={1} value={selectedProject ? selectedProject?.id + " - " + selectedProject?.name : ""} width="w-full" />;
 	}
 
 	function uiTitleBar() {
@@ -397,15 +279,9 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 		const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Edit To-Do</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount()}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount()} />
 			</DialogTitle>
 		);
 	}
@@ -435,43 +311,32 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setIsBoxDragged(true)}
-					onStop={() => setIsBoxDragged(false)}>
-					<DialogPanel className="w-3/5 transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full p-6 space-y-6 justify-between items-center">
-							<div className="flex w-full space-x-6 justify-between items-center">
-								{uiClient()}
-								{uiSelectedClientsProjects()}
-								{uiSelectedClientsCompanies()}
-							</div>
-							{uiAssignedTo()}
-							<div className="flex w-full space-x-6 justify-between items-start">
-								<div className="flex flex-col w-1/2 h-full justify-center items-center">{uiDescription()}</div>
-								<div className="flex flex-col w-1/2 h-full space-y-4 justify-center items-center">
-									{uiPriority()}
-									{uiDueDate()}
-								</div>
+				<DialogPanel className="w-3/5 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full p-6 space-y-6 justify-between items-center">
+						<div className="flex w-full space-x-6 justify-between items-center">
+							{uiClient()}
+							{uiSelectedClientsProjects()}
+							{uiSelectedClientsCompanies()}
+						</div>
+						{uiAssignedTo()}
+						<div className="flex w-full space-x-6 justify-between items-start">
+							<div className="flex flex-col w-1/2 h-full justify-center items-center">{uiDescription()}</div>
+							<div className="flex flex-col w-1/2 h-full space-y-4 justify-center items-center">
+								{uiPriority()}
+								{uiDueDate()}
 							</div>
 						</div>
-						<footer className="dialog-footer">
-							<button
-								className={editButtonStyle}
-								onClick={() => editTodo()}>
-								{uiEditButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+					</div>
+					<footer className="dialog-footer">
+						<button className={editButtonStyle} onClick={() => editTodo()}>
+							{uiEditButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

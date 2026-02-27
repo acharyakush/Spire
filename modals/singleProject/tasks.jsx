@@ -4,7 +4,6 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useState } from "react";
@@ -89,79 +88,35 @@ export function AddParticularRemark({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Add Particular & Remark</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] h-[510px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full h-[calc(100%-45px)] justify-between items-center">
-							<div className="flex flex-col w-full h-full px-5 pb-5 justify-between items-center">
-								<div className="flex flex-col w-full h-full py-5 space-y-2.5 justify-start items-center">
-									<DatePicker
-										icon={faCalendar}
-										label="Due On"
-										onChange={(e) => setInputs("dueOn", e)}
-										tabIndex={1}
-										value={main.dueOn}
-										width="w-full"
-									/>
-									<TextArea
-										icon={faListCheck}
-										key={1}
-										label="Particular"
-										onChange={(e) => setInputs("particular", e.target.value)}
-										onKeyDown={() => {}}
-										rows={2}
-										tabIndex={2}
-										value={main.particular}
-										width="w-full"
-									/>
-									<TextArea
-										icon={faStickyNote}
-										key={2}
-										label="Remark"
-										onChange={(e) => setInputs("remark", e.target.value)}
-										onKeyDown={() => {}}
-										rows={2}
-										tabIndex={3}
-										value={main.remark}
-										width="w-full"
-									/>
-								</div>
+				<DialogPanel className="w-100 h-[510px] transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full h-[calc(100%-45px)] justify-between items-center">
+						<div className="flex flex-col w-full h-full px-5 pb-5 justify-between items-center">
+							<div className="flex flex-col w-full h-full py-5 space-y-2.5 justify-start items-center">
+								<DatePicker icon={faCalendar} label="Due On" onChange={(e) => setInputs("dueOn", e)} tabIndex={1} value={main.dueOn} width="w-full" />
+								<TextArea icon={faListCheck} key={1} label="Particular" onChange={(e) => setInputs("particular", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={2} value={main.particular} width="w-full" />
+								<TextArea icon={faStickyNote} key={2} label="Remark" onChange={(e) => setInputs("remark", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={3} value={main.remark} width="w-full" />
 							</div>
-							<footer className="dialog-footer w-full">
-								<button
-									className={addButtonStyle}
-									onClick={() => doInsertion()}>
-									{uiButton()}
-								</button>
-							</footer>
 						</div>
-					</DialogPanel>
-				</Draggable>
+						<footer className="dialog-footer w-full">
+							<button className={addButtonStyle} onClick={() => doInsertion()}>
+								{uiButton()}
+							</button>
+						</footer>
+					</div>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -239,74 +194,33 @@ export function AddRVExpense({ mount, reload, project, tasks, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Add RV Expense</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full h-full justify-between items-center">
-							<div className="flex flex-col w-full h-full p-5 space-y-2.5 justify-start items-center">
-								<DatePicker
-									icon={faCalendar}
-									label="Date"
-									onChange={(e) => setInputs("entryDate", e)}
-									tabIndex={1}
-									value={main.entryDate}
-									width="w-full"
-								/>
-								<TextInput
-									icon={faIndianRupee}
-									label="Amount"
-									onChange={(e) => setInputs("expense", e.target.value)}
-									onKeyPress={() => {}}
-									tabIndex={2}
-									value={main.expense}
-									width="w-full"
-								/>
-								<TextArea
-									icon={faStickyNote}
-									label="Description"
-									onChange={(e) => setInputs("description", e.target.value)}
-									onKeyDown={() => {}}
-									rows={2}
-									tabIndex={3}
-									value={main.description}
-									width="w-full"
-								/>
-							</div>
-							<footer className="dialog-footer w-full">
-								<button
-									className="primary-button-condensed"
-									onClick={() => doInsertion()}>
-									{uiButton()}
-								</button>
-							</footer>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full h-full justify-between items-center">
+						<div className="flex flex-col w-full h-full p-5 space-y-2.5 justify-start items-center">
+							<DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryDate", e)} tabIndex={1} value={main.entryDate} width="w-full" />
+							<TextInput icon={faIndianRupee} label="Amount" onChange={(e) => setInputs("expense", e.target.value)} onKeyPress={() => {}} tabIndex={2} value={main.expense} width="w-full" />
+							<TextArea icon={faStickyNote} label="Description" onChange={(e) => setInputs("description", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={3} value={main.description} width="w-full" />
 						</div>
-					</DialogPanel>
-				</Draggable>
+						<footer className="dialog-footer w-full">
+							<button className="primary-button-condensed" onClick={() => doInsertion()}>
+								{uiButton()}
+							</button>
+						</footer>
+					</div>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -384,74 +298,33 @@ export function EditRVExpense({ mount, reload, project, rv, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Edit RV Expense</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full h-full justify-between items-center">
-							<div className="flex flex-col w-full h-full p-5 space-y-2.5 justify-start items-center">
-								<DatePicker
-									icon={faCalendar}
-									label="Date"
-									onChange={(e) => setInputs("entryDate", e)}
-									tabIndex={1}
-									value={main.entryDate}
-									width="w-full"
-								/>
-								<TextInput
-									icon={faIndianRupee}
-									label="Amount"
-									onChange={(e) => setInputs("expense", e.target.value)}
-									onKeyPress={() => {}}
-									tabIndex={2}
-									value={main.expense}
-									width="w-full"
-								/>
-								<TextArea
-									icon={faStickyNote}
-									label="Description"
-									onChange={(e) => setInputs("description", e.target.value)}
-									onKeyDown={() => {}}
-									rows={2}
-									tabIndex={3}
-									value={main.description}
-									width="w-full"
-								/>
-							</div>
-							<footer className="dialog-footer w-full">
-								<button
-									className="primary-button-condensed"
-									onClick={() => doEditing()}>
-									{uiButton()}
-								</button>
-							</footer>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full h-full justify-between items-center">
+						<div className="flex flex-col w-full h-full p-5 space-y-2.5 justify-start items-center">
+							<DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryDate", e)} tabIndex={1} value={main.entryDate} width="w-full" />
+							<TextInput icon={faIndianRupee} label="Amount" onChange={(e) => setInputs("expense", e.target.value)} onKeyPress={() => {}} tabIndex={2} value={main.expense} width="w-full" />
+							<TextArea icon={faStickyNote} label="Description" onChange={(e) => setInputs("description", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={3} value={main.description} width="w-full" />
 						</div>
-					</DialogPanel>
-				</Draggable>
+						<footer className="dialog-footer w-full">
+							<button className="primary-button-condensed" onClick={() => doEditing()}>
+								{uiButton()}
+							</button>
+						</footer>
+					</div>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -552,60 +425,35 @@ export function AddTask({ mount, reload, project, tasks, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Add Task</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] h-1/3 transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full h-[calc(100%-45px)] justify-between items-center">
-							<div className="flex flex-col w-full h-full p-5 justify-between items-center">
-								<TextInput
-									icon={faListCheck}
-									label="Task"
-									onChange={(e) => setInputs("task", e.target.value)}
-									onKeyPress={() => {}}
-									tabIndex={1}
-									value={main.task}
-									width="w-full"
-								/>
-								<div className={errorStyle}>
-									<FontAwesomeIcon icon={faFaceAngry} />
-									<span>{main.error}</span>
-								</div>
+				<DialogPanel className="w-100 h-1/3 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full h-[calc(100%-45px)] justify-between items-center">
+						<div className="flex flex-col w-full h-full p-5 justify-between items-center">
+							<TextInput icon={faListCheck} label="Task" onChange={(e) => setInputs("task", e.target.value)} onKeyPress={() => {}} tabIndex={1} value={main.task} width="w-full" />
+							<div className={errorStyle}>
+								<FontAwesomeIcon icon={faFaceAngry} />
+								<span>{main.error}</span>
 							</div>
-							<footer className="dialog-footer w-full">
-								<button
-									className={addButtonStyle}
-									onClick={() => doInsertion()}>
-									{uiButton()}
-								</button>
-							</footer>
 						</div>
-					</DialogPanel>
-				</Draggable>
+						<footer className="dialog-footer w-full">
+							<button className={addButtonStyle} onClick={() => doInsertion()}>
+								{uiButton()}
+							</button>
+						</footer>
+					</div>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -670,44 +518,27 @@ export function DeleteParticularRemark({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Delete Particular/Remark</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center font-regular-12">Do you want to delete the below particular & remark?</div>
-						<footer className="dialog-footer">
-							<button
-								className="primary-button-condensed"
-								onClick={() => doDeletion()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center font-regular-12">Do you want to delete the below particular & remark?</div>
+					<footer className="dialog-footer">
+						<button className="primary-button-condensed" onClick={() => doDeletion()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -778,57 +609,30 @@ export function DeleteTask({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Delete Task</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text">Are you sure you want to delete this task? You are required to write a reason below.</span>
-						<div className="flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center">
-							<TextArea
-								icon={faNoteSticky}
-								key={1}
-								label="Reason"
-								onChange={(e) => setReason(e.target.value)}
-								onKeyDown={() => {}}
-								rows={3}
-								tabIndex={1}
-								value={main.reason}
-								width="w-full"
-							/>
-						</div>
-						<footer className="dialog-footer">
-							<button
-								className={disableButtonStyle}
-								onClick={() => doDeletion()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text">Are you sure you want to delete this task? You are required to write a reason below.</span>
+					<div className="flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center">
+						<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={main.reason} width="w-full" />
+					</div>
+					<footer className="dialog-footer">
+						<button className={disableButtonStyle} onClick={() => doDeletion()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -923,75 +727,31 @@ export function EditParticularRemark({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Edit Particulars/Remarks</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
-							<DatePicker
-								icon={faCalendar}
-								label="Due On"
-								onChange={(e) => setInputs("dueOn", e)}
-								tabIndex={1}
-								value={main.dueOn}
-								width="w-full"
-							/>
-							<TextArea
-								icon={faListCheck}
-								key={1}
-								label="Particular"
-								onChange={(e) => setInputs("particular", e.target.value)}
-								onKeyDown={() => {}}
-								rows={2}
-								tabIndex={2}
-								value={main.particular}
-								width="w-full"
-							/>
-							<TextArea
-								icon={faStickyNote}
-								key={2}
-								label="Remark"
-								onChange={(e) => setInputs("remark", e.target.value)}
-								onKeyDown={() => {}}
-								rows={2}
-								tabIndex={3}
-								value={main.remark}
-								width="w-full"
-							/>
-						</div>
-						<footer className="dialog-footer">
-							<button
-								className="primary-button-condensed"
-								onClick={() => doEditing()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
+						<DatePicker icon={faCalendar} label="Due On" onChange={(e) => setInputs("dueOn", e)} tabIndex={1} value={main.dueOn} width="w-full" />
+						<TextArea icon={faListCheck} key={1} label="Particular" onChange={(e) => setInputs("particular", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={2} value={main.particular} width="w-full" />
+						<TextArea icon={faStickyNote} key={2} label="Remark" onChange={(e) => setInputs("remark", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={3} value={main.remark} width="w-full" />
+					</div>
+					<footer className="dialog-footer">
+						<button className="primary-button-condensed" onClick={() => doEditing()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -1083,56 +843,31 @@ export function EditTask({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Edit Task</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full justify-between items-center">
-							<div className="flex flex-col w-full h-full p-5 justify-start items-center">
-								<TextInput
-									icon={faListCheck}
-									label="Task"
-									onChange={(e) => setInputs("task", e.target.value)}
-									onKeyPress={() => {}}
-									tabIndex={1}
-									value={main.task}
-									width="w-full"
-								/>
-							</div>
-							<footer className="dialog-footer w-full">
-								<button
-									className="primary-button-condensed"
-									onClick={() => doEditing()}>
-									{uiButton()}
-								</button>
-							</footer>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full justify-between items-center">
+						<div className="flex flex-col w-full h-full p-5 justify-start items-center">
+							<TextInput icon={faListCheck} label="Task" onChange={(e) => setInputs("task", e.target.value)} onKeyPress={() => {}} tabIndex={1} value={main.task} width="w-full" />
 						</div>
-					</DialogPanel>
-				</Draggable>
+						<footer className="dialog-footer w-full">
+							<button className="primary-button-condensed" onClick={() => doEditing()}>
+								{uiButton()}
+							</button>
+						</footer>
+					</div>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -1248,57 +983,30 @@ export function EditTaskStatus({ mount, reload, task, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Edit Status</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount(false)}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<span className="flex w-full p-5 font-regular-12 black-text">{messageBody} You are required to write a reason below.</span>
-						<div className="flex flex-col w-full px-2.5 pb-5 justify-center items-center">
-							<TextArea
-								icon={faNoteSticky}
-								key={1}
-								label="Reason"
-								onChange={(e) => setReason(e.target.value)}
-								onKeyDown={() => {}}
-								rows={3}
-								tabIndex={1}
-								value={main.reason}
-								width="w-full"
-							/>
-						</div>
-						<footer className="dialog-footer">
-							<button
-								className={editButtonStyle}
-								onClick={() => doEditing()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<span className="flex w-full p-5 font-regular-12 black-text">{messageBody} You are required to write a reason below.</span>
+					<div className="flex flex-col w-full px-2.5 pb-5 justify-center items-center">
+						<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={main.reason} width="w-full" />
+					</div>
+					<footer className="dialog-footer">
+						<button className={editButtonStyle} onClick={() => doEditing()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -1373,57 +1081,30 @@ export function MarkSubTaskCompleted({ mount, reload, remark, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Mark Sub Task Completed</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text">Are you sure you want to mark this sub task as completed? You are required to write a completion reason below.</span>
-						<div className="flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center">
-							<TextArea
-								icon={faNoteSticky}
-								key={1}
-								label="Reason"
-								onChange={(e) => setReason(e.target.value)}
-								onKeyDown={() => {}}
-								rows={3}
-								tabIndex={1}
-								value={main.reason}
-								width="w-full"
-							/>
-						</div>
-						<footer className="dialog-footer">
-							<button
-								className={disableButtonStyle}
-								onClick={() => doMarking()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text">Are you sure you want to mark this sub task as completed? You are required to write a completion reason below.</span>
+					<div className="flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center">
+						<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={main.reason} width="w-full" />
+					</div>
+					<footer className="dialog-footer">
+						<button className={disableButtonStyle} onClick={() => doMarking()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

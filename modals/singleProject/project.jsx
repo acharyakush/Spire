@@ -3,7 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
@@ -12,17 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, Spinner, SpinnerBig } from "@/components/Elements";
 import { ComboBox2, TextArea, TextInput } from "@/components/Inputs";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import {
-	faCirclePlus,
-	faIdCardClip,
-	faIndianRupee,
-	faIndianRupeeSign,
-	faLinkSlash,
-	faNoteSticky,
-	faStickyNote,
-	faUserGroup,
-	faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCirclePlus, faIdCardClip, faIndianRupee, faIndianRupeeSign, faLinkSlash, faNoteSticky, faStickyNote, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 	// Business Logic
@@ -69,8 +58,7 @@ export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 			if (response.status === 200) {
 				reloadTasks();
 
-				const successMessage =
-					selectedTask.status == MyConstants.Statuses.Tasks.Disable ? MyConstants.Messages.TaskDisabled : MyConstants.Messages.TaskEnabled;
+				const successMessage = selectedTask.status == MyConstants.Statuses.Tasks.Disable ? MyConstants.Messages.TaskDisabled : MyConstants.Messages.TaskEnabled;
 
 				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Tasks);
 				MyGlobal.ShowSuccessToast(successMessage);
@@ -120,30 +108,18 @@ export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text" dangerouslySetInnerHTML={{ __html: messageBody }} />
-						<div className={reasonBoxStyle}>
-							<TextArea
-								icon={faNoteSticky}
-								key={1}
-								label="Reason"
-								onChange={(e) => setReason(e.target.value)}
-								onKeyDown={() => {}}
-								rows={3}
-								tabIndex={1}
-								value={state.reason}
-								width="w-full"
-							/>
-						</div>
-						<footer className="dialog-footer">
-							<button className={disableButtonStyle} onClick={() => editStatus()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text" dangerouslySetInnerHTML={{ __html: messageBody }} />
+					<div className={reasonBoxStyle}>
+						<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={state.reason} width="w-full" />
+					</div>
+					<footer className="dialog-footer">
+						<button className={disableButtonStyle} onClick={() => editStatus()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -181,10 +157,7 @@ export function EditQuote({ mount, project, reload, unmount }) {
 			if (response.status === 200) {
 				reload(project.id);
 
-				MyGlobal.AddActivity(
-					`Edited quote of <b>${project.id}</b> from <b>${project.quote}</b> to <b>${main.quote}</b>.`,
-					MyConstants.Modules.Base.Projects,
-				);
+				MyGlobal.AddActivity(`Edited quote of <b>${project.id}</b> from <b>${project.quote}</b> to <b>${main.quote}</b>.`, MyConstants.Modules.Base.Projects);
 
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.QuoteEdited);
 			} else {
@@ -233,39 +206,18 @@ export function EditQuote({ mount, project, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded shadow contrast-background">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
-							<TextInput
-								icon={faIndianRupeeSign}
-								isReadOnly
-								key={1}
-								label="Current Quote"
-								onChange={() => {}}
-								onKeyPress={() => {}}
-								tabIndex={1}
-								value={project.quote}
-								width="w-full"
-							/>
-							<TextInput
-								icon={faIndianRupeeSign}
-								key={2}
-								label="New Quote"
-								onChange={(e) => setQuote(e.target.value)}
-								onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-								tabIndex={2}
-								value={main.quote}
-								width="w-full"
-							/>
-						</div>
-						<footer className="dialog-footer">
-							<button className={editButtonStyle} onClick={() => doQuoteEditing()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded shadow contrast-background">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
+						<TextInput icon={faIndianRupeeSign} isReadOnly key={1} label="Current Quote" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={project.quote} width="w-full" />
+						<TextInput icon={faIndianRupeeSign} key={2} label="New Quote" onChange={(e) => setQuote(e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={main.quote} width="w-full" />
+					</div>
+					<footer className="dialog-footer">
+						<button className={editButtonStyle} onClick={() => doQuoteEditing()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -281,9 +233,7 @@ export function ManageGovernmentId({ mount, project, reload, unmount }) {
 		isLoading: false,
 	});
 
-	const activityMessage = isTypeAdd
-		? `Added government id <b>${main.id}</b> in <b>${project.id}</b>.`
-		: `Edited government id of <b>${project.id}</b> to <b>${main.id}</b> from <b>${project.government_id}</b>.`;
+	const activityMessage = isTypeAdd ? `Added government id <b>${main.id}</b> in <b>${project.id}</b>.` : `Edited government id of <b>${project.id}</b> to <b>${main.id}</b> from <b>${project.government_id}</b>.`;
 
 	const successMessage = isTypeAdd ? MyConstants.Messages.GovernmentIdAdded : MyConstants.Messages.GovernmentIdEdited;
 
@@ -360,39 +310,18 @@ export function ManageGovernmentId({ mount, project, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
-							{!isTypeAdd && (
-								<TextInput
-									icon={faIdCardClip}
-									isReadOnly
-									label="Current Government ID"
-									onChange={() => {}}
-									onKeyPress={() => {}}
-									tabIndex={1}
-									value={project.government_id}
-									width="w-full"
-								/>
-							)}
-							<TextInput
-								icon={faIdCardClip}
-								label="New Government ID"
-								onChange={(e) => setInput(e.target.value)}
-								onKeyPress={() => {}}
-								tabIndex={2}
-								value={main.id}
-								width="w-full"
-							/>
-						</div>
-						<footer className="dialog-footer">
-							<button className={buttonStyle} onClick={() => doIdManagement()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
+						{!isTypeAdd && <TextInput icon={faIdCardClip} isReadOnly label="Current Government ID" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={project.government_id} width="w-full" />}
+						<TextInput icon={faIdCardClip} label="New Government ID" onChange={(e) => setInput(e.target.value)} onKeyPress={() => {}} tabIndex={2} value={main.id} width="w-full" />
+					</div>
+					<footer className="dialog-footer">
+						<button className={buttonStyle} onClick={() => doIdManagement()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -472,13 +401,9 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 					let totalFees = 0;
 					let totalPaid = 0;
 
-					response.data.projects
-						.filter((f) => f.affiliate_id === fe && f.client_id === project.client_id && f.project_id === project.id)
-						.forEach((_fe) => (totalFees += Number(_fe.total_fees)));
+					response.data.projects.filter((f) => f.affiliate_id === fe && f.client_id === project.client_id && f.project_id === project.id).forEach((_fe) => (totalFees += Number(_fe.total_fees)));
 
-					response.data.transactions
-						.filter((f) => f.affiliate_id === fe && f.project_id === project.id)
-						.forEach((_fe) => (totalPaid += Number(_fe.amount)));
+					response.data.transactions.filter((f) => f.affiliate_id === fe && f.project_id === project.id).forEach((_fe) => (totalPaid += Number(_fe.amount)));
 
 					mapped.push({
 						...object,
@@ -515,7 +440,7 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 			: api.affiliates.copy.filter((f) => {
 					const isSelected = main.selected.some((_f) => _f.id === f.id);
 					return !isSelected;
-			  });
+				});
 	}
 
 	async function doMapping() {
@@ -587,41 +512,11 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 
 	// UI Components
 	function uiAffiliates() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.affiliate.name}
-				displayValue="name"
-				filteredData={getFilteredList}
-				hasDataObject
-				icon={faUserGroup}
-				isReadOnly={false}
-				label="Affiliates"
-				onChange={(e) => setAffiliate(e)}
-				onClick={() => {}}
-				onInputChange={(e) => setInputs("find", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={main.affiliate.name}
-				tabIndex={1}
-				value={main.affiliate.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.affiliate.name} displayValue="name" filteredData={getFilteredList} hasDataObject icon={faUserGroup} isReadOnly={false} label="Affiliates" onChange={(e) => setAffiliate(e)} onClick={() => {}} onInputChange={(e) => setInputs("find", e.target.value)} onKeyPress={() => {}} searchedItem={main.affiliate.name} tabIndex={1} value={main.affiliate.name} width="w-full" />;
 	}
 
 	function uiFees() {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				label="Fees"
-				onChange={(e) => setFees(e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={2}
-				value={main.affiliate.fees}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} label="Fees" onChange={(e) => setFees(e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={main.affiliate.fees} width="w-full" />;
 	}
 
 	function uiHeaders() {
@@ -644,9 +539,7 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 				<span className={style}>{row.name}</span>
 				<span className={style}>{row.paid}</span>
 				<span className={style}>{row.fees}</span>
-				<div
-					className={`${style} cursor-pointer red-text space-x-2.5 hover:underline hover:underline-offset-8 hover:decoration-[--red]`}
-					onClick={() => toggleUnmapAffiliate(row)}>
+				<div className={`${style} cursor-pointer red-text space-x-2.5 hover:underline hover:underline-offset-8 hover:decoration-[--red]`} onClick={() => toggleUnmapAffiliate(row)}>
 					<FontAwesomeIcon icon={faLinkSlash} />
 					<span>Unmap</span>
 				</div>
@@ -671,9 +564,7 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 								<Badge value={api.mapped.length} />
 							</div>
 							<span className="flex w-full px-4 justify-center items-center rounded-tl rounded-tr primary-background">{uiHeaders()}</span>
-							<div className="flex flex-col w-full h-[calc(100%-100px)] p-2 space-y-2 rounded-bl rounded-br overflow-y-auto bottom-shadow full-border primary-background-transparent-01 scrollbar-gutter">
-								{api.mapped.map((m, i) => uiRows(m, i))}
-							</div>
+							<div className="flex flex-col w-full h-[calc(100%-100px)] p-2 space-y-2 rounded-bl rounded-br overflow-y-auto bottom-shadow full-border primary-background-transparent-01 scrollbar-gutter">{api.mapped.map((m, i) => uiRows(m, i))}</div>
 						</div>
 					)}
 					<div className="flex flex-col w-full h-full justify-start items-center">
@@ -682,16 +573,9 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 							<div className="flex w-full space-x-5 justify-center items-center">
 								{uiAffiliates()}
 								{uiFees()}
-								<FontAwesomeIcon
-									className="cursor-pointer relative top-2.5 primary-text"
-									icon={faCirclePlus}
-									onClick={() => addAffiliate()}
-									size="2xl"
-								/>
+								<FontAwesomeIcon className="cursor-pointer relative top-2.5 primary-text" icon={faCirclePlus} onClick={() => addAffiliate()} size="2xl" />
 							</div>
-							<div className="flex w-full px-2.5 py-5 space-x-5 justify-start items-center rounded bottom-shadow full-border primary-background-transparent-01">
-								{uiSelected()}
-							</div>
+							<div className="flex w-full px-2.5 py-5 space-x-5 justify-start items-center rounded bottom-shadow full-border primary-background-transparent-01">{uiSelected()}</div>
 						</div>
 					</div>
 				</div>
@@ -715,9 +599,7 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 		return main.selected.map((m, i) => {
 			if (m.id != 0) {
 				return (
-					<div
-						className="flex w-fit px-2 py-1 space-x-5 justify-between items-center rounded shadow contrast-background font-medium-12 primary-border primary-text"
-						key={i}>
+					<div className="flex w-fit px-2 py-1 space-x-5 justify-between items-center rounded shadow contrast-background font-medium-12 primary-border primary-text" key={i}>
 						<div className="flex w-full p-2.5 space-x-2.5 justify-between items-center">
 							<span>{m.name}</span>
 							<Badge value={MyGlobal.ThousandSeparator(m.fees)} />
@@ -748,26 +630,16 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className={mainWrapper}>
-						{uiTitleBar()}
-						<div className="flex flex-col w-full h-[calc(100%-95px)] justify-between items-center">{uiMain()}</div>
-						<footer className="dialog-footer w-full">
-							<button className={manageButtonStyle} onClick={() => doMapping()}>
-								{uiManage()}
-							</button>
-						</footer>
-						{mounted.unmapAffiliate && (
-							<UnmapAffiliate
-								mount={mounted.unmapAffiliate}
-								affiliate={main.selectedAffiliate}
-								project={project}
-								reload={reload}
-								unmount={toggleUnmapAffiliate}
-							/>
-						)}
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className={mainWrapper}>
+					{uiTitleBar()}
+					<div className="flex flex-col w-full h-[calc(100%-95px)] justify-between items-center">{uiMain()}</div>
+					<footer className="dialog-footer w-full">
+						<button className={manageButtonStyle} onClick={() => doMapping()}>
+							{uiManage()}
+						</button>
+					</footer>
+					{mounted.unmapAffiliate && <UnmapAffiliate mount={mounted.unmapAffiliate} affiliate={main.selectedAffiliate} project={project} reload={reload} unmount={toggleUnmapAffiliate} />}
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -818,10 +690,7 @@ export function UnmapAffiliate({ mount, affiliate, project, reload, unmount }) {
 			if (response.status === 200) {
 				reload(project.id);
 
-				MyGlobal.AddActivity(
-					`Unmapped affiliate <b>${affiliate.id}</b> from <b>${project.id}</b> due to <b>${main.reason}</b>.`,
-					MyConstants.Modules.Base.Affiliates,
-				);
+				MyGlobal.AddActivity(`Unmapped affiliate <b>${affiliate.id}</b> from <b>${project.id}</b> due to <b>${main.reason}</b>.`, MyConstants.Modules.Base.Affiliates);
 
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.AffiliateUnmapped);
 			} else {
@@ -870,31 +739,18 @@ export function UnmapAffiliate({ mount, affiliate, project, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded shadow contrast-background">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full p-5 space-y-2 justify-center items-center">
-							<span className="block w-full pl-2.5 font-regular-11 black-text">
-								Are you sure you want to unmap this affiliate? You are required to write a reason below.
-							</span>
-							<TextArea
-								icon={faStickyNote}
-								label="Reason"
-								onChange={(e) => setReason(e.target.value)}
-								onKeyDown={() => {}}
-								rows="3"
-								tabIndex="1"
-								value={main.reason}
-								width="w-full"
-							/>
-						</div>
-						<footer className="dialog-footer">
-							<button className={unmapButtonStyle} onClick={() => doUnmapping()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded shadow contrast-background">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full p-5 space-y-2 justify-center items-center">
+						<span className="block w-full pl-2.5 font-regular-11 black-text">Are you sure you want to unmap this affiliate? You are required to write a reason below.</span>
+						<TextArea icon={faStickyNote} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows="3" tabIndex="1" value={main.reason} width="w-full" />
+					</div>
+					<footer className="dialog-footer">
+						<button className={unmapButtonStyle} onClick={() => doUnmapping()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

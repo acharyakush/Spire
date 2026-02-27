@@ -4,7 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import writeXlsxFile from "write-excel-file";
+import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 import NewTransaction from "@/modals/cashFlows/vendors/NewTransaction";
@@ -16,17 +16,7 @@ import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-	faCalendar,
-	faChevronRight,
-	faExclamationTriangle,
-	faFileExcel,
-	faMultiply,
-	faPlusCircle,
-	faSearch,
-	faSortAmountAsc,
-	faSortAmountDesc,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronRight, faExclamationTriangle, faFileExcel, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 export default function Transactions({ head, reload, unmount }) {
 	// Business Logic
@@ -77,17 +67,7 @@ export default function Transactions({ head, reload, unmount }) {
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
-			records.push(
-				dayjs(fe.entry_at).format("DD-MM-YYYY"),
-				fe.firm_name,
-				fe.bank_name,
-				fe.amount,
-				fe.particulars,
-				fe.bank_name,
-				fe.payment_type,
-				fe.remarks,
-				fe.entry_by_name,
-			);
+			records.push(dayjs(fe.entry_at).format("DD-MM-YYYY"), fe.firm_name, fe.bank_name, fe.amount, fe.particulars, fe.bank_name, fe.payment_type, fe.remarks, fe.entry_by_name);
 		});
 
 		records.forEach((fe) => {
@@ -159,16 +139,7 @@ export default function Transactions({ head, reload, unmount }) {
 				const paymentType = String(f.payment_type).toLowerCase();
 				const remarks = String(f.remarks).toLowerCase();
 
-				return (
-					amount.includes(findTerm) ||
-					entryByName.includes(findTerm) ||
-					firmName.includes(findTerm) ||
-					bankName.includes(findTerm) ||
-					particulars.includes(findTerm) ||
-					paymentSource.includes(findTerm) ||
-					paymentType.includes(findTerm) ||
-					remarks.includes(findTerm)
-				);
+				return amount.includes(findTerm) || entryByName.includes(findTerm) || firmName.includes(findTerm) || bankName.includes(findTerm) || particulars.includes(findTerm) || paymentSource.includes(findTerm) || paymentType.includes(findTerm) || remarks.includes(findTerm);
 			}
 		});
 
@@ -244,10 +215,7 @@ export default function Transactions({ head, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(
-				MyConstants.ApiEndpoints.Vendors.GetTransactionsSupportData,
-				MyGlobal.GetHeaders({ headId: head.id, vendorId: head.vendorId }),
-			);
+			const response = await axios.get(MyConstants.ApiEndpoints.Vendors.GetTransactionsSupportData, MyGlobal.GetHeaders({ headId: head.id, vendorId: head.vendorId }));
 
 			if (response.status === 200) {
 				const transactions = response.data.transactions.map((m) => {
@@ -295,10 +263,7 @@ export default function Transactions({ head, reload, unmount }) {
 				});
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(
-				error,
-				`${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Base.Vendors} => ${MyConstants.Modules.Derived.NewVendor} => Add Transaction`,
-			);
+			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Base.Vendors} => ${MyConstants.Modules.Derived.NewVendor} => Add Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -354,19 +319,7 @@ export default function Transactions({ head, reload, unmount }) {
 	}
 
 	function uiFind() {
-		return (
-			<TextInputNative
-				id="findBox"
-				icon={faSearch}
-				onChange={(e) => setFind("transaction", e.target.value)}
-				onClearButtonClick={() => setFind("transaction", "")}
-				placeholder="Find"
-				showClearButton={findClearButtonStyle}
-				tabIndex="3"
-				value={other.find.transaction}
-				width="w-36"
-			/>
-		);
+		return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setFind("transaction", e.target.value)} onClearButtonClick={() => setFind("transaction", "")} placeholder="Find" showClearButton={findClearButtonStyle} tabIndex="3" value={other.find.transaction} width="w-36" />;
 	}
 
 	function uiFooter() {
@@ -398,23 +351,9 @@ export default function Transactions({ head, reload, unmount }) {
 
 	function uiFromDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.date.to}
-					onChange={(e) => setFind("from", e)}
-					peekNextMonth
-					placeholderText="From"
-					selected={other.find.date.from}
-					selectsStart
-					startDate={other.find.date.from}
-					showMonthDropdown
-					showYearDropdown
-					tabIndex="1"
-				/>
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.date.to} onChange={(e) => setFind("from", e)} peekNextMonth placeholderText="From" selected={other.find.date.from} selectsStart startDate={other.find.date.from} showMonthDropdown showYearDropdown tabIndex="1" />
 				<FontAwesomeIcon className={fromDateClearButtonStyle} onClick={() => setFind("from", "")} icon={faMultiply} />
 			</div>
 		);
@@ -441,9 +380,7 @@ export default function Transactions({ head, reload, unmount }) {
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-1/2 space-x-2 justify-start items-center">
 						<div className="flex w-full space-x-2.5 justify-start items-center">
-							<span
-								className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
-								onClick={() => unmount()}>
+							<span className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading" onClick={() => unmount()}>
 								{MyConstants.Modules.Base.Vendors}
 							</span>
 							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
@@ -532,23 +469,9 @@ export default function Transactions({ head, reload, unmount }) {
 
 	function uiToDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.date.to}
-					onChange={(e) => setFind("to", e)}
-					placeholderText="To"
-					peekNextMonth
-					selected={other.find.date.to}
-					selectsEnd
-					startDate={other.find.date.to}
-					showMonthDropdown
-					showYearDropdown
-					tabIndex="2"
-				/>
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.date.to} onChange={(e) => setFind("to", e)} placeholderText="To" peekNextMonth selected={other.find.date.to} selectsEnd startDate={other.find.date.to} showMonthDropdown showYearDropdown tabIndex="2" />
 				<FontAwesomeIcon className={toDateClearButtonStyle} onClick={() => setFind("to", "")} icon={faMultiply} />
 			</div>
 		);
@@ -572,12 +495,7 @@ export default function Transactions({ head, reload, unmount }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start">
 					<div className="flex w-full h-9 justify-center items-center primary-background primary-border">{uiHeaders()}</div>
-					<Virtuoso
-						className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background"
-						data={doSorting()}
-						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.transactions.copy.length}
-					/>
+					<Virtuoso className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.transactions.copy.length} />
 					<div className="flex w-full h-9 justify-center items-center primary-border primary-background">{uiFooter()}</div>
 				</div>
 			);
@@ -602,14 +520,7 @@ export default function Transactions({ head, reload, unmount }) {
 		<>
 			{uiMain()}
 
-			{mounted.editTransaction && (
-				<EditTransaction
-					mount={mounted.editTransaction}
-					reload={getSupportData}
-					transaction={other.selectedTransaction}
-					unmount={toggleEditTransaction}
-				/>
-			)}
+			{mounted.editTransaction && <EditTransaction mount={mounted.editTransaction} reload={getSupportData} transaction={other.selectedTransaction} unmount={toggleEditTransaction} />}
 
 			{mounted.newTransaction && <NewTransaction head={head} mount={mounted.newTransaction} reload={getSupportData} unmount={toggleNewTransaction} />}
 		</>

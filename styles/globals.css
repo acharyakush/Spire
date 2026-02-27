@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 @font-face {
 	font-family: "Regular";
 	src: url("/fonts/inter/regular.woff2") format("woff2");
@@ -37,8 +39,6 @@
 	--semibold: "SemiBold", Arial, sans-serif;
 }
 
-@tailwind base;
-
 @layer base {
 	img {
 		@apply inline-block;
@@ -48,7 +48,15 @@
 	}
 
 	body.production-font-features {
-		font-feature-settings: "cpsp" 1, "cv05" 1, "cv06" 1, "cv08" 1, "cv11" 1, "cv13" 1, "kern" 1, "ss03" 1;
+		font-feature-settings:
+			"cpsp" 1,
+			"cv05" 1,
+			"cv06" 1,
+			"cv08" 1,
+			"cv11" 1,
+			"cv13" 1,
+			"kern" 1,
+			"ss03" 1;
 	}
 }
 
@@ -57,9 +65,6 @@
 		text-wrap: balance;
 	}
 }
-
-@tailwind components;
-@tailwind utilities;
 
 [app-theme="light"] {
 	--contrast: #fff;
@@ -107,7 +112,7 @@
 
 body,
 html {
-	@apply bg-[var(--primary-transparent-01)] m-0 p-0;
+	@apply bg-(--primary-transparent-01) m-0 p-0;
 	-moz-osx-font-smoothing: auto;
 	font-synthesis: none;
 	scrollbar-width: thin;
@@ -118,7 +123,7 @@ html {
 }
 
 .black-text {
-	@apply text-[var(--text)];
+	@apply text-(--text);
 }
 
 .blink {
@@ -157,35 +162,35 @@ html {
 }
 
 .blue-background {
-	@apply bg-[var(--blue)];
+	@apply bg-(--blue);
 }
 
 .blue-background-transparent-01 {
-	@apply bg-[var(--blue-transparent-01)];
+	@apply bg-(--blue-transparent-01);
 }
 
 .contrast-background {
-	@apply bg-[var(--contrast)];
+	@apply bg-(--contrast);
 }
 
 .gray-background {
-	@apply bg-[var(--gray)];
+	@apply bg-(--gray);
 }
 
 .gray-background-transparent-01 {
-	@apply bg-[var(--gray-transparent-01)];
+	@apply bg-(--gray-transparent-01);
 }
 
 .gray-background-transparent-02 {
-	@apply bg-[var(--gray-transparent-02)];
+	@apply bg-(--gray-transparent-02);
 }
 
 .gray-background-transparent-05 {
-	@apply bg-[var(--gray-transparent-05)];
+	@apply bg-(--gray-transparent-05);
 }
 
 .green-background {
-	@apply bg-[var(--green)];
+	@apply bg-(--green);
 }
 
 .green-background-gradient {
@@ -193,23 +198,23 @@ html {
 }
 
 .green-background-transparent-01 {
-	@apply bg-[var(--green-transparent-10)];
+	@apply bg-(--green-transparent-10);
 }
 
 .green-background-transparent-50 {
-	@apply bg-[var(--green-transparent-50)];
+	@apply bg-(--green-transparent-50);
 }
 
 .logo-green-background {
-	@apply bg-[var(--logo-green)];
+	@apply bg-(--logo-green);
 }
 
 .logo-green-background-transparent-01 {
-	@apply bg-[var(--logo-green-transparent-01)];
+	@apply bg-(--logo-green-transparent-01);
 }
 
 .orange-background {
-	@apply bg-[var(--orange)];
+	@apply bg-(--orange);
 }
 
 .orange-background-gradient {
@@ -217,11 +222,11 @@ html {
 }
 
 .orange-background-transparent-01 {
-	@apply bg-[var(--orange-transparent-01)];
+	@apply bg-(--orange-transparent-01);
 }
 
 .primary-background {
-	@apply bg-[var(--primary)];
+	@apply bg-(--primary);
 }
 
 .primary-background-gradient {
@@ -229,23 +234,23 @@ html {
 }
 
 .primary-background-transparent-005 {
-	@apply bg-[var(--primary-transparent-005)];
+	@apply bg-(--primary-transparent-005);
 }
 
 .primary-background-transparent-01 {
-	@apply bg-[var(--primary-transparent-01)];
+	@apply bg-(--primary-transparent-01);
 }
 
 .primary-background-transparent-05 {
-	@apply bg-[var(--primary-transparent-05)];
+	@apply bg-(--primary-transparent-05);
 }
 
 .primary-light-background {
-	@apply bg-[var(--primary-light)];
+	@apply bg-(--primary-light);
 }
 
 .red-background {
-	@apply bg-[var(--red)];
+	@apply bg-(--red);
 }
 
 .red-background-gradient {
@@ -253,11 +258,11 @@ html {
 }
 
 .red-background-transparent-01 {
-	@apply bg-[var(--red-transparent-01)];
+	@apply bg-(--red-transparent-01);
 }
 
 .yellow-background {
-	@apply bg-[var(--yellow)];
+	@apply bg-(--yellow);
 }
 
 .yellow-background-gradient {
@@ -265,7 +270,7 @@ html {
 }
 
 .yellow-background-transparent-01 {
-	@apply bg-[var(--yellow-transparent-01)];
+	@apply bg-(--yellow-transparent-01);
 }
 
 /*******************/
@@ -275,35 +280,35 @@ html {
 /*******************/
 
 .blue-border {
-	@apply border border-[var(--blue)];
+	@apply border border-(--blue);
 }
 
 .bottom-border {
-	@apply border-b border-b-[var(--primary-border)];
+	@apply border-b border-b-(--primary-border);
 }
 
 .full-border {
-	@apply border border-[var(--primary-border)];
+	@apply border border-(--primary-border);
 }
 
 .gray-border {
-	@apply border border-[var(--gray)];
+	@apply border border-(--gray);
 }
 
 .green-border {
-	@apply border border-[var(--green)];
+	@apply border border-(--green);
 }
 
 .left-border {
-	@apply border-l border-[var(--primary-border)];
+	@apply border-l border-(--primary-border);
 }
 
 .logo-green-border {
-	@apply border border-[var(--logo-green)];
+	@apply border border-(--logo-green);
 }
 
 .logo-green-border-colour {
-	@apply border-[var(--logo-green)];
+	@apply border-(--logo-green);
 }
 
 .no-right-border {
@@ -315,47 +320,47 @@ html {
 }
 
 .orange-border {
-	@apply border border-[var(--orange)];
+	@apply border border-(--orange);
 }
 
 .primary-border {
-	@apply border border-[var(--primary)];
+	@apply border border-(--primary);
 }
 
 .primary-border-colour {
-	@apply border-[var(--primary)];
+	@apply border-(--primary);
 }
 
 .primary-bottom-border-transparent-05 {
-	@apply border-b-2 border-[var(--primary-transparent-05)];
+	@apply border-b-2 border-(--primary-transparent-05);
 }
 
 .primary-horizontal-border {
-	@apply border-l border-r border-[var(--primary)];
+	@apply border-l border-r border-(--primary);
 }
 
 .red-border {
-	@apply border border-[var(--red)];
+	@apply border border-(--red);
 }
 
 .red-bottom-border {
-	@apply border-b border-b-[var(--red)];
+	@apply border-b border-b-(--red);
 }
 
 .red-bottom-border-transparent-05 {
-	@apply border-b-2 border-[var(--red-transparent-05)];
+	@apply border-b-2 border-(--red-transparent-05);
 }
 
 .right-border {
-	@apply border-r border-[var(--primary-border)];
+	@apply border-r border-(--primary-border);
 }
 
 .top-border {
-	@apply border-t border-t-[var(--primary-border)];
+	@apply border-t border-t-(--primary-border);
 }
 
 .yellow-border {
-	@apply border border-[var(--yellow)];
+	@apply border border-(--yellow);
 }
 
 /*******************/
@@ -365,43 +370,43 @@ html {
 /*******************/
 
 .black-text {
-	@apply text-[var(--white)];
+	@apply text-(--white);
 }
 
 .blue-text {
-	@apply text-[var(--blue)];
+	@apply text-(--blue);
 }
 
 .gray-text {
-	@apply text-[var(--gray)];
+	@apply text-(--gray);
 }
 
 .green-text {
-	@apply text-[var(--green)];
+	@apply text-(--green);
 }
 
 .light-slate-gray-text {
-	@apply text-[var(--light-slate-gray)];
+	@apply text-(--light-slate-gray);
 }
 
 .logo-green-text {
-	@apply text-[var(--logo-green)];
+	@apply text-(--logo-green);
 }
 
 .orange-text {
-	@apply text-[var(--orange)];
+	@apply text-(--orange);
 }
 
 .primary-text {
-	@apply text-[var(--primary)];
+	@apply text-(--primary);
 }
 
 .red-text {
-	@apply text-[var(--red)];
+	@apply text-(--red);
 }
 
 .red-text-important {
-	@apply !text-[var(--red)];
+	@apply text-(--red)!;
 }
 
 /*****************/
@@ -637,39 +642,39 @@ html {
 /******************/
 
 .blue-tag {
-	@apply bg-[var(--blue)] py-0.5 px-1.5 rounded text-white;
+	@apply bg-(--blue) py-0.5 px-1.5 rounded text-white;
 }
 
 .blue-tag-transparent-01 {
-	@apply bg-[var(--blue-transparent-01)] border border-[var(--blue)] py-0.5 px-1.5 rounded text-[var(--blue)];
+	@apply bg-(--blue-transparent-01) border border-(--blue) py-0.5 px-1.5 rounded text-(--blue);
 }
 
 .gray-tag-transparent-01 {
-	@apply bg-[var(--gray-transparent-01)] border border-[var(--gray-transparent-05)] px-3 py-1 rounded-full text-[var(--gray)];
+	@apply bg-(--gray-transparent-01) border border-(--gray-transparent-05) px-3 py-1 rounded-full text-(--gray);
 }
 
 .green-tag {
-	@apply bg-[var(--green)] py-0.5 px-1.5 rounded text-white;
+	@apply bg-(--green) py-0.5 px-1.5 rounded text-white;
 }
 
 .green-tag-transparent-01 {
-	@apply bg-[var(--green-transparent-10)] border border-[var(--green-transparent-50)] py-1 px-3 rounded-full text-[var(--green)];
+	@apply bg-(--green-transparent-10) border border-(--green-transparent-50) py-1 px-3 rounded-full text-(--green);
 }
 
 .green-tag-transparent-02 {
-	@apply bg-[var(--green-transparent-10)] border border-[var(--green)] p-1 rounded text-xs text-[var(--green)];
+	@apply bg-(--green-transparent-10) border border-(--green) p-1 rounded text-xs text-(--green);
 }
 
 .orange-tag {
-	@apply bg-[var(--orange)] py-0.5 px-1.5 rounded text-white;
+	@apply bg-(--orange) py-0.5 px-1.5 rounded text-white;
 }
 
 .orange-tag-transparent-01 {
-	@apply bg-[var(--orange-transparent-01)] border border-[var(--orange-transparent-10)] py-1 px-3 rounded-full text-[var(--orange)];
+	@apply bg-(--orange-transparent-01) border border-(--orange-transparent-10) py-1 px-3 rounded-full text-(--orange);
 }
 
 .primary-tag-transparent-01 {
-	@apply bg-[var(--primary-transparent-01)] border border-[var(--primary)] p-1 rounded text-xs text-[var(--primary)];
+	@apply bg-(--primary-transparent-01) border border-(--primary) p-1 rounded text-xs text-(--primary);
 	font-family: var(--regular);
 }
 
@@ -678,12 +683,12 @@ html {
 }
 
 .red-tag-transparent-01 {
-	@apply bg-[var(--red-transparent-01)] border border-[var(--red)] p-1 rounded text-xs text-[var(--red)];
+	@apply bg-(--red-transparent-01) border border-(--red) p-1 rounded text-xs text-(--red);
 	font-family: var(--regular);
 }
 
 .red-tag-transparent-02 {
-	@apply bg-[var(--red-transparent-01)] border border-[var(--red-transparent-05)] py-1 px-3 rounded-full text-[var(--red)];
+	@apply bg-(--red-transparent-01) border border-(--red-transparent-05) py-1 px-3 rounded-full text-(--red);
 }
 
 /*******************/
@@ -693,17 +698,17 @@ html {
 /*******************/
 
 .primary-button-condensed {
-	@apply bg-[var(--primary)] border border-[var(--primary)] flex h-7 justify-center items-center outline-none px-4 relative rounded select-none space-x-2.5 text-[12pt] text-white;
+	@apply bg-(--primary) border border-(--primary) flex h-7 justify-center items-center outline-none px-4 relative rounded select-none space-x-2.5 text-[12pt] text-white;
 	font-family: var(--regular);
 }
 
 .primary-button-transparent-background {
-	@apply bg-[var(--primary-transparent-01)] border flex primary-border h-7 items-center justify-center outline-none px-2 rounded select-none space-x-2.5 text-sm text-[var(--primary)];
+	@apply bg-(--primary-transparent-01) border border-(--primary) flex h-7 items-center justify-center outline-none px-2 rounded select-none space-x-2.5 text-sm text-(--primary);
 	font-family: var(--medium);
 }
 
 .primary-button-wide {
-	@apply bg-[var(--primary)] block border border-[var(--primary)] h-9 outline-none relative rounded select-none text-[12pt] text-white w-full;
+	@apply bg-(--primary) block border border-(--primary) h-9 outline-none relative rounded select-none text-[12pt] text-white w-full;
 	font-family: var(--regular);
 }
 
@@ -716,7 +721,7 @@ html {
 }
 
 .red-button-transparent-background {
-	@apply bg-[var(--red-transparent-01)] border flex red-border h-7 items-center justify-center outline-none px-2 rounded select-none space-x-2.5 text-sm text-[var(--red)];
+	@apply bg-(--red-transparent-01) border border-(--red) flex h-7 items-center justify-center outline-none px-2 rounded select-none space-x-2.5 text-sm text-(--red);
 	font-family: var(--medium);
 }
 
@@ -727,9 +732,15 @@ html {
 /*********************/
 
 .bottom-shadow {
-	box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
-	-moz-box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
-	-webkit-box-shadow: 0 1px 1px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
+	box-shadow:
+		0 1px 1px 0 rgb(0 0 0 / 0.06),
+		0 1px 1px -1px rgb(0 0 0 / 0.06);
+	-moz-box-shadow:
+		0 1px 1px 0 rgb(0 0 0 / 0.06),
+		0 1px 1px -1px rgb(0 0 0 / 0.06);
+	-webkit-box-shadow:
+		0 1px 1px 0 rgb(0 0 0 / 0.06),
+		0 1px 1px -1px rgb(0 0 0 / 0.06);
 }
 
 .dashboard-heading {
@@ -738,43 +749,43 @@ html {
 }
 
 .view-heading {
-	@apply text-[var(--primary)] text-[16pt];
+	@apply text-(--primary) text-[16pt];
 	font-family: var(--bold);
 }
 
 .dialog-footer {
-	@apply bg-[var(--primary-transparent-01)] border-t border-t-[var(--primary-border)] flex items-center justify-center px-5 py-2.5 relative space-x-2 z-10;
+	@apply bg-(--primary-transparent-01) border-t border-t-(--primary-border) flex items-center justify-center px-5 py-2.5 relative space-x-2 z-10;
 }
 
 .dialog-header {
-	@apply bg-white flex items-center justify-between px-5 py-1.5 relative text-[16pt] text-[var(--primary)];
+	@apply bg-white flex items-center justify-between px-5 py-1.5 relative text-[16pt] text-(--primary);
 	font-family: var(--semibold);
 }
 
 .highlight-characters {
-	@apply bg-[yellow] border-[0.5px] border-[var(--gray)] font-bold rounded text-black;
+	@apply bg-[yellow] border-[0.5px] border-(--gray) font-bold rounded text-black;
 	padding-inline: 1px;
 }
 
 .hovered-rows-white:hover {
-	@apply bg-[var(--primary-light)] rounded-sm text-[var(--primary)];
+	@apply bg-(--primary-light) rounded-sm text-(--primary);
 }
 
 .hovered-rows:hover {
-	@apply bg-[var(--primary-transparent-01)] border-t border-[var(--primary-transparent-05)];
+	@apply bg-(--primary-transparent-01) border-t border-(--primary-transparent-05);
 }
 
 .hovered-rows-2:hover {
-	@apply bg-[var(--primary-transparent-01)] border-b border-[var(--primary-transparent-05)];
+	@apply bg-(--primary-transparent-01) border-b border-(--primary-transparent-05);
 }
 
 .inputs {
-	@apply bg-transparent flex items-center justify-center outline-none px-2.5 text-[11pt] h-[34px] black-text w-full;
+	@apply bg-transparent flex items-center justify-center outline-none px-2.5 text-[11pt] h-8.5 text-(--white) w-full;
 	font-family: var(--regular);
 }
 
 .login-heading {
-	@apply text-[var(--primary)] text-[28pt];
+	@apply text-(--primary) text-[28pt];
 	font-family: var(--bold);
 }
 
@@ -847,7 +858,7 @@ html {
 }
 
 .textarea-inputs {
-	@apply bg-transparent flex items-center justify-center outline-none px-2.5 resize-none text-[11pt] black-text w-full;
+	@apply bg-transparent flex items-center justify-center outline-none px-2.5 resize-none text-[11pt] text-(--white) w-full;
 	font-family: var(--regular);
 }
 
@@ -903,16 +914,16 @@ html {
 /*****************/
 
 .react-datepicker {
-	@apply !text-[9pt];
+	@apply text-[9pt]!;
 	font-family: var(--regular) !important;
 }
 
 .react-datepicker-popper {
-	@apply !z-[60];
+	@apply z-60!;
 }
 
 .react-datepicker-wrapper {
-	@apply !pl-[5px] !w-full;
+	@apply pl-1.25! w-full!;
 }
 
 .Toastify__toast-body {
@@ -1014,7 +1025,9 @@ input[type="radio"]:checked + label {
 	border-radius: 99px;
 	opacity: 1;
 	display: block;
-	transition: transform 0.25s ease-out, width 0.25s ease-out;
+	transition:
+		transform 0.25s ease-out,
+		width 0.25s ease-out;
 }
 
 .shrink {

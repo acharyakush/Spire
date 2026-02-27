@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import EditProject from "./EditProject";
-import writeXlsxFile from "write-excel-file";
+import writeXlsxFile from "write-excel-file/browser";
 import SingleProject from "../singleProject";
 import MyConstants from "@/utilities/constants";
 
@@ -94,18 +94,7 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 
 				const status = String(f.status).toLowerCase();
 
-				return (
-					projectId.includes(findText) ||
-					governmentId.includes(findText) ||
-					clientId.includes(findText) ||
-					clientName.includes(findText) ||
-					companyName.includes(findText) ||
-					mainProjectName.includes(findText) ||
-					subProjectName.includes(findText) ||
-					teamNames.includes(findText) ||
-					teamNamesInitials.includes(findText) ||
-					status.includes(findText)
-				);
+				return projectId.includes(findText) || governmentId.includes(findText) || clientId.includes(findText) || clientName.includes(findText) || companyName.includes(findText) || mainProjectName.includes(findText) || subProjectName.includes(findText) || teamNames.includes(findText) || teamNamesInitials.includes(findText) || status.includes(findText);
 			}
 		});
 
@@ -176,18 +165,7 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 				.sort((a, b) => b.id - a.id)
 				.at(0);
 
-			records.push(
-				fe.id,
-				!fe.government_id ? "" : fe.government_id,
-				fe.client_id_and_name,
-				fe.company_name,
-				fe.main_project_name,
-				fe.sub_project_name,
-				fe.team_names,
-				dayjs(fe.remarks).format("DD MMM, YYYY"),
-				`${dayjs(lastNote.entry_date).format("hh:mm:ss A - DD MMM YYYY")}\n${lastNote.content}`,
-				fe.status,
-			);
+			records.push(fe.id, !fe.government_id ? "" : fe.government_id, fe.client_id_and_name, fe.company_name, fe.main_project_name, fe.sub_project_name, fe.team_names, dayjs(fe.remarks).format("DD MMM, YYYY"), `${dayjs(lastNote.entry_date).format("hh:mm:ss A - DD MMM YYYY")}\n${lastNote.content}`, fe.status);
 		});
 
 		records.forEach((record) => {
@@ -599,7 +577,7 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 		const wrapper = "flex w-full h-[30px] px-2 justify-between items-center font-regular-10 gray-text";
 
 		return (
-			<Menu as="div" className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
+			<Menu as="div" className="flex w-40 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
 				<MenuButton className={wrapper}>
 					<span>{main.filter || "Status"}</span>
 					<FontAwesomeIcon icon={faChevronDown} />
@@ -628,19 +606,7 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 
 	function uiFind() {
 		if (api.projects.copy.length) {
-			return (
-				<TextInputNative
-					id="findBox"
-					icon={faSearch}
-					onChange={(e) => setInputs("findText", e.target.value)}
-					onClearButtonClick={() => setInputs("findText", "")}
-					placeholder="Find"
-					showClearButton={showFindBoxClearButton}
-					tabIndex={1}
-					value={main.findText}
-					width="w-60"
-				/>
-			);
+			return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setInputs("findText", e.target.value)} onClearButtonClick={() => setInputs("findText", "")} placeholder="Find" showClearButton={showFindBoxClearButton} tabIndex={1} value={main.findText} width="w-60" />;
 		}
 	}
 
@@ -785,11 +751,7 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 					<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.findText) }} />
 					{!isCompleted && <FontAwesomeIcon icon={faChevronDown} />}
 				</MenuButton>
-				{!isCompleted ? (
-					<MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>
-				) : (
-					isUserAdministrator && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>
-				)}
+				{!isCompleted ? <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems> : isUserAdministrator && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>}
 			</Menu>
 		);
 	}
@@ -845,7 +807,7 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 									{i + 1}. {m}
 								</div>
 							);
-					  })}
+						})}
 			</div>
 		);
 	}

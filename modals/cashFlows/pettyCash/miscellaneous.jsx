@@ -5,7 +5,6 @@
 import "tippy.js/animations/shift-away.css";
 
 import axios from "axios";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
@@ -79,10 +78,7 @@ export function EditTransaction({ lastTransaction, mount, reload, transaction, u
 			if (response.status === 200) {
 				reload("reload-transactions");
 
-				MyGlobal.AddActivity(
-					`Edited transaction in <b>${MyConstants.Modules.Other.CashFlowModules.PettyCash.name}</b>.`,
-					MyConstants.Modules.Base.CashFlow,
-				);
+				MyGlobal.AddActivity(`Edited transaction in <b>${MyConstants.Modules.Other.CashFlowModules.PettyCash.name}</b>.`, MyConstants.Modules.Base.CashFlow);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionEdited);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
@@ -140,10 +136,7 @@ export function EditTransaction({ lastTransaction, mount, reload, transaction, u
 				});
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(
-				error,
-				`${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Other.CashFlowModules.PettyCash.name} => New Transaction`,
-			);
+			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Other.CashFlowModules.PettyCash.name} => New Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -231,43 +224,19 @@ export function EditTransaction({ lastTransaction, mount, reload, transaction, u
 
 		return (
 			<div className="flex flex-col w-full space-y-2 justify-center items-center">
-				<TextInput
-					errorText={error}
-					hasError={other.hasError}
-					icon={faIndianRupee}
-					id="amountPaid"
-					isReadOnly={transaction.amount_received != "0.00"}
-					label="Amount Paid"
-					onChange={(e) => setInputs("amountPaid", e.target.value)}
-					onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-					tabIndex="6"
-					value={main.amountPaid}
-					width="w-full"
-				/>
+				<TextInput errorText={error} hasError={other.hasError} icon={faIndianRupee} id="amountPaid" isReadOnly={transaction.amount_received != "0.00"} label="Amount Paid" onChange={(e) => setInputs("amountPaid", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex="6" value={main.amountPaid} width="w-full" />
 			</div>
 		);
 	}
 
 	function uiAmountReceived() {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				id="amountReceived"
-				isReadOnly={transaction.amount_paid != "0.00"}
-				label="Amount Received"
-				onChange={(e) => setInputs("amountReceived", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex="7"
-				value={main.amountReceived}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} id="amountReceived" isReadOnly={transaction.amount_paid != "0.00"} label="Amount Received" onChange={(e) => setInputs("amountReceived", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex="7" value={main.amountReceived} width="w-full" />;
 	}
 
 	function uiBody() {
 		if (loading.supportData) {
 			return (
-				<div className="flex w-full h-[352px] justify-center items-center">
+				<div className="flex w-full h-88 justify-center items-center">
 					<SpinnerBig />
 				</div>
 			);
@@ -312,76 +281,19 @@ export function EditTransaction({ lastTransaction, mount, reload, transaction, u
 	}
 
 	function uiFirms() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.firm.name}
-				displayValue="name"
-				filteredData={getFilteredFirms}
-				hasDataObject
-				icon={faBuilding}
-				isReadOnly={false}
-				label="Firm"
-				onChange={(e) => setInputs("firm", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("firm", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.firm}
-				tabIndex="2"
-				value={main.firm.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.firm.name} displayValue="name" filteredData={getFilteredFirms} hasDataObject icon={faBuilding} isReadOnly={false} label="Firm" onChange={(e) => setInputs("firm", e)} onClick={() => {}} onInputChange={(e) => setFind("firm", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.firm} tabIndex="2" value={main.firm.name} width="w-full" />;
 	}
 
 	function uiParticulars() {
-		return (
-			<TextInput
-				icon={faInfoCircle}
-				id="particulars"
-				label="Particulars"
-				onChange={(e) => setInputs("particulars", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="4"
-				value={main.particulars}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faInfoCircle} id="particulars" label="Particulars" onChange={(e) => setInputs("particulars", e.target.value)} onKeyPress={() => {}} tabIndex="4" value={main.particulars} width="w-full" />;
 	}
 
 	function uiPaymentType() {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={["Client", "Office", "Others", "Withdrawn from Bank"]}
-				icon={faFile}
-				label="Payment Type"
-				onChange={(e) => setInputs("paymentType", e)}
-				onClick={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="3"
-				value={main.paymentType}
-				width="w-full"
-			/>
-		);
+		return <ComboBox allowCreatingNewItem={false} comparisonValue="" filteredData={["Client", "Office", "Others", "Withdrawn from Bank"]} icon={faFile} label="Payment Type" onChange={(e) => setInputs("paymentType", e)} onClick={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex="3" value={main.paymentType} width="w-full" />;
 	}
 
 	function uiRemarks() {
-		return (
-			<TextInput
-				icon={faList}
-				id="remarks"
-				label="Remarks"
-				onChange={(e) => setInputs("remarks", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="5"
-				value={main.remarks}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faList} id="remarks" label="Remarks" onChange={(e) => setInputs("remarks", e.target.value)} onKeyPress={() => {}} tabIndex="5" value={main.remarks} width="w-full" />;
 	}
 
 	function uiTitleBar() {
@@ -403,13 +315,11 @@ export function EditTransaction({ lastTransaction, mount, reload, transaction, u
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						{uiBody()}
-						{uiFooter()}
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					{uiBody()}
+					{uiFooter()}
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -477,10 +387,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 			if (response.status === 200) {
 				reload("reload-transactions");
 
-				MyGlobal.AddActivity(
-					`Added transaction in <b>${MyConstants.Modules.Other.CashFlowModules.PettyCash.name}</b>.`,
-					MyConstants.Modules.Base.CashFlow,
-				);
+				MyGlobal.AddActivity(`Added transaction in <b>${MyConstants.Modules.Other.CashFlowModules.PettyCash.name}</b>.`, MyConstants.Modules.Base.CashFlow);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
@@ -526,10 +433,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(
-				error,
-				`${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Other.CashFlowModules.PettyCash.name} => New Transaction`,
-			);
+			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Other.CashFlowModules.PettyCash.name} => New Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -613,43 +517,19 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 
 		return (
 			<div className="flex flex-col w-full space-y-2 justify-center items-center">
-				<TextInput
-					errorText={error}
-					hasError={other.hasError}
-					icon={faIndianRupee}
-					id="amountPaid"
-					isReadOnly={main.amountReceived.length}
-					label="Amount Paid"
-					onChange={(e) => setInputs("amountPaid", e.target.value)}
-					onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-					tabIndex="6"
-					value={main.amountPaid}
-					width="w-full"
-				/>
+				<TextInput errorText={error} hasError={other.hasError} icon={faIndianRupee} id="amountPaid" isReadOnly={main.amountReceived.length} label="Amount Paid" onChange={(e) => setInputs("amountPaid", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex="6" value={main.amountPaid} width="w-full" />
 			</div>
 		);
 	}
 
 	function uiAmountReceived() {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				id="amountReceived"
-				isReadOnly={main.amountPaid.length}
-				label="Amount Received"
-				onChange={(e) => setInputs("amountReceived", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex="7"
-				value={main.amountReceived}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} id="amountReceived" isReadOnly={main.amountPaid.length} label="Amount Received" onChange={(e) => setInputs("amountReceived", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex="7" value={main.amountReceived} width="w-full" />;
 	}
 
 	function uiBody() {
 		if (loading.supportData) {
 			return (
-				<div className="flex w-full h-[352px] justify-center items-center">
+				<div className="flex w-full h-88 justify-center items-center">
 					<SpinnerBig />
 				</div>
 			);
@@ -694,76 +574,19 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 	}
 
 	function uiFirms() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.firm.name}
-				displayValue="name"
-				filteredData={getFilteredFirms}
-				hasDataObject
-				icon={faBuilding}
-				isReadOnly={false}
-				label="Firm"
-				onChange={(e) => setInputs("firm", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("firm", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.firm}
-				tabIndex="2"
-				value={main.firm.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.firm.name} displayValue="name" filteredData={getFilteredFirms} hasDataObject icon={faBuilding} isReadOnly={false} label="Firm" onChange={(e) => setInputs("firm", e)} onClick={() => {}} onInputChange={(e) => setFind("firm", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.firm} tabIndex="2" value={main.firm.name} width="w-full" />;
 	}
 
 	function uiParticulars() {
-		return (
-			<TextInput
-				icon={faInfoCircle}
-				id="particulars"
-				label="Particulars"
-				onChange={(e) => setInputs("particulars", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="4"
-				value={main.particulars}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faInfoCircle} id="particulars" label="Particulars" onChange={(e) => setInputs("particulars", e.target.value)} onKeyPress={() => {}} tabIndex="4" value={main.particulars} width="w-full" />;
 	}
 
 	function uiPaymentType() {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={["Client", "Office", "Others", "Withdrawn from Bank"]}
-				icon={faFile}
-				label="Payment Type"
-				onChange={(e) => setInputs("paymentType", e)}
-				onClick={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="3"
-				value={main.paymentType}
-				width="w-full"
-			/>
-		);
+		return <ComboBox allowCreatingNewItem={false} comparisonValue="" filteredData={["Client", "Office", "Others", "Withdrawn from Bank"]} icon={faFile} label="Payment Type" onChange={(e) => setInputs("paymentType", e)} onClick={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex="3" value={main.paymentType} width="w-full" />;
 	}
 
 	function uiRemarks() {
-		return (
-			<TextInput
-				icon={faList}
-				id="remarks"
-				label="Remarks"
-				onChange={(e) => setInputs("remarks", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="5"
-				value={main.remarks}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faList} id="remarks" label="Remarks" onChange={(e) => setInputs("remarks", e.target.value)} onKeyPress={() => {}} tabIndex="5" value={main.remarks} width="w-full" />;
 	}
 
 	function uiTitleBar() {
@@ -785,13 +608,11 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						{uiBody()}
-						{uiFooter()}
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					{uiBody()}
+					{uiFooter()}
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

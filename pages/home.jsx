@@ -17,7 +17,7 @@ import { BadgeSmall, ErrorFallbackComponent, SpinnerBig } from "@/components/Ele
 import { faBell, faCheck, faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 const DynamicMySpace = dynamic(() => import("./mySpace"), { ssr: false });
-const DynamicTodos = dynamic(() => import("@/modules/todo"), { ssr: false });
+const DynamicTodos = dynamic(() => import("@/modules/todo/Index"), { ssr: false });
 const DynamicDashboard = dynamic(() => import("./dashboard/index"), { ssr: false });
 const DynamicFirms = dynamic(() => import("@/modules/firms/index"), { ssr: false });
 const DynamicClients = dynamic(() => import("@/modules/clients/index"), { ssr: false });
@@ -408,21 +408,9 @@ export default function Home() {
 				const isSelected = i == main.selectedModule.index;
 
 				return (
-					<span
-						className="flex justify-center items-center relative font-regular-11"
-						key={i}
-						onClick={() => setModule(i, m)}>
-						<input
-							type="radio"
-							id={`radio${i}`}
-							name="tabs"
-							checked={isSelected}
-							readOnly
-						/>
-						<label
-							className="whitespace-nowrap tab"
-							htmlFor={`radio${i}`}
-							ref={(r) => (tabRefs.current[i] = r)}>
+					<span className="flex justify-center items-center relative font-regular-11" key={i} onClick={() => setModule(i, m)}>
+						<input type="radio" id={`radio${i}`} name="tabs" checked={isSelected} readOnly />
+						<label className="whitespace-nowrap tab" htmlFor={`radio${i}`} ref={(r) => (tabRefs.current[i] = r)}>
 							{m.name}
 						</label>
 					</span>
@@ -437,15 +425,11 @@ export default function Home() {
 		const wrapper = `py-2 font-regular-11 ${aesthetics}`;
 
 		return (
-			<Menu
-				as="div"
-				className="relative z-50 -top-0 inline-block text-left">
+			<Menu as="div" className="relative z-50 top-0 inline-block text-left">
 				<MenuButton className={wrapper}>
 					<span>More</span>
 				</MenuButton>
-				<MenuItems
-					anchor="bottom"
-					className="absolute w-max rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
+				<MenuItems anchor="bottom" className="absolute w-max rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
 					{uiOtherModulesList()}
 				</MenuItems>
 			</Menu>
@@ -460,11 +444,7 @@ export default function Home() {
 				const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "gray-text";
 
 				return (
-					<MenuItem
-						as="div"
-						className={`p-2 space-x-2.5 cursor-pointer border-y ${aesthetics} font-regular-11 hovered-rows`}
-						key={i}
-						onClick={() => setModule(i, m)}>
+					<MenuItem as="div" className={`p-2 space-x-2.5 cursor-pointer border-y ${aesthetics} font-regular-11 hovered-rows`} key={i} onClick={() => setModule(i, m)}>
 						{isSelected && <FontAwesomeIcon icon={faCheck} />}
 						<span>{m.name}</span>
 					</MenuItem>
@@ -476,82 +456,49 @@ export default function Home() {
 		switch (main.selectedModule.name) {
 			case baseModules.Affiliates:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Affiliates}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Affiliates)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Affiliates}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Affiliates)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicAffiliates />
 					</ErrorBoundary>
 				);
 			case baseModules.CashFlow:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.CashFlow}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.CashFlow)}
-						FallbackComponent={ErrorFallbackComponent}>
-						<DynamicCashFlows
-							presetStatus={main.status.invoicesOrRv}
-							setModuleProps={setModuleProps}
-						/>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.CashFlow}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.CashFlow)} FallbackComponent={ErrorFallbackComponent}>
+						<DynamicCashFlows presetStatus={main.status.invoicesOrRv} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Clients:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Clients}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Clients)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Clients}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Clients)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicClients />
 					</ErrorBoundary>
 				);
 			case baseModules.Dashboard:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Dashboard}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Dashboard)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Dashboard}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Dashboard)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicDashboard setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.MySpace:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.MySpace}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.MySpace)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.MySpace}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.MySpace)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicMySpace setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Firms:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Firms}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Firms)}
-						FallbackComponent={ErrorFallbackComponent}>
-						<DynamicFirms
-							presetStatus={main.status.firms}
-							setModuleProps={setModuleProps}
-						/>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Firms}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Firms)} FallbackComponent={ErrorFallbackComponent}>
+						<DynamicFirms presetStatus={main.status.firms} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Inquiries:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Inquiries}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Inquiries)}
-						FallbackComponent={ErrorFallbackComponent}>
-						<DynamicInquiries
-							presetStatus={main.status.inquiries}
-							setModuleProps={setModuleProps}
-						/>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Inquiries}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Inquiries)} FallbackComponent={ErrorFallbackComponent}>
+						<DynamicInquiries presetStatus={main.status.inquiries} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Projects:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Projects}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Projects)}
-						FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Projects}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Projects)} FallbackComponent={ErrorFallbackComponent}>
 						{/* {isDevelopment ? (
 							<DynamicProjects2
 								presetStatus={main.status.projectsOrTasks}
@@ -563,22 +510,13 @@ export default function Home() {
 								setModuleProps={setModuleProps}
 							/>
 						)} */}
-						<DynamicProjects
-							presetStatus={main.status.projectsOrTasks}
-							setModuleProps={setModuleProps}
-						/>
+						<DynamicProjects presetStatus={main.status.projectsOrTasks} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 			case baseModules.Todos:
 				return (
-					<ErrorBoundary
-						key={`ErrorBoundary_${baseModules.Todos}`}
-						onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Todos)}
-						FallbackComponent={ErrorFallbackComponent}>
-						<DynamicTodos
-							presetStatus={main.status.todos}
-							setModuleProps={setModuleProps}
-						/>
+					<ErrorBoundary key={`ErrorBoundary_${baseModules.Todos}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Todos)} FallbackComponent={ErrorFallbackComponent}>
+						<DynamicTodos presetStatus={main.status.todos} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
 		}
@@ -586,25 +524,16 @@ export default function Home() {
 
 	function uiTodoMenu() {
 		return (
-			<Menu
-				as="div"
-				className="relative z-[1000] inline-block text-left">
+			<Menu as="div" className="relative z-1000 inline-block text-left">
 				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
 					{/* {main.unreadTodos > 0 && (
 						<div className="absolute -top-1 -right-4">
 							<BadgeSmallWithBackground2 style={{ text: "text-blue-600", background: "bg-white" }} value={api.todos.length} />
 						</div>
 					)} */}
-					<FontAwesomeIcon
-						icon={faBell}
-						className="text-yellow-500"
-						size="xl"
-						onClick={() => getTodos()}
-					/>
+					<FontAwesomeIcon icon={faBell} className="text-yellow-500" size="xl" onClick={() => getTodos()} />
 				</MenuButton>
-				<MenuItems
-					anchor="left start"
-					className="absolute w-[500px] mt-10 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
+				<MenuItems anchor="left start" className="absolute w-125 mt-10 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
 					<div className="flex flex-col p-3 space-y-3 justify-between items-center">
 						{main.isTodosLoading ? (
 							<span className="flex w-56 h-10 justify-center items-center">
@@ -618,9 +547,7 @@ export default function Home() {
 								</span>
 								{api.todos.map((m, i) => {
 									return (
-										<div
-											className="flex w-full h-full p-2 space-x-2 justify-between items-start bg-gray-100 bottom-border rounded"
-											key={i}>
+										<div className="flex w-full h-full p-2 space-x-2 justify-between items-start bg-gray-100 bottom-border rounded" key={i}>
 											<div className="flex flex-col w-3/4 h-full space-y-2.5 justify-between items-center">
 												<div className="flex flex-col w-full h-full -space-y-1 justify-center items-start whitespace-pre-wrap font-medium-12 black-text">
 													<span>{m.description}</span>
@@ -654,19 +581,11 @@ export default function Home() {
 
 	function uiUserMenu() {
 		return (
-			<Menu
-				as="div"
-				className="relative z-50 inline-block text-left">
+			<Menu as="div" className="relative z-50 inline-block text-left">
 				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faUserCircle}
-						size="lg"
-					/>
+					<FontAwesomeIcon className="text-white" icon={faUserCircle} size="lg" />
 				</MenuButton>
-				<MenuItems
-					anchor="left start"
-					className="absolute w-max mt-10 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
+				<MenuItems anchor="left start" className="absolute w-max mt-10 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
 					<div className="flex flex-col p-3 font-semibold-16">
 						<span>{main.user.fullName}</span>
 						<span className="font-regular-10 gray-text">{main.user.designation}</span>
@@ -706,15 +625,8 @@ export default function Home() {
 
 			.map((m, i) => {
 				return (
-					<MenuItem
-						as="div"
-						className="p-3 space-x-3 cursor-pointer border-y font-medium-12 black-text hovered-rows"
-						key={i}
-						onClick={() => getUserMenuClickAction(m)}>
-						<FontAwesomeIcon
-							className="w-5 primary-text"
-							icon={getUserMenuIcons(m)}
-						/>
+					<MenuItem as="div" className="p-3 space-x-3 cursor-pointer border-y font-medium-12 black-text hovered-rows" key={i} onClick={() => getUserMenuClickAction(m)}>
+						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons(m)} />
 						<span>{m}</span>
 					</MenuItem>
 				);
@@ -783,25 +695,18 @@ export default function Home() {
 
 	// Main UI
 	return (
-		<main className="flex flex-col min-w-[1024px] h-screen overflow-y-hidden">
-			<div className="flex w-full h-[3.25rem] px-5 justify-between items-center relative shadow dashboard-blue-2">
+		<main className="flex flex-col min-w-5xl h-screen overflow-y-hidden">
+			<div className="flex w-full h-13 px-5 justify-between items-center relative shadow dashboard-blue-2">
 				<div className="flex w-full justify-start items-center">
-					<span
-						className="cursor-pointer uppercase dashboard-heading"
-						onClick={() => setModule(0, { name: baseModules.Dashboard })}>
+					<span className="cursor-pointer uppercase dashboard-heading" onClick={() => setModule(0, { name: baseModules.Dashboard })}>
 						{applicationName}
 					</span>
 				</div>
 				<div className="flex w-full justify-center items-center">
 					<div className="flex justify-center items-center relative">
-						<div
-							className="tabs relative"
-							ref={tabsContainerRef}>
+						<div className="tabs relative" ref={tabsContainerRef}>
 							{uiModules()}
-							<span
-								className="glider absolute"
-								ref={gliderRef}
-							/>
+							<span className="glider absolute" ref={gliderRef} />
 						</div>
 						{/* {uiOtherModules()} */}
 					</div>
@@ -811,9 +716,7 @@ export default function Home() {
 					{uiUserMenu()}
 				</div>
 			</div>
-			<div
-				className="flex w-full h-[calc(100vh-45px)] justify-center items-center overflow-y-auto"
-				style={{ backgroundColour }}>
+			<div className="flex w-full h-[calc(100vh-45px)] justify-center items-center overflow-y-auto" style={{ backgroundColour }}>
 				{uiMain()}
 			</div>
 		</main>

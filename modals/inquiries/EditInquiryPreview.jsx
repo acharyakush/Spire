@@ -3,7 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import dayjs from "dayjs";
-import Draggable from "react-draggable";
 
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -62,41 +61,39 @@ export default function EditInquiryPreview({ editInquiry, mount, oldInquiry, unm
 		<Dialog as="div" className="relative z-50" open={mount ?? false} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setIsBoxDragged(true)} onStop={() => setIsBoxDragged(false)}>
-					<DialogPanel className="w-3/4 transform overflow-hidden rounded shadow contrast-background">
-						{uiTitleBar()}
-						<div className="flex w-full p-6 space-x-3 justify-between items-center primary-light-background">
-							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
-								{uiRow("Client", oldInquiry.client.name)}
-								{uiRow("Email Address", oldInquiry.emailAddress)}
-								{uiRow("Phone Number", oldInquiry.phoneNumber)}
-								{uiRow("Main Project", oldInquiry.mainProject.name)}
-								{uiRow("Sub Project", oldInquiry.subProject.name)}
-								{uiRow("Reference", oldInquiry.reference.name)}
-								{uiRow("Entry Date", dayjs(oldInquiry.entryDate).format("DD MMMM, YYYY"))}
-								{uiRow("Quote", oldInquiry.quote)}
-								{uiRow("Follow Ups", oldFollowUps)}
-							</div>
-							<FontAwesomeIcon icon={faArrowsUpToLine} rotation={90} />
-							<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
-								{uiRow("Client", editInquiry.client.name)}
-								{uiRow("Email Address", editInquiry.emailAddress)}
-								{uiRow("Phone Number", editInquiry.phoneNumber)}
-								{uiRow("Main Project", editInquiry.mainProject.name)}
-								{uiRow("Sub Project", editInquiry.subProject.name)}
-								{uiRow("Reference", editInquiry.reference.name)}
-								{uiRow("Entry Date", dayjs(editInquiry.entryDate).format("DD MMMM, YYYY"))}
-								{uiRow("Quote", editInquiry.quote)}
-								{uiRow("Follow Ups", newFollowUps)}
-							</div>
+				<DialogPanel className="w-3/4 transform overflow-hidden rounded shadow contrast-background">
+					{uiTitleBar()}
+					<div className="flex w-full p-6 space-x-3 justify-between items-center primary-light-background">
+						<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
+							{uiRow("Client", oldInquiry.client.name)}
+							{uiRow("Email Address", oldInquiry.emailAddress)}
+							{uiRow("Phone Number", oldInquiry.phoneNumber)}
+							{uiRow("Main Project", oldInquiry.mainProject.name)}
+							{uiRow("Sub Project", oldInquiry.subProject.name)}
+							{uiRow("Reference", oldInquiry.reference.name)}
+							{uiRow("Entry Date", dayjs(oldInquiry.entryDate).format("DD MMMM, YYYY"))}
+							{uiRow("Quote", oldInquiry.quote)}
+							{uiRow("Follow Ups", oldFollowUps)}
 						</div>
-						<footer className="dialog-footer">
-							<button className="primary-button-condensed" onClick={() => unmount(true)}>
-								Edit
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+						<FontAwesomeIcon icon={faArrowsUpToLine} rotation={90} />
+						<div className="flex flex-col w-full p-3 space-y-3 justify-between items-center rounded full-border contrast-background">
+							{uiRow("Client", editInquiry.client.name)}
+							{uiRow("Email Address", editInquiry.emailAddress)}
+							{uiRow("Phone Number", editInquiry.phoneNumber)}
+							{uiRow("Main Project", editInquiry.mainProject.name)}
+							{uiRow("Sub Project", editInquiry.subProject.name)}
+							{uiRow("Reference", editInquiry.reference.name)}
+							{uiRow("Entry Date", dayjs(editInquiry.entryDate).format("DD MMMM, YYYY"))}
+							{uiRow("Quote", editInquiry.quote)}
+							{uiRow("Follow Ups", newFollowUps)}
+						</div>
+					</div>
+					<footer className="dialog-footer">
+						<button className="primary-button-condensed" onClick={() => unmount(true)}>
+							Edit
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

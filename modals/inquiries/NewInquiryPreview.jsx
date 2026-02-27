@@ -3,7 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import dayjs from "dayjs";
-import Draggable from "react-draggable";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -50,28 +49,26 @@ export default function NewInquiryPreview({ inquiry, mount, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount ?? false} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setIsBoxDragged(true)} onStop={() => setIsBoxDragged(false)}>
-					<DialogPanel className="w-[600px] transform overflow-hidden rounded shadow contrast-background">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full py-3 space-y-3 justify-between items-center primary-light-background">
-							{uiRow("Client", inquiry.client.name)}
-							{uiRow("Email Address", inquiry.emailAddress)}
-							{uiRow("Phone Number", inquiry.phoneNumber)}
-							{uiRow("Main Project", inquiry.mainProject.name)}
-							{uiRow("Sub Project", inquiry.subProject.name)}
-							{uiRow("Reference", inquiry.reference.name)}
-							{uiRow("Entry Date", dayjs(inquiry.entryDate).format("DD MMMM, YYYY"))}
-							{uiRow("Quote", MyGlobal.FormatCurrency(inquiry.quote))}
-							{uiRow("Follow Ups", followUps)}
-							{uiRow("Note", inquiry.note)}
-						</div>
-						<footer className="dialog-footer">
-							<button className="primary-button-condensed" onClick={() => unmount(true)}>
-								Add
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-[600px] transform overflow-hidden rounded shadow contrast-background">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full py-3 space-y-3 justify-between items-center primary-light-background">
+						{uiRow("Client", inquiry.client.name)}
+						{uiRow("Email Address", inquiry.emailAddress)}
+						{uiRow("Phone Number", inquiry.phoneNumber)}
+						{uiRow("Main Project", inquiry.mainProject.name)}
+						{uiRow("Sub Project", inquiry.subProject.name)}
+						{uiRow("Reference", inquiry.reference.name)}
+						{uiRow("Entry Date", dayjs(inquiry.entryDate).format("DD MMMM, YYYY"))}
+						{uiRow("Quote", MyGlobal.FormatCurrency(inquiry.quote))}
+						{uiRow("Follow Ups", followUps)}
+						{uiRow("Note", inquiry.note)}
+					</div>
+					<footer className="dialog-footer">
+						<button className="primary-button-condensed" onClick={() => unmount(true)}>
+							Add
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import EditProject from "./EditProject";
-import writeXlsxFile from "write-excel-file";
+import writeXlsxFile from "write-excel-file/browser";
 import SingleProject from "../singleProject";
 import MyConstants from "@/utilities/constants";
 import ProjectTodos from "@/modals/projects/Todo";
@@ -751,8 +751,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const uiFilter = useCallback(() => {
 		return (
-			<Menu as="div" className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
-				<MenuButton className="flex w-full h-[30px] px-2 justify-between items-center font-regular-10 gray-text">
+			<Menu as="div" className="flex w-40 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
+				<MenuButton className="flex w-full h-7.5 px-2 justify-between items-center font-regular-10 gray-text">
 					<span>{main.filter || "Status"}</span>
 					<FontAwesomeIcon icon={faChevronDown} />
 				</MenuButton>
@@ -985,7 +985,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 									{i + 1}. {m}
 								</div>
 							);
-					  })}
+						})}
 			</div>
 		);
 	}, []);
@@ -1251,13 +1251,13 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	function uiTotalQuote() {
 		return (
 			<div className="group relative flex items-center w-fit px-0 transition-all duration-500 ease-in-out">
-				<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
+				<div className="absolute inset-0 rounded-full bg-linear-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
 
 				<div className="flex items-center justify-center w-10 h-10 group-hover:h-10 rounded-full text-white ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
 					<FontAwesomeIcon icon={faIndianRupee} size="1x" />
 				</div>
 
-				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-[300px]">
+				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-75">
 					<div className="pl-2 pr-4 text-white font-bold-12 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out relative z-20">{getTotalQuote()}</div>
 				</div>
 			</div>

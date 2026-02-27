@@ -3,7 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useState } from "react";
@@ -121,60 +120,30 @@ export function UpdateStatus({ inquiry, mount, reload, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">{titleBarText}</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount(false)}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<span
-							className="block w-full p-5 whitespace-pre-line font-regular-11 black-text"
-							dangerouslySetInnerHTML={{ __html: message }}
-						/>
-						<div className={reasonBoxStyle}>
-							<TextArea
-								icon={faNoteSticky}
-								key={1}
-								label="Reason"
-								onChange={(e) => setReason(e.target.value)}
-								onKeyDown={() => {}}
-								rows={3}
-								tabIndex={1}
-								value={main.reason}
-								width="w-full"
-							/>
-						</div>
-						<footer className="dialog-footer">
-							<button
-								className={buttonStyle}
-								onClick={() => doStatusUpdate()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text" dangerouslySetInnerHTML={{ __html: message }} />
+					<div className={reasonBoxStyle}>
+						<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={main.reason} width="w-full" />
+					</div>
+					<footer className="dialog-footer">
+						<button className={buttonStyle} onClick={() => doStatusUpdate()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

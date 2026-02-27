@@ -3,7 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
@@ -88,10 +87,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(
-					`Added transaction in <b>${entity.module.name}</b> in <b>${entity.name}</b> in <b>${entity.purpose}</b>.`,
-					MyConstants.Modules.Base.CashFlow,
-				);
+				MyGlobal.AddActivity(`Added transaction in <b>${entity.module.name}</b> in <b>${entity.name}</b> in <b>${entity.purpose}</b>.`, MyConstants.Modules.Base.CashFlow);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionAdded);
 			} else {
 				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
@@ -284,20 +280,7 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 			</div>
 		);
 
-		return (
-			<TextInput
-				errorText={error}
-				hasError={other.hasError}
-				icon={faIndianRupee}
-				id="amount"
-				label="Amount"
-				onChange={(e) => setInputs("amount", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex="2"
-				value={main.amount}
-				width="w-full"
-			/>
-		);
+		return <TextInput errorText={error} hasError={other.hasError} icon={faIndianRupee} id="amount" label="Amount" onChange={(e) => setInputs("amount", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex="2" value={main.amount} width="w-full" />;
 	}
 
 	function uiBody() {
@@ -348,125 +331,27 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 	}
 
 	function uiFirms() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.firm.name}
-				displayValue="name"
-				filteredData={getFilteredFirms}
-				hasDataObject
-				icon={faBuilding}
-				isReadOnly={false}
-				label="Firm"
-				onChange={(e) => setInputs("firm", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("firm", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.firm}
-				tabIndex="3"
-				value={main.firm.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.firm.name} displayValue="name" filteredData={getFilteredFirms} hasDataObject icon={faBuilding} isReadOnly={false} label="Firm" onChange={(e) => setInputs("firm", e)} onClick={() => {}} onInputChange={(e) => setFind("firm", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.firm} tabIndex="3" value={main.firm.name} width="w-full" />;
 	}
 
 	function uiBanks() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.bank.name}
-				displayValue="name"
-				filteredData={getFilteredBanks}
-				hasDataObject
-				icon={faBank}
-				isReadOnly={false}
-				label="Banks"
-				onChange={(e) => setInputs("bank", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("bank", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.bank}
-				tabIndex="4"
-				value={main.bank.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.bank.name} displayValue="name" filteredData={getFilteredBanks} hasDataObject icon={faBank} isReadOnly={false} label="Banks" onChange={(e) => setInputs("bank", e)} onClick={() => {}} onInputChange={(e) => setFind("bank", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.bank} tabIndex="4" value={main.bank.name} width="w-full" />;
 	}
 
 	function uiParticulars() {
-		return (
-			<TextInput
-				icon={faInfoCircle}
-				id="particulars"
-				label="Particulars"
-				onChange={(e) => setInputs("particulars", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="7"
-				value={main.particulars}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faInfoCircle} id="particulars" label="Particulars" onChange={(e) => setInputs("particulars", e.target.value)} onKeyPress={() => {}} tabIndex="7" value={main.particulars} width="w-full" />;
 	}
 
 	function uiPaymentSource() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.paymentSource.name}
-				displayValue="name"
-				filteredData={getPaymentSources}
-				hasDataObject
-				icon={faBank}
-				isReadOnly={false}
-				label="Payment Source"
-				onChange={(e) => setInputs("paymentSource", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("paymentSource", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.paymentSource}
-				tabIndex="6"
-				value={main.paymentSource.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.paymentSource.name} displayValue="name" filteredData={getPaymentSources} hasDataObject icon={faBank} isReadOnly={false} label="Payment Source" onChange={(e) => setInputs("paymentSource", e)} onClick={() => {}} onInputChange={(e) => setFind("paymentSource", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.paymentSource} tabIndex="6" value={main.paymentSource.name} width="w-full" />;
 	}
 
 	function uiPaymentType() {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={api.paymentTypes}
-				icon={faFile}
-				isReadOnly={isOfficeExpense || isOtherExpense}
-				label="Payment Type"
-				onChange={(e) => setInputs("paymentType", e)}
-				onClick={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="5"
-				value={main.paymentType}
-				width="w-full"
-			/>
-		);
+		return <ComboBox allowCreatingNewItem={false} comparisonValue="" filteredData={api.paymentTypes} icon={faFile} isReadOnly={isOfficeExpense || isOtherExpense} label="Payment Type" onChange={(e) => setInputs("paymentType", e)} onClick={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex="5" value={main.paymentType} width="w-full" />;
 	}
 
 	function uiRemarks() {
-		return (
-			<TextInput
-				icon={faList}
-				id="remarks"
-				label="Remarks"
-				onChange={(e) => setInputs("remarks", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex="8"
-				value={main.remarks}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faList} id="remarks" label="Remarks" onChange={(e) => setInputs("remarks", e.target.value)} onKeyPress={() => {}} tabIndex="8" value={main.remarks} width="w-full" />;
 	}
 
 	function uiTitleBar() {
@@ -488,13 +373,11 @@ export default function NewTransaction({ entity, mount, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						{uiBody()}
-						{uiFooter()}
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-1/2 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					{uiBody()}
+					{uiFooter()}
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

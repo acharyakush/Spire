@@ -4,7 +4,6 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useState } from "react";
@@ -94,7 +93,7 @@ export default function Details({ mount, refresh, todo, unmount }) {
 								<div className="w-full">
 									{i + 1}. {m}
 								</div>
-						  ))
+							))
 						: todo.description}
 				</div>
 			</div>
@@ -113,19 +112,7 @@ export default function Details({ mount, refresh, todo, unmount }) {
 	}
 
 	function uiNotes() {
-		return (
-			<TextArea
-				icon={faNoteSticky}
-				key={1}
-				label="Notes"
-				onChange={(e) => setValues("notes", e.target.value)}
-				onKeyDown={() => {}}
-				rows={3}
-				tabIndex={1}
-				value={data.notes}
-				width="w-full"
-			/>
-		);
+		return <TextArea icon={faNoteSticky} key={1} label="Notes" onChange={(e) => setValues("notes", e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={data.notes} width="w-full" />;
 	}
 
 	function uiPriority() {
@@ -153,24 +140,7 @@ export default function Details({ mount, refresh, todo, unmount }) {
 		if (MyGlobal.IsUserAdministrator()) {
 			return (
 				<div className="flex flex-col w-full pl-36 justify-center items-start">
-					<ComboBox2
-						allowCreatingNewItem
-						comparingValue1=""
-						comparingValue2={data.status}
-						displayValue=""
-						filteredData={["Completed", "InProgress", "Pending"]}
-						icon={faStar}
-						isReadOnly={false}
-						label="Status"
-						onChange={(e) => setValues("status", e)}
-						onClick={() => {}}
-						onInputChange={() => {}}
-						onKeyPress={() => {}}
-						searchedItem={{}}
-						tabIndex={4}
-						value={data.status}
-						width="w-full"
-					/>
+					<ComboBox2 allowCreatingNewItem comparingValue1="" comparingValue2={data.status} displayValue="" filteredData={["Completed", "InProgress", "Pending"]} icon={faStar} isReadOnly={false} label="Status" onChange={(e) => setValues("status", e)} onClick={() => {}} onInputChange={() => {}} onKeyPress={() => {}} searchedItem={{}} tabIndex={4} value={data.status} width="w-full" />
 				</div>
 			);
 		}
@@ -199,92 +169,73 @@ export default function Details({ mount, refresh, todo, unmount }) {
 		const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">To-Do Details</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount()}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount()} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setIsBoxDragged(!isBoxDragged)}
-					onStop={() => setIsBoxDragged(!isBoxDragged)}>
-					<DialogPanel className="w-4/5 transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full p-6 space-y-6 justify-between items-center">
-							<div className="flex w-full justify-between items-center">
-								{uiDescription()}
-								{todo.client_name && uiClient()}
-								{todo.sub_project_name && uiSubProject()}
-							</div>
-							<div className="flex w-full justify-between items-center">
-								{uiAssignedTo()}
-								{uiDueDate()}
-							</div>
-							<div className="flex w-full justify-between items-center">
-								{uiPriority()}
-								{uiStatus()}
-							</div>
-							<div className="flex flex-col w-full justify-start items-center">
-								{(todo.notes || todo.notes_timeline) && <span className="w-full text-left font-regular-10 gray-text">Notes</span>}
-								<div className="w-full h-[150px] overflow-y-auto text-left font-medium-12 black-text">
-									{todo.notes_timeline
-										? notesTimeline?.map((m, i) => {
-												const [note, clientId, timestamp] = String(m).split("::");
-												let clientName = "";
-
-												if (clientId) {
-													clientName = MyGlobal.GetAnyDataFromId(clientId, "full_name");
-												}
-
-												return (
-													<ul
-														className="py-1 pr-5"
-														key={i}>
-														<li>
-															<div className="flex w-full justify-between items-center">
-																<div className="flex w-3/5 items-center">
-																	{i + 1}. {note}
-																</div>
-																<div className="flex w-2/5 space-x-5 justify-end items-center">
-																	<span className="gray-text text-sm">{timestamp}</span>
-																	<AvatarCircle name={clientName} />
-																</div>
-															</div>
-														</li>
-													</ul>
-												);
-										  })
-										: todo.notes}
-								</div>
-							</div>
-							{uiNotes()}
+				<DialogPanel className="w-4/5 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full p-6 space-y-6 justify-between items-center">
+						<div className="flex w-full justify-between items-center">
+							{uiDescription()}
+							{todo.client_name && uiClient()}
+							{todo.sub_project_name && uiSubProject()}
 						</div>
-						<footer className="dialog-footer">
-							<button
-								className="primary-button-condensed"
-								onClick={() => saveTodo()}>
-								{uiSaveButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+						<div className="flex w-full justify-between items-center">
+							{uiAssignedTo()}
+							{uiDueDate()}
+						</div>
+						<div className="flex w-full justify-between items-center">
+							{uiPriority()}
+							{uiStatus()}
+						</div>
+						<div className="flex flex-col w-full justify-start items-center">
+							{(todo.notes || todo.notes_timeline) && <span className="w-full text-left font-regular-10 gray-text">Notes</span>}
+							<div className="w-full h-[150px] overflow-y-auto text-left font-medium-12 black-text">
+								{todo.notes_timeline
+									? notesTimeline?.map((m, i) => {
+											const [note, clientId, timestamp] = String(m).split("::");
+											let clientName = "";
+
+											if (clientId) {
+												clientName = MyGlobal.GetAnyDataFromId(clientId, "full_name");
+											}
+
+											return (
+												<ul className="py-1 pr-5" key={i}>
+													<li>
+														<div className="flex w-full justify-between items-center">
+															<div className="flex w-3/5 items-center">
+																{i + 1}. {note}
+															</div>
+															<div className="flex w-2/5 space-x-5 justify-end items-center">
+																<span className="gray-text text-sm">{timestamp}</span>
+																<AvatarCircle name={clientName} />
+															</div>
+														</div>
+													</li>
+												</ul>
+											);
+										})
+									: todo.notes}
+							</div>
+						</div>
+						{uiNotes()}
+					</div>
+					<footer className="dialog-footer">
+						<button className="primary-button-condensed" onClick={() => saveTodo()}>
+							{uiSaveButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

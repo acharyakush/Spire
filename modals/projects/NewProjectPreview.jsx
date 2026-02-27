@@ -3,7 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import dayjs from "dayjs";
-import Draggable from "react-draggable";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -48,28 +47,26 @@ export default function NewProjectPreview({ mount, project, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount ?? false} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setIsBoxMoved(!isBoxMoved)} onStop={() => setIsBoxMoved(!isBoxMoved)}>
-					<DialogPanel className="w-3/5 transform overflow-hidden rounded shadow contrast-background">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full h-[410px] py-3 space-y-3 justify-between items-center overflow-y-auto primary-light-background">
-							{uiRow("Client", project.inquiry.client_name)}
-							{uiRow("Company", project.company.name)}
-							{uiRow("Phone Number", project.phoneNumber)}
-							{uiRow("Main Project", project.mainProject.name)}
-							{uiRow("Sub Project", project.subProject.name)}
-							{uiRow("Due On", dayjs(project.dueOn).format("DD-MM-YYYY"))}
-							{uiRow("Invoice", MyGlobal.ThousandSeparator(project.invoiceFees))}
-							{uiRow("Teams", project.teams.map((m) => m.full_name).join(", "))}
-							{uiRow("Invoice Firm", project.invoiceFirm.name)}
-							{uiRow("Note", project.note || "")}
-						</div>
-						<footer className="dialog-footer">
-							<button className="primary-button-condensed" onClick={() => unmount(true)}>
-								Add
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-3/5 transform overflow-hidden rounded shadow contrast-background">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full h-[410px] py-3 space-y-3 justify-between items-center overflow-y-auto primary-light-background">
+						{uiRow("Client", project.inquiry.client_name)}
+						{uiRow("Company", project.company.name)}
+						{uiRow("Phone Number", project.phoneNumber)}
+						{uiRow("Main Project", project.mainProject.name)}
+						{uiRow("Sub Project", project.subProject.name)}
+						{uiRow("Due On", dayjs(project.dueOn).format("DD-MM-YYYY"))}
+						{uiRow("Invoice", MyGlobal.ThousandSeparator(project.invoiceFees))}
+						{uiRow("Teams", project.teams.map((m) => m.full_name).join(", "))}
+						{uiRow("Invoice Firm", project.invoiceFirm.name)}
+						{uiRow("Note", project.note || "")}
+					</div>
+					<footer className="dialog-footer">
+						<button className="primary-button-condensed" onClick={() => unmount(true)}>
+							Add
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

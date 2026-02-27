@@ -5,7 +5,6 @@ import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 config.autoAddCss = false;
 
-import "animate.css";
 import "@/styles/globals.css";
 import "tippy.js/dist/tippy.css";
 import "react-toastify/dist/ReactToastify.css";
@@ -22,11 +21,7 @@ export default function App({ Component, pageProps }) {
 	// Main UI
 	return (
 		<>
-			<ToastContainer
-				newestOnTop
-				pauseOnFocusLoss
-				transition={Zoom}
-			/>
+			<ToastContainer newestOnTop pauseOnFocusLoss transition={Zoom} />
 			<Component {...pageProps} />
 		</>
 	);

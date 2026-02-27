@@ -9,7 +9,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import dynamic from "next/dynamic";
-import writeXlsxFile from "write-excel-file";
+import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 import HoverPreviewWrapper from "@/components/HoverPreviewPdf";
@@ -132,16 +132,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
-			records.push(
-				fe.client_name + "\n" + fe.entry_date,
-				fe.phone_number + "\n" + fe.email_address,
-				fe.sub_project + "\n" + fe.main_project,
-				fe.follow_ups,
-				MyGlobal.FormatCurrency(fe.quote),
-				fe.next_follow_up_on,
-				fe.status + " (" + getTotalNotesByInquiry(fe.id) + ")",
-				fe.reference_name + "\n" + fe.entry_by_name,
-			);
+			records.push(fe.client_name + "\n" + fe.entry_date, fe.phone_number + "\n" + fe.email_address, fe.sub_project + "\n" + fe.main_project, fe.follow_ups, MyGlobal.FormatCurrency(fe.quote), fe.next_follow_up_on, fe.status + " (" + getTotalNotesByInquiry(fe.id) + ")", fe.reference_name + "\n" + fe.entry_by_name);
 		});
 
 		records.forEach((fe) => {
@@ -625,9 +616,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
 					<div className="flex w-full h-9 justify-center items-center primary-background animate-pulse">
 						{Object.values(headers).map((_, i) => (
-							<div
-								key={i}
-								className="flex w-[12.50%] justify-center items-center">
+							<div key={i} className="flex w-[12.50%] justify-center items-center">
 								<div className="h-4 w-20 bg-gray-200 rounded" />
 							</div>
 						))}
@@ -648,16 +637,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		return (
 			<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
 				<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-				<Virtuoso
-					ref={currentScrollPositionReference}
-					rangeChanged={handleRangeChange}
-					className="w-full h-full overflow-y-auto contrast-background"
-					data={doSorting()}
-					itemContent={(_, row) => uiRows(row)}
-					totalCount={inquiriesSize}
-					followOutput="auto"
-					overscan={20}
-				/>
+				<Virtuoso ref={currentScrollPositionReference} rangeChanged={handleRangeChange} className="w-full h-full overflow-y-auto contrast-background" data={doSorting()} itemContent={(_, row) => uiRows(row)} totalCount={inquiriesSize} followOutput="auto" overscan={20} />
 				<div className="flex fixed bottom-3 right-3 space-x-3 z-50">
 					{uiNewInquiry()}
 					{uiFilterOrb()}
@@ -691,17 +671,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const clientNameStyle = childStyle + " !w-3/4 " + getStatusSeverityBackground3(row.status).text;
 
 		return (
-			<div
-				className={wrapper}
-				style={{ overflowWrap: "anywhere" }}>
-				<Tippy
-					content={<Tooltip text={row.client_id_and_name} />}
-					placement="bottom">
-					<span
-						className={clientNameStyle}
-						dangerouslySetInnerHTML={{ __html: clientName }}
-						onClick={() => toggleEditInquiryView(row, true)}
-					/>
+			<div className={wrapper} style={{ overflowWrap: "anywhere" }}>
+				<Tippy content={<Tooltip text={row.client_id_and_name} />} placement="bottom">
+					<span className={clientNameStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleEditInquiryView(row, true)} />
 				</Tippy>
 				<span className="flex w-full justify-center items-center font-regular-10 gray-text">{row.entry_date}</span>
 			</div>
@@ -718,23 +690,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		return (
 			<div className={wrapper}>
-				<Tippy
-					content={<Tooltip text="Open this contact on WhatsApp Web." />}
-					placement="bottom">
-					<span
-						className={phoneNumberStyle}
-						dangerouslySetInnerHTML={{ __html: phoneNumber }}
-						onClick={() => openWhatsAppWeb(row.phone_number)}
-					/>
+				<Tippy content={<Tooltip text="Open this contact on WhatsApp Web." />} placement="bottom">
+					<span className={phoneNumberStyle} dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsAppWeb(row.phone_number)} />
 				</Tippy>
-				<Tippy
-					content={<Tooltip text="Send email to this address." />}
-					placement="bottom">
-					<span
-						className={emailAddressStyle}
-						dangerouslySetInnerHTML={{ __html: emailAddress }}
-						onClick={() => openEmailAddress(row.email_address)}
-					/>
+				<Tippy content={<Tooltip text="Send email to this address." />} placement="bottom">
+					<span className={emailAddressStyle} dangerouslySetInnerHTML={{ __html: emailAddress }} onClick={() => openEmailAddress(row.email_address)} />
 				</Tippy>
 			</div>
 		);
@@ -745,10 +705,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const style = `absolute w-full ${topPosition} mb-2 rounded contrast-background bottom-shadow focus:outline-none z-50`;
 
 		return (
-			<Menu
-				as="div"
-				className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
-				<MenuButton className="flex w-full h-[30px] px-2 justify-between items-center font-regular-10 gray-text">
+			<Menu as="div" className="flex w-40 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
+				<MenuButton className="flex w-full h-7.5 px-2 justify-between items-center font-regular-10 gray-text">
 					<span>{filter.status || "Status"}</span>
 					<FontAwesomeIcon icon={faChevronDown} />
 				</MenuButton>
@@ -794,9 +752,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 							{uiSearch()}
 							{uiFilter("orb")}
 						</div>
-						<Tippy
-							content={<Tooltip text="Clear filters" />}
-							placement="bottom">
+						<Tippy content={<Tooltip text="Clear filters" />} placement="bottom">
 							{uiClearFilter()}
 						</Tippy>
 					</div>
@@ -807,11 +763,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				trigger="mouseenter"
 				animation="shift-toward"
 				appendTo={() => document.body}>
-				<div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-slate-200 via-indigo-300 to-violet-400 text-indigo-900 border border-indigo-500 shadow transition-all duration-500 ease-out hover:scale-105 hover:shadow-md cursor-pointer">
-					<FontAwesomeIcon
-						icon={faFilter}
-						size="1x"
-					/>
+				<div className="w-10 h-10 flex items-center justify-center rounded-full bg-linear-to-br from-slate-200 via-indigo-300 to-violet-400 text-indigo-900 border border-indigo-500 shadow transition-all duration-500 ease-out hover:scale-105 hover:shadow-md cursor-pointer">
+					<FontAwesomeIcon icon={faFilter} size="1x" />
 				</div>
 			</Tippy>
 		);
@@ -820,32 +773,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiFromDate() {
 		if (inquiriesCopySize) {
 			return (
-				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faCalendar}
-						size="sm"
-					/>
-					<ReactDatePicker
-						className="w-20 h-6 bg-transparent outline-none font-regular-10"
-						dateFormat="dd-MM-YYYY"
-						dropdownMode="select"
-						endDate={filter.to}
-						onChange={(e) => setInputs("from", e)}
-						peekNextMonth
-						placeholderText="From"
-						tabIndex={1}
-						selected={filter.from}
-						selectsStart
-						startDate={filter.from}
-						showMonthDropdown
-						showYearDropdown
-					/>
-					<FontAwesomeIcon
-						className={showFromDateClearButton}
-						onClick={() => setInputs("from", "")}
-						icon={faMultiply}
-					/>
+				<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
+					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+					<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={filter.to} onChange={(e) => setInputs("from", e)} peekNextMonth placeholderText="From" tabIndex={1} selected={filter.from} selectsStart startDate={filter.from} showMonthDropdown showYearDropdown />
+					<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
 				</div>
 			);
 		}
@@ -855,12 +786,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		return Object.values(headers).map((m, i) => {
 			const showSortArrow = m == main.sort.column ? "block" : "hidden";
 			return (
-				<span
-					className="flex w-[12.50%] cursor-pointer justify-center items-center font-medium-10"
-					key={i}>
-					<div
-						className="flex w-full space-x-2 justify-center items-center text-white"
-						onClick={() => setSort(m)}>
+				<span className="flex w-[12.50%] cursor-pointer justify-center items-center font-medium-10" key={i}>
+					<div className="flex w-full space-x-2 justify-center items-center text-white" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
 					</div>
@@ -871,55 +798,17 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiMain() {
 		if (mounted.addQuotation) {
-			return (
-				<DynamicNewQuotation
-					clients={api.clients}
-					inquiry={main.selectedInquiryForNotes}
-					reload={getSupportData}
-					unmount={toggleAddQuotation}
-				/>
-			);
+			return <DynamicNewQuotation clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleAddQuotation} />;
 		} else if (mounted.editQuotation) {
-			return (
-				<DynamicEditQuotation
-					clients={api.clients}
-					inquiry={main.selectedInquiryForNotes}
-					reload={getSupportData}
-					unmount={toggleEditQuotation}
-				/>
-			);
+			return <DynamicEditQuotation clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleEditQuotation} />;
 		} else if (mounted.editInquiry) {
-			return (
-				<DynamicEditInquiry
-					inquiry={main.selectedInquiryForNotes}
-					reload={getSupportData}
-					unmount={toggleEditInquiryView}
-				/>
-			);
+			return <DynamicEditInquiry inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleEditInquiryView} />;
 		} else if (mounted.newInquiry) {
-			return (
-				<DynamicNewInquiry
-					reload={getSupportData}
-					unmount={toggleNewInquiryView}
-				/>
-			);
+			return <DynamicNewInquiry reload={getSupportData} unmount={toggleNewInquiryView} />;
 		} else if (mounted.newProject) {
-			return (
-				<DynamicNewProject
-					inquiry={main.selectedInquiryForStatusChange}
-					reload={getSupportData}
-					unmount={closeNewProjectView}
-				/>
-			);
+			return <DynamicNewProject inquiry={main.selectedInquiryForStatusChange} reload={getSupportData} unmount={closeNewProjectView} />;
 		} else if (mounted.notes) {
-			return (
-				<DynamicNotes
-					clients={api.clients}
-					inquiry={main.selectedInquiryForNotes}
-					reload={getSupportData}
-					unmount={toggleNotesView}
-				/>
-			);
+			return <DynamicNotes clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleNotesView} />;
 		} else {
 			return (
 				<>
@@ -933,9 +822,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 							{uiToDate()}
 							{uiSearch()}
 							{uiFilter()}
-							<Tippy
-								content={<Tooltip text="Clear filters" />}
-								placement="bottom">
+							<Tippy content={<Tooltip text="Clear filters" />} placement="bottom">
 								{uiClearFilter()}
 							</Tippy>
 						</div>
@@ -949,14 +836,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiNewInquiry() {
 		if (isAdministrator || allowNewInquiry) {
 			return (
-				<div
-					className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 border border-blue-600 shadow transition-all duration-300 transform hover-pulse-glow cursor-pointer"
-					onClick={() => toggleNewInquiryView()}>
-					<FontAwesomeIcon
-						icon={faPlus}
-						className="text-blue-500"
-						size="lg"
-					/>
+				<div className="w-10 h-10 flex items-center justify-center rounded-full bg-linear-to-br from-blue-100 via-blue-200 to-blue-300 border border-blue-600 shadow transition-all duration-300 transform hover-pulse-glow cursor-pointer" onClick={() => toggleNewInquiryView()}>
+					<FontAwesomeIcon icon={faPlus} className="text-blue-500" size="lg" />
 				</div>
 			);
 		}
@@ -968,14 +849,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		return (
 			<div className={style}>
-				<span
-					className={parentLabelStyle}
-					dangerouslySetInnerHTML={{ __html: subProject }}
-				/>
-				<span
-					className={childLabelStyle}
-					dangerouslySetInnerHTML={{ __html: mainProject }}
-				/>
+				<span className={parentLabelStyle} dangerouslySetInnerHTML={{ __html: subProject }} />
+				<span className={childLabelStyle} dangerouslySetInnerHTML={{ __html: mainProject }} />
 			</div>
 		);
 	}
@@ -985,46 +860,22 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const quotationFile = String(row.quotation_id).replace("/", "_").replace("/", "_");
 
 		return (
-			<div className={`${style} !justify-between space-y-2 cursor-help`}>
-				<span
-					className="font-bold-12"
-					dangerouslySetInnerHTML={{ __html: MyGlobal.FormatCurrency(quote) }}
-				/>
+			<div className={`${style} justify-between! space-y-2 cursor-help`}>
+				<span className="font-bold-12" dangerouslySetInnerHTML={{ __html: MyGlobal.FormatCurrency(quote) }} />
 				<div className="flex w-full space-x-2 justify-center items-center">
 					{(isAdministrator || allowQuotation) && (
-						<Tippy
-							content={<Tooltip text="New Quotation" />}
-							placement="bottom">
-							<FontAwesomeIcon
-								className="w-5 text-blue-600 cursor-pointer scale-100 hover:scale-150 duration-200"
-								icon={faReceipt}
-								onClick={() => toggleAddQuotation(row, true)}
-								size="1x"
-							/>
+						<Tippy content={<Tooltip text="New Quotation" />} placement="bottom">
+							<FontAwesomeIcon className="w-5 text-blue-600 cursor-pointer scale-100 hover:scale-150 duration-200" icon={faReceipt} onClick={() => toggleAddQuotation(row, true)} size="1x" />
 						</Tippy>
 					)}
 					{isAdministrator && row.quotation_id && (
-						<Tippy
-							content={<Tooltip text="Edit Quotation" />}
-							placement="bottom">
-							<FontAwesomeIcon
-								className="w-5 text-emerald-600 cursor-pointer scale-100 hover:scale-150 duration-200"
-								onClick={() => toggleEditQuotation(row, true)}
-								icon={faPen}
-								size="1x"
-							/>
+						<Tippy content={<Tooltip text="Edit Quotation" />} placement="bottom">
+							<FontAwesomeIcon className="w-5 text-emerald-600 cursor-pointer scale-100 hover:scale-150 duration-200" onClick={() => toggleEditQuotation(row, true)} icon={faPen} size="1x" />
 						</Tippy>
 					)}
 					{isAdministrator && row.quotation_id && (
-						<Tippy
-							content={<Tooltip text="Download Quotation" />}
-							placement="bottom">
-							<FontAwesomeIcon
-								className="w-5 text-orange-600 cursor-pointer scale-100 hover:scale-150 duration-200"
-								onClick={() => downloadQuotation(row.quotation_id)}
-								icon={faDownload}
-								size="1x"
-							/>
+						<Tippy content={<Tooltip text="Download Quotation" />} placement="bottom">
+							<FontAwesomeIcon className="w-5 text-orange-600 cursor-pointer scale-100 hover:scale-150 duration-200" onClick={() => downloadQuotation(row.quotation_id)} icon={faDownload} size="1x" />
 						</Tippy>
 					)}
 					{row.quotationAmount > 0 && <HoverPreviewWrapper fileUrl={`/quotations/${quotationFile}.pdf`} />}
@@ -1041,21 +892,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		return (
 			<div className={wrapper}>
-				<Tippy
-					content={<Tooltip text={row.reference_id_and_name} />}
-					placement="bottom">
-					<span
-						className={parentLabelStyle}
-						dangerouslySetInnerHTML={{ __html: referenceName }}
-					/>
+				<Tippy content={<Tooltip text={row.reference_id_and_name} />} placement="bottom">
+					<span className={parentLabelStyle} dangerouslySetInnerHTML={{ __html: referenceName }} />
 				</Tippy>
-				<Tippy
-					content={<Tooltip text={`Inquiry created by ${row.entry_by_name}`} />}
-					placement="bottom">
-					<span
-						className={childLabelStyle}
-						dangerouslySetInnerHTML={{ __html: entryBy }}
-					/>
+				<Tippy content={<Tooltip text={`Inquiry created by ${row.entry_by_name}`} />} placement="bottom">
+					<span className={childLabelStyle} dangerouslySetInnerHTML={{ __html: entryBy }} />
 				</Tippy>
 			</div>
 		);
@@ -1077,13 +918,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const avatarWrapper = style + " !flex-row " + spaceX;
 		const nextFollowUpRemaining = dayjs(row.next_follow_up_on).diff(dayjs().format("DD MMM, YYYY"), "day");
 
-		const followUpRemainingText =
-			nextFollowUpRemaining === 1 ? "Tomorrow" : nextFollowUpRemaining === 0 ? "Today. Did you follow up?" : nextFollowUpRemaining < 0 ? Math.abs(nextFollowUpRemaining) + " days ago" : "After " + nextFollowUpRemaining + " days";
+		const followUpRemainingText = nextFollowUpRemaining === 1 ? "Tomorrow" : nextFollowUpRemaining === 0 ? "Today. Did you follow up?" : nextFollowUpRemaining < 0 ? Math.abs(nextFollowUpRemaining) + " days ago" : "After " + nextFollowUpRemaining + " days";
 
 		return (
-			<div
-				className="flex w-full py-3 justify-center items-center contrast-background bottom-border font-regular-10 black-text relative"
-				key={row.id}>
+			<div className="flex w-full py-3 justify-center items-center contrast-background bottom-border font-regular-10 black-text relative" key={row.id}>
 				<span className={fancyRightBorderStyle} />
 
 				{uiClientAndInquiryDate(childStyle, row, style)}
@@ -1114,28 +952,14 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiSearch() {
 		if (inquiriesCopySize) {
-			return (
-				<TextInputNative
-					id="searchBox"
-					icon={faSearch}
-					onChange={(e) => setInputs("search", e.target.value)}
-					onClearButtonClick={() => setInputs("search", "")}
-					placeholder="Find"
-					showClearButton={showFindClearButton}
-					tabIndex={3}
-					value={filter.search}
-					width="w-36"
-				/>
-			);
+			return <TextInputNative id="searchBox" icon={faSearch} onChange={(e) => setInputs("search", e.target.value)} onClearButtonClick={() => setInputs("search", "")} placeholder="Find" showClearButton={showFindClearButton} tabIndex={3} value={filter.search} width="w-36" />;
 		}
 	}
 
 	function uiSkeletion(index) {
 		return (
-			<div
-				className="flex w-full py-3 justify-center items-center contrast-background bottom-border relative animate-pulse"
-				key={index}>
-				<div className="absolute w-3 h-[50px] rounded-tr-full rounded-br-full bg-gray-200 -left-1" />
+			<div className="flex w-full py-3 justify-center items-center contrast-background bottom-border relative animate-pulse" key={index}>
+				<div className="absolute w-3 h-12.5 rounded-tr-full rounded-br-full bg-gray-200 -left-1" />
 				<div className="flex flex-col w-[14.28%] justify-center items-center text-center space-y-2">
 					<div className="h-4 w-24 bg-gray-200 rounded" />
 					<div className="h-3 w-16 bg-gray-200 rounded" />
@@ -1169,21 +993,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiSortArrows(column) {
 		if (main.sort.column === column) {
 			if (main.sort.isAscending) {
-				return (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountDesc}
-						size="sm"
-					/>
-				);
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} size="sm" />;
 			} else {
-				return (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountAsc}
-						size="sm"
-					/>
-				);
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} size="sm" />;
 			}
 		}
 	}
@@ -1204,37 +1016,22 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		const wrapper = "flex w-[94px] space-x-2.5 justify-between items-center focus:outline-none relative z-40 font-medium-10 " + getStatusSeverity(row.status);
 
-		const icon = !isConfirmed && (
-			<FontAwesomeIcon
-				icon={faChevronDown}
-				size="xs"
-			/>
-		);
+		const icon = !isConfirmed && <FontAwesomeIcon icon={faChevronDown} size="xs" />;
 
 		const totalNotes = getTotalNotesByInquiry(row.id);
 		const notesWrapper = totalNotes > 0 ? "cursor-pointer primary-text" : "cursor-default black-text";
 
 		return (
-			<Tippy
-				content={<Tooltip text={row.closure_reason} />}
-				disabled={row.is_closed === 0 && !row.closure_reason}
-				placement="bottom">
-				<Menu
-					as="div"
-					className="flex w-full space-x-2 justify-center items-center relative">
+			<Tippy content={<Tooltip text={row.closure_reason} />} disabled={row.is_closed === 0 && !row.closure_reason} placement="bottom">
+				<Menu as="div" className="flex w-full space-x-2 justify-center items-center relative">
 					<MenuButton className={wrapper}>
 						<span dangerouslySetInnerHTML={{ __html: highlightText(true, row.status) }} />
 						{icon}
 					</MenuButton>
-					<span
-						className={notesWrapper}
-						onClick={() => totalNotes && toggleNotesView(row, true)}>
-						<BadgeSmallWithBackground
-							style={getStatusSeverityBackground(row.status)}
-							value={totalNotes}
-						/>
+					<span className={notesWrapper} onClick={() => totalNotes && toggleNotesView(row, true)}>
+						<BadgeSmallWithBackground style={getStatusSeverityBackground(row.status)} value={totalNotes} />
 					</span>
-					{!isConfirmed && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-[60] full-border">{uiStatusMenuList(row)}</MenuItems>}
+					{!isConfirmed && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-60 full-border">{uiStatusMenuList(row)}</MenuItems>}
 				</Menu>
 			</Tippy>
 		);
@@ -1251,11 +1048,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				const label = m === statuses.Closed ? "Close" : m === statuses.Confirmed ? "Confirm" : m;
 
 				return (
-					<MenuItem
-						as="div"
-						className="p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text text-left hovered-rows"
-						key={i}
-						onClick={() => prepareInquiryStatusChangeData(row, m)}>
+					<MenuItem as="div" className="p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text text-left hovered-rows" key={i} onClick={() => prepareInquiryStatusChangeData(row, m)}>
 						<span>{label}</span>
 					</MenuItem>
 				);
@@ -1265,32 +1058,10 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiToDate() {
 		if (inquiriesCopySize) {
 			return (
-				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faCalendar}
-						size="sm"
-					/>
-					<ReactDatePicker
-						className="w-20 h-6 bg-transparent outline-none font-regular-10"
-						dateFormat="dd-MM-YYYY"
-						dropdownMode="select"
-						endDate={filter.to}
-						onChange={(e) => setInputs("to", e)}
-						placeholderText="To"
-						peekNextMonth
-						selected={filter.to}
-						selectsEnd
-						startDate={filter.to}
-						showMonthDropdown
-						showYearDropdown
-						tabIndex={2}
-					/>
-					<FontAwesomeIcon
-						className={showToDateClearButton}
-						onClick={() => setInputs("to", "")}
-						icon={faMultiply}
-					/>
+				<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
+					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+					<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={filter.to} onChange={(e) => setInputs("to", e)} placeholderText="To" peekNextMonth selected={filter.to} selectsEnd startDate={filter.to} showMonthDropdown showYearDropdown tabIndex={2} />
+					<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
 				</div>
 			);
 		}
@@ -1299,16 +1070,13 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiTotalQuote() {
 		return (
 			<div className="group relative flex items-center w-fit px-0 transition-all duration-500 ease-in-out">
-				<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
+				<div className="absolute inset-0 rounded-full bg-linear-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
 
-				<div className="flex items-center justify-center w-10 h-10 group-hover:h-[36px] rounded-full text-white ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
-					<FontAwesomeIcon
-						icon={faIndianRupee}
-						size="1x"
-					/>
+				<div className="flex items-center justify-center w-10 h-10 group-hover:h-9 rounded-full text-white ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
+					<FontAwesomeIcon icon={faIndianRupee} size="1x" />
 				</div>
 
-				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-[300px]">
+				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-75">
 					<div className="pl-2 pr-4 text-white font-bold-12 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out relative z-20">{getTotalQuote()}</div>
 				</div>
 			</div>
@@ -1368,14 +1136,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		<div className="flex flex-col w-full h-full justify-start items-center primary-light-background">
 			{uiMain()}
 
-			{mounted.updateStatus && (
-				<DynamicUpdateStatus
-					inquiry={main.selectedInquiryForStatusChange}
-					mount={mounted.updateStatus}
-					reload={getSupportData}
-					unmount={toggleUpdateStatus}
-				/>
-			)}
+			{mounted.updateStatus && <DynamicUpdateStatus inquiry={main.selectedInquiryForStatusChange} mount={mounted.updateStatus} reload={getSupportData} unmount={toggleUpdateStatus} />}
 		</div>
 	);
 }

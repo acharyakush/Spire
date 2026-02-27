@@ -4,7 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import writeXlsxFile from "write-excel-file";
+import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 import NewTransaction from "@/modals/cashFlows/NewTransaction";
@@ -16,17 +16,7 @@ import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-	faCalendar,
-	faChevronRight,
-	faExclamationTriangle,
-	faFileExcel,
-	faMultiply,
-	faPlusCircle,
-	faSearch,
-	faSortAmountAsc,
-	faSortAmountDesc,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faChevronRight, faExclamationTriangle, faFileExcel, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 export default function Transactions({ entity, reload, unmount }) {
 	// Business Logic
@@ -89,28 +79,9 @@ export default function Transactions({ entity, reload, unmount }) {
 
 		doSorting().forEach((fe) => {
 			if (isOfficeExpense) {
-				records.push(
-					dayjs(fe.entry_at).format("DD-MM-YYYY"),
-					fe.firm_name,
-					fe.bank_name,
-					fe.amount,
-					fe.particulars,
-					fe.payment_source_name,
-					fe.remarks,
-					fe.entry_by_name,
-				);
+				records.push(dayjs(fe.entry_at).format("DD-MM-YYYY"), fe.firm_name, fe.bank_name, fe.amount, fe.particulars, fe.payment_source_name, fe.remarks, fe.entry_by_name);
 			} else {
-				records.push(
-					dayjs(fe.entry_at).format("DD-MM-YYYY"),
-					fe.firm_name,
-					fe.bank_name,
-					fe.amount,
-					fe.particulars,
-					fe.payment_source_name,
-					fe.payment_type,
-					fe.remarks,
-					fe.entry_by_name,
-				);
+				records.push(dayjs(fe.entry_at).format("DD-MM-YYYY"), fe.firm_name, fe.bank_name, fe.amount, fe.particulars, fe.payment_source_name, fe.payment_type, fe.remarks, fe.entry_by_name);
 			}
 		});
 
@@ -183,16 +154,7 @@ export default function Transactions({ entity, reload, unmount }) {
 				const paymentType = String(f.payment_type).toLowerCase();
 				const remarks = String(f.remarks).toLowerCase();
 
-				return (
-					amount.includes(findTerm) ||
-					entryByName.includes(findTerm) ||
-					firmName.includes(findTerm) ||
-					bankName.includes(findTerm) ||
-					particulars.includes(findTerm) ||
-					paymentSource.includes(findTerm) ||
-					paymentType.includes(findTerm) ||
-					remarks.includes(findTerm)
-				);
+				return amount.includes(findTerm) || entryByName.includes(findTerm) || firmName.includes(findTerm) || bankName.includes(findTerm) || particulars.includes(findTerm) || paymentSource.includes(findTerm) || paymentType.includes(findTerm) || remarks.includes(findTerm);
 			}
 		});
 
@@ -377,40 +339,14 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function uiFind() {
-		return (
-			<TextInputNative
-				id="findBox"
-				icon={faSearch}
-				onChange={(e) => setFind("transaction", e.target.value)}
-				onClearButtonClick={() => setFind("transaction", "")}
-				placeholder="Find"
-				showClearButton={showFindClearButton}
-				tabIndex="3"
-				value={other.find.transaction}
-				width="w-36"
-			/>
-		);
+		return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setFind("transaction", e.target.value)} onClearButtonClick={() => setFind("transaction", "")} placeholder="Find" showClearButton={showFindClearButton} tabIndex="3" value={other.find.transaction} width="w-36" />;
 	}
 
 	function uiFromDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.date.to}
-					onChange={(e) => setFind("from", e)}
-					peekNextMonth
-					placeholderText="From"
-					selected={other.find.date.from}
-					selectsStart
-					startDate={other.find.date.from}
-					showMonthDropdown
-					showYearDropdown
-					tabIndex="1"
-				/>
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.date.to} onChange={(e) => setFind("from", e)} peekNextMonth placeholderText="From" selected={other.find.date.from} selectsStart startDate={other.find.date.from} showMonthDropdown showYearDropdown tabIndex="1" />
 				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setFind("from", "")} icon={faMultiply} />
 			</div>
 		);
@@ -522,23 +458,9 @@ export default function Transactions({ entity, reload, unmount }) {
 
 	function uiToDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.date.to}
-					onChange={(e) => setFind("to", e)}
-					placeholderText="To"
-					peekNextMonth
-					selected={other.find.date.to}
-					selectsEnd
-					startDate={other.find.date.to}
-					showMonthDropdown
-					showYearDropdown
-					tabIndex="2"
-				/>
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.date.to} onChange={(e) => setFind("to", e)} placeholderText="To" peekNextMonth selected={other.find.date.to} selectsEnd startDate={other.find.date.to} showMonthDropdown showYearDropdown tabIndex="2" />
 				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setFind("to", "")} icon={faMultiply} />
 			</div>
 		);
@@ -562,12 +484,7 @@ export default function Transactions({ entity, reload, unmount }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start">
 					<div className="flex w-full h-9 justify-center items-center primary-background primary-border">{uiHeaders()}</div>
-					<Virtuoso
-						className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background"
-						data={doSorting()}
-						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.transactions.copy.length}
-					/>
+					<Virtuoso className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.transactions.copy.length} />
 					<div className="flex w-full h-9 justify-center items-center primary-border primary-background">{uiTransactionsFooter()}</div>
 				</div>
 			);
@@ -639,19 +556,9 @@ export default function Transactions({ entity, reload, unmount }) {
 			</div>
 			<div className="flex flex-col w-full h-full justify-center items-center contrast-background">{uiMain()}</div>
 
-			{mounted.editTransaction && (
-				<EditTransaction
-					entity={entity}
-					mount={mounted.editTransaction}
-					reload={reloadRootAndUnmount}
-					transaction={other.selectedTransaction}
-					unmount={toggleEditTransaction}
-				/>
-			)}
+			{mounted.editTransaction && <EditTransaction entity={entity} mount={mounted.editTransaction} reload={reloadRootAndUnmount} transaction={other.selectedTransaction} unmount={toggleEditTransaction} />}
 
-			{mounted.newTransaction && (
-				<NewTransaction entity={entity} mount={mounted.newTransaction} reload={reloadRootAndUnmount} unmount={toggleNewTransaction} />
-			)}
+			{mounted.newTransaction && <NewTransaction entity={entity} mount={mounted.newTransaction} reload={reloadRootAndUnmount} unmount={toggleNewTransaction} />}
 		</div>
 	);
 }

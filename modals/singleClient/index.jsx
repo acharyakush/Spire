@@ -3,7 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
@@ -121,36 +120,9 @@ export function EditClient({ client, mount, reload, unmount }) {
 	function uiSection1() {
 		return (
 			<div className="flex flex-col w-1/2 space-y-2.5 justify-center items-start">
-				<TextInput
-					icon={faFont}
-					key={1}
-					label="Name"
-					onChange={(e) => setInputs("name", e.target.value)}
-					onKeyPress={() => {}}
-					tabIndex="1"
-					value={main.name}
-					width="w-full"
-				/>
-				<TextInput
-					icon={faPhone}
-					key={2}
-					label="Phone Number"
-					onChange={(e) => setInputs("phone_number", e.target.value)}
-					onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-					tabIndex="2"
-					value={main.phone_number}
-					width="w-full"
-				/>
-				<TextInput
-					icon={faAt}
-					key={3}
-					label="Email Address"
-					onChange={(e) => setInputs("email_address", e.target.value)}
-					onKeyPress={() => {}}
-					tabIndex="3"
-					value={main.email_address}
-					width="w-full"
-				/>
+				<TextInput icon={faFont} key={1} label="Name" onChange={(e) => setInputs("name", e.target.value)} onKeyPress={() => {}} tabIndex="1" value={main.name} width="w-full" />
+				<TextInput icon={faPhone} key={2} label="Phone Number" onChange={(e) => setInputs("phone_number", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex="2" value={main.phone_number} width="w-full" />
+				<TextInput icon={faAt} key={3} label="Email Address" onChange={(e) => setInputs("email_address", e.target.value)} onKeyPress={() => {}} tabIndex="3" value={main.email_address} width="w-full" />
 			</div>
 		);
 	}
@@ -158,27 +130,8 @@ export function EditClient({ client, mount, reload, unmount }) {
 	function uiSection2() {
 		return (
 			<div className="flex flex-col w-1/2 space-y-2.5 justify-center items-start">
-				<TextInput
-					icon={faStickyNote}
-					key={4}
-					label="Note"
-					onChange={(e) => setInputs("notes", e.target.value)}
-					onKeyPress={() => {}}
-					tabIndex="4"
-					value={main.notes}
-					width="w-full"
-				/>
-				<TextArea
-					icon={faHome}
-					key={5}
-					label="Address"
-					onChange={(e) => setInputs("address", e.target.value)}
-					onKeyDown={() => {}}
-					rows={2}
-					tabIndex="5"
-					value={main.address}
-					width="w-full"
-				/>
+				<TextInput icon={faStickyNote} key={4} label="Note" onChange={(e) => setInputs("notes", e.target.value)} onKeyPress={() => {}} tabIndex="4" value={main.notes} width="w-full" />
+				<TextArea icon={faHome} key={5} label="Address" onChange={(e) => setInputs("address", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex="5" value={main.address} width="w-full" />
 			</div>
 		);
 	}
@@ -202,20 +155,18 @@ export function EditClient({ client, mount, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-1/2 transform overflow-hidden rounded shadow contrast-background">
-						{uiTitleBar()}
-						<div className="flex w-full p-5 space-x-10 justify-between items-start">
-							{uiSection1()}
-							{uiSection2()}
-						</div>
-						<footer className="dialog-footer">
-							<button className={editButtonStyle} onClick={() => doEditing()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-1/2 transform overflow-hidden rounded shadow contrast-background">
+					{uiTitleBar()}
+					<div className="flex w-full p-5 space-x-10 justify-between items-start">
+						{uiSection1()}
+						{uiSection2()}
+					</div>
+					<footer className="dialog-footer">
+						<button className={editButtonStyle} onClick={() => doEditing()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -330,36 +281,9 @@ export function EditCompany({ company, mount, reload, unmount }) {
 	function uiSection1() {
 		return (
 			<div className="flex flex-col w-1/2 space-y-2.5 justify-center items-start">
-				<TextInput
-					icon={faFont}
-					key={1}
-					label="Name"
-					onChange={(e) => setInputs("name", e.target.value)}
-					onKeyPress={() => {}}
-					tabIndex={1}
-					value={main.name}
-					width="w-full"
-				/>
-				<TextInput
-					icon={faPhone}
-					key={2}
-					label="Phone Number"
-					onChange={(e) => setInputs("phone_number", e.target.value)}
-					onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-					tabIndex={2}
-					value={main.phone_number}
-					width="w-full"
-				/>
-				<TextInput
-					icon={faAt}
-					key={3}
-					label="Email Address"
-					onChange={(e) => setInputs("email_address", e.target.value)}
-					onKeyPress={() => {}}
-					tabIndex={3}
-					value={main.email_address}
-					width="w-full"
-				/>
+				<TextInput icon={faFont} key={1} label="Name" onChange={(e) => setInputs("name", e.target.value)} onKeyPress={() => {}} tabIndex={1} value={main.name} width="w-full" />
+				<TextInput icon={faPhone} key={2} label="Phone Number" onChange={(e) => setInputs("phone_number", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={main.phone_number} width="w-full" />
+				<TextInput icon={faAt} key={3} label="Email Address" onChange={(e) => setInputs("email_address", e.target.value)} onKeyPress={() => {}} tabIndex={3} value={main.email_address} width="w-full" />
 			</div>
 		);
 	}
@@ -367,38 +291,9 @@ export function EditCompany({ company, mount, reload, unmount }) {
 	function uiSection2() {
 		return (
 			<div className="flex flex-col w-1/2 space-y-2.5 justify-center items-start">
-				<TextInput
-					icon={faIdBadge}
-					key={5}
-					label="PAN"
-					maxLength="10"
-					onChange={(e) => setInputs("pan", e.target.value)}
-					onKeyPress={() => {}}
-					tabIndex={5}
-					value={main.pan}
-					width="w-full"
-				/>
-				<TextInput
-					icon={faIdBadge}
-					key={6}
-					label="GSTIN"
-					maxLength="15"
-					onChange={(e) => setInputs("gstin", e.target.value)}
-					onKeyPress={() => {}}
-					tabIndex={6}
-					value={main.gstin}
-					width="w-full"
-				/>
-				<TextArea
-					icon={faHome}
-					label="Address"
-					onChange={(e) => setInputs("address", e.target.value)}
-					onKeyDown={() => {}}
-					rows={2}
-					tabIndex={4}
-					value={main.address}
-					width="w-full"
-				/>
+				<TextInput icon={faIdBadge} key={5} label="PAN" maxLength="10" onChange={(e) => setInputs("pan", e.target.value)} onKeyPress={() => {}} tabIndex={5} value={main.pan} width="w-full" />
+				<TextInput icon={faIdBadge} key={6} label="GSTIN" maxLength="15" onChange={(e) => setInputs("gstin", e.target.value)} onKeyPress={() => {}} tabIndex={6} value={main.gstin} width="w-full" />
+				<TextArea icon={faHome} label="Address" onChange={(e) => setInputs("address", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={4} value={main.address} width="w-full" />
 			</div>
 		);
 	}
@@ -422,20 +317,18 @@ export function EditCompany({ company, mount, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-1/2 transform overflow-hidden rounded shadow contrast-background">
-						{uiTitleBar()}
-						<div className="flex w-full p-5 space-x-10 justify-between items-start">
-							{uiSection1()}
-							{uiSection2()}
-						</div>
-						<footer className="dialog-footer">
-							<button className={editButtonStyle} onClick={() => doEditing()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-1/2 transform overflow-hidden rounded shadow contrast-background">
+					{uiTitleBar()}
+					<div className="flex w-full p-5 space-x-10 justify-between items-start">
+						{uiSection1()}
+						{uiSection2()}
+					</div>
+					<footer className="dialog-footer">
+						<button className={editButtonStyle} onClick={() => doEditing()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

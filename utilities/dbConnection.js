@@ -34,11 +34,26 @@ export const query = async (query, parameters) => {
 	let connection;
 
 	try {
+		const safeParameters = Array.isArray(parameters)
+			? parameters.map((value) => {
+					if (value instanceof Date) {
+						return value.toISOString().slice(0, 19).replace("T", " ");
+					}
+
+					if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(value)) {
+						return value.slice(0, 19).replace("T", " ");
+					}
+
+					return value;
+				})
+			: [];
+
 		connection = await (global.dbConnection || getConnectionPool()).getConnection();
-		const [rows] = await connection.execute(query, parameters);
+		const [rows] = await connection.execute(query, safeParameters);
 		return rows;
 	} catch (error) {
 		console.error("Database query error: ", error);
+		throw error;
 	} finally {
 		if (connection) {
 			connection.release();

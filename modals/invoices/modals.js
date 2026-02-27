@@ -1,7 +1,6 @@
 "use client";
 
 import axios from "axios";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useState } from "react";
@@ -36,10 +35,7 @@ export function DeleteTransaction({ mount, transaction, reload, unmount }) {
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(
-					`Deleted transaction <b>${transaction.transaction.particulars}</b> having amount <b>${transaction.transaction.amount}</b> of <b>${transaction.transaction.project_id}</b>`,
-					MyConstants.Modules.Base.Invoices,
-				);
+				MyGlobal.AddActivity(`Deleted transaction <b>${transaction.transaction.particulars}</b> having amount <b>${transaction.transaction.amount}</b> of <b>${transaction.transaction.project_id}</b>`, MyConstants.Modules.Base.Invoices);
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.InvoiceTransactionDeleted);
 
 				unmount();
@@ -84,21 +80,19 @@ export function DeleteTransaction({ mount, transaction, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded shadow contrast-background">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full p-4 justify-center items-center font-regular-12 black-text">
-							<div className="flex flex-col px-1 text-left">
-								<span className="py-2">Do you want to delete this transaction?</span>
-							</div>
+				<DialogPanel className="w-100 transform overflow-hidden rounded shadow contrast-background">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full p-4 justify-center items-center font-regular-12 black-text">
+						<div className="flex flex-col px-1 text-left">
+							<span className="py-2">Do you want to delete this transaction?</span>
 						</div>
-						<footer className="dialog-footer">
-							<button className={buttonStyle} onClick={() => doDeletion()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+					</div>
+					<footer className="dialog-footer">
+						<button className={buttonStyle} onClick={() => doDeletion()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -141,10 +135,7 @@ export function EditAmount({ invoice, mount, reload, unmount }) {
 
 				const invoiceCustomId = invoice.transaction.invoice_custom_id || "Not Generated";
 
-				MyGlobal.AddActivity(
-					`Edited transaction amount of <b>${invoice.transaction.project_id}</b> <b>${invoice.company_name}</b> (Invoice ID - <b>${invoiceCustomId}</b>) from <b>${invoice.transaction.amount}</b> to <b>${main.amount}</b>.`,
-					MyConstants.Modules.Base.Invoices,
-				);
+				MyGlobal.AddActivity(`Edited transaction amount of <b>${invoice.transaction.project_id}</b> <b>${invoice.company_name}</b> (Invoice ID - <b>${invoiceCustomId}</b>) from <b>${invoice.transaction.amount}</b> to <b>${main.amount}</b>.`, MyConstants.Modules.Base.Invoices);
 
 				MyGlobal.ShowSuccessToast(MyConstants.Messages.AmountEdited);
 			} else {
@@ -193,29 +184,18 @@ export function EditAmount({ invoice, mount, reload, unmount }) {
 		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable handle=".draggable-handle" onStart={() => setBoxDrag()} onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded shadow contrast-background">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
-							<TextInput icon={faIndianRupeeSign} isReadOnly key={1} label="Current Amount" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={invoice.transaction.amount} width="w-full" />
-							<TextInput
-								icon={faIndianRupeeSign}
-								key={2}
-								label="New Amount"
-								onChange={(e) => setQuote(e.target.value)}
-								onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-								tabIndex={2}
-								value={main.amount}
-								width="w-full"
-							/>
-						</div>
-						<footer className="dialog-footer">
-							<button className={editButtonStyle} onClick={() => doEditing()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded shadow contrast-background">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
+						<TextInput icon={faIndianRupeeSign} isReadOnly key={1} label="Current Amount" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={invoice.transaction.amount} width="w-full" />
+						<TextInput icon={faIndianRupeeSign} key={2} label="New Amount" onChange={(e) => setQuote(e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={main.amount} width="w-full" />
+					</div>
+					<footer className="dialog-footer">
+						<button className={editButtonStyle} onClick={() => doEditing()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

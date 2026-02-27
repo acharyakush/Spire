@@ -4,8 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import Draggable from "react-draggable";
-import writeXlsxFile from "write-excel-file";
+import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
@@ -16,22 +15,7 @@ import { Badge, Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ComboBox2, DatePicker, TextArea, TextInput, TextInputNative } from "@/components/Inputs";
-import {
-	faAngleRight,
-	faBank,
-	faCalendar,
-	faExclamationTriangle,
-	faFileDownload,
-	faFileExcel,
-	faIndianRupee,
-	faMultiply,
-	faNoteSticky,
-	faPlusCircle,
-	faSearch,
-	faSortAmountAsc,
-	faSortAmountDesc,
-	faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { faAngleRight, faBank, faCalendar, faExclamationTriangle, faFileDownload, faFileExcel, faIndianRupee, faMultiply, faNoteSticky, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export function Transactions({ mount, project, reload, unmount }) {
 	// Business Logic
@@ -384,94 +368,33 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiAmountReceived() {
-		return (
-			<TextInput
-				errorText={other.errorText}
-				hasError={other.hasError}
-				icon={faIndianRupee}
-				id="amountReceived"
-				label="Amount Received"
-				onChange={(e) => setInputs("amountReceived", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex="3"
-				value={main.amountReceived}
-				width="w-full"
-			/>
-		);
+		return <TextInput errorText={other.errorText} hasError={other.hasError} icon={faIndianRupee} id="amountReceived" label="Amount Received" onChange={(e) => setInputs("amountReceived", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex="3" value={main.amountReceived} width="w-full" />;
 	}
 
 	function uiDate() {
-		return (
-			<DatePicker
-				icon={faCalendar}
-				label="Date"
-				onChange={(e) => setInputs("entryAt", e)}
-				tabIndex="1"
-				value={main.entryAt}
-				width="w-full"
-			/>
-		);
+		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryAt", e)} tabIndex="1" value={main.entryAt} width="w-full" />;
 	}
 
 	function uiExport() {
 		if (api.transactions.data.length && api.transactions.copy.length) {
 			return (
-				<button
-					className="primary-button-transparent-background"
-					onClick={() => doExcelExport()}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faFileExcel}
-					/>
+				<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
+					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 				</button>
 			);
 		}
 	}
 
 	function uiFind() {
-		return (
-			<TextInputNative
-				id="findBox"
-				icon={faSearch}
-				onChange={(e) => setInputs("transaction", e.target.value)}
-				onClearButtonClick={() => setInputs("transaction", "")}
-				placeholder="Find"
-				showClearButton={showFindClearButton}
-				tabIndex={3}
-				value={other.find.transaction}
-				width="w-36"
-			/>
-		);
+		return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setInputs("transaction", e.target.value)} onClearButtonClick={() => setInputs("transaction", "")} placeholder="Find" showClearButton={showFindClearButton} tabIndex={3} value={other.find.transaction} width="w-36" />;
 	}
 
 	function uiFromDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
-				<FontAwesomeIcon
-					className="primary-text"
-					icon={faCalendar}
-					size="sm"
-				/>
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.entryAt.to}
-					onChange={(e) => setInputs("from", e)}
-					peekNextMonth
-					placeholderText="From"
-					tabIndex={1}
-					selected={other.find.entryAt.from}
-					selectsStart
-					startDate={other.find.entryAt.from}
-					showMonthDropdown
-					showYearDropdown
-				/>
-				<FontAwesomeIcon
-					className={showFromDateClearButton}
-					onClick={() => setInputs("from", "")}
-					icon={faMultiply}
-				/>
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
+				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.entryAt.to} onChange={(e) => setInputs("from", e)} peekNextMonth placeholderText="From" tabIndex={1} selected={other.find.entryAt.from} selectsStart startDate={other.find.entryAt.from} showMonthDropdown showYearDropdown />
+				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
 			</div>
 		);
 	}
@@ -482,9 +405,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 			const wrapper = `w-1/4 space-x-1 text-center text-white font-medium-12 ${showTotalAmount}`;
 
 			return (
-				<span
-					className={wrapper}
-					key={i}>
+				<span className={wrapper} key={i}>
 					<span>{getTotalAmount()}</span>
 				</span>
 			);
@@ -496,12 +417,8 @@ export function Transactions({ mount, project, reload, unmount }) {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
-				<span
-					className="flex w-1/4 justify-center items-center cursor-pointer font-medium-10"
-					key={i}>
-					<div
-						className="flex w-full space-x-2 justify-center items-center text-white"
-						onClick={() => setSort(m)}>
+				<span className="flex w-1/4 justify-center items-center cursor-pointer font-medium-10" key={i}>
+					<div className="flex w-full space-x-2 justify-center items-center text-white" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
 					</div>
@@ -520,11 +437,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 		} else if (!api.transactions.copy.length) {
 			return (
 				<div className={wrapper}>
-					<FontAwesomeIcon
-						className="text-yellow-500"
-						icon={faExclamationTriangle}
-						size="7x"
-					/>
+					<FontAwesomeIcon className="text-yellow-500" icon={faExclamationTriangle} size="7x" />
 					<span className="font-regular-12 gray-text">No transactions found.</span>
 				</div>
 			);
@@ -538,12 +451,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 						{uiExport()}
 					</div>
 					<div className="flex w-full h-9 justify-center items-center rounded-tl rounded-tr primary-background primary-border">{uiHeaders()}</div>
-					<Virtuoso
-						className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background"
-						data={doSorting()}
-						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.transactions.copy.length}
-					/>
+					<Virtuoso className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.transactions.copy.length} />
 					<div className="flex w-full h-9 justify-center items-center rounded-bl rounded-br primary-border primary-background">{uiFooter()}</div>
 				</div>
 			);
@@ -551,42 +459,11 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiParticulars() {
-		return (
-			<TextArea
-				icon={faNoteSticky}
-				label="Particulars"
-				onChange={(e) => setInputs("particulars", e.target.value)}
-				onKeyDown={() => {}}
-				rows={2}
-				tabIndex="4"
-				value={main.particulars}
-				width="w-full"
-			/>
-		);
+		return <TextArea icon={faNoteSticky} label="Particulars" onChange={(e) => setInputs("particulars", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex="4" value={main.particulars} width="w-full" />;
 	}
 
 	function uiPaymentSource() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.paymentSource.name}
-				displayValue="name"
-				filteredData={getPaymentSources}
-				hasDataObject
-				icon={faBank}
-				isReadOnly={false}
-				label="Payment Source"
-				onChange={(e) => setInputs("paymentSource", e)}
-				onClick={() => {}}
-				onInputChange={(e) => findPaymentSource(e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.paymentSource}
-				tabIndex="2"
-				value={main.paymentSource.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.paymentSource.name} displayValue="name" filteredData={getPaymentSources} hasDataObject icon={faBank} isReadOnly={false} label="Payment Source" onChange={(e) => setInputs("paymentSource", e)} onClick={() => {}} onInputChange={(e) => findPaymentSource(e.target.value)} onKeyPress={() => {}} searchedItem={other.find.paymentSource} tabIndex="2" value={main.paymentSource.name} width="w-full" />;
 	}
 
 	function uiRows(row, i) {
@@ -597,23 +474,12 @@ export function Transactions({ mount, project, reload, unmount }) {
 		const source = MyGlobal.HighlightText(row.source, other.find.transaction);
 
 		return (
-			<div
-				className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text"
-				key={i}>
+			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
 				<span className={style}>{dayjs(row.entry_at).format("DD-MM-YYYY")}</span>
 
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: particulars }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: amount }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: source }}
-				/>
+				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: source }} />
 			</div>
 		);
 	}
@@ -621,76 +487,32 @@ export function Transactions({ mount, project, reload, unmount }) {
 	function uiSortArrows(column) {
 		if (other.sort.column == column) {
 			if (other.sort.isAscending) {
-				return (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountDesc}
-						size="sm"
-					/>
-				);
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} size="sm" />;
 			} else {
-				return (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountAsc}
-						size="sm"
-					/>
-				);
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} size="sm" />;
 			}
 		}
 	}
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full space-x-3 justify-start items-center">
 					<span>{thisView}</span>
-					<FontAwesomeIcon
-						className="gray-text"
-						icon={faAngleRight}
-						size="xs"
-					/>
+					<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
 					<span>Amount Received</span>
 				</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	function uiToDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
-				<FontAwesomeIcon
-					className="primary-text"
-					icon={faCalendar}
-					size="sm"
-				/>
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.entryAt.to}
-					onChange={(e) => setInputs("to", e)}
-					placeholderText="To"
-					peekNextMonth
-					selected={other.find.entryAt.to}
-					selectsEnd
-					startDate={other.find.entryAt.to}
-					showMonthDropdown
-					showYearDropdown
-					tabIndex={2}
-				/>
-				<FontAwesomeIcon
-					className={showToDateClearButton}
-					onClick={() => setInputs("to", "")}
-					icon={faMultiply}
-				/>
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
+				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.entryAt.to} onChange={(e) => setInputs("to", e)} placeholderText="To" peekNextMonth selected={other.find.entryAt.to} selectsEnd startDate={other.find.entryAt.to} showMonthDropdown showYearDropdown tabIndex={2} />
+				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
 			</div>
 		);
 	}
@@ -712,54 +534,35 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full h-[calc(100%-45px)] p-5 justify-center items-center primary-light-background">
-							<div className="flex w-full pb-4 space-x-2 justify-start items-center font-medium-16 primary-text">
-								<span>{project.company_name}</span>
-								<FontAwesomeIcon
-									className="gray-text"
-									icon={faAngleRight}
-									size="xs"
-								/>
-								<span>{project.main_project_name}</span>
-								<FontAwesomeIcon
-									className="gray-text"
-									icon={faAngleRight}
-									size="xs"
-								/>
-								<span>{project.sub_project_name}</span>
-							</div>
-							<div className="flex w-full h-full p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter">
-								<div className="flex w-3/4 h-full justify-center items-start">{uiTransactions()}</div>
-								<div className="flex flex-col w-1/4 h-full justify-start items-center">
-									{uiDate()}
-									{uiPaymentSource()}
-									{uiAmountReceived()}
-									{uiParticulars()}
-									<div className="w-full px-2 mt-5">
-										<button
-											className={isAddEligible()}
-											onClick={() => doAddition()}>
-											{uiAdd()}
-										</button>
-									</div>
+				<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full h-[calc(100%-45px)] p-5 justify-center items-center primary-light-background">
+						<div className="flex w-full pb-4 space-x-2 justify-start items-center font-medium-16 primary-text">
+							<span>{project.company_name}</span>
+							<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
+							<span>{project.main_project_name}</span>
+							<FontAwesomeIcon className="gray-text" icon={faAngleRight} size="xs" />
+							<span>{project.sub_project_name}</span>
+						</div>
+						<div className="flex w-full h-full p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter">
+							<div className="flex w-3/4 h-full justify-center items-start">{uiTransactions()}</div>
+							<div className="flex flex-col w-1/4 h-full justify-start items-center">
+								{uiDate()}
+								{uiPaymentSource()}
+								{uiAmountReceived()}
+								{uiParticulars()}
+								<div className="w-full px-2 mt-5">
+									<button className={isAddEligible()} onClick={() => doAddition()}>
+										{uiAdd()}
+									</button>
 								</div>
 							</div>
 						</div>
-					</DialogPanel>
-				</Draggable>
+					</div>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -910,11 +713,7 @@ export function RvList({ mount, project, unmount }) {
 		} else if (api.list.copy.length && !api.list.data.length) {
 			return (
 				<div className={wrapper}>
-					<FontAwesomeIcon
-						className="text-yellow-500"
-						icon={faExclamationTriangle}
-						size="7x"
-					/>
+					<FontAwesomeIcon className="text-yellow-500" icon={faExclamationTriangle} size="7x" />
 					<span className="font-regular-12 gray-text">No RVs found.</span>
 				</div>
 			);
@@ -922,12 +721,7 @@ export function RvList({ mount, project, unmount }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start">
 					<div className="flex w-full px-4 justify-center items-center rounded-tl rounded-tr primary-background">{uiHeaders()}</div>
-					<Virtuoso
-						className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background"
-						data={doSorting()}
-						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.list.copy.length}
-					/>
+					<Virtuoso className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.list.copy.length} />
 				</div>
 			);
 		}
@@ -936,62 +730,23 @@ export function RvList({ mount, project, unmount }) {
 	function uiExport() {
 		if (api.list.data.length && api.list.copy.length) {
 			return (
-				<button
-					className="primary-button-transparent-background"
-					onClick={() => {}}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faFileExcel}
-					/>
+				<button className="primary-button-transparent-background" onClick={() => {}}>
+					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 				</button>
 			);
 		}
 	}
 
 	function uiFind() {
-		return (
-			<TextInputNative
-				id="findBox"
-				icon={faSearch}
-				onChange={(e) => setInputs("term", e.target.value)}
-				onClearButtonClick={() => setInputs("term", "")}
-				placeholder="Find"
-				showClearButton={showFindClearButton}
-				tabIndex="3"
-				value={other.find.term}
-				width="w-36"
-			/>
-		);
+		return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setInputs("term", e.target.value)} onClearButtonClick={() => setInputs("term", "")} placeholder="Find" showClearButton={showFindClearButton} tabIndex="3" value={other.find.term} width="w-36" />;
 	}
 
 	function uiFromDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
-				<FontAwesomeIcon
-					className="primary-text"
-					icon={faCalendar}
-					size="sm"
-				/>
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.createdAt.to}
-					onChange={(e) => setInputs("from", e)}
-					peekNextMonth
-					placeholderText="From"
-					tabIndex="1"
-					selected={other.find.createdAt.from}
-					selectsStart
-					startDate={other.find.createdAt.from}
-					showMonthDropdown
-					showYearDropdown
-				/>
-				<FontAwesomeIcon
-					className={showFromDateClearButton}
-					onClick={() => setInputs("from", "")}
-					icon={faMultiply}
-				/>
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
+				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.createdAt.to} onChange={(e) => setInputs("from", e)} peekNextMonth placeholderText="From" tabIndex="1" selected={other.find.createdAt.from} selectsStart startDate={other.find.createdAt.from} showMonthDropdown showYearDropdown />
+				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
 			</div>
 		);
 	}
@@ -1001,12 +756,8 @@ export function RvList({ mount, project, unmount }) {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
-				<span
-					className="flex w-1/4 justify-center items-center cursor-pointer"
-					key={i}>
-					<div
-						className="flex w-full h-9 space-x-1.5 justify-center items-center text-white font-medium-11"
-						onClick={() => setSort(m)}>
+				<span className="flex w-1/4 justify-center items-center cursor-pointer" key={i}>
+					<div className="flex w-full h-9 space-x-1.5 justify-center items-center text-white font-medium-11" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
 					</div>
@@ -1017,9 +768,7 @@ export function RvList({ mount, project, unmount }) {
 
 	function uiNew() {
 		return (
-			<button
-				className="space-x-1.5 primary-button-transparent-background"
-				onClick={() => unmount({ open_new_rv: true })}>
+			<button className="space-x-1.5 primary-button-transparent-background" onClick={() => unmount({ open_new_rv: true })}>
 				<FontAwesomeIcon icon={faPlusCircle} />
 				<span>New</span>
 			</button>
@@ -1033,18 +782,10 @@ export function RvList({ mount, project, unmount }) {
 		const id = MyGlobal.HighlightText(row.custom_id, other.find.term);
 
 		return (
-			<div
-				className="flex w-full px-4 py-2 justify-center items-center rounded bottom-shadow contrast-background bottom-border font-regular-11 black-text"
-				key={i}>
+			<div className="flex w-full px-4 py-2 justify-center items-center rounded bottom-shadow contrast-background bottom-border font-regular-11 black-text" key={i}>
 				<span className={style}>{dayjs(row.created_at).format("DD-MM-YYYY")}</span>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: id }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: amount }}
-				/>
+				<span className={style} dangerouslySetInnerHTML={{ __html: id }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style}>
 					<FontAwesomeIcon
 						className="cursor-pointer visible primary-text"
@@ -1066,70 +807,30 @@ export function RvList({ mount, project, unmount }) {
 	function uiSortArrows(column) {
 		if (other.sort.column == column) {
 			if (other.sort.isAscending) {
-				return (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountDesc}
-						size="sm"
-					/>
-				);
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} size="sm" />;
 			} else {
-				return (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountAsc}
-						size="sm"
-					/>
-				);
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} size="sm" />;
 			}
 		}
 	}
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full space-x-3 justify-start items-center">
 					<span>RV List</span>
 				</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	function uiToDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
-				<FontAwesomeIcon
-					className="primary-text"
-					icon={faCalendar}
-					size="sm"
-				/>
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.createdAt.to}
-					onChange={(e) => setInputs("to", e)}
-					placeholderText="To"
-					peekNextMonth
-					selected={other.find.createdAt.to}
-					selectsEnd
-					startDate={other.find.createdAt.to}
-					showMonthDropdown
-					showYearDropdown
-					tabIndex={2}
-				/>
-				<FontAwesomeIcon
-					className={showToDateClearButton}
-					onClick={() => setInputs("to", "")}
-					icon={faMultiply}
-				/>
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
+				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.createdAt.to} onChange={(e) => setInputs("to", e)} placeholderText="To" peekNextMonth selected={other.find.createdAt.to} selectsEnd startDate={other.find.createdAt.to} showMonthDropdown showYearDropdown tabIndex={2} />
+				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
 			</div>
 		);
 	}
@@ -1151,39 +852,30 @@ export function RvList({ mount, project, unmount }) {
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex w-full h-[calc(100%-45px)] p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter primary-light-background">
-							<div className="flex flex-col w-full h-full justify-center items-start">
-								<div className="flex w-full pb-2 justify-between items-center">
-									<div className="flex w-1/2 space-x-2 justify-start items-center">
-										<span className="view-heading">Generated</span>
-										<Badge value={getDataCount()} />
-									</div>
-									<div className="flex w-1/2 space-x-2 justify-end items-center">
-										{uiFromDate()}
-										{uiToDate()}
-										{uiFind()}
-										{uiExport()}
-										{uiNew()}
-									</div>
+				<DialogPanel className="w-4/5 h-[90%] transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex w-full h-[calc(100%-45px)] p-5 space-x-10 justify-center items-center overflow-y-auto scrollbar-gutter primary-light-background">
+						<div className="flex flex-col w-full h-full justify-center items-start">
+							<div className="flex w-full pb-2 justify-between items-center">
+								<div className="flex w-1/2 space-x-2 justify-start items-center">
+									<span className="view-heading">Generated</span>
+									<Badge value={getDataCount()} />
 								</div>
-								{uiBody()}
+								<div className="flex w-1/2 space-x-2 justify-end items-center">
+									{uiFromDate()}
+									{uiToDate()}
+									{uiFind()}
+									{uiExport()}
+									{uiNew()}
+								</div>
 							</div>
+							{uiBody()}
 						</div>
-					</DialogPanel>
-				</Draggable>
+					</div>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

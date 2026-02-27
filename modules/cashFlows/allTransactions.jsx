@@ -4,7 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import writeXlsxFile from "write-excel-file";
+import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
@@ -144,17 +144,7 @@ export default function AllTransactions() {
 				const remarks = String(f.remarks).toLowerCase();
 				const entryBy = String(f.entry_by_name).toLowerCase();
 
-				return (
-					module.includes(findTerm) ||
-					bankName.includes(findTerm) ||
-					amountPaid.includes(findTerm) ||
-					amountReceived.includes(findTerm) ||
-					particulars.includes(findTerm) ||
-					paymentSource.includes(findTerm) ||
-					paymentType.includes(findTerm) ||
-					remarks.includes(findTerm) ||
-					entryBy.includes(findTerm)
-				);
+				return module.includes(findTerm) || bankName.includes(findTerm) || amountPaid.includes(findTerm) || amountReceived.includes(findTerm) || particulars.includes(findTerm) || paymentSource.includes(findTerm) || paymentType.includes(findTerm) || remarks.includes(findTerm) || entryBy.includes(findTerm);
 			}
 		});
 
@@ -356,21 +346,11 @@ export default function AllTransactions() {
 		const wrapper = "flex max-w-full min-w-36 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
 
 		return (
-			<Menu
-				as="div"
-				className="flex max-w-full min-w-36 justify-center items-center relative">
+			<Menu as="div" className="flex max-w-full min-w-36 justify-center items-center relative">
 				<MenuButton className={wrapper}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faIndustry}
-						size="sm"
-					/>
+					<FontAwesomeIcon className="primary-text" icon={faIndustry} size="sm" />
 					<span className="gray-text">{other.company?.name || "Select Company"}</span>
-					<FontAwesomeIcon
-						className={showClearCompanyButton}
-						onClick={() => setCompany({})}
-						icon={faMultiply}
-					/>
+					<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setCompany({})} icon={faMultiply} />
 				</MenuButton>
 				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiCompaniesList()}</MenuItems>
 			</Menu>
@@ -384,18 +364,9 @@ export default function AllTransactions() {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
-				<MenuItem
-					as="div"
-					className={wrapper}
-					key={i}
-					onClick={() => setCompany(m)}>
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setCompany(m)}>
 					{m.name}
-					{isSelected && (
-						<FontAwesomeIcon
-							className="primary-text"
-							icon={faCheck}
-						/>
-					)}
+					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
 				</MenuItem>
 			);
 		});
@@ -404,40 +375,21 @@ export default function AllTransactions() {
 	function uiExport() {
 		if (api.allTransactions.data.length && api.allTransactions.copy.length) {
 			return (
-				<button
-					className="primary-button-transparent-background"
-					onClick={() => doExcelExport()}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faFileExcel}
-					/>
+				<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
+					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 				</button>
 			);
 		}
 	}
 
 	function uiFind() {
-		return (
-			<TextInputNative
-				id="findBox"
-				icon={faSearch}
-				onChange={(e) => setFind("term", e.target.value)}
-				onClearButtonClick={() => setFind("term", "")}
-				placeholder="Find"
-				showClearButton={showFindClearButton}
-				tabIndex="3"
-				value={other.find.term}
-				width="w-36"
-			/>
-		);
+		return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setFind("term", e.target.value)} onClearButtonClick={() => setFind("term", "")} placeholder="Find" showClearButton={showFindClearButton} tabIndex="3" value={other.find.term} width="w-36" />;
 	}
 
 	function uiFooter() {
 		return Object.values(headers).map((m, i) => {
 			return (
-				<div
-					className="w-[10%] space-x-1 text-center text-white font-semibold-16"
-					key={i}>
+				<div className="w-[10%] space-x-1 text-center text-white font-semibold-16" key={i}>
 					{i === 3 && api.totalAmountReceived > 0 && MyGlobal.ThousandSeparator(api.totalAmountPaid)}
 					{i === 4 && api.totalAmountReceived > 0 && MyGlobal.ThousandSeparator(api.totalAmountReceived)}
 				</div>
@@ -447,32 +399,10 @@ export default function AllTransactions() {
 
 	function uiFromDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
-				<FontAwesomeIcon
-					className="primary-text"
-					icon={faCalendar}
-					size="sm"
-				/>
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.date.to}
-					onChange={(e) => setFind("from", e)}
-					peekNextMonth
-					placeholderText="From"
-					selected={other.find.date.from}
-					selectsStart
-					startDate={other.find.date.from}
-					showMonthDropdown
-					showYearDropdown
-					tabIndex="1"
-				/>
-				<FontAwesomeIcon
-					className={showFromDateClearButton}
-					onClick={() => setFind("from", "")}
-					icon={faMultiply}
-				/>
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
+				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.date.to} onChange={(e) => setFind("from", e)} peekNextMonth placeholderText="From" selected={other.find.date.from} selectsStart startDate={other.find.date.from} showMonthDropdown showYearDropdown tabIndex="1" />
+				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setFind("from", "")} icon={faMultiply} />
 			</div>
 		);
 	}
@@ -482,12 +412,8 @@ export default function AllTransactions() {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
-				<span
-					className="flex w-[10%] justify-center items-center cursor-pointer font-medium-10"
-					key={i}>
-					<div
-						className="flex w-full space-x-2 justify-center items-center text-center text-white"
-						onClick={() => setSort(m)}>
+				<span className="flex w-[10%] justify-center items-center cursor-pointer font-medium-10" key={i}>
+					<div className="flex w-full space-x-2 justify-center items-center text-center text-white" onClick={() => setSort(m)}>
 						<span>{m}</span>
 						<span className={showSortArrow}>{uiSortArrows(m)}</span>
 					</div>
@@ -502,22 +428,14 @@ export default function AllTransactions() {
 		} else if (!api.allTransactions.copy.length) {
 			return (
 				<div className={wrapper}>
-					<FontAwesomeIcon
-						className="text-yellow-500"
-						icon={faExclamationTriangle}
-						size="7x"
-					/>
+					<FontAwesomeIcon className="text-yellow-500" icon={faExclamationTriangle} size="7x" />
 					<span className="font-regular-12 gray-text">No transactions generated.</span>
 				</div>
 			);
 		} else if (api.allTransactions.copy.length && !api.allTransactions.data.length) {
 			return (
 				<div className={wrapper}>
-					<FontAwesomeIcon
-						className="text-yellow-500"
-						icon={faExclamationTriangle}
-						size="7x"
-					/>
+					<FontAwesomeIcon className="text-yellow-500" icon={faExclamationTriangle} size="7x" />
 					<span className="font-regular-12 gray-text">No transactions found. Try changing your search term.</span>
 				</div>
 			);
@@ -526,12 +444,7 @@ export default function AllTransactions() {
 				<div className="flex w-full h-full space-y-2 justify-center items-center relative">
 					<div className="flex flex-col w-full h-full justify-center items-start">
 						<div className="flex w-full h-9 justify-center items-center primary-background primary-border">{uiHeaders()}</div>
-						<Virtuoso
-							className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background"
-							data={doSorting()}
-							itemContent={(i, row) => uiRows(row, i)}
-							totalCount={api.allTransactions.data.length}
-						/>
+						<Virtuoso className="w-full h-full overflow-y-auto scrollbar-gutter primary-horizontal-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.allTransactions.data.length} />
 						<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 					</div>
 				</div>
@@ -556,46 +469,17 @@ export default function AllTransactions() {
 		const entryByName = MyGlobal.HighlightText(row.entry_by_name, other.find.term);
 
 		return (
-			<div
-				className={wrapper}
-				key={i}>
+			<div className={wrapper} key={i}>
 				<span className={style}>{entryAt}</span>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: module }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: bankName }}
-				/>
-				<span
-					className={`${style} red-text`}
-					dangerouslySetInnerHTML={{ __html: amountPaid || "" }}
-				/>
-				<span
-					className={`${style} green-text`}
-					dangerouslySetInnerHTML={{ __html: amountReceived || "" }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: particulars }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: paymentSource }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: paymentType }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: remarks }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: entryByName }}
-				/>
+				<span className={style} dangerouslySetInnerHTML={{ __html: module }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: bankName }} />
+				<span className={`${style} red-text`} dangerouslySetInnerHTML={{ __html: amountPaid || "" }} />
+				<span className={`${style} green-text`} dangerouslySetInnerHTML={{ __html: amountReceived || "" }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: paymentSource }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: paymentType }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: remarks }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: entryByName }} />
 			</div>
 		);
 	}
@@ -603,53 +487,19 @@ export default function AllTransactions() {
 	function uiSortArrows(column) {
 		if (other.sort.column == column) {
 			if (other.sort.isAscending) {
-				return (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountDesc}
-						size="sm"
-					/>
-				);
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} size="sm" />;
 			} else {
-				return (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountAsc}
-						size="sm"
-					/>
-				);
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} size="sm" />;
 			}
 		}
 	}
 
 	function uiToDate() {
 		return (
-			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
-				<FontAwesomeIcon
-					className="primary-text"
-					icon={faCalendar}
-					size="sm"
-				/>
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-regular-10"
-					dateFormat="dd-MM-YYYY"
-					dropdownMode="select"
-					endDate={other.find.date.to}
-					onChange={(e) => setFind("to", e)}
-					placeholderText="To"
-					peekNextMonth
-					selected={other.find.date.to}
-					selectsEnd
-					startDate={other.find.date.to}
-					showMonthDropdown
-					showYearDropdown
-					tabIndex="2"
-				/>
-				<FontAwesomeIcon
-					className={showToDateClearButton}
-					onClick={() => setFind("to", "")}
-					icon={faMultiply}
-				/>
+			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
+				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={other.find.date.to} onChange={(e) => setFind("to", e)} placeholderText="To" peekNextMonth selected={other.find.date.to} selectsEnd startDate={other.find.date.to} showMonthDropdown showYearDropdown tabIndex="2" />
+				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setFind("to", "")} icon={faMultiply} />
 			</div>
 		);
 	}

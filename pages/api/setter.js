@@ -46,8 +46,8 @@ export default async function handler(req, res) {
 				queryString = "UPDATE inquiries SET status=?, is_closed=1, closure_reason=? WHERE id=?";
 				queryParameters = [request.status, request.reason, request.inquiryId];
 			} else if (request.type == "add-note") {
-				queryString = "INSERT INTO notes (inquiry_id, entry_by_id, content, source, next_follow_up_on) VALUES (?, ?, ?, ?, ?)";
-				queryParameters = [request.id, request.userId, MyGlobal.EscapeString(request.content), request.source, request.nextfollowUpOn];
+				queryString = "INSERT INTO notes (inquiry_id, original_entry_by_id, entry_by_id, content, source, next_follow_up_on) VALUES (?, ?, ?, ?, ?, ?)";
+				queryParameters = [request.id, request.userId, request.userId, MyGlobal.EscapeString(request.content), request.source, request.nextfollowUpOn];
 			} else if (request.type == "edit-project-status") {
 				queryString = "UPDATE projects SET reason=?, status=? WHERE id=? AND client_id=? AND company_id=? AND inquiry_id=?";
 				queryParameters = [request.reason, request.status, request.id, request.clientId, request.companyId, request.inquiryId];

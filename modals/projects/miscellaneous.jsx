@@ -3,7 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
@@ -71,65 +70,43 @@ export function DeleteProject({ mount, projectId, reload, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Delete Project</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount()}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount()} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded shadow contrast-background">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full p-4 justify-center items-center font-regular-12 black-text">
-							<div className="flex flex-col px-1 text-left">
-								<span className="py-2">
-									Do you want to delete the project <b>{projectId}</b>?
-								</span>
+				<DialogPanel className="w-100 transform overflow-hidden rounded shadow contrast-background">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full p-4 justify-center items-center font-regular-12 black-text">
+						<div className="flex flex-col px-1 text-left">
+							<span className="py-2">
+								Do you want to delete the project <b>{projectId}</b>?
+							</span>
 
-								<span className="py-2">
-									Please consider having a look at <b>Status</b> (<b>Status</b>{" "}
-									<FontAwesomeIcon
-										icon={faArrowRight}
-										size="xs"
-									/>{" "}
-									<b>Completed</b>) to see whether all the accounts have been settled or not.
-								</span>
+							<span className="py-2">
+								Please consider having a look at <b>Status</b> (<b>Status</b> <FontAwesomeIcon icon={faArrowRight} size="xs" /> <b>Completed</b>) to see whether all the accounts have been settled or not.
+							</span>
 
-								<span className="py-2">
-									If you are not fully sure about deletion, you can also change the project's status to <b>Closed</b> or <b>Hold</b>. This way, you can re-open this project in future.
-								</span>
+							<span className="py-2">
+								If you are not fully sure about deletion, you can also change the project's status to <b>Closed</b> or <b>Hold</b>. This way, you can re-open this project in future.
+							</span>
 
-								<span className="py-2">Are you sure to proceed? Once done, This action cannot be reversed.</span>
-							</div>
+							<span className="py-2">Are you sure to proceed? Once done, This action cannot be reversed.</span>
 						</div>
-						<footer className="dialog-footer">
-							<button
-								className={buttonStyle}
-								onClick={() => doProjectDeletion()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+					</div>
+					<footer className="dialog-footer">
+						<button className={buttonStyle} onClick={() => doProjectDeletion()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -246,61 +223,31 @@ export function EditStatus({ mount, project, reload, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">Update Status</span>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount(false)}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
 			</DialogTitle>
 		);
 	}
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount(false)}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[400px] transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<span
-							className="block w-full p-5 whitespace-pre-line font-regular-11 black-text"
-							dangerouslySetInnerHTML={{ __html: messageBody }}
-						/>
-						<div className={reasonBoxStyle}>
-							<TextArea
-								icon={faNoteSticky}
-								key={1}
-								label="Reason"
-								onChange={(e) => setReason(e.target.value)}
-								onKeyDown={() => {}}
-								rows={3}
-								tabIndex={1}
-								value={main.reason}
-								width="w-full"
-							/>
-							{uiCharactersLeft()}
-						</div>
-						<footer className="dialog-footer">
-							<button
-								className={updateButtonStyle}
-								onClick={() => doStatusEditing()}>
-								{uiButton()}
-							</button>
-						</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text" dangerouslySetInnerHTML={{ __html: messageBody }} />
+					<div className={reasonBoxStyle}>
+						<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={main.reason} width="w-full" />
+						{uiCharactersLeft()}
+					</div>
+					<footer className="dialog-footer">
+						<button className={updateButtonStyle} onClick={() => doStatusEditing()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);
@@ -439,17 +386,13 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 			}
 
 			return (
-				<button
-					className="primary-button-condensed"
-					onClick={() => doMarking()}>
+				<button className="primary-button-condensed" onClick={() => doMarking()}>
 					{buttonLabel}
 				</button>
 			);
 		} else {
 			return (
-				<button
-					className="primary-button-condensed"
-					onClick={() => unmount(false)}>
+				<button className="primary-button-condensed" onClick={() => unmount(false)}>
 					<span>Close</span>
 				</button>
 			);
@@ -457,22 +400,12 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 	}
 
 	function uiRow(label, value) {
-		const _value = (
-			<FontAwesomeIcon
-				className={value ? "green-text" : "red-text"}
-				icon={value ? faCircleCheck : faCircleXmark}
-				size="lg"
-			/>
-		);
+		const _value = <FontAwesomeIcon className={value ? "green-text" : "red-text"} icon={value ? faCircleCheck : faCircleXmark} size="lg" />;
 
 		return (
 			<div className={wrapper}>
 				<span className={labelStyle}>
-					<FontAwesomeIcon
-						className="gray-text"
-						icon={faAnglesRight}
-						size="xs"
-					/>
+					<FontAwesomeIcon className="gray-text" icon={faAnglesRight} size="xs" />
 					<span>{label}</span>
 				</span>
 				<span className={valueStyle}>{_value}</span>
@@ -482,9 +415,7 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 
 	function uiTitleBar() {
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<span className="flex w-full justify-start items-center">{project.client_name}'s Project Status</span>
 			</DialogTitle>
 		);
@@ -497,23 +428,14 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount(false)}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setBoxDrag()}
-					onStop={() => setBoxDrag()}>
-					<DialogPanel className="w-[500px] transform overflow-hidden rounded primary-light-background shadow">
-						{uiTitleBar()}
-						{uiBody()}
-						<footer className="dialog-footer">{uiButton()}</footer>
-					</DialogPanel>
-				</Draggable>
+				<DialogPanel className="w-[500px] transform overflow-hidden rounded primary-light-background shadow">
+					{uiTitleBar()}
+					{uiBody()}
+					<footer className="dialog-footer">{uiButton()}</footer>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

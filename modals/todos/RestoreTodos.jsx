@@ -3,7 +3,6 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import Draggable from "react-draggable";
 import MyConstants from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
@@ -81,18 +80,12 @@ export default function RestoreTodos({ mount, refresh, _todos, unmount }) {
 		const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
 
 		return (
-			<DialogTitle
-				as="h2"
-				className={titleBarStyle}>
+			<DialogTitle as="h2" className={titleBarStyle}>
 				<div className="flex space-x-2.5 w-full justify-center items-center">
 					<span>Deleted Todos</span>
 					<span>{getFilteredTodos().length > 0 && <BadgeSmall value={getFilteredTodos().length + " / " + totalTodos} />}</span>
 				</div>
-				<FontAwesomeIcon
-					className="cursor-pointer"
-					icon={faXmark}
-					onClick={() => unmount()}
-				/>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount()} />
 			</DialogTitle>
 		);
 	}
@@ -104,49 +97,28 @@ export default function RestoreTodos({ mount, refresh, _todos, unmount }) {
 
 	// Main UI
 	return (
-		<Dialog
-			as="div"
-			className="relative z-50"
-			open={mount}
-			onClose={() => unmount()}>
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount()}>
 			<div className="fixed inset-0 bg-black/50" />
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
-				<Draggable
-					handle=".draggable-handle"
-					onStart={() => setIsBoxDragged(!isBoxDragged)}
-					onStop={() => setIsBoxDragged(!isBoxDragged)}>
-					<DialogPanel className="w-4/5 h-4/5 transform overflow-hidden rounded contrast-background shadow">
-						{uiTitleBar()}
-						<div className="flex flex-col w-full h-full justify-start items-center">
-							<TextInput
-								icon={faSearch}
-								label="Search"
-								onChange={(e) => setSearch(e.target.value)}
-								value={search}
-								width="w-1/4"
-							/>
-							<div className="flex flex-col w-full h-full overflow-y-auto p-6 pt-0 pb-12 justify-start space-y-2.5 items-center">
-								{getFilteredTodos().map((m, i) => (
-									<div
-										className="flex px-5 py-2 w-full justify-center items-center rounded shadow-sm bg-blue-50 border-b border-sky-400"
-										key={i}>
-										<div className="flex w-4/5 justify-start items-center font-regular-12">
-											<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(m.description, search) }} />
-										</div>
-										<span className="flex w-1/5 space-x-5 justify-end items-center">
-											<BadgeSmall value={m.priority} />
-											<FontAwesomeIcon
-												className="text-sky-700 cursor-pointer hover:scale-125 duration-300"
-												icon={faTrashArrowUp}
-												onClick={() => restoreTodo(m)}
-											/>
-										</span>
+				<DialogPanel className="w-4/5 h-4/5 transform overflow-hidden rounded contrast-background shadow">
+					{uiTitleBar()}
+					<div className="flex flex-col w-full h-full justify-start items-center">
+						<TextInput icon={faSearch} label="Search" onChange={(e) => setSearch(e.target.value)} value={search} width="w-1/4" />
+						<div className="flex flex-col w-full h-full overflow-y-auto p-6 pt-0 pb-12 justify-start space-y-2.5 items-center">
+							{getFilteredTodos().map((m, i) => (
+								<div className="flex px-5 py-2 w-full justify-center items-center rounded shadow-sm bg-blue-50 border-b border-sky-400" key={i}>
+									<div className="flex w-4/5 justify-start items-center font-regular-12">
+										<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(m.description, search) }} />
 									</div>
-								))}
-							</div>
+									<span className="flex w-1/5 space-x-5 justify-end items-center">
+										<BadgeSmall value={m.priority} />
+										<FontAwesomeIcon className="text-sky-700 cursor-pointer hover:scale-125 duration-300" icon={faTrashArrowUp} onClick={() => restoreTodo(m)} />
+									</span>
+								</div>
+							))}
 						</div>
-					</DialogPanel>
-				</Draggable>
+					</div>
+				</DialogPanel>
 			</div>
 		</Dialog>
 	);

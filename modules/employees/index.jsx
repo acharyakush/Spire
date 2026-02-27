@@ -69,13 +69,13 @@ export default function Employees({ unmount }) {
 	function uiSelectedModule() {
 		if (main.module === modules.New) {
 			return (
-				<ErrorBoundary key={`ErrorBoundary_${module}`} onError={(e) => MyGlobal.LogErrors(e.message, module)} FallbackComponent={ErrorFallbackComponent}>
+				<ErrorBoundary key={`ErrorBoundary`} onError={(e) => MyGlobal.LogErrors(e.message, module)} FallbackComponent={ErrorFallbackComponent}>
 					<NewEmployee />
 				</ErrorBoundary>
 			);
 		} else {
 			return (
-				<ErrorBoundary key={`ErrorBoundary_${module}`} onError={(e) => MyGlobal.LogErrors(e.message, module)} FallbackComponent={ErrorFallbackComponent}>
+				<ErrorBoundary key={`ErrorBoundary`} onError={(e) => MyGlobal.LogErrors(e.message, module)} FallbackComponent={ErrorFallbackComponent}>
 					<EditEmployee />
 				</ErrorBoundary>
 			);

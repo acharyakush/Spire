@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import NewInvoice from "./NewInvoice";
 import EditInvoice from "./EditInvoice";
-import writeXlsxFile from "write-excel-file";
+import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
 
@@ -423,12 +423,7 @@ export default function Invoices({ presetStatus, unmount }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border">
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-					<Virtuoso
-						className="w-full h-full overflow-y-auto bottom-border contrast-background scrollbar-gutter"
-						data={doSorting()}
-						itemContent={(i, row) => uiRows(row, i)}
-						totalCount={api.projects.length}
-					/>
+					<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background scrollbar-gutter" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.length} />
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 				</div>
 			);
@@ -439,23 +434,13 @@ export default function Invoices({ presetStatus, unmount }) {
 		const wrapper = "flex w-60 h-[30px] px-2.5 justify-between items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
 
 		return (
-			<Menu
-				as="div"
-				className="flex w-60 justify-center items-center relative">
+			<Menu as="div" className="flex w-60 justify-center items-center relative">
 				<MenuButton className={wrapper}>
 					<div className="flex w-full space-x-2.5 justify-start items-center">
-						<FontAwesomeIcon
-							className="primary-text"
-							icon={faIndustry}
-							size="sm"
-						/>
+						<FontAwesomeIcon className="primary-text" icon={faIndustry} size="sm" />
 						<span className="gray-text">{main.company?.name || "Select Company"}</span>
 					</div>
-					<FontAwesomeIcon
-						className={showClearCompanyButton}
-						onClick={() => setCompany({})}
-						icon={faMultiply}
-					/>
+					<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setCompany({})} icon={faMultiply} />
 				</MenuButton>
 				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiCompaniesList()}</MenuItems>
 			</Menu>
@@ -469,20 +454,9 @@ export default function Invoices({ presetStatus, unmount }) {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
-				<MenuItem
-					as="div"
-					className={wrapper}
-					key={i}
-					onClick={() => setCompany(m)}>
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setCompany(m)}>
 					<div className="flex w-full space-x-2 justify-start items-center">
-						<span>
-							{isSelected && (
-								<FontAwesomeIcon
-									className="primary-text"
-									icon={faCheck}
-								/>
-							)}
-						</span>
+						<span>{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}</span>
 						<span>{m.name}</span>
 					</div>
 					<span className="gray-text">{m.count > 0 && m.count}</span>
@@ -495,32 +469,15 @@ export default function Invoices({ presetStatus, unmount }) {
 		const style = `primary-button-transparent-background ${api.projects.length && api.projectsCopy.length ? "visible" : "invisible"}`;
 
 		return (
-			<button
-				className={style}
-				onClick={() => doExcelExport()}>
-				<FontAwesomeIcon
-					className="primary-text"
-					icon={faFileExcel}
-				/>
+			<button className={style} onClick={() => doExcelExport()}>
+				<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 			</button>
 		);
 	}
 
 	function uiFind() {
 		if (api.projectsCopy.length) {
-			return (
-				<TextInputNative
-					id="findBox"
-					icon={faSearch}
-					onChange={(e) => setInputs("find", e.target.value)}
-					onClearButtonClick={() => setInputs("find", "")}
-					placeholder=""
-					showClearButton={showFindClearIcon}
-					tabIndex={3}
-					value={main.filter.find}
-					width="w-36"
-				/>
-			);
+			return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setInputs("find", e.target.value)} onClearButtonClick={() => setInputs("find", "")} placeholder="" showClearButton={showFindClearIcon} tabIndex={3} value={main.filter.find} width="w-36" />;
 		}
 	}
 
@@ -529,9 +486,7 @@ export default function Invoices({ presetStatus, unmount }) {
 
 		return Object.values(headers).map((m, i) => {
 			return (
-				<span
-					className="flex w-[9.09%] space-x-2 justify-center items-center text-white font-semibold-12"
-					key={i}>
+				<span className="flex w-[9.09%] space-x-2 justify-center items-center text-white font-semibold-12" key={i}>
 					<span>{i == 6 && MyGlobal.ThousandSeparator(totals.amount)}</span>
 					<span>{i == 7 && MyGlobal.ThousandSeparator(totals.received)}</span>
 					<span>{i == 8 && MyGlobal.ThousandSeparator(totals.pending)}</span>
@@ -543,32 +498,10 @@ export default function Invoices({ presetStatus, unmount }) {
 	function uiFromDate() {
 		if (api.projectsCopy.length) {
 			return (
-				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faCalendar}
-						size="sm"
-					/>
-					<ReactDatePicker
-						className="w-20 h-6 bg-transparent outline-none font-medium-11"
-						dateFormat="dd-MM-YYYY"
-						dropdownMode="select"
-						endDate={main.filter.date.to}
-						onChange={(e) => setInputs("from", e)}
-						peekNextMonth
-						placeholderText="From"
-						tabIndex={1}
-						selected={main.filter.date.from}
-						selectsStart
-						startDate={main.filter.date.from}
-						showMonthDropdown
-						showYearDropdown
-					/>
-					<FontAwesomeIcon
-						className={showFromDateClearIcon}
-						onClick={() => setInputs("from", "")}
-						icon={faMultiply}
-					/>
+				<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background">
+					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+					<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-medium-11" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={main.filter.date.to} onChange={(e) => setInputs("from", e)} peekNextMonth placeholderText="From" tabIndex={1} selected={main.filter.date.from} selectsStart startDate={main.filter.date.from} showMonthDropdown showYearDropdown />
+					<FontAwesomeIcon className={showFromDateClearIcon} onClick={() => setInputs("from", "")} icon={faMultiply} />
 				</div>
 			);
 		}
@@ -579,10 +512,7 @@ export default function Invoices({ presetStatus, unmount }) {
 			const showSortArrow = m == main.sort.column ? "block" : "hidden";
 
 			return (
-				<span
-					className="flex w-[9.09%] space-x-2 justify-center items-center cursor-pointer text-white font-medium-10"
-					key={i}
-					onClick={() => setSort(m)}>
+				<span className="flex w-[9.09%] space-x-2 justify-center items-center cursor-pointer text-white font-medium-10" key={i} onClick={() => setSort(m)}>
 					<span>{m}</span>
 					<span className={showSortArrow}>{uiSortArrows(m)}</span>
 				</span>
@@ -596,16 +526,10 @@ export default function Invoices({ presetStatus, unmount }) {
 				<div className="flex flex-col w-full h-full justify-center items-center">
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
 						<div className="flex w-1/2 space-x-2 justify-start items-center">
-							<span
-								className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
-								onClick={() => unmount()}>
+							<span className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading" onClick={() => unmount()}>
 								{MyConstants.Modules.Base.CashFlow}
 							</span>
-							<FontAwesomeIcon
-								className="gray-text"
-								icon={faChevronRight}
-								size="xs"
-							/>
+							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
 							<span className="view-heading">{MyConstants.Modules.Base.Invoices}</span>
 							{getIconOrBadge()}
 						</div>
@@ -621,36 +545,17 @@ export default function Invoices({ presetStatus, unmount }) {
 					</div>
 					<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
 
-					{mounted.transactions && (
-						<Transactions
-							mount={mounted.transactions}
-							project={main.selectedProject}
-							reload={setSupportData}
-							unmount={toggleTransactions}
-						/>
-					)}
+					{mounted.transactions && <Transactions mount={mounted.transactions} project={main.selectedProject} reload={setSupportData} unmount={toggleTransactions} />}
 				</div>
 			);
 		}
 
 		if (mounted.editInvoice) {
-			return (
-				<EditInvoice
-					project={main.selectedProject}
-					reload={setSupportData}
-					unmount={toggleEditInvoice}
-				/>
-			);
+			return <EditInvoice project={main.selectedProject} reload={setSupportData} unmount={toggleEditInvoice} />;
 		}
 
 		if (mounted.newInvoice) {
-			return (
-				<NewInvoice
-					project={main.selectedProject}
-					reload={setSupportData}
-					unmount={toggleNewInvoice}
-				/>
-			);
+			return <NewInvoice project={main.selectedProject} reload={setSupportData} unmount={toggleNewInvoice} />;
 		}
 	}
 
@@ -683,63 +588,28 @@ export default function Invoices({ presetStatus, unmount }) {
 		const showDownloadButton = row.invoice_id ? "cursor-pointer visible primary-text" : "invisible";
 
 		return (
-			<div
-				className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text"
-				key={i}>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: id }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: companyName }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: mainProjectName }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: subProjectName }}
-				/>
+			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
+				<span className={style} dangerouslySetInnerHTML={{ __html: id }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: companyName }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
 				<span className={`${style} cursor-help primary-text`}>
-					<Tippy
-						animation="shift-away"
-						content={<Tooltip text={row.created_at_time} />}
-						disabled={!row.created_at}
-						placement="bottom">
+					<Tippy animation="shift-away" content={<Tooltip text={row.created_at_time} />} disabled={!row.created_at} placement="bottom">
 						<span className={style}>{row.created_at}</span>
 					</Tippy>
 				</span>
 				<span className={`${style} cursor-help primary-text`}>
-					<Tippy
-						animation="shift-away"
-						content={<Tooltip text={row.invoice_due_date_time} />}
-						disabled={!row.invoice_due_date}
-						placement="bottom">
+					<Tippy animation="shift-away" content={<Tooltip text={row.invoice_due_date_time} />} disabled={!row.invoice_due_date} placement="bottom">
 						<span className={style}>{row.invoice_due_date}</span>
 					</Tippy>
 				</span>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: amount }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: amountReceived }}
-				/>
-				<span
-					className={style}
-					dangerouslySetInnerHTML={{ __html: amountPending }}
-				/>
+				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
+				<span className={style} dangerouslySetInnerHTML={{ __html: amountPending }} />
 				{hideGenerateButton ? (
 					<span className={style} />
 				) : (
-					<Tippy
-						animation="shift-away"
-						content={<Tooltip text={generateInvoiceTooltip} />}
-						disabled={!generateInvoiceTooltip}
-						placement="bottom">
+					<Tippy animation="shift-away" content={<Tooltip text={generateInvoiceTooltip} />} disabled={!generateInvoiceTooltip} placement="bottom">
 						<span
 							className={`${style} cursor-pointer primary-text`}
 							dangerouslySetInnerHTML={{ __html: invoiceId }}
@@ -758,10 +628,7 @@ export default function Invoices({ presetStatus, unmount }) {
 					</Tippy>
 				)}
 				<span className={`${style} space-x-5`}>
-					<Tippy
-						animation="shift-away"
-						content={<Tooltip text="Download this invoice." />}
-						placement="bottom">
+					<Tippy animation="shift-away" content={<Tooltip text="Download this invoice." />} placement="bottom">
 						<FontAwesomeIcon
 							className={showDownloadButton}
 							icon={faFileDownload}
@@ -776,16 +643,8 @@ export default function Invoices({ presetStatus, unmount }) {
 							size="lg"
 						/>
 					</Tippy>
-					<Tippy
-						animation="shift-away"
-						content={<Tooltip text="Add & see transactions of this invoice." />}
-						placement="bottom">
-						<FontAwesomeIcon
-							className="cursor-pointer primary-text"
-							icon={faCoins}
-							onClick={() => toggleTransactions(row)}
-							size="lg"
-						/>
+					<Tippy animation="shift-away" content={<Tooltip text="Add & see transactions of this invoice." />} placement="bottom">
+						<FontAwesomeIcon className="cursor-pointer primary-text" icon={faCoins} onClick={() => toggleTransactions(row)} size="lg" />
 					</Tippy>
 				</span>
 			</div>
@@ -795,21 +654,9 @@ export default function Invoices({ presetStatus, unmount }) {
 	function uiSortArrows(column) {
 		if (main.sort.column == column) {
 			if (main.sort.isAscending) {
-				return (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountDesc}
-						size="sm"
-					/>
-				);
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} size="sm" />;
 			} else {
-				return (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountAsc}
-						size="sm"
-					/>
-				);
+				return <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} size="sm" />;
 			}
 		}
 	}
@@ -817,32 +664,10 @@ export default function Invoices({ presetStatus, unmount }) {
 	function uiToDate() {
 		if (api.projectsCopy.length) {
 			return (
-				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faCalendar}
-						size="sm"
-					/>
-					<ReactDatePicker
-						className="w-20 h-6 bg-transparent outline-none font-medium-11"
-						dateFormat="dd-MM-YYYY"
-						dropdownMode="select"
-						endDate={main.filter.date.to}
-						onChange={(e) => setInputs("to", e)}
-						placeholderText="To"
-						peekNextMonth
-						selected={main.filter.date.to}
-						selectsEnd
-						startDate={main.filter.date.to}
-						showMonthDropdown
-						showYearDropdown
-						tabIndex={2}
-					/>
-					<FontAwesomeIcon
-						className={showToDateClearIcon}
-						onClick={() => setInputs("to", "")}
-						icon={faMultiply}
-					/>
+				<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-center items-center rounded bottom-shadow contrast-background">
+					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+					<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-medium-11" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={main.filter.date.to} onChange={(e) => setInputs("to", e)} placeholderText="To" peekNextMonth selected={main.filter.date.to} selectsEnd startDate={main.filter.date.to} showMonthDropdown showYearDropdown tabIndex={2} />
+					<FontAwesomeIcon className={showToDateClearIcon} onClick={() => setInputs("to", "")} icon={faMultiply} />
 				</div>
 			);
 		}

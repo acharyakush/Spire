@@ -107,8 +107,9 @@ export default async function handler(req, res) {
 			return res.status(400).send("Could not add Inquiry.");
 		}
 
-		const noteInsertResult = await query("INSERT INTO notes (inquiry_id, entry_by_id, content, source) VALUES (?, ?, ?, ?)", [
+		const noteInsertResult = await query("INSERT INTO notes (inquiry_id, original_entry_by_id, entry_by_id, content, source) VALUES (?, ?, ?, ?, ?)", [
 			inquiryResponse.new_id,
+			userId,
 			userId,
 			MyGlobal.EscapeString(note),
 			MyConstants.Modules.Base.Inquiries,

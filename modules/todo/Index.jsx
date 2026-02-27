@@ -166,29 +166,18 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		const subProjectId = item.project_id && project ? subProjects.find((f) => f.id === project.sub_project_id).name : "";
 
 		return (
-			<div
-				className={container}
-				ref={setNodeRef}
-				style={style}
-				{...attributes}
-				{...listeners}>
+			<div className={container} ref={setNodeRef} style={style} {...attributes} {...listeners}>
 				<div className="flex w-full justify-between items-start">
 					<div className="w-4/5 h-11 flex flex-col font-medium-12 overflow-hidden whitespace-nowrap">
-						<span
-							className={descriptionColour}
-							dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(item.description, main.find) }}
-						/>
-						<div className={descriptionColour + " space-x-2 text-xs !font-normal"}>
+						<span className={descriptionColour} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(item.description, main.find) }} />
+						<div className={descriptionColour + " space-x-2 text-xs font-normal!"}>
 							<span>{client.name}</span>
 							<span>|</span>
 							<span>{subProjectId}</span>
 						</div>
 					</div>
 					<div className="flex w-1/5 space-x-3 justify-end items-center">
-						<Tippy
-							animation="shift-away"
-							content={<Tooltip text={item.notes_timeline ? String(safeJsonParse(item.notes_timeline)?.at(0)).split(":")[0] : item.notes ?? "No notes entered."} />}
-							placement="bottom">
+						<Tippy animation="shift-away" content={<Tooltip text={item.notes_timeline ? String(safeJsonParse(item.notes_timeline)?.at(0)).split(":")[0] : (item.notes ?? "No notes entered.")} />} placement="bottom">
 							<img
 								src={`/information-circle-${svgFileName}.svg`}
 								alt="icon"
@@ -200,10 +189,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 							/>
 						</Tippy>
 						{IsUserAdministrator && (
-							<Tippy
-								animation="shift-away"
-								content={<Tooltip text="Edit" />}
-								placement="bottom">
+							<Tippy animation="shift-away" content={<Tooltip text="Edit" />} placement="bottom">
 								<FontAwesomeIcon
 									className="cursor-pointer outline-none text-sky-600"
 									icon={faPencilAlt}
@@ -215,10 +201,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 							</Tippy>
 						)}
 						{IsUserAdministrator && (
-							<Tippy
-								animation="shift-away"
-								content={<Tooltip text="Delete" />}
-								placement="bottom">
+							<Tippy animation="shift-away" content={<Tooltip text="Delete" />} placement="bottom">
 								<FontAwesomeIcon
 									className="cursor-pointer outline-none text-red-600"
 									icon={faTrash}
@@ -272,20 +255,11 @@ export default function Todos({ presetStatus, setModuleProps }) {
 					{items.length > 0 && <Badge value={items.length} />}
 				</div>
 
-				<div
-					className={cardsAreaStyle}
-					ref={setNodeRef}>
-					<SortableContext
-						items={items.sort((a, b) => b.priority.localeCompare(a.priority)).map((m) => m.id)}
-						strategy={verticalListSortingStrategy}>
+				<div className={cardsAreaStyle} ref={setNodeRef}>
+					<SortableContext items={items.sort((a, b) => b.priority.localeCompare(a.priority)).map((m) => m.id)} strategy={verticalListSortingStrategy}>
 						<div className="flex flex-col px-3 space-y-4 overflow-visible">
 							{items.map((m) => (
-								<Card
-									key={m.id}
-									item={m}
-									column={id}
-									activeCard={activeCard}
-								/>
+								<Card key={m.id} item={m} column={id} activeCard={activeCard} />
 							))}
 						</div>
 					</SortableContext>
@@ -542,19 +516,14 @@ export default function Todos({ presetStatus, setModuleProps }) {
 	function uiRestoreTodos() {
 		return (
 			<div className="group relative flex items-center w-fit px-0 transition-all duration-500 ease-in-out">
-				<div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-600 via-rose-500 to-rose-400 border border-rose-700 shadow-md z-0" />
+				<div className="absolute inset-0 rounded-full bg-linear-to-r from-rose-600 via-rose-500 to-rose-400 border border-rose-700 shadow-md z-0" />
 
 				<div className="flex items-center justify-center w-10 h-10 group-hover:h-10 rounded-full text-white ring-rose-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
-					<FontAwesomeIcon
-						icon={faTrashRestore}
-						size="1x"
-					/>
+					<FontAwesomeIcon icon={faTrashRestore} size="1x" />
 				</div>
 
-				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-[300px]">
-					<div
-						className="pl-2 pr-4 text-white font-semibold-12 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out relative z-20 cursor-pointer"
-						onClick={() => toggleRestoreTodos()}>
+				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-75">
+					<div className="pl-2 pr-4 text-white font-semibold-12 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out relative z-20 cursor-pointer" onClick={() => toggleRestoreTodos()}>
 						Restore Todos
 					</div>
 				</div>
@@ -585,17 +554,8 @@ export default function Todos({ presetStatus, setModuleProps }) {
 					onDragCancel={() => setActiveCard(null)}>
 					<div className="flex w-full h-full justify-center items-center space-x-5 overflow-x-hidden overflow-y-auto p-4">
 						{Object.keys(columns).map((m) => (
-							<div
-								key={m}
-								className="flex w-1/3 h-full justify-center items-center">
-								<Column
-									id={m}
-									items={columns[m]}
-									activeCard={activeCard}
-									openDeleteTodoBox={toggleDeleteTodo}
-									openDetailsBox={toggleDetails}
-									search={main.find}
-								/>
+							<div key={m} className="flex w-1/3 h-full justify-center items-center">
+								<Column id={m} items={columns[m]} activeCard={activeCard} openDeleteTodoBox={toggleDeleteTodo} openDetailsBox={toggleDetails} search={main.find} />
 							</div>
 						))}
 					</div>
@@ -620,36 +580,16 @@ export default function Todos({ presetStatus, setModuleProps }) {
 	}
 
 	function uiClearFilter() {
-		return (
-			<FontAwesomeIcon
-				className="cursor-pointer outline-none focus:outline-none red-text"
-				icon={faFilterCircleXmark}
-				onClick={() => setMain((s) => ({ ...s, selectedStaff: { full_name: "", id: "", type: "" } }))}
-			/>
-		);
+		return <FontAwesomeIcon className="cursor-pointer outline-none focus:outline-none red-text" icon={faFilterCircleXmark} onClick={() => setMain((s) => ({ ...s, selectedStaff: { full_name: "", id: "", type: "" } }))} />;
 	}
 
 	function uiFind() {
-		return (
-			<TextInputNative
-				id="findBox"
-				icon={faSearch}
-				onChange={(e) => setSearch(e.target.value)}
-				onClearButtonClick={() => setSearch("")}
-				placeholder="Find"
-				showClearButton={showFindClearButton}
-				tabIndex={1}
-				value={main.find}
-				width="w-40"
-			/>
-		);
+		return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setSearch(e.target.value)} onClearButtonClick={() => setSearch("")} placeholder="Find" showClearButton={showFindClearButton} tabIndex={1} value={main.find} width="w-40" />;
 	}
 
 	function uiNew() {
 		return (
-			<button
-				className="block space-x-1.5 primary-button-transparent-background"
-				onClick={() => toggleAddTodo()}>
+			<button className="block space-x-1.5 primary-button-transparent-background" onClick={() => toggleAddTodo()}>
 				<FontAwesomeIcon icon={faPlusCircle} />
 				<span>New</span>
 			</button>
@@ -660,14 +600,9 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
 
 		return (
-			<Menu
-				as="div"
-				className="flex max-w-full min-w-40 justify-center items-center relative">
+			<Menu as="div" className="flex max-w-full min-w-40 justify-center items-center relative">
 				<MenuButton className={wrapper}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faUserAlt}
-					/>
+					<FontAwesomeIcon className="primary-text" icon={faUserAlt} />
 					<span className="gray-text">{main.selectedStaff.fullName || "Team"}</span>
 				</MenuButton>
 				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStaffList()}</MenuItems>
@@ -682,11 +617,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
-				<MenuItem
-					as="div"
-					className={wrapper}
-					key={i}
-					onClick={() => setStaff(m)}>
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setStaff(m)}>
 					<span>{m.full_name}</span>
 				</MenuItem>
 			);
@@ -697,14 +628,9 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
 
 		return (
-			<Menu
-				as="div"
-				className="flex max-w-full min-w-40 justify-center items-center relative">
+			<Menu as="div" className="flex max-w-full min-w-40 justify-center items-center relative">
 				<MenuButton className={wrapper}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faFilter}
-					/>
+					<FontAwesomeIcon className="primary-text" icon={faFilter} />
 					<span className="gray-text">{main.selectedStaff.type || "Type"}</span>
 				</MenuButton>
 				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStaffListAdvanced()}</MenuItems>
@@ -719,11 +645,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
-				<MenuItem
-					as="div"
-					className={wrapper}
-					key={i}
-					onClick={() => setStaffType(m)}>
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setStaffType(m)}>
 					<span>{m}</span>
 				</MenuItem>
 			);
@@ -734,14 +656,9 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
 
 		return (
-			<Menu
-				as="div"
-				className="flex max-w-full min-w-40 justify-center items-center relative">
+			<Menu as="div" className="flex max-w-full min-w-40 justify-center items-center relative">
 				<MenuButton className={wrapper}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faClock}
-					/>
+					<FontAwesomeIcon className="primary-text" icon={faClock} />
 					<span className="gray-text">{main.status}</span>
 				</MenuButton>
 				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStatusList()}</MenuItems>
@@ -756,11 +673,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
-				<MenuItem
-					as="div"
-					className={wrapper}
-					key={i}
-					onClick={() => setStatus(m.label)}>
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setStatus(m.label)}>
 					<span>{m.label}</span>
 					{m.count > 0 && <BadgeSmall value={m.count} />}
 				</MenuItem>
@@ -828,9 +741,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 					{IsUserAdministrator && uiStaff()}
 					{IsUserAdministrator && uiStaffAdvanced()}
 					{IsUserAdministrator && (
-						<Tippy
-							content={<Tooltip text="Clear filters" />}
-							placement="bottom">
+						<Tippy content={<Tooltip text="Clear filters" />} placement="bottom">
 							{uiClearFilter()}
 						</Tippy>
 					)}
@@ -839,49 +750,15 @@ export default function Todos({ presetStatus, setModuleProps }) {
 			</div>
 			<div className="flex w-full h-[calc(100vh-105px)] justify-center items-center overflow-y-auto contrast-background">{uiBody()}</div>
 
-			{mounted.addTodoBox && (
-				<DynamicAddToDo
-					mount={mounted.addTodoBox}
-					refresh={getTodos}
-					unmount={toggleAddTodo}
-				/>
-			)}
+			{mounted.addTodoBox && <DynamicAddToDo mount={mounted.addTodoBox} refresh={getTodos} unmount={toggleAddTodo} />}
 
-			{mounted.editTodo && (
-				<DynamicEditTodo
-					mount={mounted.editTodo}
-					refresh={getTodos}
-					todo={main.selectedTodo?.item}
-					unmount={toggleEditTodo}
-				/>
-			)}
+			{mounted.editTodo && <DynamicEditTodo mount={mounted.editTodo} refresh={getTodos} todo={main.selectedTodo?.item} unmount={toggleEditTodo} />}
 
-			{mounted.deleteTodo && (
-				<DynamicDeleteTodo
-					mount={mounted.deleteTodo}
-					refresh={getTodos}
-					todo={main.selectedTodo?.item}
-					unmount={toggleDeleteTodo}
-				/>
-			)}
+			{mounted.deleteTodo && <DynamicDeleteTodo mount={mounted.deleteTodo} refresh={getTodos} todo={main.selectedTodo?.item} unmount={toggleDeleteTodo} />}
 
-			{mounted.details && (
-				<DynamicDetails
-					mount={mounted.details}
-					refresh={getTodos}
-					todo={main.selectedTodo?.item}
-					unmount={toggleDetails}
-				/>
-			)}
+			{mounted.details && <DynamicDetails mount={mounted.details} refresh={getTodos} todo={main.selectedTodo?.item} unmount={toggleDetails} />}
 
-			{mounted.restoreTodos && (
-				<DynamicRestoreTodos
-					mount={mounted.restoreTodos}
-					refresh={getTodos}
-					_todos={columnsCopy}
-					unmount={toggleRestoreTodos}
-				/>
-			)}
+			{mounted.restoreTodos && <DynamicRestoreTodos mount={mounted.restoreTodos} refresh={getTodos} _todos={columnsCopy} unmount={toggleRestoreTodos} />}
 		</div>
 	);
 }

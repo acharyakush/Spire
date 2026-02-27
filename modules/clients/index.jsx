@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import dynamic from "next/dynamic";
-import writeXlsxFile from "write-excel-file";
+import writeXlsxFile from "write-excel-file/browser";
 import MyConstants from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
@@ -50,47 +50,21 @@ const ClientRow = memo(({ row, main, toggleEditClient, toggleSingleClient, openW
 	const joinedOn = dayjs(row.joined_on).format("DD MMM, YYYY");
 
 	return (
-		<div
-			className="flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text"
-			key={row.id}>
-			<Tippy
-				content={<MemoizedTooltip text="Edit this client's details." />}
-				placement="bottom">
-				<span
-					className={tooltipStyle}
-					dangerouslySetInnerHTML={{ __html: clientId }}
-					onClick={() => toggleEditClient(row)}
-				/>
+		<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-11 black-text" key={row.id}>
+			<Tippy content={<MemoizedTooltip text="Edit this client's details." />} placement="bottom">
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientId }} onClick={() => toggleEditClient(row)} />
 			</Tippy>
 
-			<Tippy
-				content={<MemoizedTooltip text="Open this client's detailed view." />}
-				placement="bottom">
-				<span
-					className={tooltipStyle}
-					dangerouslySetInnerHTML={{ __html: clientName }}
-					onClick={() => toggleSingleClient(row)}
-				/>
+			<Tippy content={<MemoizedTooltip text="Open this client's detailed view." />} placement="bottom">
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleClient(row)} />
 			</Tippy>
 
-			<Tippy
-				content={<MemoizedTooltip text="Open this contact on WhatsApp Web." />}
-				placement="bottom">
-				<span
-					className={tooltipStyle}
-					dangerouslySetInnerHTML={{ __html: phoneNumber }}
-					onClick={() => openWhatsApp(row.phone_number)}
-				/>
+			<Tippy content={<MemoizedTooltip text="Open this contact on WhatsApp Web." />} placement="bottom">
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: phoneNumber }} onClick={() => openWhatsApp(row.phone_number)} />
 			</Tippy>
 
-			<Tippy
-				content={<MemoizedTooltip text={row.email_address} />}
-				placement="bottom">
-				<span
-					className={tooltipStyle}
-					dangerouslySetInnerHTML={{ __html: emailAddress }}
-					onClick={() => openEmailClient(row.email_address)}
-				/>
+			<Tippy content={<MemoizedTooltip text={row.email_address} />} placement="bottom">
+				<span className={tooltipStyle} dangerouslySetInnerHTML={{ __html: emailAddress }} onClick={() => openEmailClient(row.email_address)} />
 			</Tippy>
 
 			<span className={style}>{joinedOn}</span>
@@ -344,30 +318,9 @@ export default function Clients() {
 		return (
 			<div className="flex flex-col w-full h-full justify-center items-start full-border">
 				<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-				<Virtuoso
-					className="w-full h-full overflow-y-auto bottom-border contrast-background"
-					data={sortedData}
-					itemContent={(i, row) => (
-						<ClientRow
-							row={row}
-							main={main}
-							toggleEditClient={toggleEditClient}
-							toggleSingleClient={toggleSingleClient}
-							openWhatsApp={openWhatsApp}
-							openEmailClient={openEmailClient}
-						/>
-					)}
-					totalCount={api.clients.data.length}
-				/>
+				<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={sortedData} itemContent={(i, row) => <ClientRow row={row} main={main} toggleEditClient={toggleEditClient} toggleSingleClient={toggleSingleClient} openWhatsApp={openWhatsApp} openEmailClient={openEmailClient} />} totalCount={api.clients.data.length} />
 
-				{mounted.editClient && (
-					<DynamicEditClient
-						client={main.selectedClient}
-						mount={mounted.editClient}
-						reload={getAllClients}
-						unmount={toggleEditClient}
-					/>
-				)}
+				{mounted.editClient && <DynamicEditClient client={main.selectedClient} mount={mounted.editClient} reload={getAllClients} unmount={toggleEditClient} />}
 			</div>
 		);
 	}, [sortedData, api.clients.data.length, mounted.editClient, main.selectedClient, getAllClients, toggleEditClient, main, toggleSingleClient, openWhatsApp, openEmailClient]);
@@ -375,13 +328,8 @@ export default function Clients() {
 	const uiExport = useCallback(() => {
 		if (api.clients.data.length && api.clients.copy.length) {
 			return (
-				<button
-					className="primary-button-transparent-background"
-					onClick={doExcelExport}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faFileExcel}
-					/>
+				<button className="primary-button-transparent-background" onClick={doExcelExport}>
+					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 				</button>
 			);
 		}
@@ -389,19 +337,7 @@ export default function Clients() {
 
 	const uiFind = useCallback(() => {
 		if (api.clients.copy.length) {
-			return (
-				<DynamicTextInputNative
-					id="findBox"
-					icon={faSearch}
-					onChange={(e) => setInputs("find", e.target.value)}
-					onClearButtonClick={() => setInputs("find", "")}
-					placeholder=""
-					showClearButton={showFindBoxClearButton}
-					tabIndex={1}
-					value={main.find}
-					width="w-60"
-				/>
-			);
+			return <DynamicTextInputNative id="findBox" icon={faSearch} onChange={(e) => setInputs("find", e.target.value)} onClearButtonClick={() => setInputs("find", "")} placeholder="" showClearButton={showFindBoxClearButton} tabIndex={1} value={main.find} width="w-60" />;
 		}
 	}, [api.clients.copy.length, main.find, setInputs, showFindBoxClearButton]);
 
@@ -410,10 +346,7 @@ export default function Clients() {
 			const showArrow = m === main.sort.column ? "visible" : "invisible";
 
 			return (
-				<span
-					className="w-1/5 space-x-1 cursor-pointer text-center text-white font-medium-10"
-					onClick={() => setSort(m)}
-					key={i}>
+				<span className="w-1/5 space-x-1 cursor-pointer text-center text-white font-medium-10" onClick={() => setSort(m)} key={i}>
 					<span>{m}</span>
 					<span className={showArrow}>{uiSortArrows(m)}</span>
 				</span>
@@ -441,12 +374,7 @@ export default function Clients() {
 				</div>
 			);
 		} else if (mounted.singleClient) {
-			return (
-				<DynamicSingleClient
-					client={main.selectedClient}
-					unmount={toggleSingleClient}
-				/>
-			);
+			return <DynamicSingleClient client={main.selectedClient} unmount={toggleSingleClient} />;
 		} else {
 			return uiBody();
 		}
@@ -455,17 +383,7 @@ export default function Clients() {
 	const uiSortArrows = useCallback(
 		(column) => {
 			if (main.sort.column === column) {
-				return main.sort.isAscending ? (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountDesc}
-					/>
-				) : (
-					<FontAwesomeIcon
-						className="text-white"
-						icon={faSortAmountAsc}
-					/>
-				);
+				return main.sort.isAscending ? <FontAwesomeIcon className="text-white" icon={faSortAmountDesc} /> : <FontAwesomeIcon className="text-white" icon={faSortAmountAsc} />;
 			}
 		},
 		[main.sort.column, main.sort.isAscending],
@@ -499,14 +417,7 @@ export default function Clients() {
 						<div className="flex w-1/3 justify-end items-center">{uiExport()}</div>
 					</div>
 				)}
-				{mounted.singleClient ? (
-					<DynamicSingleClient
-						client={main.selectedClient}
-						unmount={toggleSingleClient}
-					/>
-				) : (
-					uiMain()
-				)}
+				{mounted.singleClient ? <DynamicSingleClient client={main.selectedClient} unmount={toggleSingleClient} /> : uiMain()}
 			</>
 		</div>
 	);
