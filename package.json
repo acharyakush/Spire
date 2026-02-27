@@ -1,6 +1,6 @@
 {
 	"name": "spire",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"private": true,
 	"scripts": {
 		"dev": "cross-env NEXT_PUBLIC_ENV=development next dev",
