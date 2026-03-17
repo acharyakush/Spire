@@ -337,27 +337,7 @@ export default function EditProject({ project, reload, unmount }) {
 	}
 
 	function uiCompany() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem
-				comparingValue1="name"
-				comparingValue2={main.company.name}
-				displayValue="name"
-				filteredData={getFilteredCompanies}
-				hasDataObject
-				icon={faBriefcase}
-				isReadOnly={false}
-				label="Company"
-				onChange={(e) => setInputs("company", e)}
-				onClick={() => addNewCompany(other.find.company.name)}
-				onInputChange={(e) => setFind("company", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.company.name}
-				tabIndex={2}
-				value={main.company.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.company.name} displayValue="name" filteredData={getFilteredCompanies} hasDataObject icon={faBriefcase} isReadOnly={false} label="Company" onChange={(e) => setInputs("company", e)} onClick={() => addNewCompany(other.find.company.name)} onInputChange={(e) => setFind("company", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.company.name} tabIndex={2} value={main.company.name} width="w-full" />;
 	}
 
 	function uiRemarks() {
@@ -365,66 +345,15 @@ export default function EditProject({ project, reload, unmount }) {
 	}
 
 	function uiInvoiceFees() {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				id="newProjectFees"
-				label={`${main.invoiceFirm.name}'s Fees`}
-				onChange={(e) => setInputs("invoiceFees", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={7}
-				value={main.invoiceFees}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} id="newProjectFees" label={`${main.invoiceFirm.name}'s Fees`} onChange={(e) => setInputs("invoiceFees", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={7} value={main.invoiceFees} width="w-full" />;
 	}
 
 	function uiInvoiceFirm() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.invoiceFirm.name}
-				displayValue="name"
-				filteredData={api.firms}
-				hasDataObject
-				icon={faBriefcase}
-				isReadOnly={false}
-				label="Invoice Firm"
-				onChange={(e) => setInputs("invoiceFirm", e)}
-				onClick={() => {}}
-				onInputChange={() => {}}
-				onKeyPress={() => {}}
-				searchedItem={{}}
-				tabIndex={9}
-				value={main.invoiceFirm.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.invoiceFirm.name} displayValue="name" filteredData={api.firms} hasDataObject icon={faBriefcase} isReadOnly={false} label="Invoice Firm" onChange={(e) => setInputs("invoiceFirm", e)} onClick={() => {}} onInputChange={() => {}} onKeyPress={() => {}} searchedItem={{}} tabIndex={9} value={main.invoiceFirm.name} width="w-full" />;
 	}
 
 	function uiMainProjects() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.mainProject.name}
-				displayValue="name"
-				filteredData={getFilteredMainProjects}
-				hasDataObject
-				icon={faFile}
-				isReadOnly={false}
-				label="Main Project"
-				onChange={(e) => setInputs("mainProject", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("mainProject", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.mainProject.name}
-				tabIndex={4}
-				value={main.mainProject.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.mainProject.name} displayValue="name" filteredData={getFilteredMainProjects} hasDataObject icon={faFile} isReadOnly={false} label="Main Project" onChange={(e) => setInputs("mainProject", e)} onClick={() => {}} onInputChange={(e) => setFind("mainProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.mainProject.name} tabIndex={4} value={main.mainProject.name} width="w-full" />;
 	}
 
 	function uiPhoneNumber() {
@@ -448,60 +377,17 @@ export default function EditProject({ project, reload, unmount }) {
 	}
 
 	function uiReimburseVoucher() {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				id="newProjectReimburseVoucher"
-				label="Reimbursement Voucher"
-				onChange={(e) => setInputs("reimburseVoucher", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={8}
-				value={main.reimburseVoucher}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} id="newProjectReimburseVoucher" label="Reimbursement Voucher" onChange={(e) => setInputs("reimburseVoucher", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={8} value={main.reimburseVoucher} width="w-full" />;
 	}
 
 	function uiSubProjects() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem
-				comparingValue1="name"
-				comparingValue2={main.subProject.name}
-				displayValue="name"
-				filteredData={getFilteredSubProjects}
-				hasDataObject
-				icon={faFile}
-				isReadOnly={false}
-				label="Sub Project"
-				onChange={(e) => setInputs("subProject", e)}
-				onClick={() => addNewSubProject(other.find.subProject.name)}
-				onInputChange={(e) => setFind("subProject", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.subProject.name}
-				tabIndex={5}
-				value={main.subProject.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.subProject.name} displayValue="name" filteredData={getFilteredSubProjects} hasDataObject icon={faFile} isReadOnly={false} label="Sub Project" onChange={(e) => setInputs("subProject", e)} onClick={() => addNewSubProject(other.find.subProject.name)} onInputChange={(e) => setFind("subProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.subProject.name} tabIndex={5} value={main.subProject.name} width="w-full" />;
 	}
 
 	function uiTeams() {
 		return (
 			<div className="w-full" ref={teamsMenuRef}>
-				<ComboBoxWithChips
-					displayKey="full_name"
-					label="Teams"
-					icon={faUserGroup}
-					isMenuInverted
-					onBlur={() => toggleTeamsMenu()}
-					onItemClick={(e) => setTeamsSelection(e)}
-					onSelectedItemClick={(e) => setTeamsSelection(e)}
-					selectedItems={main.teams}
-					showList={showTeamsMenu}
-					source={MyGlobal.GetAllUsers()}
-					toggleMenu={() => toggleTeamsMenu()}
-				/>
+				<ComboBoxWithChips displayKey="full_name" label="Teams" icon={faUserGroup} isMenuInverted onBlur={() => toggleTeamsMenu()} onItemClick={(e) => setTeamsSelection(e)} onSelectedItemClick={(e) => setTeamsSelection(e)} selectedItems={main.teams} showList={showTeamsMenu} source={MyGlobal.GetAllUsers()} toggleMenu={() => toggleTeamsMenu()} />
 			</div>
 		);
 	}

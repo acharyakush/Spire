@@ -640,7 +640,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				<Virtuoso ref={currentScrollPositionReference} rangeChanged={handleRangeChange} className="w-full h-full overflow-y-auto contrast-background" data={doSorting()} itemContent={(_, row) => uiRows(row)} totalCount={inquiriesSize} followOutput="auto" overscan={20} />
 				<div className="flex fixed bottom-3 right-3 space-x-3 z-50">
 					{uiNewInquiry()}
-					{uiFilterOrb()}
 					{uiTotalQuote()}
 				</div>
 			</div>

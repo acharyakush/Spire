@@ -15,6 +15,11 @@
 		"@dnd-kit/sortable": "^10.0.0",
 		"@fastify/busboy": "^3.2.0",
 		"@headlessui/react": "^2.2.9",
+		"@mantine/charts": "^8.3.16",
+		"@mantine/core": "^8.3.16",
+		"@mantine/dates": "^8.3.16",
+		"@mantine/hooks": "^8.3.16",
+		"@mantine/notifications": "^8.3.16",
 		"@tailwindcss/postcss": "^4.2.1",
 		"@tippyjs/react": "^4.2.6",
 		"apexcharts": "^5.6.0",
@@ -38,6 +43,7 @@
 		"react-slot-counter": "^3.3.2",
 		"react-toastify": "^11.0.5",
 		"react-virtuoso": "^4.18.1",
+		"recharts": "^3.8.0",
 		"write-excel-file": "^3.0.5"
 	},
 	"devDependencies": {
@@ -47,7 +53,9 @@
 		"@fortawesome/free-solid-svg-icons": "^7.2.0",
 		"@fortawesome/react-fontawesome": "^3.2.0",
 		"cross-env": "^10.1.0",
-		"postcss": "^8.5.6",
+		"postcss": "^8.5.8",
+		"postcss-preset-mantine": "^1.18.0",
+		"postcss-simple-vars": "^7.0.1",
 		"standard": "^17.1.2",
 		"tailwindcss": "^4.2.1"
 	}

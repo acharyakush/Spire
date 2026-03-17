@@ -1,6 +1,5 @@
 {
-	"cssVariables.lookupFiles": ["**/*.css"],
-	"debug.console.fontFamily": "'Fira Code', Monotional, Consolas, monospace",
+	"debug.console.fontFamily": "Consolas, monospace",
 	"debug.console.fontSize": 14,
 	"debug.console.lineHeight": 1.5,
 	"editor.acceptSuggestionOnEnter": "smart",
@@ -20,7 +19,7 @@
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.foldingImportsByDefault": true,
 	"editor.foldingStrategy": "indentation",
-	"editor.fontFamily": "'Fira Code', Monotional, Consolas, monospace",
+	"editor.fontFamily": "Consolas, monospace",
 	"editor.fontSize": 14,
 	"editor.formatOnSave": true,
 	"editor.formatOnSaveMode": "file",
@@ -60,18 +59,9 @@
 		"**/.git/subtree-cache/**": true,
 		"**/node_modules/**": true
 	},
-	"javascript.preferences.importModuleSpecifier": "non-relative",
-	"javascript.preferences.quoteStyle": "double",
-	"javascript.referencesCodeLens.enabled": true,
-	"javascript.suggest.autoImports": true,
-	"javascript.suggest.completeFunctionCalls": true,
-	"javascript.updateImportsOnFileMove.enabled": "always",
-	"javascript.validate.enable": true,
 	"markdown.validate.enabled": true,
 	"search.exclude": {
-		"**/node_modules": true,
-		"/Manager": true,
-		"/public/charts/*": true
+		"**/node_modules": true
 	},
 	"search.useIgnoreFiles": true,
 	"search.useGlobalIgnoreFiles": true,
@@ -79,7 +69,7 @@
 		"javascript": "html",
 		"javascriptreact": "html"
 	},
-	"terminal.integrated.fontFamily": "'Fira Code', Monotional, Consolas, monospace",
+	"terminal.integrated.fontFamily": "Consolas, monospace",
 	"terminal.integrated.fontSize": 14,
 	"terminal.integrated.lineHeight": 1.5,
 	"workbench.list.smoothScrolling": true,

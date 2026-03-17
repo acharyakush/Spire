@@ -63,18 +63,7 @@ export default async function handler(req, res) {
 			}
 		}
 
-		const projectQueryResult = await query("UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, quote=?, remarks=?, invoice_fees=?, firm_id=?, teams=? WHERE id=?", [
-			newClientId,
-			newCompanyId,
-			mainProjectId,
-			newSubProjectId,
-			quote,
-			remarks,
-			invoiceFees,
-			invoiceFirmId,
-			teams,
-			id,
-		]);
+		const projectQueryResult = await query("UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, quote=?, remarks=?, invoice_fees=?, firm_id=?, teams=? WHERE id=?", [newClientId, newCompanyId, mainProjectId, newSubProjectId, quote, remarks, invoiceFees, invoiceFirmId, teams, id]);
 
 		if (client.id == 0) {
 			const queryResult = await query(`UPDATE clients SET company_id=?, is_confirmed=1 WHERE id=?`, [newCompanyId, newClientId]);
@@ -93,10 +82,6 @@ export default async function handler(req, res) {
 			abc.unshift(firstRecord);
 
 			await query(`UPDATE invoices SET amount=?, particulars=? WHERE project_id=?`, [invoiceFees, JSON.stringify(abc), id]);
-		}
-
-		if (isInvoiceTransactionDone) {
-			await query(`UPDATE invoices_transactions SET amount=? WHERE project_id=?`, [invoiceFees, id]);
 		}
 
 		if (projectQueryResult.affectedRows > 0) {
