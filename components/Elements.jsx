@@ -88,7 +88,7 @@ export function AvatarCircle({ name, names }) {
 export const Badge = ({ value }) => {
 	return (
 		<div className="relative inline-block">
-			<span className="flex min-w-6 w-max h-6 px-2 justify-center items-center rounded-full text-white font-semibold-12 primary-background">{value}</span>
+			<span className="flex min-w-6 w-max h-6 px-2 justify-center items-center rounded-full text-white font-semibold-11 primary-background">{value}</span>
 		</div>
 	);
 };
@@ -118,7 +118,7 @@ export const BadgeLarge2 = ({ children }) => {
 };
 
 export const BadgeSmall = ({ value }) => {
-	return <span className="flex h-5 px-2 justify-center items-center rounded-full font-regular-9 primary-text primary-border primary-background-transparent-01">{value}</span>;
+	return <span className="flex h-5 px-2 justify-center items-center rounded-full font-regular-9 primary-text primary-background-transparent-01">{value}</span>;
 };
 
 export const BadgeSmallGreen = ({ value }) => {
@@ -126,19 +126,11 @@ export const BadgeSmallGreen = ({ value }) => {
 };
 
 export const BadgeSmallWithBackground = ({ style, value }) => {
-	return (
-		<span className={`flex min-w-6 h-6 px-2 justify-center items-center rounded-full font-regular-10 leading-none ${style.text} ${style.border} ${style.background}`} style={{ lineHeight: "1", fontFeatureSettings: "'tnum'" }}>
-			{value}
-		</span>
-	);
+	return <span className={`flex min-w-6 h-6 px-2 justify-center items-center rounded-full font-regular-10 ${style.text} ${style.border} ${style.background}`}>{value}</span>;
 };
 
 export const BadgeSmallWithBackground2 = ({ style, value }) => {
-	return (
-		<span className={`flex h-5 px-2 justify-center items-center rounded-full font-regular-9 leading-none ${style.text} ${style.background}`} style={{ fontFeatureSettings: "'tnum'" }}>
-			{value}
-		</span>
-	);
+	return <span className={`flex h-5 px-2 justify-center items-center rounded-full font-regular-9 ${style.text} ${style.background}`}>{value}</span>;
 };
 
 export const Spinner = () => {

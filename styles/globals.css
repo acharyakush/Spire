@@ -2,7 +2,9 @@
 
 @font-face {
 	font-family: "Regular";
-	src: url("/fonts/inter/regular.woff2") format("woff2");
+	src:
+		local("Google Sans"),
+		url("/fonts/google-sans/variable.ttf") format("truetype-variations");
 	font-weight: 400;
 	font-style: normal;
 	font-display: swap;
@@ -10,7 +12,9 @@
 
 @font-face {
 	font-family: "Medium";
-	src: url("/fonts/inter/medium.woff2") format("woff2");
+	src:
+		local("Google Sans"),
+		url("/fonts/google-sans/variable.ttf") format("truetype-variations");
 	font-weight: 500;
 	font-style: normal;
 	font-display: swap;
@@ -18,7 +22,9 @@
 
 @font-face {
 	font-family: "SemiBold";
-	src: url("/fonts/inter/semi_bold.woff2") format("woff2");
+	src:
+		local("Google Sans"),
+		url("/fonts/google-sans/variable.ttf") format("truetype-variations");
 	font-weight: 600;
 	font-style: normal;
 	font-display: swap;
@@ -26,7 +32,9 @@
 
 @font-face {
 	font-family: "Bold";
-	src: url("/fonts/inter/bold.woff2") format("woff2");
+	src:
+		local("Google Sans"),
+		url("/fonts/google-sans/variable.ttf") format("truetype-variations");
 	font-weight: 700;
 	font-style: normal;
 	font-display: swap;
@@ -34,6 +42,7 @@
 
 :root {
 	--bold: "Bold", Arial, sans-serif;
+	--font-family: var(--regular);
 	--medium: "Medium", Arial, sans-serif;
 	--regular: "Regular", Arial, sans-serif;
 	--semibold: "SemiBold", Arial, sans-serif;
@@ -45,18 +54,6 @@
 	}
 	body {
 		font-family: var(--font-family); /* Always applied */
-	}
-
-	body.production-font-features {
-		font-feature-settings:
-			"cpsp" 1,
-			"cv05" 1,
-			"cv06" 1,
-			"cv08" 1,
-			"cv11" 1,
-			"cv13" 1,
-			"kern" 1,
-			"ss03" 1;
 	}
 }
 

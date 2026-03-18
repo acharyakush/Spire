@@ -1,20 +1,17 @@
 "use client";
 
-/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
-
 import axios from "axios";
-import dayjs from "dayjs";
 import dynamic from "next/dynamic";
 import MyConstants from "@/utilities/constants";
 
 import { useRouter } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ErrorFallbackComponent } from "@/components/Elements";
+import { applicationName, MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { applicationName, isDevelopment, MyGlobal } from "@/utilities/global";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { BadgeSmall, ErrorFallbackComponent, SpinnerBig } from "@/components/Elements";
-import { faBell, faCheck, faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 const DynamicMySpace = dynamic(() => import("./mySpace"), { ssr: false });
 const DynamicTodos = dynamic(() => import("@/modules/todo/Index"), { ssr: false });
@@ -26,7 +23,6 @@ const DynamicInquiries = dynamic(() => import("@/modules/inquiries/index"), { ss
 const DynamicCashFlows = dynamic(() => import("@/modules/cashFlows/index"), { ssr: false });
 const DynamicEmployees = dynamic(() => import("@/modules/employees/index"), { ssr: false });
 const DynamicActivities = dynamic(() => import("@/modules/activities/index"), { ssr: false });
-const DynamicProjects2 = dynamic(() => import("@/modules/projects/Projects2"), { ssr: false });
 const DynamicAffiliates = dynamic(() => import("@/modules/cashFlows/affiliates/index"), { ssr: false });
 
 export default function Home() {
@@ -79,26 +75,6 @@ export default function Home() {
 	});
 
 	// Functions
-	function changeMode() {
-		const mode = main.mode == "light" ? "dark" : "light";
-		MyGlobal.Storages.Local.Set("AppMode", mode);
-
-		setMain((s) => ({ ...s, isDarkModeEnabled: !main.isDarkModeEnabled, mode }));
-	}
-
-	function doPreRenderingOperations() {
-		document.body.setAttribute("app-theme", "light");
-
-		const initialTheme = MyGlobal.GetTheme() ?? "light";
-		const isDarkModeEnabled = MyGlobal.GetTheme() !== "light";
-
-		const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
-
-		colorScheme.addEventListener("change", (e) => setMain((s) => ({ ...s, isDarkModeEnabled: e.matches, mode: e.matches ? "dark" : "light" })));
-
-		setMain((s) => ({ ...s, isDarkModeEnabled, mode: initialTheme }));
-	}
-
 	async function getPermissions() {
 		try {
 			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-permissions" }));
@@ -176,41 +152,6 @@ export default function Home() {
 				return 1;
 			default:
 				return -1;
-		}
-	}
-
-	async function getTodos() {
-		try {
-			setMain((s) => ({ ...s, isTodosLoading: true }));
-
-			const response = await axios.get(MyConstants.ApiEndpoints.Todos.GetTodos, MyGlobal.GetHeaders());
-
-			if (response.status === 200) {
-				const pending = [];
-				const result = response.data.todos;
-
-				if (Array.isArray(result)) {
-					for (let i = 0; i < result.length; i++) {
-						const obj = result[i];
-
-						const doesUserHaveAnyTodosAssigned = String(obj.assigned_to).split(",").includes(MyGlobal.GetUserId());
-
-						if (doesUserHaveAnyTodosAssigned) {
-							if (obj.status === "Pending") pending.push(obj);
-						}
-					}
-
-					setApi((s) => ({ ...s, todos: pending }));
-
-					if (main.unreadTodos != pending.length) {
-						setMain((s) => ({ ...s, unreadTodos: pending.length }));
-					}
-				}
-			}
-		} catch (error) {
-			MyGlobal.HandleErrors(error, "Home > Get Todos");
-		} finally {
-			setMain((s) => ({ ...s, isTodosLoading: false }));
 		}
 	}
 
@@ -420,38 +361,6 @@ export default function Home() {
 		return _modules;
 	}
 
-	function uiOtherModules() {
-		const aesthetics = main.selectedModule.index == -1 ? "primary-border-colour primary-background-transparent-01 primary-text" : "border-transparent gray-text";
-		const wrapper = `py-2 font-regular-11 ${aesthetics}`;
-
-		return (
-			<Menu as="div" className="relative z-50 top-0 inline-block text-left">
-				<MenuButton className={wrapper}>
-					<span>More</span>
-				</MenuButton>
-				<MenuItems anchor="bottom" className="absolute w-max rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
-					{uiOtherModulesList()}
-				</MenuItems>
-			</Menu>
-		);
-	}
-
-	function uiOtherModulesList() {
-		return api.modules
-			.filter((f) => f.sequence <= 0)
-			.map((m, i) => {
-				const isSelected = m.name == main.selectedModule.name;
-				const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "gray-text";
-
-				return (
-					<MenuItem as="div" className={`p-2 space-x-2.5 cursor-pointer border-y ${aesthetics} font-regular-11 hovered-rows`} key={i} onClick={() => setModule(i, m)}>
-						{isSelected && <FontAwesomeIcon icon={faCheck} />}
-						<span>{m.name}</span>
-					</MenuItem>
-				);
-			});
-	}
-
 	function uiSelectedModule() {
 		switch (main.selectedModule.name) {
 			case baseModules.Affiliates:
@@ -499,17 +408,6 @@ export default function Home() {
 			case baseModules.Projects:
 				return (
 					<ErrorBoundary key={`ErrorBoundary_${baseModules.Projects}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Projects)} FallbackComponent={ErrorFallbackComponent}>
-						{/* {isDevelopment ? (
-							<DynamicProjects2
-								presetStatus={main.status.projectsOrTasks}
-								setModuleProps={setModuleProps}
-							/>
-						) : (
-							<DynamicProjects
-								presetStatus={main.status.projectsOrTasks}
-								setModuleProps={setModuleProps}
-							/>
-						)} */}
 						<DynamicProjects presetStatus={main.status.projectsOrTasks} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
@@ -522,67 +420,10 @@ export default function Home() {
 		}
 	}
 
-	function uiTodoMenu() {
-		return (
-			<Menu as="div" className="relative z-1000 inline-block text-left">
-				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
-					{/* {main.unreadTodos > 0 && (
-						<div className="absolute -top-1 -right-4">
-							<BadgeSmallWithBackground2 style={{ text: "text-blue-600", background: "bg-white" }} value={api.todos.length} />
-						</div>
-					)} */}
-					<FontAwesomeIcon icon={faBell} className="text-yellow-500" size="xl" onClick={() => getTodos()} />
-				</MenuButton>
-				<MenuItems anchor="left start" className="absolute w-125 mt-10 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
-					<div className="flex flex-col p-3 space-y-3 justify-between items-center">
-						{main.isTodosLoading ? (
-							<span className="flex w-56 h-10 justify-center items-center">
-								<SpinnerBig />
-							</span>
-						) : (
-							<>
-								<span className="flex w-full space-x-2.5 justify-start items-center text-left font-semibold-14">
-									<span>{api.todos.length ? "Your to-dos" : "No to-dos assigned."}</span>
-									<BadgeSmall value={api.todos.length} />
-								</span>
-								{api.todos.map((m, i) => {
-									return (
-										<div className="flex w-full h-full p-2 space-x-2 justify-between items-start bg-gray-100 bottom-border rounded" key={i}>
-											<div className="flex flex-col w-3/4 h-full space-y-2.5 justify-between items-center">
-												<div className="flex flex-col w-full h-full -space-y-1 justify-center items-start whitespace-pre-wrap font-medium-12 black-text">
-													<span>{m.description}</span>
-													{/* {m.todays_task && <span className="underline underline-offset-2 font-bold text-[10px] animate-bounce red-text">Today's Task - {m.todays_task}</span>} */}
-												</div>
-												<div className="flex flex-col w-full justify-center items-start">
-													<span className="font-regular-10 gray-text">Finish by</span>
-													<span className="font-medium-10 blue-text">{m.due_date ? dayjs(m.due_date).format("DD MMM, YYYY") : "N.A."}</span>
-												</div>
-											</div>
-											<div className="flex flex-col w-1/4 h-full space-y-2.5 justify-between items-center">
-												<div className="flex flex-col w-full justify-center items-end">
-													<span className="font-regular-10 gray-text">Assigned on</span>
-													<span className="font-medium-10 blue-text">{dayjs(m.entry_at).format("DD MMM, YYYY")}</span>
-												</div>
-												<div className="flex flex-col w-full justify-center items-end">
-													<span className="font-regular-10 gray-text">Assigned by</span>
-													<span className="font-medium-10 blue-text">{MyGlobal.GetAnyDataFromId(m.entry_by, "full_name")}</span>
-												</div>
-											</div>
-										</div>
-									);
-								})}
-							</>
-						)}
-					</div>
-				</MenuItems>
-			</Menu>
-		);
-	}
-
 	function uiUserMenu() {
 		return (
 			<Menu as="div" className="relative z-50 inline-block text-left">
-				<MenuButton className="inline-flex w-full py-2 justify-center items-center focus:outline-none black-text">
+				<MenuButton className="inline-flex w-full py-2 justify-center-safe items-center-safe focus:outline-none black-text">
 					<FontAwesomeIcon className="text-white" icon={faUserCircle} size="lg" />
 				</MenuButton>
 				<MenuItems anchor="left start" className="absolute w-max mt-10 rounded focus:outline-none bottom-shadow contrast-background full-border black-text">
@@ -590,13 +431,6 @@ export default function Home() {
 						<span>{main.user.fullName}</span>
 						<span className="font-regular-10 gray-text">{main.user.designation}</span>
 					</div>
-					{/* <MenuItem
-						as="div"
-						className="px-3 py-2 space-x-3 cursor-pointer border-y font-regular-10 black-text hovered-rows"
-						onClick={() => changeMode()}>
-						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons()} />
-						<span>Mode</span>
-					</MenuItem> */}
 					{uiUserMenuList()}
 				</MenuItems>
 			</Menu>
@@ -622,7 +456,6 @@ export default function Home() {
 				// All other items are allowed
 				return true;
 			})
-
 			.map((m, i) => {
 				return (
 					<MenuItem as="div" className="p-3 space-x-3 cursor-pointer border-y font-medium-12 black-text hovered-rows" key={i} onClick={() => getUserMenuClickAction(m)}>
@@ -634,21 +467,19 @@ export default function Home() {
 	}
 
 	// Hooks
-	useLayoutEffect(() => {
+	useEffect(() => {
+		document.body.setAttribute("app-theme", "light");
+
 		if (!MyGlobal.Storages.Session.DoesExist(`${applicationName}Token`)) {
 			MyGlobal.ShowErrorToast(MyConstants.Messages.UnauthorizedAccess);
 			router.replace("/");
-		} else {
-			doPreRenderingOperations();
-
-			getUserData();
-			getUsers();
-
-			getPermissions();
+			return;
 		}
-	}, []);
 
-	useEffect(() => {
+		getUserData();
+		getUsers();
+		getPermissions();
+
 		const interval = setInterval(() => {
 			if (tabRefs.current[main.selectedModule.index]) {
 				updateGliderPosition();
@@ -689,34 +520,26 @@ export default function Home() {
 		}
 	}, [main.status]);
 
-	useEffect(() => {
-		document.body.setAttribute("app-theme", main.mode);
-	}, [main.mode]);
-
 	// Main UI
 	return (
 		<main className="flex flex-col min-w-5xl h-screen overflow-y-hidden">
-			<div className="flex w-full h-13 px-5 justify-between items-center relative shadow dashboard-blue-2">
-				<div className="flex w-full justify-start items-center">
+			<div className="flex w-full h-13 px-5 justify-between items-center-safe relative shadow dashboard-blue-2">
+				<div className="flex w-full items-center-safe">
 					<span className="cursor-pointer uppercase dashboard-heading" onClick={() => setModule(0, { name: baseModules.Dashboard })}>
 						{applicationName}
 					</span>
 				</div>
-				<div className="flex w-full justify-center items-center">
-					<div className="flex justify-center items-center relative">
+				<div className="flex w-full justify-center-safe items-center-safe">
+					<div className="flex justify-center-safe items-center-safe relative">
 						<div className="tabs relative" ref={tabsContainerRef}>
 							{uiModules()}
 							<span className="glider absolute" ref={gliderRef} />
 						</div>
-						{/* {uiOtherModules()} */}
 					</div>
 				</div>
-				<div className="flex w-full space-x-10 justify-end items-center">
-					{uiTodoMenu()}
-					{uiUserMenu()}
-				</div>
+				<div className="flex w-full justify-end-safe items-center-safe">{uiUserMenu()}</div>
 			</div>
-			<div className="flex w-full h-[calc(100vh-45px)] justify-center items-center overflow-y-auto" style={{ backgroundColour }}>
+			<div className="flex w-full h-[calc(100vh-45px)] justify-center-safe items-center-safe overflow-y-auto" style={{ backgroundColour }}>
 				{uiMain()}
 			</div>
 		</main>

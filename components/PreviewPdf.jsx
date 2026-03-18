@@ -3,10 +3,7 @@
 import { useEffect, useRef } from "react";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/build/pdf.mjs";
 
-GlobalWorkerOptions.workerSrc = new URL(
-	"pdfjs-dist/build/pdf.worker.min.mjs",
-	import.meta.url
-).toString();
+GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
 
 export default function PreviewPdf({ fileUrl, visible }) {
 	const canvasRef = useRef(null);
@@ -66,7 +63,7 @@ export default function PreviewPdf({ fileUrl, visible }) {
 			style={{
 				position: "absolute",
 				top: "100%",
-				right: "0",
+				right: "-100px",
 				zIndex: 999,
 				padding: "0px",
 				backgroundColor: "white",

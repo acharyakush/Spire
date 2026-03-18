@@ -1,20 +1,16 @@
 "use client";
 
-/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
-
 import axios from "axios";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
-import MyConstants from "@/utilities/constants";
-
 import useRv from "@/hooks/useDashboardRv";
-import useTodos from "@/hooks/useDashboardTodos";
+import MyConstants from "@/utilities/constants";
 import useInvoices from "@/hooks/useDashboardInvoices";
 import useProjects from "@/hooks/useDashboardProjects";
 import useInquiries from "@/hooks/useDashboardInquiries";
 
-import { isDevelopment, MyGlobal } from "@/utilities/global";
-import { useEffect, useState, useMemo, useCallback, startTransition } from "react";
+import { MyGlobal } from "@/utilities/global";
+import { useEffect, useMemo, startTransition } from "react";
 
 const DynamicConfirmedProjects = dynamic(() => import("./ConfirmedProjects"), { ssr: false });
 const DynamicPaymentsReceived = dynamic(() => import("./PaymentsReceived"), { ssr: false });
@@ -23,29 +19,20 @@ const DynamicInquiryAmount = dynamic(() => import("./InquiryAmount"), { ssr: fal
 const DynamicInquiries = dynamic(() => import("./Inquiries"), { ssr: false });
 const DynamicProjects = dynamic(() => import("./Projects"), { ssr: false });
 const DynamicInvoices = dynamic(() => import("./Invoices"), { ssr: false });
-const DynamicTodos = dynamic(() => import("./Todos"), { ssr: false });
 const DynamicRVs = dynamic(() => import("./RVs"), { ssr: false });
 
 export default function Dashboard({ setModuleProps }) {
 	// Business Logic
-	const [data, setData] = useState({
-		showRow1: isDevelopment,
-		showRow2: isDevelopment,
-		showRow3: isDevelopment,
-	});
-
 	const today = useMemo(() => dayjs(), []);
 
 	const { inquiries, updateInquiries } = useInquiries();
 	const { invoices, updateInvoices } = useInvoices(today);
 	const { projects, updateProjects } = useProjects();
 	const { rv, updateRv } = useRv();
-	const { todos, updateTodos } = useTodos();
 
 	// Memoized values
 	const memoizedProjects = useMemo(() => projects, [projects]);
 	const memoizedInvoices = useMemo(() => invoices, [invoices]);
-	const memoizedTodos = useMemo(() => todos, [todos]);
 	const memoizedInquiries = useMemo(() => inquiries, [inquiries]);
 	const memoizedRv = useMemo(() => rv, [rv]);
 
@@ -60,7 +47,6 @@ export default function Dashboard({ setModuleProps }) {
 				startTransition(() => {
 					const prjs = updateProjects(companies, invoices, transactions, projects);
 
-					updateTodos(todos);
 					updateInquiries(inquiries);
 					updateInvoices(invoices, prjs.paymentOverdue, prjs.paymentPending, prjs.paymentReceived, projects);
 					updateRv(rv, tasks);
@@ -71,115 +57,55 @@ export default function Dashboard({ setModuleProps }) {
 		}
 	}
 
-	function setValues(key, value) {
-		setData((s) => ({ ...s, [key]: value }));
-	}
-
-	// Memoized UI functions
-	const uiRow1 = useCallback(() => {
-		if (data.showRow1) {
-			const transition = !isDevelopment ? `row-fade ${data.showRow1 ? "shown" : ""}` : "";
-
-			return (
-				<div className={transition}>
-					<div className="flex w-full px-2.5 space-x-10 justify-between items-center">
-						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicProjects
-								projects={memoizedProjects}
-								setModuleProps={setModuleProps}
-							/>
-							<DynamicConfirmedProjects projects={memoizedProjects} />
-						</div>
-						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicTodos
-								setModuleProps={setModuleProps}
-								todos={memoizedTodos}
-							/>
-							<DynamicPendingPayments invoices={memoizedInvoices.pending} />
-						</div>
-					</div>
-				</div>
-			);
-		}
-	}, [data.showRow1, memoizedProjects, memoizedTodos, memoizedInvoices, setModuleProps]);
-
-	const uiRow2 = useCallback(() => {
-		if (data.showRow2) {
-			const transition = !isDevelopment ? `row-fade ${data.showRow2 ? "shown" : ""}` : "";
-
-			return (
-				<div className={transition}>
-					<div className="flex w-full p-2.5 space-x-10 justify-between items-center">
-						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicInquiries
-								inquiries={memoizedInquiries}
-								setModuleProps={setModuleProps}
-							/>
-							<DynamicInquiryAmount inquiries={memoizedInquiries} />
-						</div>
-						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicPaymentsReceived invoices={memoizedInvoices} />
-							{uiReports()}
-						</div>
-					</div>
-				</div>
-			);
-		}
-	}, [data.showRow2, memoizedInquiries, memoizedInvoices, setModuleProps]);
-
-	const uiRow3 = useCallback(() => {
-		if (data.showRow3) {
-			const transition = !isDevelopment ? `row-fade ${data.showRow3 ? "shown" : ""}` : "";
-
-			return (
-				<div className={transition}>
-					<div className="flex w-full p-2.5 space-x-10 justify-between items-center">
-						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicInvoices
-								invoices={memoizedInvoices}
-								setModuleProps={setModuleProps}
-							/>
-						</div>
-						<div className="flex w-full space-x-10 justify-between items-center">
-							<DynamicRVs
-								rv={memoizedRv}
-								setModuleProps={setModuleProps}
-							/>
-						</div>
-					</div>
-				</div>
-			);
-		}
-	}, [data.showRow3, memoizedInvoices, memoizedRv, setModuleProps]);
-
-	const uiReports = useCallback(() => {
+	// UI Components
+	function uiRow1() {
 		return (
-			<div className="flex flex-col w-full space-y-2 justify-start items-center anim zoom-in">
-				<div className="flex w-full justify-between items-center">
-					<div className="flex w-full space-x-2.5 justify-start items-center font-bold-18 primary-text">
-						<span>Reports</span>
-					</div>
+			<div className="flex w-full px-2.5 space-x-10 justify-between items-center-safe">
+				<div className="flex w-1/5 justify-center-safe items-center-safe">
+					<DynamicProjects projects={memoizedProjects} setModuleProps={setModuleProps} />
 				</div>
-				<div className="flex w-full h-[279.59px] justify-between items-center full-border rounded shadow-md contrast-background"></div>
+				<div className="flex w-3/5 justify-center-safe items-center-safe">
+					<DynamicConfirmedProjects projects={memoizedProjects} />
+				</div>
+				<div className="flex w-1/5 justify-center-safe items-center-safe">
+					<DynamicPendingPayments invoices={memoizedInvoices.pending} />
+				</div>
 			</div>
 		);
-	}, []);
+	}
+
+	function uiRow2() {
+		return (
+			<div className="flex w-full p-2.5 space-x-10 justify-between items-center-safe">
+				<div className="flex w-1/5 justify-center-safe items-center-safe">
+					<DynamicInquiries inquiries={memoizedInquiries} setModuleProps={setModuleProps} />
+				</div>
+				<div className="flex w-3/5 justify-center-safe items-center-safe">
+					<DynamicInquiryAmount inquiries={memoizedInquiries} />
+				</div>
+				<div className="flex w-1/5 justify-center-safe items-center-safe">
+					<DynamicPaymentsReceived invoices={memoizedInvoices} />
+				</div>
+			</div>
+		);
+	}
+
+	function uiRow3() {
+		return (
+			<div className="flex w-full p-2.5 space-x-10 justify-between items-center-safe">
+				<div className="flex w-full space-x-10 justify-between items-center-safe">
+					<DynamicInvoices invoices={memoizedInvoices} setModuleProps={setModuleProps} />
+				</div>
+				<div className="flex w-full space-x-10 justify-between items-center-safe">
+					<DynamicRVs rv={memoizedRv} setModuleProps={setModuleProps} />
+				</div>
+			</div>
+		);
+	}
 
 	// Hooks
 	useEffect(() => {
 		getSupportData();
-
-		if (!isDevelopment) {
-			const delay1 = setTimeout(() => setValues("showRow1", true), 200);
-			const delay2 = setTimeout(() => setValues("showRow2", true), 600);
-			const delay3 = setTimeout(() => setValues("showRow3", true), 1000);
-
-			return () => {
-				clearTimeout(delay1);
-				clearTimeout(delay2);
-				clearTimeout(delay3);
-			};
-		}
 	}, []);
 
 	// Main UI

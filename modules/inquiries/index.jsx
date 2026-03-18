@@ -1,7 +1,5 @@
 "use client";
 
-/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
-
 import "tippy.js/animations/shift-toward.css";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -9,19 +7,19 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import dynamic from "next/dynamic";
-import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
 import MyConstants from "@/utilities/constants";
+import writeXlsxFile from "write-excel-file/browser";
 import HoverPreviewWrapper from "@/components/HoverPreviewPdf";
 
 import { Virtuoso } from "react-virtuoso";
+import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { MyGlobal } from "@/utilities/global";
 import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
-import { faCalendar, faChevronDown, faDownload, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faCheck, faCheckCircle, faChevronDown, faDownload, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlaneUp, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 const DynamicNotes = dynamic(() => import("./Notes"), { ssr: false });
 const DynamicNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
@@ -34,17 +32,22 @@ const DynamicUpdateStatus = dynamic(() => import("@/modals/inquiries/miscellaneo
 export default function Inquiries({ presetStatus, setModuleProps }) {
 	// Business Logic
 	const currentScrollPositionReference = useRef(null);
+	const rangeChangeTimeoutReference = useRef(null);
+	const goToTopAnimationFrameReference = useRef(null);
+	const currentTopIndexReference = useRef(0);
+	const showGoToTopReference = useRef(false);
 
 	const [api, setApi] = useState({ clients: [], notes: [] });
+	const [showGoToTopOrb, setShowGoToTopOrb] = useState(false);
 
 	const [filter, setFilter] = useState({
 		from: "",
 		to: "",
 		search: "",
-		status: presetStatus ? String(presetStatus).replace("MySpace", "") : "",
+		status: presetStatus ? String(presetStatus).replace("MySpace", "") : "Open",
 	});
 
-	const [inquiries, setInquiries] = useState({ copy: [], data: [], merged: [] });
+	const [inquiries, setInquiries] = useState({ copy: [], data: [] });
 
 	const [main, setMain] = useState({
 		isLoading: false,
@@ -71,13 +74,70 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	const allowConvertingToProject = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.NewProject), []);
 	const allowNewInquiry = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry), []);
 
+	const thisView = useMemo(() => MyConstants.Modules.Base.Inquiries, []);
 	const statuses = useMemo(() => MyConstants.Statuses.Inquiries, []);
 	const headers = useMemo(() => MyConstants.TableHeaders.Inquiries, []);
+
+	const totalNotesByInquiryMap = useMemo(() => {
+		const counts = {};
+
+		for (const note of api.notes) {
+			if (note.source === thisView) {
+				counts[note.inquiry_id] = {
+					firstRow: (
+						<div className="flex flex-col w-full space-y-3 p-3 justify-center-safe">
+							<span>{note.content}</span>
+							<div className="flex flex-col w-full justify-center-safe">
+								<span className="text-xs text-gray-300">{MyGlobal.GetAnyDataFromId(note.entry_by_id, "full_name")}</span>
+								<span className="text-xs text-gray-300">{dayjs(note.entry_date).format("DD MMM, YYYY")}</span>
+							</div>
+						</div>
+					),
+					total: (counts[note.inquiry_id]?.total || 0) + 1,
+				};
+			}
+		}
+
+		return counts;
+	}, [api.notes, thisView]);
+
+	const sortedInquiries = useMemo(() => {
+		const { column, isAscending } = main.sort;
+
+		return [...inquiries.data].sort((a, b) => {
+			const aNextFollowUp = new Date(a.next_follow_up_on);
+			const bNextFollowUp = new Date(b.next_follow_up_on);
+
+			if (column === headers.Client) {
+				if (isAscending) return String(a.client_name).localeCompare(b.client_name);
+				return String(b.client_name).localeCompare(a.client_name);
+			} else if (column === headers.Projects) {
+				if (isAscending) return String(a.sub_project).localeCompare(b.sub_project);
+				return String(b.sub_project).localeCompare(a.sub_project);
+			} else if (column === headers.FollowUps) {
+				if (isAscending) return String(a.follow_ups_initials).localeCompare(b.follow_ups_initials);
+				return String(b.follow_ups_initials).localeCompare(a.follow_ups_initials);
+			} else if (column === headers.Quote) {
+				if (isAscending) return a.quote - b.quote;
+				return b.quote - a.quote;
+			} else if (column === headers.NextFollowUpOn) {
+				if (isAscending) return aNextFollowUp - bNextFollowUp;
+				return bNextFollowUp - aNextFollowUp;
+			} else if (column === headers.Status) {
+				if (isAscending) return String(a.status).localeCompare(b.status);
+				return String(b.status).localeCompare(a.status);
+			} else if (column === headers.References) {
+				if (isAscending) return String(a.reference_name).localeCompare(b.reference_name);
+				return String(b.reference_name).localeCompare(a.reference_name);
+			}
+
+			return 0;
+		});
+	}, [headers, inquiries.data, main.sort]);
 
 	const inquiriesSize = useMemo(() => inquiries.data.length, [inquiries.data]);
 	const inquiriesCopySize = useMemo(() => inquiries.copy.length, [inquiries.copy]);
 
-	const thisView = useMemo(() => MyConstants.Modules.Base.Inquiries, []);
 	const isAdministrator = useMemo(() => MyGlobal.IsUserAdministrator(), []);
 
 	const showFromDateClearButton = useMemo(() => (filter.from ? "cursor-pointer primary-text" : "hidden"), [filter.from]);
@@ -131,7 +191,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const rowHeaders = Object.values(headers);
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
-		doSorting().forEach((fe) => {
+		sortedInquiries.forEach((fe) => {
 			records.push(fe.client_name + "\n" + fe.entry_date, fe.phone_number + "\n" + fe.email_address, fe.sub_project + "\n" + fe.main_project, fe.follow_ups, MyGlobal.FormatCurrency(fe.quote), fe.next_follow_up_on, fe.status + " (" + getTotalNotesByInquiry(fe.id) + ")", fe.reference_name + "\n" + fe.entry_by_name);
 		});
 
@@ -219,38 +279,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		});
 	}
 
-	function doSorting() {
-		const { column, isAscending } = main.sort;
-
-		return [...inquiries.data].sort((a, b) => {
-			const aNextFollowUp = new Date(a.next_follow_up_on);
-			const bNextFollowUp = new Date(b.next_follow_up_on);
-
-			if (column === headers.Client) {
-				if (isAscending) return String(a.client_name).localeCompare(b.client_name);
-				return String(b.client_name).localeCompare(a.client_name);
-			} else if (column === headers.Projects) {
-				if (isAscending) return String(a.sub_project).localeCompare(b.sub_project);
-				return String(b.sub_project).localeCompare(a.sub_project);
-			} else if (column === headers.FollowUps) {
-				if (isAscending) return String(a.follow_ups_initials).localeCompare(b.follow_ups_initials);
-				return String(b.follow_ups_initials).localeCompare(a.follow_ups_initials);
-			} else if (column === headers.Quote) {
-				if (isAscending) return a.quote - b.quote;
-				return b.quote - a.quote;
-			} else if (column === headers.NextFollowUpOn) {
-				if (isAscending) return aNextFollowUp - bNextFollowUp;
-				return bNextFollowUp - aNextFollowUp;
-			} else if (column === headers.Status) {
-				if (isAscending) return String(a.status).localeCompare(b.status);
-				return String(b.status).localeCompare(a.status);
-			} else if (column === headers.References) {
-				if (isAscending) return String(a.reference_name).localeCompare(b.reference_name);
-				return String(b.reference_name).localeCompare(a.reference_name);
-			}
-		});
-	}
-
 	function downloadQuotation(quotationId) {
 		const link = document.createElement("a");
 		const fileName = String(quotationId).replace("/", "_").replace("/", "_");
@@ -263,14 +291,14 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function getFollowUpRemainingColour(value) {
 		if (value > 3) {
-			return "green-text font-semibold-10";
+			return "green-text font-medium-10";
 		}
 
 		switch (value) {
 			case 0:
-				return "red-text font-semibold-10 blink";
+				return "red-text font-medium-10 blink";
 			case 1:
-				return "orange-text font-semibold-10 blink";
+				return "orange-text font-medium-10 blink";
 			default:
 				return "gray-text font-regular-10";
 		}
@@ -360,13 +388,18 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 					revised.length = 0;
 					revised = array;
+				} else {
+					const array = revised.filter((f) => f.status === "Open");
+
+					revised.length = 0;
+					revised = array;
 				}
 
-				const merged = mergeInquiriesAndNotesById(revisedCopy);
+				const merged = mergeInquiriesAndNotesById(revised);
 				const revisedStatuses = calculateStatusCounts(revisedCopy);
 				const filtered = doFiltering(merged);
 
-				setInquiries({ copy: revisedCopy, data: filtered, merged });
+				setInquiries({ copy: revisedCopy, data: filtered });
 				setMain((s) => ({ ...s, revisedStatuses }));
 			}
 		} catch (error) {
@@ -483,7 +516,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function getTotalNotesByInquiry(id) {
-		return api.notes.filter((f) => f.inquiry_id === id && f.source === thisView).length;
+		return totalNotesByInquiryMap[id] || 0;
 	}
 
 	function getTotalQuote() {
@@ -506,9 +539,22 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function handleRangeChange(range) {
-		setTimeout(() => {
+		currentTopIndexReference.current = range.startIndex;
+
+		const shouldShowGoToTop = range.startIndex > 12;
+
+		if (showGoToTopReference.current !== shouldShowGoToTop) {
+			showGoToTopReference.current = shouldShowGoToTop;
+			setShowGoToTopOrb(shouldShowGoToTop);
+		}
+
+		if (rangeChangeTimeoutReference.current) {
+			clearTimeout(rangeChangeTimeoutReference.current);
+		}
+
+		rangeChangeTimeoutReference.current = setTimeout(() => {
 			localStorage.setItem("inquiriesScrollPosition", range.startIndex);
-		}, 1000);
+		}, 150);
 	}
 
 	function highlightText(isTag, text) {
@@ -637,8 +683,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		return (
 			<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
 				<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-				<Virtuoso ref={currentScrollPositionReference} rangeChanged={handleRangeChange} className="w-full h-full overflow-y-auto contrast-background" data={doSorting()} itemContent={(_, row) => uiRows(row)} totalCount={inquiriesSize} followOutput="auto" overscan={20} />
+				<Virtuoso ref={currentScrollPositionReference} rangeChanged={handleRangeChange} className="w-full h-full overflow-y-auto contrast-background" data={sortedInquiries} itemContent={(_, row) => uiRows(row)} totalCount={sortedInquiries.length} followOutput="auto" overscan={8} />
 				<div className="flex fixed bottom-3 right-3 space-x-3 z-50">
+					{uiGoToTopOrb()}
 					{uiNewInquiry()}
 					{uiTotalQuote()}
 				</div>
@@ -657,6 +704,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				onClick={() => {
 					setFilter((s) => ({ ...s, status: "" }));
 					setMain((s) => ({ ...s, isStatus: false }));
+					setInquiries((s) => ({ ...s, data: mergeInquiriesAndNotesById(inquiries.copy) }));
 				}}
 			/>
 		);
@@ -666,7 +714,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const clientName = MyGlobal.HighlightText(row.client_name, filter.search);
 		const clientNameTextStyle = row.status === statuses.Confirmed ? "cursor-not-allowed green-text" : "cursor-pointer primary-text";
 
-		const wrapper = style + " font-semibold-12 space-x-2 " + clientNameTextStyle;
+		const wrapper = style + " font-medium-12 space-x-2 " + clientNameTextStyle;
 		const clientNameStyle = childStyle + " !w-3/4 " + getStatusSeverityBackground3(row.status).text;
 
 		return (
@@ -701,7 +749,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiFilter(source) {
 		const topPosition = source === "orb" ? "bottom-full" : "top-full";
-		const style = `absolute w-full ${topPosition} mb-2 rounded contrast-background bottom-shadow focus:outline-none z-50`;
+		const style = `absolute w-full ${topPosition} mb-2 rounded shadow contrast-background bottom-shadow focus:outline-none z-50`;
 
 		return (
 			<Menu as="div" className="flex w-40 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
@@ -717,8 +765,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiFilterMenuList() {
 		return Object.entries(main.revisedStatuses).map(([key, value], i) => {
 			const isSelected = key === filter.status;
-			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "hover:bg-gray-300 contrast-background black-text";
+			const wrapper = `flex w-full justify-between items-center cursor-pointer border-y border-y-gray-300`;
 
 			return (
 				<MenuItem
@@ -729,43 +777,71 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						setFilter((s) => ({ ...s, status: key }));
 						setMain((s) => ({ ...s, isStatus: true }));
 					}}>
-					<span className="flex w-full justify-between items-center font-regular-11">
+					<span className={`flex w-full p-3 justify-between items-center font-regular-11 ${aesthetics}`}>
 						<span>{key}</span>
-						{value > 0 && <BadgeSmall value={value} />}
+						{isSelected ? <FontAwesomeIcon className="primary-text" icon={faCheckCircle} size="xl" /> : value > 0 && <BadgeSmall value={value} />}
 					</span>
 				</MenuItem>
 			);
 		});
 	}
 
-	function uiFilterOrb() {
-		return (
-			<Tippy
-				content={
-					<div className="flex flex-col space-y-1 justify-center items-center">
-						<div className="flex w-full p-2 justify-between items-center">
-							{uiFromDate()}
-							{uiToDate()}
-						</div>
-						<div className="flex w-full p-2 space-x-5 justify-between items-center">
-							{uiSearch()}
-							{uiFilter("orb")}
-						</div>
-						<Tippy content={<Tooltip text="Clear filters" />} placement="bottom">
-							{uiClearFilter()}
-						</Tippy>
-					</div>
+	function uiGoToTopOrb() {
+		const handleClick = () => {
+			const previousTopIndex = currentTopIndexReference.current;
+
+			localStorage.setItem("inquiriesScrollPosition", 0);
+			showGoToTopReference.current = false;
+			setShowGoToTopOrb(false);
+
+			if (rangeChangeTimeoutReference.current) {
+				clearTimeout(rangeChangeTimeoutReference.current);
+				rangeChangeTimeoutReference.current = null;
+			}
+
+			if (goToTopAnimationFrameReference.current) {
+				cancelAnimationFrame(goToTopAnimationFrameReference.current);
+				goToTopAnimationFrameReference.current = null;
+			}
+
+			if (currentScrollPositionReference.current) {
+				if (previousTopIndex > 120) {
+					currentScrollPositionReference.current.scrollToIndex({
+						index: 18,
+						align: "start",
+						behavior: "auto",
+					});
+
+					goToTopAnimationFrameReference.current = globalThis.requestAnimationFrame(() => {
+						currentScrollPositionReference.current?.scrollToIndex({
+							index: 0,
+							align: "start",
+							behavior: "smooth",
+						});
+						goToTopAnimationFrameReference.current = null;
+					});
+				} else {
+					currentScrollPositionReference.current.scrollToIndex({
+						index: 0,
+						align: "start",
+						behavior: "smooth",
+					});
 				}
-				interactive
-				placement="left"
-				theme="dark"
-				trigger="mouseenter"
-				animation="shift-toward"
-				appendTo={() => document.body}>
-				<div className="w-10 h-10 flex items-center justify-center rounded-full bg-linear-to-br from-slate-200 via-indigo-300 to-violet-400 text-indigo-900 border border-indigo-500 shadow transition-all duration-500 ease-out hover:scale-105 hover:shadow-md cursor-pointer">
-					<FontAwesomeIcon icon={faFilter} size="1x" />
-				</div>
-			</Tippy>
+			}
+
+			currentTopIndexReference.current = 0;
+		};
+
+		const wrapperStyle = showGoToTopOrb ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-90 translate-y-2 pointer-events-none";
+
+		return (
+			<div className={`transform-gpu transition-all duration-300 ease-out will-change-transform ${wrapperStyle}`} aria-hidden={!showGoToTopOrb}>
+				<Tippy content={<Tooltip text="Go to top" />} disabled={!showGoToTopOrb} interactive placement="left" theme="dark" trigger="mouseenter" animation="shift-toward" appendTo={() => document.body}>
+					<button type="button" aria-label="Go to top" className="w-10 h-10 flex items-center justify-center rounded-full bg-linear-to-br from-slate-200 via-indigo-300 to-violet-400 text-indigo-900 border border-indigo-500 shadow transition-all duration-300 ease-out hover:scale-105 hover:shadow-md cursor-pointer" onClick={handleClick} tabIndex={showGoToTopOrb ? 0 : -1}>
+						<FontAwesomeIcon icon={faPlaneUp} size="1x" />
+					</button>
+				</Tippy>
+			</div>
 		);
 	}
 
@@ -803,7 +879,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		} else if (mounted.editInquiry) {
 			return <DynamicEditInquiry inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleEditInquiryView} />;
 		} else if (mounted.newInquiry) {
-			return <DynamicNewInquiry reload={getSupportData} unmount={toggleNewInquiryView} />;
+			return <DynamicNewInquiry allInquiries={inquiries.copy} reload={getSupportData} unmount={toggleNewInquiryView} />;
 		} else if (mounted.newProject) {
 			return <DynamicNewProject inquiry={main.selectedInquiryForStatusChange} reload={getSupportData} unmount={closeNewProjectView} />;
 		} else if (mounted.notes) {
@@ -1017,8 +1093,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 		const icon = !isConfirmed && <FontAwesomeIcon icon={faChevronDown} size="xs" />;
 
-		const totalNotes = getTotalNotesByInquiry(row.id);
-		const notesWrapper = totalNotes > 0 ? "cursor-pointer primary-text" : "cursor-default black-text";
+		const { firstRow, total } = getTotalNotesByInquiry(row.id);
+		const notesWrapper = total > 0 ? "cursor-pointer primary-text" : "cursor-default black-text";
 
 		return (
 			<Tippy content={<Tooltip text={row.closure_reason} />} disabled={row.is_closed === 0 && !row.closure_reason} placement="bottom">
@@ -1027,9 +1103,11 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						<span dangerouslySetInnerHTML={{ __html: highlightText(true, row.status) }} />
 						{icon}
 					</MenuButton>
-					<span className={notesWrapper} onClick={() => totalNotes && toggleNotesView(row, true)}>
-						<BadgeSmallWithBackground style={getStatusSeverityBackground(row.status)} value={totalNotes} />
-					</span>
+					<Tippy content={<Tooltip text={firstRow} />} disabled={!firstRow} placement="bottom">
+						<span className={notesWrapper} onClick={() => total && toggleNotesView(row, true)}>
+							<BadgeSmallWithBackground style={getStatusSeverityBackground(row.status)} value={total} />
+						</span>
+					</Tippy>
 					{!isConfirmed && <MenuItems className="absolute w-full top-7 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-60 full-border">{uiStatusMenuList(row)}</MenuItems>}
 				</Menu>
 			</Tippy>
@@ -1088,28 +1166,34 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		globalThis.addEventListener("keydown", detectKeystrokes);
 
 		return () => {
+			if (rangeChangeTimeoutReference.current) {
+				clearTimeout(rangeChangeTimeoutReference.current);
+			}
+
+			if (goToTopAnimationFrameReference.current) {
+				cancelAnimationFrame(goToTopAnimationFrameReference.current);
+			}
+
 			setModuleProps(thisView, "");
-			localStorage.clear("inquiriesScrollPosition");
+			localStorage.removeItem("inquiriesScrollPosition");
 			globalThis.removeEventListener("keydown", detectKeystrokes);
 		};
 	}, []);
 
 	useEffect(() => {
-		if (inquiries.merged.length) {
+		if (mounted.mainComponent) {
 			if (currentScrollPositionReference.current) {
 				const savedIndex = localStorage.getItem("inquiriesScrollPosition");
-
 				currentScrollPositionReference.current.scrollToIndex({
 					index: savedIndex,
 					align: "start",
 					behavior: "auto",
 				});
 			}
-
-			const filtered = doFiltering(inquiries.merged);
+			const filtered = doFiltering(inquiries.copy);
 			setInquiries((s) => ({ ...s, data: filtered }));
 		}
-	}, [inquiries.merged, filter, main.isStatus]);
+	}, [filter, main.isStatus]);
 
 	useEffect(() => {
 		if (mounted.mainComponent) {
@@ -1132,7 +1216,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}, [mounted.notes]);
 
 	return (
-		<div className="flex flex-col w-full h-full justify-start items-center primary-light-background">
+		<div className="flex flex-col w-full h-full items-center-safe">
 			{uiMain()}
 
 			{mounted.updateStatus && <DynamicUpdateStatus inquiry={main.selectedInquiryForStatusChange} mount={mounted.updateStatus} reload={getSupportData} unmount={toggleUpdateStatus} />}

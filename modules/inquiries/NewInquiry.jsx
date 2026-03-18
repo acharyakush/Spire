@@ -12,8 +12,9 @@ import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, ComboBoxWithChips, DatePicker, EmailAddress, TextArea, TextInput } from "@/components/Inputs";
 import { faCalendar, faChevronLeft, faFile, faIndianRupee, faNoteSticky, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import dayjs from "dayjs";
 
-export default function NewInquiry({ reload, unmount }) {
+export default function NewInquiry({ allInquiries, reload, unmount }) {
 	// Business Logic
 	const followUpsMenuRef = useRef(null);
 
@@ -125,6 +126,17 @@ export default function NewInquiry({ reload, unmount }) {
 
 		setMain((s) => ({ ...s, subProject: copy.at(0) }));
 		setApi((s) => ({ ...s, subProjects: { copy, data: copy } }));
+	}
+
+	function checkIfNewInquiryAlreadyExists() {
+		const existing = allInquiries.filter((f) => f.client_id == main.client.id && f.main_project_id == main.mainProject.id && f.sub_project_id == main.subProject.id && f.reference_id == main.reference.id && f.email_address == main.emailAddress && f.phone_number == main.phoneNumber);
+
+		if (existing.length) {
+			MyGlobal.ShowErrorToast(MyGlobal.GetAnyDataFromId(existing[0]?.entry_by_id, "full_name") + " has already added this inquiry on " + dayjs(existing[0]?.entry_date).format("DD MMM, YYYY"));
+			return false;
+		}
+
+		return true;
 	}
 
 	function detectEscapeKey(event) {
@@ -347,27 +359,7 @@ export default function NewInquiry({ reload, unmount }) {
 
 	// UI Components
 	function uiClient() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem
-				comparingValue1="name"
-				comparingValue2={main.client.name}
-				displayValue="name"
-				filteredData={getFilteredClients}
-				hasDataObject
-				icon={faUser}
-				isReadOnly={false}
-				label="Client"
-				onChange={(e) => setHeavyInputs("client", e)}
-				onClick={() => addNewClient(other.find.client.name)}
-				onInputChange={(e) => setFind("client", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.client.name}
-				tabIndex={1}
-				value={getClientName()}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.client.name} displayValue="name" filteredData={getFilteredClients} hasDataObject icon={faUser} isReadOnly={false} label="Client" onChange={(e) => setHeavyInputs("client", e)} onClick={() => addNewClient(other.find.client.name)} onInputChange={(e) => setFind("client", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.client.name} tabIndex={1} value={getClientName()} width="w-full" />;
 	}
 
 	function uiDate() {
@@ -381,45 +373,13 @@ export default function NewInquiry({ reload, unmount }) {
 	function uiFollowUps() {
 		return (
 			<div className="w-full" ref={followUpsMenuRef}>
-				<ComboBoxWithChips
-					displayKey="full_name"
-					label="Follow Ups"
-					icon={faUserGroup}
-					isMenuInverted
-					onBlur={() => toggleFollowUpsMenu()}
-					onItemClick={(e) => setFollowUps(e)}
-					onSelectedItemClick={(e) => setFollowUps(e)}
-					selectedItems={main.followUps}
-					showList={showFollowUpsMenu}
-					source={MyGlobal.GetAllUsers()}
-					toggleMenu={() => toggleFollowUpsMenu()}
-				/>
+				<ComboBoxWithChips displayKey="full_name" label="Follow Ups" icon={faUserGroup} isMenuInverted onBlur={() => toggleFollowUpsMenu()} onItemClick={(e) => setFollowUps(e)} onSelectedItemClick={(e) => setFollowUps(e)} selectedItems={main.followUps} showList={showFollowUpsMenu} source={MyGlobal.GetAllUsers()} toggleMenu={() => toggleFollowUpsMenu()} />
 			</div>
 		);
 	}
 
 	function uiMainProjects() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.mainProject.name}
-				displayValue="name"
-				filteredData={getFilteredMainProjects}
-				hasDataObject
-				icon={faFile}
-				isReadOnly={false}
-				label="Main Project"
-				onChange={(e) => setHeavyInputs("mainProject", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("mainProject", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.mainProject.name}
-				tabIndex={4}
-				value={main.mainProject.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.mainProject.name} displayValue="name" filteredData={getFilteredMainProjects} hasDataObject icon={faFile} isReadOnly={false} label="Main Project" onChange={(e) => setHeavyInputs("mainProject", e)} onClick={() => {}} onInputChange={(e) => setFind("mainProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.mainProject.name} tabIndex={4} value={main.mainProject.name} width="w-full" />;
 	}
 
 	function uiNotes() {
@@ -427,18 +387,7 @@ export default function NewInquiry({ reload, unmount }) {
 	}
 
 	function uiPhoneNumber() {
-		return (
-			<TextInput
-				icon={faPhone}
-				label="Phone Number"
-				maxLength={12}
-				onChange={(e) => setLightInputs("phoneNumber", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={2}
-				value={main.phoneNumber}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faPhone} label="Phone Number" maxLength={12} onChange={(e) => setLightInputs("phoneNumber", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={main.phoneNumber} width="w-full" />;
 	}
 
 	function uiPreview() {
@@ -454,66 +403,15 @@ export default function NewInquiry({ reload, unmount }) {
 	}
 
 	function uiQuote() {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				id="quote"
-				label="Quote"
-				onChange={(e) => setLightInputs("quote", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={8}
-				value={main.quote}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} id="quote" label="Quote" onChange={(e) => setLightInputs("quote", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={8} value={main.quote} width="w-full" />;
 	}
 
 	function uiReferences() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem
-				comparingValue1="name"
-				comparingValue2={main.reference.name}
-				displayValue="name"
-				filteredData={getFilteredReferences}
-				hasDataObject
-				icon={faUser}
-				isReadOnly={false}
-				label="Reference"
-				onChange={(e) => setHeavyInputs("reference", e)}
-				onClick={() => addNewReference(other.find.reference.name)}
-				onInputChange={(e) => setFind("reference", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.reference.name}
-				tabIndex={6}
-				value={getReferenceName()}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.reference.name} displayValue="name" filteredData={getFilteredReferences} hasDataObject icon={faUser} isReadOnly={false} label="Reference" onChange={(e) => setHeavyInputs("reference", e)} onClick={() => addNewReference(other.find.reference.name)} onInputChange={(e) => setFind("reference", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.reference.name} tabIndex={6} value={getReferenceName()} width="w-full" />;
 	}
 
 	function uiSubProjects() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem
-				comparingValue1="name"
-				comparingValue2={main.subProject.name}
-				displayValue="name"
-				filteredData={getFilteredSubProjects}
-				hasDataObject
-				icon={faFile}
-				isReadOnly={false}
-				label="Sub Project"
-				onChange={(e) => setHeavyInputs("subProject", e)}
-				onClick={() => addNewSubProject(other.find.subProject.name)}
-				onInputChange={(e) => setFind("subProject", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.subProject.name}
-				tabIndex={5}
-				value={main.subProject.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.subProject.name} displayValue="name" filteredData={getFilteredSubProjects} hasDataObject icon={faFile} isReadOnly={false} label="Sub Project" onChange={(e) => setHeavyInputs("subProject", e)} onClick={() => addNewSubProject(other.find.subProject.name)} onInputChange={(e) => setFind("subProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.subProject.name} tabIndex={5} value={main.subProject.name} width="w-full" />;
 	}
 
 	// Hooks
@@ -572,7 +470,13 @@ export default function NewInquiry({ reload, unmount }) {
 					</div>
 				</div>
 				<footer className="w-full dialog-footer">
-					<button className={addButtonStyle} onClick={() => togglePreviewBox("")}>
+					<button
+						className={addButtonStyle}
+						onClick={() => {
+							if (checkIfNewInquiryAlreadyExists()) {
+								togglePreviewBox("");
+							}
+						}}>
 						{uiPreview()}
 					</button>
 				</footer>

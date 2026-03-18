@@ -19,21 +19,26 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
 import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { MyGlobal } from "@/utilities/global";
-import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faPlaneUp, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
 	const currentScrollPositionReference = useRef(null);
+	const rangeChangeTimeoutReference = useRef(null);
+	const goToTopAnimationFrameReference = useRef(null);
+	const currentTopIndexReference = useRef(0);
+	const showGoToTopReference = useRef(false);
 
 	const [api, setApi] = useState({
 		notes: [],
 		projects: { data: [], copy: [] },
 	});
+	const [showGoToTopOrb, setShowGoToTopOrb] = useState(false);
 
 	const [main, setMain] = useState({
 		activeModule: { items: [], name: "All" },
 		dueDate: { from: "", to: "" },
-		filter: presetStatus ? String(presetStatus).replace("MySpace", "") : "",
+		filter: presetStatus ? String(presetStatus).replace("MySpace", "") : "Active",
 		findText: "",
 		isLoading: { selectedProject: false, supportData: false },
 		revisedStatuses: {},
@@ -196,14 +201,22 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}, []);
 
 	function handleRangeChange(range) {
-		// range.startIndex can be a number — ensure we store a string
-		const indexToSave = String(range.startIndex);
+		currentTopIndexReference.current = range.startIndex;
 
-		// Debounce slightly to avoid too-frequent writes
-		clearTimeout(handleRangeChange._timer);
-		handleRangeChange._timer = setTimeout(() => {
-			localStorage.setItem("projectsScrollPosition", indexToSave);
-		}, 500);
+		const shouldShowGoToTop = range.startIndex > 12;
+
+		if (showGoToTopReference.current !== shouldShowGoToTop) {
+			showGoToTopReference.current = shouldShowGoToTop;
+			setShowGoToTopOrb(shouldShowGoToTop);
+		}
+
+		if (rangeChangeTimeoutReference.current) {
+			clearTimeout(rangeChangeTimeoutReference.current);
+		}
+
+		rangeChangeTimeoutReference.current = setTimeout(() => {
+			localStorage.setItem("projectsScrollPosition", String(range.startIndex));
+		}, 150);
 	}
 
 	const setFilter = useCallback(
@@ -563,7 +576,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}, [getSelectedProjectData]);
 
 	const sortedProjects = useMemo(() => {
-		return filteredProjects.sort((a, b) => {
+		return [...filteredProjects].sort((a, b) => {
 			const aStartedOn = new Date(a.started_on);
 			const bStartedOn = new Date(b.started_on);
 
@@ -1224,6 +1237,65 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		}
 	}
 
+	function uiGoToTopOrb() {
+		const handleClick = () => {
+			const previousTopIndex = currentTopIndexReference.current;
+
+			localStorage.setItem("projectsScrollPosition", 0);
+			showGoToTopReference.current = false;
+			setShowGoToTopOrb(false);
+
+			if (rangeChangeTimeoutReference.current) {
+				clearTimeout(rangeChangeTimeoutReference.current);
+				rangeChangeTimeoutReference.current = null;
+			}
+
+			if (goToTopAnimationFrameReference.current) {
+				cancelAnimationFrame(goToTopAnimationFrameReference.current);
+				goToTopAnimationFrameReference.current = null;
+			}
+
+			if (currentScrollPositionReference.current) {
+				if (previousTopIndex > 120) {
+					currentScrollPositionReference.current.scrollToIndex({
+						index: 18,
+						align: "start",
+						behavior: "auto",
+					});
+
+					goToTopAnimationFrameReference.current = globalThis.requestAnimationFrame(() => {
+						currentScrollPositionReference.current?.scrollToIndex({
+							index: 0,
+							align: "start",
+							behavior: "smooth",
+						});
+						goToTopAnimationFrameReference.current = null;
+					});
+				} else {
+					currentScrollPositionReference.current.scrollToIndex({
+						index: 0,
+						align: "start",
+						behavior: "smooth",
+					});
+				}
+			}
+
+			currentTopIndexReference.current = 0;
+		};
+
+		const wrapperStyle = showGoToTopOrb ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-90 translate-y-2 pointer-events-none";
+
+		return (
+			<div className={`transform-gpu transition-all duration-300 ease-out will-change-transform ${wrapperStyle}`} aria-hidden={!showGoToTopOrb}>
+				<Tippy content={<Tooltip text="Go to top" />} disabled={!showGoToTopOrb} interactive placement="left" theme="dark" trigger="mouseenter" animation="shift-toward" appendTo={() => document.body}>
+					<button type="button" aria-label="Go to top" className="w-10 h-10 flex items-center justify-center rounded-full bg-linear-to-br from-slate-200 via-indigo-300 to-violet-400 text-indigo-900 border border-indigo-500 shadow transition-all duration-300 ease-out hover:scale-105 hover:shadow-md cursor-pointer" onClick={handleClick} tabIndex={showGoToTopOrb ? 0 : -1}>
+						<FontAwesomeIcon icon={faPlaneUp} size="1x" />
+					</button>
+				</Tippy>
+			</div>
+		);
+	}
+
 	const uiBody = useCallback(() => {
 		const savedIndexStr = localStorage.getItem("projectsScrollPosition");
 		const savedIndex = savedIndexStr ? Math.max(0, Math.min(Number(savedIndexStr), sortedProjects.length - 1)) : 0;
@@ -1240,13 +1312,16 @@ export default function Projects({ presetStatus, setModuleProps }) {
 						<div className="flex flex-col w-full h-full justify-center items-start full-border">
 							<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
 							<Virtuoso ref={currentScrollPositionReference} className="w-full h-full overflow-y-auto bottom-border contrast-background" data={sortedProjects} itemContent={(i, row) => uiRows(row)} totalCount={sortedProjects.length} followOutput="auto" rangeChanged={handleRangeChange} initialTopMostItemIndex={savedIndex} />
-							<div className="fixed bottom-3 right-3 z-50">{uiTotalQuote()}</div>
+							<div className="fixed bottom-3 right-3 z-50 flex items-center space-x-3">
+								{uiGoToTopOrb()}
+								{uiTotalQuote()}
+							</div>
 						</div>
 					)}
 				</div>
 			</div>
 		);
-	}, [uiList, uiHeaders, sortedProjects, uiRows]);
+	}, [uiList, uiHeaders, sortedProjects, uiRows, showGoToTopOrb]);
 
 	function uiTotalQuote() {
 		return (
@@ -1296,6 +1371,12 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 		return () => {
 			clearTimeout(initializationDelay);
+			if (rangeChangeTimeoutReference.current) {
+				clearTimeout(rangeChangeTimeoutReference.current);
+			}
+			if (goToTopAnimationFrameReference.current) {
+				cancelAnimationFrame(goToTopAnimationFrameReference.current);
+			}
 			setModuleProps("projectsOrTasks", "");
 			window.removeEventListener("keydown", autoFocusFindBox);
 		};
