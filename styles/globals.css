@@ -1,59 +1,39 @@
 @import "tailwindcss";
 
 @font-face {
-	font-family: "Regular";
-	src:
-		local("Google Sans"),
-		url("/fonts/google-sans/variable.ttf") format("truetype-variations");
-	font-weight: 400;
+	font-family: "Source Sans 3";
+	src: url("/fonts/source-sans-3/variable.ttf") format("truetype");
+	font-weight: 200 900;
 	font-style: normal;
 	font-display: swap;
 }
 
 @font-face {
-	font-family: "Medium";
-	src:
-		local("Google Sans"),
-		url("/fonts/google-sans/variable.ttf") format("truetype-variations");
-	font-weight: 500;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "SemiBold";
-	src:
-		local("Google Sans"),
-		url("/fonts/google-sans/variable.ttf") format("truetype-variations");
-	font-weight: 600;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "Bold";
-	src:
-		local("Google Sans"),
-		url("/fonts/google-sans/variable.ttf") format("truetype-variations");
-	font-weight: 700;
-	font-style: normal;
+	font-family: "Source Sans 3";
+	src: url("/fonts/source-sans-3/italic-variable.ttf") format("truetype");
+	font-weight: 200 900;
+	font-style: italic;
 	font-display: swap;
 }
 
 :root {
-	--bold: "Bold", Arial, sans-serif;
+	--bold: "Source Sans 3", Arial, sans-serif;
 	--font-family: var(--regular);
-	--medium: "Medium", Arial, sans-serif;
-	--regular: "Regular", Arial, sans-serif;
-	--semibold: "SemiBold", Arial, sans-serif;
+	--medium: "Source Sans 3", Arial, sans-serif;
+	--regular: "Source Sans 3", Arial, sans-serif;
+	--semibold: "Source Sans 3", Arial, sans-serif;
 }
 
 @layer base {
 	img {
 		@apply inline-block;
 	}
-	body {
-		font-family: var(--font-family); /* Always applied */
+	body,
+	button,
+	input,
+	select,
+	textarea {
+		font-family: var(--font-family);
 	}
 }
 

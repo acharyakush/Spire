@@ -361,11 +361,9 @@ const MyConstants = Object.freeze({
 			EntryBy: "Entry By",
 		}),
 		Clients: Object.freeze({
-			Id: "ID",
-			Name: "Name",
-			PhoneNumber: "Phone Number",
-			EmailAddress: "Email Address",
 			JoinedOn: "Joined On",
+			Name: "Name",
+			EmailAddress: "Email Address",
 		}),
 		Inquiries: Object.freeze({
 			Client: "Client",
