@@ -1,6 +1,6 @@
 // hooks/useProjects.js
 import dayjs from "dayjs";
-import MyConstants from "@/utilities/constants";
+import { Statuses } from "@/utilities/constants";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -22,7 +22,7 @@ export default function useProjects() {
 	});
 
 	function updateProjects(companies = [], invoiceList = [], transactions = [], projectList = []) {
-		const prjStatus = MyConstants.Statuses.Projects;
+		const prjStatus = Statuses.Projects;
 		const userId = MyGlobal.GetUserId();
 
 		let active = 0,

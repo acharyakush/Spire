@@ -4,7 +4,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import dynamic from "next/dynamic";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules } from "@/utilities/constants";
 import writeXlsxFile from "write-excel-file/browser";
 
 import { Virtuoso } from "react-virtuoso";
@@ -15,10 +15,10 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, Spinner, Tooltip } from "@/components/Elements";
 import { faArrowUpFromBracket, faDownload, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { ClientsHeaders } from "@/utilities/headers";
 
-const thisView = MyConstants.Modules.Base.Clients;
-const headers = MyConstants.TableHeaders.Clients;
-const arrHeaders = Object.values(headers);
+const thisView = BaseModules.Clients;
+const arrHeaders = Object.values(ClientsHeaders);
 
 const DynSingleClient = dynamic(() => import("../singleClient"), { ssr: false });
 const DynEditClient = dynamic(() => import("@/modals/singleClient").then((t) => ({ default: t.EditClient })), {
@@ -36,9 +36,10 @@ export default function Clients() {
 	const [api, setApi] = useState({ copy: [], data: [] });
 	const [selectedClient, setSelectedClient] = useState({});
 
+	const [initialTopMostItemIndex, setInitialTopMostItemIndex] = useState(0);
 	const [showGoToTopOrb, setShowGoToTopOrb] = useState(false);
 	const [main, setMain] = useState({ find: "", isLoading: true });
-	const [sort, setSort] = useState({ column: headers.Id, isAscending: false });
+	const [sort, setSort] = useState({ column: ClientsHeaders.Id, isAscending: false });
 	const [isOpen, setIsOpen] = useState({ editClient: false, singleClient: false });
 
 	const showFindBoxClearButton = main.find ? "cursor-pointer text-gray-300" : "hidden!";
@@ -63,7 +64,7 @@ export default function Clients() {
 		const headerHeight = 44;
 		const maximumColumnWidth = 20;
 
-		const _headers = Object.values(headers);
+		const _headers = Object.values(ClientsHeaders);
 		const blankRows = [{ span: _headers.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => records.push(fe.id, fe.name, fe.phoneNumber, fe.emailAddress, fe.joinedOnDate + "\n" + fe.joinedOnTime));
@@ -142,13 +143,13 @@ export default function Clients() {
 			const bJoinedOn = new Date(b.joined_on);
 
 			switch (true) {
-				case column === headers.JoinedOn && isAscending:
+				case column === ClientsHeaders.JoinedOn && isAscending:
 					return aJoinedOn - bJoinedOn;
-				case column === headers.JoinedOn && !isAscending:
+				case column === ClientsHeaders.JoinedOn && !isAscending:
 					return bJoinedOn - aJoinedOn;
-				case column === headers.Name && isAscending:
+				case column === ClientsHeaders.Name && isAscending:
 					return a.name.localeCompare(b.name);
-				case column === headers.Name && !isAscending:
+				case column === ClientsHeaders.Name && !isAscending:
 					return b.name.localeCompare(a.name);
 				default:
 					return 0;
@@ -158,7 +159,7 @@ export default function Clients() {
 
 	async function getData() {
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetClients, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Clients.GetClients, MyGlobal.GetHeaders());
 
 			if (response.status !== 200) return [];
 			if (!Array.isArray(response.data)) return [];
@@ -205,7 +206,7 @@ export default function Clients() {
 	function handleGoToTopClick() {
 		const previousTopIndex = currentTopIndexReference.current;
 
-		localStorage.setItem("clientsScrollPosition", String(0));
+		window.localStorage.setItem("clientsScrollPosition", String(0));
 		showGoToTopReference.current = false;
 		setShowGoToTopOrb(false);
 
@@ -263,6 +264,28 @@ export default function Clients() {
 		}, 500);
 	}
 
+	function getSavedClientsScrollPosition() {
+		const savedIndex = Number(localStorage.getItem("clientsScrollPosition"));
+		if (!Number.isFinite(savedIndex) || savedIndex < 0) return 0;
+		return savedIndex;
+	}
+
+	function restoreClientsScrollPosition() {
+		if (!currentScrollPositionReference.current) return;
+
+		const savedIndex = getSavedClientsScrollPosition();
+
+		currentTopIndexReference.current = savedIndex;
+		showGoToTopReference.current = savedIndex > 8;
+		setShowGoToTopOrb(savedIndex > 8);
+
+		currentScrollPositionReference.current.scrollToIndex({
+			index: Math.min(savedIndex, Math.max(sortedData.length - 1, 0)),
+			align: "start",
+			behavior: "auto",
+		});
+	}
+
 	function openEmailClient(emailAddress) {
 		window.open(`mailto:${emailAddress}`, "_blank");
 	}
@@ -277,6 +300,16 @@ export default function Clients() {
 	}
 
 	function toggleSingleClient(clientId) {
+		if (clientId) {
+			if (rangeChangeTimeoutReference.current) {
+				clearTimeout(rangeChangeTimeoutReference.current);
+				rangeChangeTimeoutReference.current = null;
+			}
+
+			localStorage.setItem("clientsScrollPosition", String(currentTopIndexReference.current));
+		}
+
+		setInitialTopMostItemIndex(getSavedClientsScrollPosition());
 		setSelectedClient(clientId ?? {});
 		setIsOpen((s) => ({ ...s, singleClient: clientId ? true : false }));
 	}
@@ -319,7 +352,7 @@ export default function Clients() {
 				<button
 					className="w-1/3 space-x-1 cursor-pointer text-center text-white font-medium-10"
 					onClick={() => {
-						if (m !== headers.PhoneNumber && m !== headers.EmailAddress) setSort((s) => ({ ...s, column: m, isAscending: !s.isAscending }));
+						if (m !== ClientsHeaders.PhoneNumber && m !== ClientsHeaders.EmailAddress) setSort((s) => ({ ...s, column: m, isAscending: !s.isAscending }));
 					}}
 					key={i}>
 					<span>{m}</span>
@@ -357,12 +390,13 @@ export default function Clients() {
 					ref={currentScrollPositionReference}
 					className="w-full h-full contrast-background"
 					data={sortedData}
+					initialTopMostItemIndex={Math.min(initialTopMostItemIndex, Math.max(sortedData.length - 1, 0))}
 					itemContent={(_, row) => {
 						const fancyRightBorderStyle = "absolute w-2.5 h-[50px] rounded-tr-full rounded-br-full blue-background left-2";
 						const style = `flex flex-col w-1/3 justify-center-safe items-center-safe text-center`;
 						const childStyle = "flex w-full justify-center-safe items-center-safe";
 
-						const parentLabelStyle = childStyle + " font-semibold-12";
+						const parentLabelStyle = childStyle + " font-semibold text-base";
 						const childLabelStyle = childStyle + " gray-text";
 
 						const clientId = MyGlobal.HighlightText(row.id, main.find);
@@ -375,7 +409,7 @@ export default function Clients() {
 								<span className={fancyRightBorderStyle} />
 								<div className={style}>
 									<span className={parentLabelStyle}>{row.joinedOnDate}</span>
-									<span className={`${childLabelStyle} font-regular-11`}>{row.joinedOnTime}</span>
+									<span className={`${childLabelStyle} font-normal text-xs`}>{row.joinedOnTime}</span>
 								</div>
 								<div className={style}>
 									<div className={`${parentLabelStyle} cursor-pointer hover:underline hover:underline-offset-4`}>
@@ -383,7 +417,7 @@ export default function Clients() {
 											<button className="cursor-pointer primary-text" dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleClient(row)} />
 										</Tippy>
 									</div>
-									<button className={`${childLabelStyle} font-regular-11`} dangerouslySetInnerHTML={{ __html: clientId }} onClick={() => toggleEditClient(row)} />
+									<button className={`${childLabelStyle} font-normal text-xs`} dangerouslySetInnerHTML={{ __html: clientId }} onClick={() => toggleEditClient(row)} />
 								</div>
 								<div className={style}>
 									<div className={`${parentLabelStyle} cursor-pointer hover:underline hover:underline-offset-4`}>
@@ -392,7 +426,7 @@ export default function Clients() {
 										</Tippy>
 									</div>
 									<Tippy content={<Tooltip text="Send an email to this client." />} placement="bottom">
-										<button className={`${childLabelStyle} cursor-pointer font-regular-11 hover:underline hover:underline-offset-4`} dangerouslySetInnerHTML={{ __html: emailAddress }} onClick={() => openEmailClient(row.email_address)} />
+										<button className={`${childLabelStyle} cursor-pointer font-normal text-xs hover:underline hover:underline-offset-4`} dangerouslySetInnerHTML={{ __html: emailAddress }} onClick={() => openEmailClient(row.email_address)} />
 									</Tippy>
 								</div>
 							</div>
@@ -418,6 +452,7 @@ export default function Clients() {
 	// Hooks
 	useEffect(() => {
 		getData();
+		setInitialTopMostItemIndex(getSavedClientsScrollPosition());
 	}, []);
 
 	useEffect(() => {
@@ -436,25 +471,23 @@ export default function Clients() {
 	}, [main.find]);
 
 	useEffect(() => {
-		if (!currentScrollPositionReference.current) return;
-
-		const savedIndex = Number(localStorage.getItem("clientsScrollPosition"));
-		if (!Number.isFinite(savedIndex) || savedIndex <= 0) return;
-
-		currentScrollPositionReference.current.scrollToIndex({
-			index: Math.min(savedIndex, Math.max(sortedData.length - 1, 0)),
-			align: "start",
-			behavior: "auto",
-		});
+		restoreClientsScrollPosition();
 	}, [sortedData.length]);
+
+	useEffect(() => {
+		if (isOpen.singleClient || main.isLoading || !sortedData.length) return;
+		const animationFrame = globalThis.requestAnimationFrame(() => restoreClientsScrollPosition());
+
+		return () => globalThis.cancelAnimationFrame(animationFrame);
+	}, [isOpen.singleClient, main.isLoading, sortedData.length]);
 
 	// Main UI
 	return (
-		<div className="flex flex-col w-full h-full items-center-safe">
+		<div className="flex flex-col w-full h-full items-center-safe blue-background-transparent-01">
 			{!isOpen.singleClient && (
 				<div className="flex w-full px-5 py-2.5 justify-between items-center-safe">
 					<div className="flex w-2/5 space-x-2 items-center-safe">
-						<span className="view-heading">{thisView}</span>
+						<span className="font-bold text-2xl blue-text">{thisView}</span>
 						{getIconOrBadge()}
 					</div>
 					<div className="flex w-3/5 items-center-safe">{uiFind()}</div>

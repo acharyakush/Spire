@@ -4,7 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { useState } from "react";
 import { AvatarCircle, Spinner } from "@/components/Elements";
@@ -44,7 +44,7 @@ export default function Details({ mount, refresh, todo, unmount }) {
 				status: data.status,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Todos.EditDetails, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Todos.EditDetails, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				refresh();
@@ -52,8 +52,8 @@ export default function Details({ mount, refresh, todo, unmount }) {
 				if (data.status != todo.priority) {
 					const activityMessage = `Edited status from <b>${todo.priority}</b> to <b>${data.status}</b>.`;
 
-					MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Todos);
-					MyGlobal.ShowSuccessToast(MyConstants.Messages.TodoEdited);
+					MyGlobal.AddActivity(activityMessage, BaseModules.Todos);
+					MyGlobal.ShowSuccessToast(Messages.TodoEdited);
 				}
 
 				unmount();

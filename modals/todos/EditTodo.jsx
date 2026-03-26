@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
@@ -86,13 +86,13 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 				projectId: selectedProject?.id,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Todos.EditTodo, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Todos.EditTodo, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				refresh();
 
-				MyGlobal.AddActivity("Edited <b>" + todo.description + "<b>", MyConstants.Modules.Base.Todos);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TodoEdited);
+				MyGlobal.AddActivity("Edited <b>" + todo.description + "<b>", BaseModules.Todos);
+				MyGlobal.ShowSuccessToast(Messages.TodoEdited);
 
 				unmount();
 			}
@@ -155,7 +155,7 @@ export default function EditTodo({ mount, refresh, todo, unmount }) {
 		try {
 			setIsFetching(true);
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Todos.GetAddTodoSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Todos.GetAddTodoSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				let selectedClient = {};

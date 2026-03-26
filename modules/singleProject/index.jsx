@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import axios from "axios";
 import Tasks from "./Tasks";
 import Tippy from "@tippyjs/react";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -57,7 +57,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.SingleProject.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.SingleProject.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				if ("affiliates" in response.data) {
@@ -191,7 +191,6 @@ export default function SingleProject({ client, project, reload, source, unmount
 
 		const columnWrapper = "flex flex-col justify-center items-center cursor-pointer primary-tag-transparent-01";
 
-		// const redColumnWrapper = project.status === MyConstants.Statuses.Projects.Completed ? "hidden" : "flex flex-col justify-center items-center cursor-pointer font-normal red-tag-transparent-01";
 
 		// const dueOnTimeLeft = dayjs(project.due_on).format("DD-MM-YYYY") == dayjs().format("DD-MM-YYYY") ? "Today" : dayjs(project.due_on).fromNow();
 

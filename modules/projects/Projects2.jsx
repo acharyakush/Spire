@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import axios from "axios";
 import Tippy from "@tippyjs/react";
 import dynamic from "next/dynamic";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { MyGlobal } from "@/utilities/global";
@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { AvatarCircle, Badge, BadgeSmall, Spinner, Tooltip } from "@/components/Elements";
 import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { ProjectsHeaders } from "@/utilities/headers";
 
 const DynamicMyProjects = dynamic(() => import("./MyProjects"), { ssr: false });
 const DynamicEditProject = dynamic(() => import("./EditProject"), { ssr: false });
@@ -60,9 +61,8 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 	const [projects, setProjects] = useState({ api: [], copy: [] });
 
 	const today = useMemo(() => dayjs(), []);
-	const statuses = useMemo(() => MyConstants.Statuses.Projects2, []);
-	const thisView = useMemo(() => MyConstants.Modules.Base.Projects, []);
-	const tableHeaders = useMemo(() => MyConstants.TableHeaders.Projects2, []);
+	const statuses = useMemo(() => Statuses.Projects, []);
+	const thisView = useMemo(() => BaseModules.Projects, []);
 	const isUserAdministrator = useMemo(() => MyGlobal.IsUserAdministrator(), []);
 
 	const { Active: stActive, Cancelled: stCancelled, Closed: stClosed, Completed: stCompleted, Hold: stHold, Overdue: stOverdue, Today: stToday, Tomorrow: stTomorrow, Upcoming: stUpcoming } = statuses;
@@ -70,8 +70,8 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 	const apiSize = useMemo(() => projects.api.length, [projects.api]);
 	const apiCopySize = useMemo(() => projects.copy.length, [projects.copy]);
 
-	const allowDeletingProject = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteProject), []);
-	const allowEditingProject = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.EditProject), []);
+	const allowDeletingProject = useMemo(() => MyGlobal.HasPermission(DerivedModules.DeleteProject), []);
+	const allowEditingProject = useMemo(() => MyGlobal.HasPermission(DerivedModules.EditProject), []);
 
 	const clearSearchStyle = useMemo(() => (main.search ? "cursor-pointer primary-text" : "hidden"), [main.search]);
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
@@ -117,18 +117,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 
 			const _status = String(status).toLowerCase();
 
-			return (
-				projectId.includes(search) ||
-				governmentId.includes(search) ||
-				clientId.includes(search) ||
-				clientName.includes(search) ||
-				companyName.includes(search) ||
-				mainProjectName.includes(search) ||
-				subProjectName.includes(search) ||
-				teamNames.includes(search) ||
-				teamNamesInitials.includes(search) ||
-				_status.includes(search)
-			);
+			return projectId.includes(search) || governmentId.includes(search) || clientId.includes(search) || clientName.includes(search) || companyName.includes(search) || mainProjectName.includes(search) || subProjectName.includes(search) || teamNames.includes(search) || teamNamesInitials.includes(search) || _status.includes(search);
 		});
 
 		setProjects((s) => ({ ...s, api: filtered }));
@@ -142,33 +131,33 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 			const { column, isAscending } = main.sort;
 
 			switch (true) {
-				case column === tableHeaders.Started && isAscending:
+				case column === ProjectsHeaders.Started && isAscending:
 					return aStartedOn - bStartedOn;
-				case column === tableHeaders.Started && !isAscending:
+				case column === ProjectsHeaders.Started && !isAscending:
 					return bStartedOn - aStartedOn;
-				case column === tableHeaders.GovermentId && isAscending:
+				case column === ProjectsHeaders.GovermentId && isAscending:
 					if (a.government_id) return String(a.government_id).localeCompare(b.government_id);
-				case column === tableHeaders.GovermentId && !isAscending:
+				case column === ProjectsHeaders.GovermentId && !isAscending:
 					if (b.government_id) return String(b.government_id).localeCompare(a.government_id);
-				case column === tableHeaders.Client && isAscending:
+				case column === ProjectsHeaders.Client && isAscending:
 					return String(a.client_name).localeCompare(b.client_name);
-				case column === tableHeaders.Client && !isAscending:
+				case column === ProjectsHeaders.Client && !isAscending:
 					return String(b.client_name).localeCompare(a.client_name);
-				case column === tableHeaders.Company && isAscending:
+				case column === ProjectsHeaders.Company && isAscending:
 					return String(a.company_name).localeCompare(b.company_name);
-				case column === tableHeaders.Company && !isAscending:
+				case column === ProjectsHeaders.Company && !isAscending:
 					return String(b.company_name).localeCompare(a.company_name);
-				case column === tableHeaders.MainProject && isAscending:
+				case column === ProjectsHeaders.MainProject && isAscending:
 					return String(a.main_project_name).localeCompare(b.main_project_name);
-				case column === tableHeaders.MainProject && !isAscending:
+				case column === ProjectsHeaders.MainProject && !isAscending:
 					return String(b.main_project_name).localeCompare(a.main_project_name);
-				case column === tableHeaders.SubProject && isAscending:
+				case column === ProjectsHeaders.SubProject && isAscending:
 					return String(a.sub_project_name).localeCompare(b.sub_project_name);
-				case column === tableHeaders.SubProject && !isAscending:
+				case column === ProjectsHeaders.SubProject && !isAscending:
 					return String(b.sub_project_name).localeCompare(a.sub_project_name);
-				case column === tableHeaders.Status && isAscending:
+				case column === ProjectsHeaders.Status && isAscending:
 					return String(a.status).localeCompare(b.status);
-				case column === tableHeaders.Status && !isAscending:
+				case column === ProjectsHeaders.Status && !isAscending:
 					return String(b.status).localeCompare(a.status);
 			}
 		});
@@ -359,7 +348,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		try {
 			setMain((s) => ({ ...s, isSupportDataLoading: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetProjects, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Projects.GetProjects, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				let revised = [];
@@ -525,12 +514,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center">
 					<div className="flex flex-col w-full h-full justify-center items-start full-border">
 						<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-						<Virtuoso
-							className="w-full h-full overflow-y-auto bottom-border contrast-background"
-							data={doSorting()}
-							itemContent={(_, row) => uiRows(row)}
-							totalCount={doSorting().length}
-						/>
+						<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(_, row) => uiRows(row)} totalCount={doSorting().length} />
 						<div className="fixed bottom-3 right-3 z-50">{uiTotalQuote()}</div>
 					</div>
 				</div>
@@ -539,13 +523,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 	}
 
 	function uiClearFilter() {
-		return (
-			<FontAwesomeIcon
-				className="cursor-pointer outline-none focus:outline-none red-text"
-				icon={faFilterCircleXmark}
-				onClick={() => clearFilters()}
-			/>
-		);
+		return <FontAwesomeIcon className="cursor-pointer outline-none focus:outline-none red-text" icon={faFilterCircleXmark} onClick={() => clearFilters()} />;
 	}
 
 	function uiClientName(row, tooltipText) {
@@ -553,16 +531,8 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		const textColour = getClientNameColourByStatus(row.status);
 
 		return (
-			<Tippy
-				allowHTML
-				className="whitespace-pre-line"
-				content={<Tooltip text={tooltipText} />}
-				placement="bottom">
-				<span
-					className={textColour}
-					dangerouslySetInnerHTML={{ __html: clientName }}
-					onClick={() => toggleSingleProjectView(row)}
-				/>
+			<Tippy allowHTML className="whitespace-pre-line" content={<Tooltip text={tooltipText} />} placement="bottom">
+				<span className={textColour} dangerouslySetInnerHTML={{ __html: clientName }} onClick={() => toggleSingleProjectView(row)} />
 			</Tippy>
 		);
 	}
@@ -570,39 +540,20 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 	function uiDeleteProject() {
 		if (!mounted.deleteProject) return null;
 
-		return (
-			<DynamicDeleteProject
-				mount={mounted.deleteProject}
-				projectId={main.selectedProject?.id}
-				reload={getSupportData}
-				unmount={toggleDeleteProjectBox}
-			/>
-		);
+		return <DynamicDeleteProject mount={mounted.deleteProject} projectId={main.selectedProject?.id} reload={getSupportData} unmount={toggleDeleteProjectBox} />;
 	}
 
 	function uiEditStatus() {
 		if (!mounted.editStatus) return null;
 
-		return (
-			<DynamicEditStatus
-				mount={mounted.editStatus}
-				project={main.selectedProject}
-				reload={getSupportData}
-				unmount={toggleEditStatusBox}
-			/>
-		);
+		return <DynamicEditStatus mount={mounted.editStatus} project={main.selectedProject} reload={getSupportData} unmount={toggleEditStatusBox} />;
 	}
 
 	function uiExport() {
 		if (apiSize && apiCopySize) {
 			return (
-				<button
-					className="primary-button-transparent-background"
-					onClick={() => doExcelExport()}>
-					<FontAwesomeIcon
-						className="primary-text"
-						icon={faFileExcel}
-					/>
+				<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
+					<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
 				</button>
 			);
 		}
@@ -612,9 +563,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		const wrapper = "flex w-full h-[30px] px-2 justify-between items-center font-regular-10 gray-text";
 
 		return (
-			<Menu
-				as="div"
-				className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
+			<Menu as="div" className="flex w-40 h-[30px] justify-center items-center relative rounded shadow contrast-background full-border">
 				<MenuButton className={wrapper}>
 					<span>{main.filter || "Status"}</span>
 					<FontAwesomeIcon icon={faChevronDown} />
@@ -631,11 +580,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
 
 			return (
-				<MenuItem
-					as="div"
-					className={wrapper}
-					key={i}
-					onClick={() => setFilter(key)}>
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setFilter(key)}>
 					<span className="flex w-full justify-between items-center font-regular-11">
 						<span>{key}</span>
 						{value > 0 && <BadgeSmall value={value} />}
@@ -646,14 +591,11 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(tableHeaders).map((m, i) => {
+		return Object.values(ProjectsHeaders).map((m, i) => {
 			const showArrow = m === main.sort.column ? "visible" : "invisible";
 
 			return (
-				<span
-					className="w-[16.66%] space-x-1 cursor-pointer text-center text-white font-medium-10"
-					onClick={() => setSort(m)}
-					key={i}>
+				<span className="w-[16.66%] space-x-1 cursor-pointer text-center text-white font-medium-10" onClick={() => setSort(m)} key={i}>
 					<span>{m}</span>
 					<span className={showArrow}>{uiSortArrows(m)}</span>
 				</span>
@@ -670,10 +612,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${style} font-regular-10 hovered-rows`;
 
 			return (
-				<button
-					className={wrapper}
-					key={i}
-					onClick={() => setModule(m)}>
+				<button className={wrapper} key={i} onClick={() => setModule(m)}>
 					<span className="text-left">{m.key}</span>
 					{m.key !== "All" && m?.items.length && <span className="font-regular-10 gray-text">{m?.items.length}</span>}
 				</button>
@@ -689,35 +628,15 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		if (!apiSize && !apiCopySize) return getEmptyDataMessage("No projects created");
 
 		if (mounted.editProject) {
-			return (
-				<DynamicEditProject
-					project={main.selectedProject}
-					reload={getSupportData}
-					unmount={toggleEditProjectView}
-				/>
-			);
+			return <DynamicEditProject project={main.selectedProject} reload={getSupportData} unmount={toggleEditProjectView} />;
 		}
 
 		if (mounted.myProjects) {
-			return (
-				<DynamicMyProjects
-					presetStatus={presetStatus}
-					setModuleProps={setModuleProps}
-					unmount={closeMyProjects}
-				/>
-			);
+			return <DynamicMyProjects presetStatus={presetStatus} setModuleProps={setModuleProps} unmount={closeMyProjects} />;
 		}
 
 		if (mounted.singleProject) {
-			return (
-				<DynamicSingleProject
-					client={main.selectedClient}
-					project={main.selectedProject}
-					reload={getSupportData}
-					source="Single Project"
-					unmount={toggleSingleProjectView}
-				/>
-			);
+			return <DynamicSingleProject client={main.selectedClient} project={main.selectedProject} reload={getSupportData} source="Single Project" unmount={toggleSingleProjectView} />;
 		}
 
 		return uiBody();
@@ -726,14 +645,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 	function uiProjectStatus() {
 		if (!mounted.projectStatus) return null;
 
-		return (
-			<DynamicProjectStatus
-				mount={mounted.projectStatus}
-				project={main.selectedProject}
-				reload={getSupportData}
-				unmount={toggleProjectStatusBox}
-			/>
-		);
+		return <DynamicProjectStatus mount={mounted.projectStatus} project={main.selectedProject} reload={getSupportData} unmount={toggleProjectStatusBox} />;
 	}
 
 	function uiRows(row) {
@@ -762,27 +674,19 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		const avatarWrapper = style + " !flex-row space-x-1";
 
 		return (
-			<div
-				className={wrapper}
-				key={id}
-				onMouseEnter={() => setMouseEnter(id)}
-				onMouseLeave={() => setMouseLeave(id)}>
+			<div className={wrapper} key={id} onMouseEnter={() => setMouseEnter(id)} onMouseLeave={() => setMouseLeave(id)}>
 				<div className={`${style} cursor-help primary-text`}>
 					<span className={fancyRightBorderStyle} />
 					<Tippy
 						content={
 							<div className="flex flex-col py-1 justify-start items-center">
 								{allowDeletingProject && (
-									<div
-										className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text"
-										onClick={() => toggleDeleteProjectBox(row)}>
+									<div className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text" onClick={() => toggleDeleteProjectBox(row)}>
 										<FontAwesomeIcon icon={faTrash} />
 										<span>Delete Project</span>
 									</div>
 								)}
-								<div
-									className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text"
-									onClick={() => toggleEditProjectView(row)}>
+								<div className="flex w-full p-2 space-x-2 justify-start items-center cursor-pointer font-regular-11 black-text" onClick={() => toggleEditProjectView(row)}>
 									<FontAwesomeIcon icon={faPencil} />
 									<span>Edit Project</span>
 								</div>
@@ -800,40 +704,17 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				<div className={style}>
 					<div className={`${parentLabelStyle} cursor-pointer hover:underline hover:underline-offset-4 space-x-5`}>
 						{uiClientName(row, clientIdAndName)}
-						{todos?.length > 0 && (
-							<FontAwesomeIcon
-								className="text-rose-800 cursor-pointer scale-100 hover:scale-125 duration-200"
-								icon={faListUl}
-								onClick={() => toggleTodoBox(row)}
-							/>
-						)}
+						{todos?.length > 0 && <FontAwesomeIcon className="text-rose-800 cursor-pointer scale-100 hover:scale-125 duration-200" icon={faListUl} onClick={() => toggleTodoBox(row)} />}
 					</div>
-					<Tippy
-						content={<Tooltip text={`Gov ID: ${governmentId || "NA"}`} />}
-						placement="bottom"
-						trigger="mouseenter"
-						appendTo={() => document.body}>
-						<span
-							className={childLabelStyle}
-							dangerouslySetInnerHTML={{ __html: companyName }}
-						/>
+					<Tippy content={<Tooltip text={`Gov ID: ${governmentId || "NA"}`} />} placement="bottom" trigger="mouseenter" appendTo={() => document.body}>
+						<span className={childLabelStyle} dangerouslySetInnerHTML={{ __html: companyName }} />
 					</Tippy>
 				</div>
 
 				<div className={style}>
-					<span
-						className={parentLabelStyle}
-						dangerouslySetInnerHTML={{ __html: subProjectName }}
-					/>
-					<Tippy
-						content={<Tooltip text={`Remarks ${remarks}`} />}
-						placement="bottom"
-						trigger="mouseenter"
-						appendTo={() => document.body}>
-						<span
-							className={childLabelStyle}
-							dangerouslySetInnerHTML={{ __html: mainProjectName }}
-						/>
+					<span className={parentLabelStyle} dangerouslySetInnerHTML={{ __html: subProjectName }} />
+					<Tippy content={<Tooltip text={`Remarks ${remarks}`} />} placement="bottom" trigger="mouseenter" appendTo={() => document.body}>
+						<span className={childLabelStyle} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
 					</Tippy>
 				</div>
 
@@ -849,30 +730,13 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 
 	function uiSearch() {
 		if (apiSize) {
-			return (
-				<TextInputNative
-					id="searchBox"
-					icon={faSearch}
-					onChange={(e) => setInputs("search", e.target.value)}
-					onClearButtonClick={() => setInputs("search", "")}
-					placeholder="Search"
-					showClearButton={clearSearchStyle}
-					tabIndex={1}
-					value={main.search}
-					width="w-60"
-				/>
-			);
+			return <TextInputNative id="searchBox" icon={faSearch} onChange={(e) => setInputs("search", e.target.value)} onClearButtonClick={() => setInputs("search", "")} placeholder="Search" showClearButton={clearSearchStyle} tabIndex={1} value={main.search} width="w-60" />;
 		}
 	}
 
 	function uiSortArrows(column) {
 		if (main.sort.column === column) {
-			return (
-				<FontAwesomeIcon
-					className="text-white"
-					icon={main.sort.isAscending ? faSortAmountDesc : faSortAmountAsc}
-				/>
-			);
+			return <FontAwesomeIcon className="text-white" icon={main.sort.isAscending ? faSortAmountDesc : faSortAmountAsc} />;
 		}
 	}
 
@@ -881,22 +745,13 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 		const wrapper = `flex w-full px-4 space-x-2 justify-between items-center focus:outline-none font-regular-12 ${getStatusTags(row.status)}`;
 
 		return (
-			<Menu
-				as="div"
-				className="flex w-fit justify-center items-center relative">
+			<Menu as="div" className="flex w-fit justify-center items-center relative">
 				<MenuButton className={wrapper}>
-					{isCompleted && (
-						<FontAwesomeIcon
-							className="green-text"
-							icon={faCheckCircle}
-						/>
-					)}
+					{isCompleted && <FontAwesomeIcon className="green-text" icon={faCheckCircle} />}
 					<span dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.status, main.search) }} />
 					{!isCompleted && <FontAwesomeIcon icon={faChevronDown} />}
 				</MenuButton>
-				{(!isCompleted || isUserAdministrator) && (
-					<MenuItems className="absolute w-full top-9 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>
-				)}
+				{(!isCompleted || isUserAdministrator) && <MenuItems className="absolute w-full top-9 right-0 origin-top-right rounded focus:outline-none z-50 contrast-background bottom-shadow full-border">{uiStatusMenuList(row)}</MenuItems>}
 			</Menu>
 		);
 	}
@@ -908,18 +763,9 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
 
 			return (
-				<MenuItem
-					as="div"
-					className={wrapper}
-					key={i}
-					onClick={() => editStatus(row, m)}>
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => editStatus(row, m)}>
 					<span className="font-regular-11">{m}</span>
-					{isSelected && (
-						<FontAwesomeIcon
-							className="primary-text"
-							icon={faCheck}
-						/>
-					)}
+					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
 				</MenuItem>
 			);
 		});
@@ -928,14 +774,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 	function uiTodos() {
 		if (!mounted.todo) return null;
 
-		return (
-			<DynamicTodo
-				mount={mounted.todo}
-				project={main.selectedProject}
-				reload={getSupportData}
-				unmount={toggleTodoBox}
-			/>
-		);
+		return <DynamicTodo mount={mounted.todo} project={main.selectedProject} reload={getSupportData} unmount={toggleTodoBox} />;
 	}
 
 	function uiTopBar() {
@@ -950,9 +789,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 						{uiSearch()}
 						{uiFilter()}
 
-						<Tippy
-							content={<Tooltip text={`Clear filters of ${activeModule.name}`} />}
-							placement="bottom">
+						<Tippy content={<Tooltip text={`Clear filters of ${activeModule.name}`} />} placement="bottom">
 							{uiClearFilter()}
 						</Tippy>
 					</div>
@@ -968,10 +805,7 @@ export default function Projects2({ presetStatus, setModuleProps }) {
 				<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 border border-emerald-700 shadow-md z-0" />
 
 				<div className="flex items-center justify-center w-10 h-10 group-hover:h-[36px] rounded-full text-white ring-emerald-700 group-hover:ring-0 transition-all duration-500 ease-in-out relative z-20 shrink-0">
-					<FontAwesomeIcon
-						icon={faIndianRupee}
-						size="1x"
-					/>
+					<FontAwesomeIcon icon={faIndianRupee} size="1x" />
 				</div>
 
 				<div className="transition-all duration-500 ease-in-out max-w-0 overflow-hidden group-hover:max-w-[300px]">

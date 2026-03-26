@@ -9,7 +9,7 @@ import Others from "./others";
 import Vendors from "./vendors";
 import Invoices from "./invoices";
 import Affiliates from "./affiliates";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, CashFlowMain, CashFlowSubModules } from "@/utilities/constants";
 import AllTransactions from "./allTransactions";
 import Transactions from "./pettyCash/Transactions";
 
@@ -22,14 +22,10 @@ import { faArrowUpRightFromSquare, faStar, faTurnDown, faTurnUp } from "@fortawe
 
 export default function CashFlows({ presetStatus, setModuleProps }) {
 	// Business Logic
-	const baseModules = MyConstants.Modules.Base;
-	const categories = MyConstants.Modules.Other.CashFlow;
-	const modules = MyConstants.Modules.Other.CashFlowModules;
-
-	const thisView = baseModules.CashFlow;
-	const affiliatesView = baseModules.Affiliates;
-	const vendorsView = baseModules.Vendors;
-	const invoicesView = baseModules.Invoices;
+	const thisView = BaseModules.CashFlow;
+	const affiliatesView = BaseModules.Affiliates;
+	const vendorsView = BaseModules.Vendors;
+	const invoicesView = BaseModules.Invoices;
 
 	let module = "";
 
@@ -85,7 +81,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 			generated: { amount: 0, count: 0, label: "GENERATED" },
 			notGenerated: { amount: 0, count: 0, label: "NOT GENERATED" },
 		},
-		selectedCategory: categories.Inward,
+		selectedCategory: CashFlowMain.Inward,
 		totalInvoicesAmount: 0,
 		totalRvAmount: 0,
 		vendors: {
@@ -183,7 +179,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.CashFlows.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
 				const today = dayjs().startOf("day");
@@ -343,21 +339,21 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 				};
 
 				response.data.cashFlowsHeads.forEach((fe) => {
-					if (fe.module_id === modules.OfficeExpense.id) {
+					if (fe.module_id === CashFlowSubModules.OfficeExpense.id) {
 						officeExpense.total.amount += Number(fe.amount);
-					} else if (fe.module_id === modules.OtherExpense.id) {
+					} else if (fe.module_id === CashFlowSubModules.OtherExpense.id) {
 						otherExpense.total.amount += Number(fe.amount);
-					} else if (fe.module_id === modules.OtherIncome.id) {
+					} else if (fe.module_id === CashFlowSubModules.OtherIncome.id) {
 						otherIncome.total.amount += Number(fe.amount);
 					}
 				});
 
 				response.data.cashFlowsTransactions.forEach((fe) => {
-					if (fe.module_id === modules.OfficeExpense.id) {
+					if (fe.module_id === CashFlowSubModules.OfficeExpense.id) {
 						officeExpense.paid.amount += Number(fe.amount);
-					} else if (fe.module_id === modules.OtherExpense.id) {
+					} else if (fe.module_id === CashFlowSubModules.OtherExpense.id) {
 						otherExpense.paid.amount += Number(fe.amount);
-					} else if (fe.module_id === modules.OtherIncome.id) {
+					} else if (fe.module_id === CashFlowSubModules.OtherIncome.id) {
 						otherIncome.received.amount += Number(fe.amount);
 					}
 				});
@@ -407,8 +403,8 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 			} else {
 				setMain((s) => ({ ...s, module: "" }));
 
-				setModuleProps(baseModules.Invoices, "");
-				setModuleProps(baseModules.Rv, "");
+				setModuleProps(BaseModules.Invoices, "");
+				setModuleProps(BaseModules.Rv, "");
 
 				getSupportData();
 			}
@@ -452,8 +448,8 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 	}
 
 	function uiCategories() {
-		return Object.values(categories).map((m, i) => {
-			const icon = m == categories.Inward ? faTurnDown : m == categories.Outward ? faTurnUp : faStar;
+		return Object.values(CashFlowMain).map((m, i) => {
+			const icon = m == CashFlowMain.Inward ? faTurnDown : m == CashFlowMain.Outward ? faTurnUp : faStar;
 
 			const selectedStyle = m == main.selectedCategory ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
@@ -531,7 +527,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 	function uiOtherIncome() {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
-				<div className="flex w-full justify-start items-center">{uiHeading(modules.OtherIncome)}</div>
+				<div className="flex w-full justify-start items-center">{uiHeading(CashFlowSubModules.OtherIncome)}</div>
 				<div className="flex w-full space-x-32 justify-between items-center">{uiOtherIncomeBlock()}</div>
 			</div>
 		);
@@ -560,29 +556,29 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 				</div>
 			);
 		} else if (main.module) {
-			if (main.module == baseModules.Affiliates) {
+			if (main.module == BaseModules.Affiliates) {
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.Affiliates}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Affiliates)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Affiliates}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Affiliates)} FallbackComponent={ErrorFallbackComponent}>
 						<Affiliates reload={getSupportData} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
-			} else if (main.module == baseModules.Invoices) {
+			} else if (main.module == BaseModules.Invoices) {
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.Invoices}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Invoices)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Invoices}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Invoices)} FallbackComponent={ErrorFallbackComponent}>
 						<Invoices presetStatus={presetStatus} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
-			} else if (main.module == baseModules.Vendors) {
+			} else if (main.module == BaseModules.Vendors) {
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.Vendors}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Vendors)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Vendors}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Vendors)} FallbackComponent={ErrorFallbackComponent}>
 						<Vendors reload={getSupportData} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
-			} else if (main.module?.id === modules.PettyCash.id) {
+			} else if (main.module?.id === CashFlowSubModules.PettyCash.id) {
 				return <Transactions reload={getSupportData} unmount={toggleModule} />;
-			} else if (main.module == baseModules.Rv) {
+			} else if (main.module == BaseModules.Rv) {
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.Rv}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Rv)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Rv}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Rv)} FallbackComponent={ErrorFallbackComponent}>
 						<RV reload={getSupportData} unmount={toggleModule} />
 					</ErrorBoundary>
 				);
@@ -621,7 +617,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 	function uiOfficeExpense() {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
-				<div className="flex w-full justify-start items-center">{uiHeading(modules.OfficeExpense)}</div>
+				<div className="flex w-full justify-start items-center">{uiHeading(CashFlowSubModules.OfficeExpense)}</div>
 				<div className="flex w-full space-x-32 justify-between items-center">{uiOfficeExpenseBlock()}</div>
 			</div>
 		);
@@ -645,7 +641,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 	function uiOtherExpense() {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
-				<div className="flex w-full justify-start items-center">{uiHeading(modules.OtherExpense)}</div>
+				<div className="flex w-full justify-start items-center">{uiHeading(CashFlowSubModules.OtherExpense)}</div>
 				<div className="flex w-full space-x-32 justify-between items-center">{uiOtherExpenseBlock()}</div>
 			</div>
 		);
@@ -669,7 +665,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 	function uiPettyCash() {
 		return (
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
-				<div className="flex w-full justify-start items-center">{uiHeading(modules.PettyCash)}</div>
+				<div className="flex w-full justify-start items-center">{uiHeading(CashFlowSubModules.PettyCash)}</div>
 				<div className="flex w-full space-x-32 justify-between items-center">{uiPettyCashBlock()}</div>
 			</div>
 		);
@@ -695,7 +691,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 			<div className="flex flex-col w-full p-2 space-y-2 justify-center items-start">
 				<div className="flex w-full justify-between items-center">
 					<div className="flex w-fit space-x-2.5 justify-start items-center">
-						{uiHeading(baseModules.Rv)}
+						{uiHeading(BaseModules.Rv)}
 						<Badge value={api.projects.length} />
 						<Badge value={`Total ${main.totalRvAmount}`} />
 					</div>
@@ -724,11 +720,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 	}
 
 	function uiSelectedModule() {
-		return (
-			<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">
-				{main.selectedCategory == categories.All ? <AllTransactions /> : main.selectedCategory == categories.Inward ? uiInward() : uiOutward()}
-			</div>
-		);
+		return <div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-start items-center">{main.selectedCategory == CashFlowMain.All ? <AllTransactions /> : main.selectedCategory == CashFlowMain.Inward ? uiInward() : uiOutward()}</div>;
 	}
 
 	function uiVendors() {

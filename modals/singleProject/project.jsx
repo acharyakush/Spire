@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages, Statuses } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -12,12 +12,13 @@ import { Badge, Spinner, SpinnerBig } from "@/components/Elements";
 import { ComboBox2, TextArea, TextInput } from "@/components/Inputs";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { faCirclePlus, faIdCardClip, faIndianRupee, faIndianRupeeSign, faLinkSlash, faNoteSticky, faStickyNote, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { MappedAffiliatesHeaders } from "@/utilities/headers";
 
 export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 	// Business Logic
 	const [state, setState] = useState({ isBoxDragged: false, isLoading: false, reason: "" });
 
-	const isStatusNotCompleted = selectedTask.status != MyConstants.Statuses.Tasks.Completed;
+	const isStatusNotCompleted = selectedTask.status != Statuses.Tasks.Completed;
 
 	const reasonBoxStyle = isStatusNotCompleted ? "flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center" : "hidden";
 
@@ -35,7 +36,7 @@ export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 	let activityMessage = `Disabled <b>${selectedTask.id}</b>.`;
 	let messageBody = "Are you sure you want to disable this task? You are required to write a reason below.";
 
-	if (selectedTask.status == MyConstants.Statuses.Tasks.Enable) {
+	if (selectedTask.status == Statuses.Tasks.Enable) {
 		activityMessage = `Enabled <b>${selectedTask.id}</b>.`;
 		messageBody = "Are you sure you want to enable this task? You are required to write a reason below.";
 	}
@@ -53,17 +54,17 @@ export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reloadTasks();
 
-				const successMessage = selectedTask.status == MyConstants.Statuses.Tasks.Disable ? MyConstants.Messages.TaskDisabled : MyConstants.Messages.TaskEnabled;
+				const successMessage = selectedTask.status == Statuses.Tasks.Disable ? Messages.TaskDisabled : Messages.TaskEnabled;
 
-				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Tasks);
+				MyGlobal.AddActivity(activityMessage, BaseModules.Tasks);
 				MyGlobal.ShowSuccessToast(successMessage);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Project Status");
@@ -152,16 +153,16 @@ export function EditQuote({ mount, project, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload(project.id);
 
-				MyGlobal.AddActivity(`Edited quote of <b>${project.id}</b> from <b>${project.quote}</b> to <b>${main.quote}</b>.`, MyConstants.Modules.Base.Projects);
+				MyGlobal.AddActivity(`Edited quote of <b>${project.id}</b> from <b>${project.quote}</b> to <b>${main.quote}</b>.`, BaseModules.Projects);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.QuoteEdited);
+				MyGlobal.ShowSuccessToast(Messages.QuoteEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Project Quote");
@@ -235,7 +236,7 @@ export function ManageGovernmentId({ mount, project, reload, unmount }) {
 
 	const activityMessage = isTypeAdd ? `Added government id <b>${main.id}</b> in <b>${project.id}</b>.` : `Edited government id of <b>${project.id}</b> to <b>${main.id}</b> from <b>${project.government_id}</b>.`;
 
-	const successMessage = isTypeAdd ? MyConstants.Messages.GovernmentIdAdded : MyConstants.Messages.GovernmentIdEdited;
+	const successMessage = isTypeAdd ? Messages.GovernmentIdAdded : Messages.GovernmentIdEdited;
 
 	const titleBarText = isTypeAdd ? "Add Government ID" : "Edit Government ID";
 
@@ -256,17 +257,17 @@ export function ManageGovernmentId({ mount, project, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload(project.id);
 
-				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Projects);
+				MyGlobal.AddActivity(activityMessage, BaseModules.Projects);
 				MyGlobal.ShowSuccessToast(successMessage);
 
 				unmount();
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, titleBarText);
@@ -382,7 +383,7 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Affiliates.GetMappedAffiliates, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Affiliates.GetMappedAffiliates, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				const mapped = [];
@@ -462,16 +463,16 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.SingleProject.MapAffiliate, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.SingleProject.MapAffiliate, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload(project.id);
 
-				MyGlobal.AddActivity(`Mapped <b>(${ids})</b> to <b>${project.id}</b>.`, MyConstants.Modules.Base.Projects);
+				MyGlobal.AddActivity(`Mapped <b>(${ids})</b> to <b>${project.id}</b>.`, BaseModules.Projects);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.AffiliateAdded);
+				MyGlobal.ShowSuccessToast(Messages.AffiliateAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Single Project => Map Affiliates");
@@ -520,7 +521,7 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(MyConstants.TableHeaders.MappedAffiliates).map((m, i) => {
+		return Object.values(MappedAffiliatesHeaders).map((m, i) => {
 			const wrapper = `flex w-1/3 h-9 space-x-1.5 justify-center items-center text-center text-white font-medium-11`;
 
 			return (
@@ -685,16 +686,16 @@ export function UnmapAffiliate({ mount, affiliate, project, reload, unmount }) {
 				projectId: project.id,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Affiliates.UnmapAffiliate, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Affiliates.UnmapAffiliate, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload(project.id);
 
-				MyGlobal.AddActivity(`Unmapped affiliate <b>${affiliate.id}</b> from <b>${project.id}</b> due to <b>${main.reason}</b>.`, MyConstants.Modules.Base.Affiliates);
+				MyGlobal.AddActivity(`Unmapped affiliate <b>${affiliate.id}</b> from <b>${project.id}</b> due to <b>${main.reason}</b>.`, BaseModules.Affiliates);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.AffiliateUnmapped);
+				MyGlobal.ShowSuccessToast(Messages.AffiliateUnmapped);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Unmap Affiliate");

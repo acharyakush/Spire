@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import NewAffiliate from "./NewAffiliate";
 import Transactions from "./Transactions";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -47,7 +47,7 @@ export default function Affiliates({ unmount }) {
 		transactions: false,
 	});
 
-	const thisView = MyConstants.Modules.Base.Affiliates;
+	const thisView = BaseModules.Affiliates;
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
 	// Functions
@@ -96,7 +96,7 @@ export default function Affiliates({ unmount }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Affiliates.GetAffiliates, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Affiliates.GetAffiliates, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				const affiliates = [];
@@ -196,9 +196,7 @@ export default function Affiliates({ unmount }) {
 		return (
 			<div className="flex w-full h-full justify-center items-start">
 				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiModules()}</div>
-				<div className="flex flex-col w-[90%] h-[calc(100vh-100px)] mr-5 justify-start items-center rounded shadow contrast-background">
-					{uiSelectedAffiliate()}
-				</div>
+				<div className="flex flex-col w-[90%] h-[calc(100vh-100px)] mr-5 justify-start items-center rounded shadow contrast-background">{uiSelectedAffiliate()}</div>
 			</div>
 		);
 	}
@@ -206,9 +204,7 @@ export default function Affiliates({ unmount }) {
 	function uiCards() {
 		return main.selectedAffiliate.projects.map((m, i) => {
 			return (
-				<div
-					className="flex flex-col w-full p-4 space-y-3 justify-center items-center relative rounded shadow full-border primary-background-transparent-01"
-					key={m.id}>
+				<div className="flex flex-col w-full p-4 space-y-3 justify-center items-center relative rounded shadow full-border primary-background-transparent-01" key={m.id}>
 					<span className="absolute -left-5 -top-2.5">
 						<BadgeGreenLarge value={i + 1} />
 					</span>
@@ -236,9 +232,7 @@ export default function Affiliates({ unmount }) {
 					<div className="absolute -bottom-5 cursor-pointer group" onClick={() => toggleTransactions(m)}>
 						<span className="flex w-fit px-4 py-2 justify-center items-center rounded-full text-white font-medium-11 primary-background primary-border transition-all duration-500 ease-in-out">
 							<FontAwesomeIcon icon={faCoins} />
-							<span className="flex justify-center items-center max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-in-out whitespace-nowrap">
-								Transactions
-							</span>
+							<span className="flex justify-center items-center max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-in-out whitespace-nowrap">Transactions</span>
 						</span>
 					</div>
 				</div>
@@ -268,8 +262,7 @@ export default function Affiliates({ unmount }) {
 		const modules = api.affiliates.length ? [...api.affiliates] : [];
 
 		return modules.map((m, i) => {
-			const selectedStyle =
-				m.id == main.selectedAffiliate.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+			const selectedStyle = m.id == main.selectedAffiliate.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
 			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedStyle} font-regular-10 hovered-rows`;
 
@@ -292,17 +285,11 @@ export default function Affiliates({ unmount }) {
 
 	function uiSelectedAffiliate() {
 		if (main.selectedAffiliate.id == 0) {
-			return (
-				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-center items-center font-medium-12 gray-text">
-					Select an affiliate
-				</div>
-			);
+			return <div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-center items-center font-medium-12 gray-text">Select an affiliate</div>;
 		} else {
-			const showAccountHolderName =
-				main.selectedAffiliate.details.bank_account_holder_name && main.selectedAffiliate.details.bank_account_holder_name.length > 0;
+			const showAccountHolderName = main.selectedAffiliate.details.bank_account_holder_name && main.selectedAffiliate.details.bank_account_holder_name.length > 0;
 
-			const showAccountNumber =
-				main.selectedAffiliate.details.bank_account_number && String(main.selectedAffiliate.details.bank_account_number).length > 0;
+			const showAccountNumber = main.selectedAffiliate.details.bank_account_number && String(main.selectedAffiliate.details.bank_account_number).length > 0;
 
 			const showIfsc = main.selectedAffiliate.details.ifsc && main.selectedAffiliate.details.ifsc.length > 0;
 
@@ -407,13 +394,11 @@ export default function Affiliates({ unmount }) {
 			<div className="flex flex-col w-full h-full justify-start items-center">
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-full space-x-2 justify-start items-center">
-						<span
-							className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
-							onClick={() => unmount()}>
-							{MyConstants.Modules.Base.CashFlow}
+						<span className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading" onClick={() => unmount()}>
+							{BaseModules.CashFlow}
 						</span>
 						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-						<span className="view-heading">{MyConstants.Modules.Base.Affiliates}</span>
+						<span className="view-heading">{BaseModules.Affiliates}</span>
 						{getIconOrBadge()}
 					</div>
 					<div className="flex w-1/2 space-x-2 justify-end items-center">{uiNew()}</div>

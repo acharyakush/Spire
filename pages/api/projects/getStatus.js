@@ -1,11 +1,11 @@
-import MyConstants from "@/utilities/constants";
+import { Messages } from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { query } from "@/utilities/dbConnection";
 
 export default async function handler(req, res) {
 	if (req.method !== "GET" || !MyGlobal.IsApiCallMethodValid(req)) {
-		return res.status(405).send(MyConstants.Messages.ApiCallForbidden);
+		return res.status(405).send(Messages.ApiCallForbidden);
 	}
 
 	res.setHeader("Cache-Control", "no-store, max-age=0");

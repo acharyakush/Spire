@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -48,7 +48,7 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 		isBoxMoved: false,
 	});
 
-	const thisView = MyConstants.Modules.Base.CashFlow;
+	const thisView = BaseModules.CashFlow;
 
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -71,16 +71,16 @@ export default function NewEntity({ module, mount, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.AddEntity, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.CashFlows.Modules.Entities.AddEntity, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 				unmount();
 
 				MyGlobal.AddActivity(`Added entity <b>${main.name}</b> in <b>${module.name}</b>.`, thisView);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.EntityAdded);
+				MyGlobal.ShowSuccessToast(Messages.EntityAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => ${module.name} => New Entity`);

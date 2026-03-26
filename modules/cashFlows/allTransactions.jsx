@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, CashFlowSubModules } from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -16,13 +16,11 @@ import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
 import { faCalendar, faCheck, faExclamationTriangle, faFileExcel, faIndustry, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { AllTransactionsHeaders } from "@/utilities/headers";
 
 export default function AllTransactions() {
 	// Business Logic
-	const baseModules = MyConstants.Modules.Base;
-	const headers = MyConstants.TableHeaders.Transactions.All;
-	const modules = MyConstants.Modules.Other.CashFlowModules;
-	const thisView = baseModules.CashFlow;
+	const thisView = BaseModules.CashFlow;
 
 	const [api, setApi] = useState({
 		allTransactions: { copy: [], data: [] },
@@ -62,7 +60,7 @@ export default function AllTransactions() {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const rowHeaders = Object.values(headers);
+		const rowHeaders = Object.values(AllTransactionsHeaders);
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
@@ -159,45 +157,45 @@ export default function AllTransactions() {
 
 				const { column, isAscending } = other.sort;
 
-				if (column == headers.Date && isAscending) {
+				if (column == AllTransactionsHeaders.Date && isAscending) {
 					return aEntryAt - bEntryAt;
-				} else if (column == headers.Date && !isAscending) {
+				} else if (column == AllTransactionsHeaders.Date && !isAscending) {
 					return bEntryAt - aEntryAt;
-				} else if (column == headers.Module && isAscending) {
+				} else if (column == AllTransactionsHeaders.Module && isAscending) {
 					return a.module.localeCompare(b.module);
-				} else if (column == headers.Module && !isAscending) {
+				} else if (column == AllTransactionsHeaders.Module && !isAscending) {
 					return b.module.localeCompare(a.module);
-				} else if (column == headers.BankName && isAscending) {
+				} else if (column == AllTransactionsHeaders.BankName && isAscending) {
 					return a.bank_name.localeCompare(b.bank_name);
-				} else if (column == headers.BankName && !isAscending) {
+				} else if (column == AllTransactionsHeaders.BankName && !isAscending) {
 					return b.bank_name.localeCompare(a.bank_name);
-				} else if (column == headers.AmountPaid && isAscending) {
+				} else if (column == AllTransactionsHeaders.AmountPaid && isAscending) {
 					return a.amount_paid - b.amount_paid;
-				} else if (column == headers.AmountPaid && !isAscending) {
+				} else if (column == AllTransactionsHeaders.AmountPaid && !isAscending) {
 					return b.amount_paid - a.amount_paid;
-				} else if (column == headers.AmountReceived && isAscending) {
+				} else if (column == AllTransactionsHeaders.AmountReceived && isAscending) {
 					return a.amount_received - b.amount_received;
-				} else if (column == headers.AmountReceived && !isAscending) {
+				} else if (column == AllTransactionsHeaders.AmountReceived && !isAscending) {
 					return b.amount_received - a.amount_received;
-				} else if (column == headers.Particulars && isAscending) {
+				} else if (column == AllTransactionsHeaders.Particulars && isAscending) {
 					return a.particulars.localeCompare(b.particulars);
-				} else if (column == headers.Particulars && !isAscending) {
+				} else if (column == AllTransactionsHeaders.Particulars && !isAscending) {
 					return b.particulars.localeCompare(a.particulars);
-				} else if (column == headers.PaymentSource && isAscending) {
+				} else if (column == AllTransactionsHeaders.PaymentSource && isAscending) {
 					return a.payment_source.localeCompare(b.payment_source);
-				} else if (column == headers.PaymentSource && !isAscending) {
+				} else if (column == AllTransactionsHeaders.PaymentSource && !isAscending) {
 					return b.payment_source.localeCompare(a.payment_source);
-				} else if (column == headers.PaymentType && isAscending) {
+				} else if (column == AllTransactionsHeaders.PaymentType && isAscending) {
 					return a.payment_type.localeCompare(b.payment_type);
-				} else if (column == headers.PaymentType && !isAscending) {
+				} else if (column == AllTransactionsHeaders.PaymentType && !isAscending) {
 					return b.payment_type.localeCompare(a.payment_type);
-				} else if (column == headers.Remarks && isAscending) {
+				} else if (column == AllTransactionsHeaders.Remarks && isAscending) {
 					return a.remarks.localeCompare(b.remarks);
-				} else if (column == headers.Remarks && !isAscending) {
+				} else if (column == AllTransactionsHeaders.Remarks && !isAscending) {
 					return b.remarks.localeCompare(a.remarks);
-				} else if (column == headers.EntryBy && isAscending) {
+				} else if (column == AllTransactionsHeaders.EntryBy && isAscending) {
 					return a.entry_by_name.localeCompare(b.entry_by_name);
-				} else if (column == headers.EntryBy && !isAscending) {
+				} else if (column == AllTransactionsHeaders.EntryBy && !isAscending) {
 					return b.entry_by_name.localeCompare(a.entry_by_name);
 				} else {
 					return bEntryAt - aEntryAt;
@@ -220,7 +218,7 @@ export default function AllTransactions() {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.GetAllTransactions, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.CashFlows.GetAllTransactions, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
 				let totalAmountPaid = 0;
@@ -232,17 +230,17 @@ export default function AllTransactions() {
 					function getModuleName() {
 						switch (key) {
 							case "affiliates":
-								return baseModules.Affiliates;
+								return BaseModules.Affiliates;
 							case "cashFlows":
-								return baseModules.CashFlow;
+								return BaseModules.CashFlow;
 							case "invoices":
-								return baseModules.Invoices;
+								return BaseModules.Invoices;
 							case "pettyCash":
-								return modules.PettyCash.name;
+								return CashFlowSubModules.PettyCash.name;
 							case "rv":
-								return baseModules.Rv;
+								return BaseModules.Rv;
 							case "vendors":
-								return baseModules.Vendors;
+								return BaseModules.Vendors;
 						}
 					}
 
@@ -257,13 +255,13 @@ export default function AllTransactions() {
 
 					if (key !== "banks") {
 						data.forEach((fe) => {
-							if ([baseModules.Invoices, baseModules.Rv].includes(moduleName)) {
+							if ([BaseModules.Invoices, BaseModules.Rv].includes(moduleName)) {
 								amountReceived = Number(fe.amount);
 							} else {
 								paymentType = fe.payment_type;
 								firmId = fe.firm_id;
 
-								if (moduleName === modules.PettyCash.name) {
+								if (moduleName === CashFlowSubModules.PettyCash.name) {
 									amountPaid = +fe.amount_paid;
 								} else {
 									if ("amount" in fe) {
@@ -272,12 +270,12 @@ export default function AllTransactions() {
 								}
 							}
 
-							if (![baseModules.Invoices, modules.PettyCash.name, baseModules.Rv].includes(moduleName)) {
+							if (![BaseModules.Invoices, CashFlowSubModules.PettyCash.name, BaseModules.Rv].includes(moduleName)) {
 								paymentSource = MyGlobal.GetBankName(fe.payment_source, response.data.banks);
 							}
 
 							if ("module_id" in fe) {
-								if (fe.module_id === modules.OtherIncome.id) {
+								if (fe.module_id === CashFlowSubModules.OtherIncome.id) {
 									amountReceived = Number(fe.amount_received);
 								} else {
 									amountPaid = +fe.amount;
@@ -336,7 +334,7 @@ export default function AllTransactions() {
 	}
 
 	function setSort(header) {
-		if (header != headers.Date) {
+		if (header != AllTransactionsHeaders.Date) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
 	}
@@ -387,7 +385,7 @@ export default function AllTransactions() {
 	}
 
 	function uiFooter() {
-		return Object.values(headers).map((m, i) => {
+		return Object.values(AllTransactionsHeaders).map((m, i) => {
 			return (
 				<div className="w-[10%] space-x-1 text-center text-white font-semibold-16" key={i}>
 					{i === 3 && api.totalAmountReceived > 0 && MyGlobal.ThousandSeparator(api.totalAmountPaid)}
@@ -408,7 +406,7 @@ export default function AllTransactions() {
 	}
 
 	function uiHeaders() {
-		return Object.values(headers).map((m, i) => {
+		return Object.values(AllTransactionsHeaders).map((m, i) => {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (

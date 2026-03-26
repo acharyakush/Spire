@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, CashFlowSubModules } from "@/utilities/constants";
 import NewTransaction from "@/modals/cashFlows/NewTransaction";
 import EditTransaction from "@/modals/cashFlows/EditTransaction";
 
@@ -17,11 +17,10 @@ import { TextInputNative } from "@/components/Inputs";
 import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar, faChevronRight, faExclamationTriangle, faFileExcel, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { GeneralTransactionsHeaders } from "@/utilities/headers";
 
 export default function Transactions({ entity, reload, unmount }) {
 	// Business Logic
-	const headers = MyConstants.TableHeaders.Transactions.General;
-
 	const [api, setApi] = useState({
 		transactions: { copy: [], data: [] },
 	});
@@ -48,7 +47,7 @@ export default function Transactions({ entity, reload, unmount }) {
 
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
-	const isOfficeExpense = entity.module.id === MyConstants.Modules.Other.CashFlowModules.OfficeExpense.id;
+	const isOfficeExpense = entity.module.id === CashFlowSubModules.OfficeExpense.id;
 
 	const columnWidth = isOfficeExpense ? "w-[11.11%]" : "w-[12.50%]";
 
@@ -69,7 +68,7 @@ export default function Transactions({ entity, reload, unmount }) {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		let rowHeaders = Object.values(headers);
+		let rowHeaders = Object.values(GeneralTransactionsHeaders);
 
 		if (isOfficeExpense) {
 			rowHeaders = rowHeaders.filter((f) => f != "Payment Type");
@@ -169,41 +168,41 @@ export default function Transactions({ entity, reload, unmount }) {
 
 				const { column, isAscending } = other.sort;
 
-				if (column == headers.Date && isAscending) {
+				if (column == GeneralTransactionsHeaders.Date && isAscending) {
 					return aEntryAt - bEntryAt;
-				} else if (column == headers.Date && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Date && !isAscending) {
 					return bEntryAt - aEntryAt;
-				} else if (column == headers.Firm && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Firm && isAscending) {
 					return a.firm_name.localeCompare(b.firm_name);
-				} else if (column == headers.Firm && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Firm && !isAscending) {
 					return b.firm_name.localeCompare(a.firm_name);
-				} else if (column == headers.Bank && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Bank && isAscending) {
 					return a.bank_name.localeCompare(b.bank_name);
-				} else if (column == headers.Bank && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Bank && !isAscending) {
 					return b.bank_name.localeCompare(a.bank_name);
-				} else if (column == headers.Amount && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Amount && isAscending) {
 					return a.amount - b.amount;
-				} else if (column == headers.Amount && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Amount && !isAscending) {
 					return b.amount - a.amount;
-				} else if (column == headers.Particulars && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Particulars && isAscending) {
 					return a.particulars.localeCompare(b.particulars);
-				} else if (column == headers.Particulars && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Particulars && !isAscending) {
 					return b.particulars.localeCompare(a.particulars);
-				} else if (column == headers.PaymentSource && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.PaymentSource && isAscending) {
 					return a.payment_source_name.localeCompare(b.payment_source_name);
-				} else if (column == headers.PaymentSource && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.PaymentSource && !isAscending) {
 					return b.payment_source_name.localeCompare(a.payment_source_name);
-				} else if (column == headers.PaymentType && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.PaymentType && isAscending) {
 					return a.payment_type.localeCompare(b.payment_type);
-				} else if (column == headers.PaymentType && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.PaymentType && !isAscending) {
 					return b.payment_type.localeCompare(a.payment_type);
-				} else if (column == headers.Remarks && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Remarks && isAscending) {
 					return a.remarks.localeCompare(b.remarks);
-				} else if (column == headers.Remarks && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Remarks && !isAscending) {
 					return b.remarks.localeCompare(a.remarks);
-				} else if (column == headers.EntryBy && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.EntryBy && isAscending) {
 					return a.entry_by_name.localeCompare(b.entry_by_name);
-				} else if (column == headers.EntryBy && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.EntryBy && !isAscending) {
 					return b.entry_by_name.localeCompare(a.entry_by_name);
 				} else {
 					return bEntryAt - aEntryAt;
@@ -227,7 +226,7 @@ export default function Transactions({ entity, reload, unmount }) {
 
 		try {
 			const response = await axios.get(
-				MyConstants.ApiEndpoints.CashFlows.Modules.GetTransactions,
+				ApiEndpoints.CashFlows.Modules.GetTransactions,
 				MyGlobal.GetHeaders({
 					entityId: entity.id,
 					headId: entity.head.id,
@@ -291,7 +290,7 @@ export default function Transactions({ entity, reload, unmount }) {
 				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${entity.module.name} => Transactions => Get Support Data`);
+			MyGlobal.HandleErrors(error, `${BaseModules.CashFlow} => ${entity.module.name} => Transactions => Get Support Data`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -311,7 +310,7 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function setSort(header) {
-		if (header != headers.Date) {
+		if (header != GeneralTransactionsHeaders.Date) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
 	}
@@ -353,10 +352,10 @@ export default function Transactions({ entity, reload, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(headers)
+		return Object.values(GeneralTransactionsHeaders)
 			.filter((f) => {
 				if (!isOfficeExpense) {
-					return f !== headers.PaymentType;
+					return f !== GeneralTransactionsHeaders.PaymentType;
 				}
 				return f;
 			})

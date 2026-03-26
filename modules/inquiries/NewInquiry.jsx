@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 import NewInquiryPreview from "@/modals/inquiries/NewInquiryPreview";
 
 import { MyGlobal } from "@/utilities/global";
@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, ComboBoxWithChips, DatePicker, EmailAddress, TextArea, TextInput } from "@/components/Inputs";
 import { faCalendar, faChevronLeft, faFile, faIndianRupee, faNoteSticky, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
+import { escapeString } from "@/utilities/myGlobal";
 
 export default function NewInquiry({ allInquiries, reload, unmount }) {
 	// Business Logic
@@ -62,20 +63,20 @@ export default function NewInquiry({ allInquiries, reload, unmount }) {
 				...main,
 				followUps: getFollowUpsIds(),
 				mainProjectId: main.mainProject.id,
-				note: MyGlobal.EscapeString(main.note),
+				note: escapeString(main.note),
 				quote: MyGlobal.GetNumbers(main.quote),
 				userId: MyGlobal.GetUserId(),
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.AddInquiry, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Inquiries.AddInquiry, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Added <b>${response.data}</b>.`, MyConstants.Modules.Base.Inquiries);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryAdded);
+				MyGlobal.AddActivity(`Added <b>${response.data}</b>.`, BaseModules.Inquiries);
+				MyGlobal.ShowSuccessToast(Messages.InquiryAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "New Inquiry");
@@ -316,7 +317,7 @@ export default function NewInquiry({ allInquiries, reload, unmount }) {
 		try {
 			setOther((s) => ({ ...s, isLoading: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
 				setApi({

@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -81,17 +81,17 @@ export default function EditTransaction({ mount, reload, transaction, unmount })
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Affiliates.EditTransaction, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Affiliates.EditTransaction, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload("reload-root-statistics");
 				getSupportData();
 
-				MyGlobal.AddActivity(`Edited transaction in <b>${transaction.project_id}</b> of <b>${transaction.affiliate_id}</b>.`, MyConstants.Modules.Base.Affiliates);
+				MyGlobal.AddActivity(`Edited transaction in <b>${transaction.project_id}</b> of <b>${transaction.affiliate_id}</b>.`, BaseModules.Affiliates);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionEdited);
+				MyGlobal.ShowSuccessToast(Messages.TransactionEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Cash Flow => Affiliates => Single Affiliate => Edit Transaction");
@@ -152,7 +152,7 @@ export default function EditTransaction({ mount, reload, transaction, unmount })
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Affiliates.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
+			const response = await axios.get(ApiEndpoints.Affiliates.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
 				const basicPaymentSourceList = MyGlobal.GetRevisedPaymentSourceList(response.data.banks);
@@ -194,7 +194,7 @@ export default function EditTransaction({ mount, reload, transaction, unmount })
 				});
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Base.Affiliates} => Edit Transaction`);
+			MyGlobal.HandleErrors(error, `${BaseModules.CashFlow} => ${BaseModules.Affiliates} => Edit Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}

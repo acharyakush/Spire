@@ -5,7 +5,7 @@
 import axios from "axios";
 import EditFirm from "./EditFirm";
 import Tippy from "@tippyjs/react";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, DerivedModules } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, SpinnerBig, Tooltip } from "@/components/Elements";
 import { faGooglePay, faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { faAt, faFileInvoice, faFileLines, faHashtag, faHome, faIdCard, faList, faPencil, faPhone } from "@fortawesome/free-solid-svg-icons";
+import NewCompany from "./NewFirm";
 
 export default function Firms() {
 	// Business Logic
@@ -36,7 +37,7 @@ export default function Firms() {
 		setData((s) => ({ ...s, pendingResult: true }));
 
 		axios
-			.get(MyConstants.ApiEndpoints.Firms.GetFirms, MyGlobal.GetHeaders())
+			.get(ApiEndpoints.Firms.GetFirms, MyGlobal.GetHeaders())
 			.then((response) => {
 				if (response.status == 200) {
 					const firms = [];
@@ -83,7 +84,7 @@ export default function Firms() {
 
 	// UI Components
 	const uiNew = () => {
-		if (MyGlobal.HasPermission(MyConstants.Modules.Derived.NewFirm)) {
+		if (MyGlobal.HasPermission(DerivedModules.NewFirm)) {
 			return (
 				<button className="primary-button-condensed" onClick={() => toggleAddView()}>
 					<span>New</span>

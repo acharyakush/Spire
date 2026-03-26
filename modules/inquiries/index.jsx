@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import dynamic from "next/dynamic";
 import ReactDatePicker from "react-datepicker";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 import writeXlsxFile from "write-excel-file/browser";
 import HoverPreviewWrapper from "@/components/HoverPreviewPdf";
 
@@ -20,6 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
 import { faCalendar, faCheck, faCheckCircle, faChevronDown, faDownload, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlaneUp, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { InquiriesHeaders } from "@/utilities/headers";
 
 const DynamicNotes = dynamic(() => import("./Notes"), { ssr: false });
 const DynamicNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
@@ -39,6 +40,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	const [api, setApi] = useState({ clients: [], notes: [] });
 	const [showGoToTopOrb, setShowGoToTopOrb] = useState(false);
+	const [shouldRestoreScrollPosition, setShouldRestoreScrollPosition] = useState(false);
 
 	const [filter, setFilter] = useState({
 		from: "",
@@ -70,13 +72,12 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		updateStatus: false,
 	});
 
-	const allowQuotation = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.Quotation), []);
-	const allowConvertingToProject = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.NewProject), []);
-	const allowNewInquiry = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInquiry), []);
+	const allowQuotation = useMemo(() => MyGlobal.HasPermission(DerivedModules.Quotation), []);
+	const allowConvertingToProject = useMemo(() => MyGlobal.HasPermission(DerivedModules.NewProject), []);
+	const allowNewInquiry = useMemo(() => MyGlobal.HasPermission(DerivedModules.NewInquiry), []);
 
-	const thisView = useMemo(() => MyConstants.Modules.Base.Inquiries, []);
-	const statuses = useMemo(() => MyConstants.Statuses.Inquiries, []);
-	const headers = useMemo(() => MyConstants.TableHeaders.Inquiries, []);
+	const thisView = useMemo(() => BaseModules.Inquiries, []);
+	const statuses = useMemo(() => Statuses.Inquiries, []);
 
 	const totalNotesByInquiryMap = useMemo(() => {
 		const counts = {};
@@ -108,32 +109,32 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			const aNextFollowUp = new Date(a.next_follow_up_on);
 			const bNextFollowUp = new Date(b.next_follow_up_on);
 
-			if (column === headers.Client) {
+			if (column === InquiriesHeaders.Client) {
 				if (isAscending) return String(a.client_name).localeCompare(b.client_name);
 				return String(b.client_name).localeCompare(a.client_name);
-			} else if (column === headers.Projects) {
+			} else if (column === InquiriesHeaders.Projects) {
 				if (isAscending) return String(a.sub_project).localeCompare(b.sub_project);
 				return String(b.sub_project).localeCompare(a.sub_project);
-			} else if (column === headers.FollowUps) {
+			} else if (column === InquiriesHeaders.FollowUps) {
 				if (isAscending) return String(a.follow_ups_initials).localeCompare(b.follow_ups_initials);
 				return String(b.follow_ups_initials).localeCompare(a.follow_ups_initials);
-			} else if (column === headers.Quote) {
+			} else if (column === InquiriesHeaders.Quote) {
 				if (isAscending) return a.quote - b.quote;
 				return b.quote - a.quote;
-			} else if (column === headers.NextFollowUpOn) {
+			} else if (column === InquiriesHeaders.NextFollowUpOn) {
 				if (isAscending) return aNextFollowUp - bNextFollowUp;
 				return bNextFollowUp - aNextFollowUp;
-			} else if (column === headers.Status) {
+			} else if (column === InquiriesHeaders.Status) {
 				if (isAscending) return String(a.status).localeCompare(b.status);
 				return String(b.status).localeCompare(a.status);
-			} else if (column === headers.References) {
+			} else if (column === InquiriesHeaders.References) {
 				if (isAscending) return String(a.reference_name).localeCompare(b.reference_name);
 				return String(b.reference_name).localeCompare(a.reference_name);
 			}
 
 			return 0;
 		});
-	}, [headers, inquiries.data, main.sort]);
+	}, [inquiries.data, main.sort]);
 
 	const inquiriesSize = useMemo(() => inquiries.data.length, [inquiries.data]);
 	const inquiriesCopySize = useMemo(() => inquiries.copy.length, [inquiries.copy]);
@@ -166,6 +167,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function closeNewProjectView() {
+		setShouldRestoreScrollPosition(true);
 		setMounted((s) => ({ ...s, newProject: false }));
 	}
 
@@ -188,7 +190,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const rowHeaders = Object.values(headers);
+		const rowHeaders = Object.values(InquiriesHeaders);
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		sortedInquiries.forEach((fe) => {
@@ -312,7 +314,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		try {
 			setMain((s) => ({ ...s, isLoading: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetInquiries, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Inquiries.GetInquiries, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				let revised = [];
@@ -504,7 +506,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	async function getSupportData() {
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				setApi((s) => ({ ...s, clients: response.data.clients, notes: response.data.notes }));
@@ -555,6 +557,35 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		rangeChangeTimeoutReference.current = setTimeout(() => {
 			localStorage.setItem("inquiriesScrollPosition", range.startIndex);
 		}, 150);
+	}
+
+	function saveInquiriesScrollPosition() {
+		if (rangeChangeTimeoutReference.current) {
+			clearTimeout(rangeChangeTimeoutReference.current);
+			rangeChangeTimeoutReference.current = null;
+		}
+
+		localStorage.setItem("inquiriesScrollPosition", String(currentTopIndexReference.current));
+		setShouldRestoreScrollPosition(false);
+	}
+
+	function restoreInquiriesScrollPosition() {
+		if (!currentScrollPositionReference.current) return;
+
+		const savedIndex = Number(localStorage.getItem("inquiriesScrollPosition"));
+		if (!Number.isFinite(savedIndex) || savedIndex < 0) return;
+		const maxIndex = Math.max(sortedInquiries.length - 1, 0);
+		const restoredIndex = Math.min(savedIndex, maxIndex);
+
+		currentTopIndexReference.current = restoredIndex;
+		showGoToTopReference.current = restoredIndex > 12;
+		setShowGoToTopOrb(restoredIndex > 12);
+
+		currentScrollPositionReference.current.scrollToIndex({
+			index: restoredIndex,
+			align: "start",
+			behavior: "auto",
+		});
 	}
 
 	function highlightText(isTag, text) {
@@ -609,7 +640,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function setSort(header) {
-		if (header !== headers.Contacts) {
+		if (header !== InquiriesHeaders.Contacts) {
 			setMain((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
 	}
@@ -617,6 +648,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function toggleAddQuotation(inquiry, type) {
 		const client = api.clients.find((f) => f.id === inquiry.client_id);
 		const obj = { ...inquiry, client };
+
+		if (type) saveInquiriesScrollPosition();
+		else setShouldRestoreScrollPosition(true);
 
 		setMain((s) => ({ ...s, selectedInquiryForNotes: obj }));
 		setMounted((s) => ({ ...s, addQuotation: type }));
@@ -626,20 +660,32 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const client = api.clients.find((f) => f.id === inquiry.client_id);
 		const obj = { ...inquiry, client };
 
+		if (type) saveInquiriesScrollPosition();
+		else setShouldRestoreScrollPosition(true);
+
 		setMain((s) => ({ ...s, selectedInquiryForNotes: obj }));
 		setMounted((s) => ({ ...s, editQuotation: type }));
 	}
 
 	function toggleEditInquiryView(inquiry, type) {
+		if (type) saveInquiriesScrollPosition();
+		else setShouldRestoreScrollPosition(true);
+
 		setMain((s) => ({ ...s, selectedInquiryForNotes: inquiry }));
 		setMounted((s) => ({ ...s, editInquiry: type }));
 	}
 
 	function toggleNewInquiryView() {
+		if (!mounted.newInquiry) saveInquiriesScrollPosition();
+		else setShouldRestoreScrollPosition(true);
+
 		setMounted((s) => ({ ...s, newInquiry: !s.newInquiry }));
 	}
 
 	function toggleNotesView(inquiry, type) {
+		if (type) saveInquiriesScrollPosition();
+		else setShouldRestoreScrollPosition(true);
+
 		setMain((s) => ({ ...s, selectedInquiryForNotes: inquiry }));
 		setMounted((s) => ({ ...s, notes: type }));
 	}
@@ -661,7 +707,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
 					<div className="flex w-full h-9 justify-center items-center primary-background animate-pulse">
-						{Object.values(headers).map((_, i) => (
+						{Object.values(InquiriesHeaders).map((_, i) => (
 							<div key={i} className="flex w-[12.50%] justify-center items-center">
 								<div className="h-4 w-20 bg-gray-200 rounded" />
 							</div>
@@ -683,7 +729,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		return (
 			<div className="flex flex-col w-full h-full justify-center items-start full-border relative">
 				<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-				<Virtuoso ref={currentScrollPositionReference} rangeChanged={handleRangeChange} className="w-full h-full overflow-y-auto contrast-background" data={sortedInquiries} itemContent={(_, row) => uiRows(row)} totalCount={sortedInquiries.length} followOutput="auto" overscan={8} />
+				<Virtuoso ref={currentScrollPositionReference} rangeChanged={handleRangeChange} className="w-full h-full overflow-y-auto contrast-background" data={sortedInquiries} itemContent={(_, row) => uiRows(row)} totalCount={sortedInquiries.length} overscan={8} />
 				<div className="flex fixed bottom-3 right-3 space-x-3 z-50">
 					{uiGoToTopOrb()}
 					{uiNewInquiry()}
@@ -858,7 +904,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(headers).map((m, i) => {
+		return Object.values(InquiriesHeaders).map((m, i) => {
 			const showSortArrow = m == main.sort.column ? "block" : "hidden";
 			return (
 				<span className="flex w-[12.50%] cursor-pointer justify-center items-center font-medium-10" key={i}>
@@ -1182,14 +1228,6 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	useEffect(() => {
 		if (mounted.mainComponent) {
-			if (currentScrollPositionReference.current) {
-				const savedIndex = localStorage.getItem("inquiriesScrollPosition");
-				currentScrollPositionReference.current.scrollToIndex({
-					index: savedIndex,
-					align: "start",
-					behavior: "auto",
-				});
-			}
 			const filtered = doFiltering(inquiries.copy);
 			setInquiries((s) => ({ ...s, data: filtered }));
 		}
@@ -1204,16 +1242,16 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	}, [main.selectedInquiryForStatusChange]);
 
 	useEffect(() => {
-		if (!mounted.notes && currentScrollPositionReference.current) {
-			const savedIndex = localStorage.getItem("inquiriesScrollPosition");
+		if (mounted.addQuotation || mounted.editQuotation || mounted.editInquiry || mounted.newInquiry || mounted.newProject || mounted.notes) return;
+		if (!shouldRestoreScrollPosition) return;
 
-			currentScrollPositionReference.current.scrollToIndex({
-				index: savedIndex,
-				align: "nearest",
-				behavior: "auto",
-			});
-		}
-	}, [mounted.notes]);
+		const animationFrame = globalThis.requestAnimationFrame(() => {
+			restoreInquiriesScrollPosition();
+			setShouldRestoreScrollPosition(false);
+		});
+
+		return () => globalThis.cancelAnimationFrame(animationFrame);
+	}, [mounted.addQuotation, mounted.editQuotation, mounted.editInquiry, mounted.newInquiry, mounted.newProject, mounted.notes, shouldRestoreScrollPosition, sortedInquiries.length]);
 
 	return (
 		<div className="flex flex-col w-full h-full items-center-safe">

@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import jsPDF from "jspdf";
 import Tippy from "@tippyjs/react";
 import html2canvas from "html2canvas";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, DerivedModules, Messages } from "@/utilities/constants";
 
 import { QRCode } from "react-qrcode-logo";
 import { useEffect, useState } from "react";
@@ -98,19 +98,19 @@ export default function NewInvoice({ project, reload, unmount }) {
 				receiptDate: main.invoiceDate,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Invoices.AddInvoice, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Invoices.AddInvoice, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Generated invoice <b>${customId}</b> for <b>${project.id}</b>`, MyConstants.Modules.Derived.NewInvoice);
+				MyGlobal.AddActivity(`Generated invoice <b>${customId}</b> for <b>${project.id}</b>`, DerivedModules.NewInvoice);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.InvoiceAdded);
+				MyGlobal.ShowSuccessToast(Messages.InvoiceAdded);
 			} else {
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowSuccessToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewInvoice);
+			MyGlobal.HandleErrors(error, DerivedModules.NewInvoice);
 		} finally {
 			unmount();
 		}
@@ -199,7 +199,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				const formData = new FormData();
 				formData.append("file", pdfBlob, `${project.id}.pdf`);
 
-				return axios.post(MyConstants.ApiEndpoints.Invoices.UploadInvoice, formData, {
+				return axios.post(ApiEndpoints.Invoices.UploadInvoice, formData, {
 					headers: { "Content-Type": "multipart/form-data" },
 				});
 			})
@@ -278,7 +278,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 		try {
 			setLoading((s) => ({ ...s, supportData: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetNewInvoiceSupportData, MyGlobal.GetHeaders({ projectId: project.id }));
+			const response = await axios.get(ApiEndpoints.Invoices.GetNewInvoiceSupportData, MyGlobal.GetHeaders({ projectId: project.id }));
 
 			if (response.status === 200) {
 				const firmObj = {
@@ -355,14 +355,14 @@ export default function NewInvoice({ project, reload, unmount }) {
 						name: bankObj.name,
 						upiId: bankObj.upiId,
 					},
-					invoiceId: MyGlobal.MakeNewInvoiceId(firmObj.name, response.data.invoices, MyConstants.Modules.Derived.NewInvoice),
+					invoiceId: MyGlobal.MakeNewInvoiceId(firmObj.name, response.data.invoices, DerivedModules.NewInvoice),
 					transactions,
 					firm: firmObj,
 					totalAmountReceived,
 				}));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewInvoice);
+			MyGlobal.HandleErrors(error, DerivedModules.NewInvoice);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}

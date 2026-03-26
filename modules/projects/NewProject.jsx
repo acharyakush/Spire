@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 import NewProjectPreview from "@/modals/projects/NewProjectPreview";
 
 import { MyGlobal } from "@/utilities/global";
@@ -91,17 +91,17 @@ export default function NewProject({ inquiry, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Projects.AddProject, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Projects.AddProject, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Added <b>${response.data}</b>.`, MyConstants.Modules.Base.Inquiries);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryConvertedToProject);
+				MyGlobal.AddActivity(`Added <b>${response.data}</b>.`, BaseModules.Inquiries);
+				MyGlobal.ShowSuccessToast(Messages.InquiryConvertedToProject);
 
 				unmount();
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Inquiries => Add Project");
@@ -219,7 +219,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 		try {
 			setOther((s) => ({ ...s, isLoading: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Projects.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
 				const firms = response.data.firms;
@@ -297,138 +297,31 @@ export default function NewProject({ inquiry, reload, unmount }) {
 
 	// UI Components
 	function uiClient() {
-		return (
-			<TextInput
-				icon={faUser}
-				id="newProjectClientName"
-				isReadOnly
-				label="Client"
-				onChange={() => {}}
-				onKeyPress={() => {}}
-				tabIndex={1}
-				value={inquiry.client_name}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faUser} id="newProjectClientName" isReadOnly label="Client" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={inquiry.client_name} width="w-full" />;
 	}
 
 	function uiCompany() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem
-				comparingValue1="name"
-				comparingValue2={main.company.name}
-				displayValue="name"
-				filteredData={getFilteredCompanies}
-				hasDataObject
-				icon={faBriefcase}
-				isReadOnly={false}
-				label="Company"
-				onChange={(e) => setInputs("company", e)}
-				onClick={() => addNewCompany(other.find.company.name)}
-				onInputChange={(e) => setFind("company", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.company.name}
-				tabIndex={2}
-				value={main.company.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.company.name} displayValue="name" filteredData={getFilteredCompanies} hasDataObject icon={faBriefcase} isReadOnly={false} label="Company" onChange={(e) => setInputs("company", e)} onClick={() => addNewCompany(other.find.company.name)} onInputChange={(e) => setFind("company", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.company.name} tabIndex={2} value={main.company.name} width="w-full" />;
 	}
 
 	function uiInvoiceFees() {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				id="newProjectFees"
-				label={`${main.invoiceFirm.name} Fees`}
-				onChange={(e) => setInputs("invoiceFees", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={7}
-				value={main.invoiceFees}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} id="newProjectFees" label={`${main.invoiceFirm.name} Fees`} onChange={(e) => setInputs("invoiceFees", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={7} value={main.invoiceFees} width="w-full" />;
 	}
 
 	function uiInvoiceFirm() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.invoiceFirm.name}
-				displayValue="name"
-				filteredData={api.firms}
-				hasDataObject
-				icon={faBriefcase}
-				isMenuInverted
-				isReadOnly={false}
-				label="Invoice Firm"
-				onChange={(e) => setInputs("invoiceFirm", e)}
-				onClick={() => {}}
-				onInputChange={() => {}}
-				onKeyPress={() => {}}
-				searchedItem={{}}
-				tabIndex={9}
-				value={main.invoiceFirm.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.invoiceFirm.name} displayValue="name" filteredData={api.firms} hasDataObject icon={faBriefcase} isMenuInverted isReadOnly={false} label="Invoice Firm" onChange={(e) => setInputs("invoiceFirm", e)} onClick={() => {}} onInputChange={() => {}} onKeyPress={() => {}} searchedItem={{}} tabIndex={9} value={main.invoiceFirm.name} width="w-full" />;
 	}
 
 	function uiMainProjects() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.mainProject.name}
-				displayValue="name"
-				filteredData={getFilteredMainProjects}
-				hasDataObject
-				icon={faFile}
-				isReadOnly={false}
-				label="Main Project"
-				onChange={(e) => setInputs("mainProject", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("mainProject", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.mainProject.name}
-				tabIndex={4}
-				value={main.mainProject.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.mainProject.name} displayValue="name" filteredData={getFilteredMainProjects} hasDataObject icon={faFile} isReadOnly={false} label="Main Project" onChange={(e) => setInputs("mainProject", e)} onClick={() => {}} onInputChange={(e) => setFind("mainProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.mainProject.name} tabIndex={4} value={main.mainProject.name} width="w-full" />;
 	}
 
 	function uiNotes() {
-		return (
-			<TextArea
-				icon={faNoteSticky}
-				key={1}
-				label="Notes"
-				onChange={(e) => setInputs("note", e.target.value)}
-				onKeyDown={() => {}}
-				rows={2}
-				tabIndex={10}
-				value={main.note}
-				width="w-full"
-			/>
-		);
+		return <TextArea icon={faNoteSticky} key={1} label="Notes" onChange={(e) => setInputs("note", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={main.note} width="w-full" />;
 	}
 
 	function uiPhoneNumber() {
-		return (
-			<TextInput
-				icon={faPhone}
-				isReadOnly
-				label="Phone Number"
-				onChange={() => {}}
-				onKeyPress={() => {}}
-				tabIndex={3}
-				value={main.phoneNumber}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faPhone} isReadOnly label="Phone Number" onChange={() => {}} onKeyPress={() => {}} tabIndex={3} value={main.phoneNumber} width="w-full" />;
 	}
 
 	function uiPreview() {
@@ -450,75 +343,21 @@ export default function NewProject({ inquiry, reload, unmount }) {
 			label = `Quote (Original ${inquiry.quote})`;
 		}
 
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				isReadOnly
-				label={label}
-				onChange={() => {}}
-				onKeyPress={() => {}}
-				tabIndex="8"
-				value={MyGlobal.ThousandSeparator(main.quote)}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} isReadOnly label={label} onChange={() => {}} onKeyPress={() => {}} tabIndex="8" value={MyGlobal.ThousandSeparator(main.quote)} width="w-full" />;
 	}
 
 	function uiRemarks() {
-		return (
-			<TextInput
-				icon={faExclamationCircle}
-				label="Remarks"
-				onChange={(e) => setInputs("remarks", e.target.value)}
-				tabIndex={6}
-				value={main.remarks}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faExclamationCircle} label="Remarks" onChange={(e) => setInputs("remarks", e.target.value)} tabIndex={6} value={main.remarks} width="w-full" />;
 	}
 
 	function uiSubProjects() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem
-				comparingValue1="name"
-				comparingValue2={main.subProject.name}
-				displayValue="name"
-				filteredData={getFilteredSubProjects}
-				hasDataObject
-				icon={faFile}
-				isReadOnly={false}
-				label="Sub Project"
-				onChange={(e) => setInputs("subProject", e)}
-				onClick={() => addNewSubProject(other.find.subProject.name)}
-				onInputChange={(e) => setFind("subProject", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.subProject.name}
-				tabIndex={5}
-				value={main.subProject.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.subProject.name} displayValue="name" filteredData={getFilteredSubProjects} hasDataObject icon={faFile} isReadOnly={false} label="Sub Project" onChange={(e) => setInputs("subProject", e)} onClick={() => addNewSubProject(other.find.subProject.name)} onInputChange={(e) => setFind("subProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.subProject.name} tabIndex={5} value={main.subProject.name} width="w-full" />;
 	}
 
 	function uiTeams() {
 		return (
-			<div
-				className="w-full"
-				ref={teamsMenuRef}>
-				<ComboBoxWithChips
-					displayKey="full_name"
-					label="Teams"
-					icon={faUserGroup}
-					isMenuInverted
-					onBlur={() => toggleTeamsMenu()}
-					onItemClick={(e) => setTeamsSelection(e)}
-					onSelectedItemClick={(e) => setTeamsSelection(e)}
-					selectedItems={main.teams}
-					showList={showTeamsMenu}
-					source={MyGlobal.GetAllUsers()}
-					toggleMenu={() => toggleTeamsMenu()}
-				/>
+			<div className="w-full" ref={teamsMenuRef}>
+				<ComboBoxWithChips displayKey="full_name" label="Teams" icon={faUserGroup} isMenuInverted onBlur={() => toggleTeamsMenu()} onItemClick={(e) => setTeamsSelection(e)} onSelectedItemClick={(e) => setTeamsSelection(e)} selectedItems={main.teams} showList={showTeamsMenu} source={MyGlobal.GetAllUsers()} toggleMenu={() => toggleTeamsMenu()} />
 			</div>
 		);
 	}
@@ -556,11 +395,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 			<>
 				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
 					<div className="flex w-full space-x-2.5 justify-start items-center">
-						<FontAwesomeIcon
-							className="pr-1 cursor-pointer black-text"
-							icon={faChevronLeft}
-							onClick={() => unmount()}
-						/>
+						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 						<div className="flex w-full justify-start items-center">
 							<span className="view-heading">New Project</span>
 						</div>
@@ -590,20 +425,12 @@ export default function NewProject({ inquiry, reload, unmount }) {
 					</div>
 				</div>
 				<footer className="w-full dialog-footer">
-					<button
-						className={addButtonStyle}
-						onClick={() => togglePreviewBox(false)}>
+					<button className={addButtonStyle} onClick={() => togglePreviewBox(false)}>
 						{uiPreview()}
 					</button>
 				</footer>
 
-				{mounted.preview && (
-					<NewProjectPreview
-						mount={mounted.preview}
-						project={{ ...main, inquiry }}
-						unmount={togglePreviewBox}
-					/>
-				)}
+				{mounted.preview && <NewProjectPreview mount={mounted.preview} project={{ ...main, inquiry }} unmount={togglePreviewBox} />}
 			</>
 		);
 	}

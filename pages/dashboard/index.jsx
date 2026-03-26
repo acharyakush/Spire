@@ -4,7 +4,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
 import useRv from "@/hooks/useDashboardRv";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints } from "@/utilities/constants";
 import useInvoices from "@/hooks/useDashboardInvoices";
 import useProjects from "@/hooks/useDashboardProjects";
 import useInquiries from "@/hooks/useDashboardInquiries";
@@ -39,10 +39,10 @@ export default function Dashboard({ setModuleProps }) {
 	// Functions
 	async function getSupportData() {
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Dashboard, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Dashboard, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const { companies, inquiries, invoices, projects, rv, tasks, todos, transactions } = response.data;
+				const { companies, inquiries, invoices, projects, rv, tasks, transactions } = response.data;
 
 				startTransition(() => {
 					const prjs = updateProjects(companies, invoices, transactions, projects);

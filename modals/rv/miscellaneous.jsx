@@ -6,21 +6,23 @@ import axios from "axios";
 import dayjs from "dayjs";
 import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, DerivedModules, Messages } from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
-import { Badge, Spinner, SpinnerBig } from "@/components/Elements";
+import { Badge, Spinner, SpinnerBig, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ComboBox2, DatePicker, TextArea, TextInput, TextInputNative } from "@/components/Inputs";
-import { faAngleRight, faBank, faCalendar, faExclamationTriangle, faFileDownload, faFileExcel, faIndianRupee, faMultiply, faNoteSticky, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faAngleRight, faBank, faCalendar, faExclamationTriangle, faFileDownload, faFileExcel, faIndianRupee, faMultiply, faNoteSticky, faPencil, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { InvoiceTransactionsHeaders, RvListTransactionsHeaders } from "@/utilities/headers";
+import Tippy from "@tippyjs/react";
+import { DeleteTransaction, EditAmount } from "./modals";
 
 export function Transactions({ mount, project, reload, unmount }) {
 	// Business Logic
-	const headers = MyConstants.TableHeaders.Transactions.Invoice;
-	const thisView = MyConstants.Modules.Base.Rv;
+	const thisView = BaseModules.Rv;
 
 	const [api, setApi] = useState({
 		banks: { copy: [], data: [] },
@@ -48,6 +50,8 @@ export function Transactions({ mount, project, reload, unmount }) {
 		},
 		hasError: false,
 		isBoxMoved: false,
+		isEditBoxOpen: { obj: {}, status: false },
+		isDeleteBoxOpen: { obj: {}, status: false },
 		sort: { column: "", isAscending: false },
 	});
 
@@ -58,6 +62,9 @@ export function Transactions({ mount, project, reload, unmount }) {
 	} else {
 		totalAmountPending = project.amount_pending;
 	}
+
+	const allowDeleteTransaction = MyGlobal.HasPermission(DerivedModules.DeleteRvTransaction);
+	const allowEditTransaction = MyGlobal.HasPermission(DerivedModules.EditRvTransaction);
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
 
@@ -82,7 +89,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				source: main.paymentSource.id,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Rv.AddTransaction, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Rv.AddTransaction, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
@@ -94,13 +101,13 @@ export function Transactions({ mount, project, reload, unmount }) {
 					paymentSource: { id: "", name: "" },
 				});
 
-				MyGlobal.AddActivity(`Added transaction in <b>${project.invoice_id}</b>.`, MyConstants.Modules.Base.Rv);
+				MyGlobal.AddActivity(`Added transaction in <b>${project.invoice_id}</b>.`, BaseModules.Rv);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionAdded);
+				MyGlobal.ShowSuccessToast(Messages.TransactionAdded);
 
 				getSupportData();
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Transactions => Add Transaction`);
@@ -119,7 +126,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const rowHeaders = Object.values(headers);
+		const rowHeaders = Object.values(InvoiceTransactionsHeaders);
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
@@ -200,17 +207,17 @@ export function Transactions({ mount, project, reload, unmount }) {
 			return api.transactions.data.sort((a, b) => {
 				const { column, isAscending } = other.sort;
 
-				if (column == headers.Particulars && isAscending) {
+				if (column == InvoiceTransactionsHeaders.Particulars && isAscending) {
 					return a.particulars.localeCompare(b.particulars);
-				} else if (column == headers.Particulars && !isAscending) {
+				} else if (column == InvoiceTransactionsHeaders.Particulars && !isAscending) {
 					return b.particulars.localeCompare(a.particulars);
-				} else if (column == headers.AmountReceived && isAscending) {
+				} else if (column == InvoiceTransactionsHeaders.AmountReceived && isAscending) {
 					return a.amount - b.amount;
-				} else if (column == headers.AmountReceived && !isAscending) {
+				} else if (column == InvoiceTransactionsHeaders.AmountReceived && !isAscending) {
 					return b.amount - a.amount;
-				} else if (column == headers.PaymentSource && isAscending) {
+				} else if (column == InvoiceTransactionsHeaders.PaymentSource && isAscending) {
 					return a.source.localeCompare(b.source);
-				} else if (column == headers.PaymentSource && !isAscending) {
+				} else if (column == InvoiceTransactionsHeaders.PaymentSource && !isAscending) {
 					return b.source.localeCompare(a.source);
 				}
 			});
@@ -241,12 +248,28 @@ export function Transactions({ mount, project, reload, unmount }) {
 		return list;
 	}
 
+	function toggleEditAmount(payload) {
+		if (payload) {
+			setOther((s) => ({ ...s, isEditBoxOpen: { obj: { ...project, transaction: payload }, status: true } }));
+		} else {
+			setOther((s) => ({ ...s, isEditBoxOpen: { obj: {}, status: false } }));
+		}
+	}
+
+	function toggleDeleteTransaction(payload) {
+		if (payload) {
+			setOther((s) => ({ ...s, isDeleteBoxOpen: { obj: { ...project, transaction: payload }, status: true } }));
+		} else {
+			setOther((s) => ({ ...s, isDeleteBoxOpen: { obj: {}, status: false } }));
+		}
+	}
+
 	async function getSupportData() {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
 			const response = await axios.get(
-				MyConstants.ApiEndpoints.Rv.GetNewTransactionSupportData,
+				ApiEndpoints.Rv.GetNewTransactionSupportData,
 				MyGlobal.GetHeaders({
 					firmId: project.firm_id,
 					projectId: project.id,
@@ -349,7 +372,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function setSort(header) {
-		if (header != headers.Date) {
+		if (header != InvoiceTransactionsHeaders.Date) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
 	}
@@ -373,6 +396,12 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 	function uiDate() {
 		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryAt", e)} tabIndex="1" value={main.entryAt} width="w-full" />;
+	}
+
+	function unmountAndReload() {
+		toggleEditAmount();
+		reload();
+		unmount();
 	}
 
 	function uiExport() {
@@ -400,7 +429,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiFooter() {
-		return Object.values(headers).map((m, i) => {
+		return Object.values(InvoiceTransactionsHeaders).map((m, i) => {
 			const showTotalAmount = i == 2 ? "visible" : "invisible";
 			const wrapper = `w-1/4 space-x-1 text-center text-white font-medium-12 ${showTotalAmount}`;
 
@@ -413,7 +442,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(headers).map((m, i) => {
+		return Object.values(InvoiceTransactionsHeaders).map((m, i) => {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
@@ -478,7 +507,40 @@ export function Transactions({ mount, project, reload, unmount }) {
 				<span className={style}>{dayjs(row.entry_at).format("DD-MM-YYYY")}</span>
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: particulars }} />
-				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
+				<div className={`${style} space-x-2.5`}>
+					<span dangerouslySetInnerHTML={{ __html: amount }} />
+
+					<div className="flex space-x-2.5 justify-between items-center">
+						{allowEditTransaction && (
+							<Tippy animation="shift-away" content={<Tooltip text="Edit this amount" />} placement="bottom">
+								<FontAwesomeIcon
+									className="cursor-pointer outline-none blue-text"
+									onClick={() => {
+										if (allowEditTransaction) {
+											toggleEditAmount(row);
+										}
+									}}
+									icon={faPencil}
+								/>
+							</Tippy>
+						)}
+
+						{allowDeleteTransaction && (
+							<Tippy animation="shift-away" content={<Tooltip text="Delete this transaction" />} placement="bottom">
+								<FontAwesomeIcon
+									className="cursor-pointer outline-none red-text"
+									onClick={() => {
+										if (allowDeleteTransaction) {
+											toggleDeleteTransaction(row);
+										}
+									}}
+									icon={faTrash}
+									size="sm"
+								/>
+							</Tippy>
+						)}
+					</div>
+				</div>
 				<span className={style} dangerouslySetInnerHTML={{ __html: source }} />
 			</div>
 		);
@@ -564,14 +626,16 @@ export function Transactions({ mount, project, reload, unmount }) {
 					</div>
 				</DialogPanel>
 			</div>
+			{other.isDeleteBoxOpen.status && <DeleteTransaction transaction={other.isDeleteBoxOpen.obj} mount={other.isDeleteBoxOpen.status} reload={unmountAndReload} unmount={toggleDeleteTransaction} />}
+
+			{other.isEditBoxOpen.status && <EditAmount invoice={other.isEditBoxOpen.obj} mount={other.isEditBoxOpen.status} reload={unmountAndReload} unmount={toggleEditAmount} />}
 		</Dialog>
 	);
 }
 
 export function RvList({ mount, project, unmount }) {
 	// Business Logic
-	const headers = MyConstants.TableHeaders.Transactions.RvList;
-	const thisView = MyConstants.Modules.Base.Rv;
+	const thisView = BaseModules.Rv;
 
 	const [api, setApi] = useState({
 		list: { copy: [], data: [] },
@@ -630,17 +694,17 @@ export function RvList({ mount, project, unmount }) {
 
 				const { column, isAscending } = other.sort;
 
-				if (column == headers.Date && isAscending) {
+				if (column == RvListTransactionsHeaders.Date && isAscending) {
 					return aCreatedAt - bCreatedAt;
-				} else if (column == headers.Date && !isAscending) {
+				} else if (column == RvListTransactionsHeaders.Date && !isAscending) {
 					return bCreatedAt - aCreatedAt;
-				} else if (column == headers.Id && isAscending) {
+				} else if (column == RvListTransactionsHeaders.Id && isAscending) {
 					return a.custom_id.localeCompare(b.custom_id);
-				} else if (column == headers.Id && !isAscending) {
+				} else if (column == RvListTransactionsHeaders.Id && !isAscending) {
 					return b.custom_id.localeCompare(a.custom_id);
-				} else if (column == headers.amount && isAscending) {
+				} else if (column == RvListTransactionsHeaders.amount && isAscending) {
 					return a.amount - b.amount;
-				} else if (column == headers.amount && !isAscending) {
+				} else if (column == RvListTransactionsHeaders.amount && !isAscending) {
 					return b.amount - a.amount;
 				}
 			});
@@ -662,7 +726,7 @@ export function RvList({ mount, project, unmount }) {
 
 		try {
 			const response = await axios.get(
-				MyConstants.ApiEndpoints.Getter,
+				ApiEndpoints.Getter,
 				MyGlobal.GetHeaders({
 					projectId: project.id,
 					type: "get-rv-list",
@@ -697,7 +761,7 @@ export function RvList({ mount, project, unmount }) {
 	}
 
 	function setSort(header) {
-		if (header != headers.Date || header != headers.Download) {
+		if (header != RvListTransactionsHeaders.Date || header != RvListTransactionsHeaders.Download) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
 	}
@@ -752,7 +816,7 @@ export function RvList({ mount, project, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(headers).map((m, i) => {
+		return Object.values(RvListTransactionsHeaders).map((m, i) => {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (

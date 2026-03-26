@@ -5,7 +5,7 @@
 import "tippy.js/animations/shift-away.css";
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, CashFlowSubModules, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -73,18 +73,18 @@ export function EditTransaction({ lastTransaction, mount, reload, transaction, u
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.PettyCash.EditTransaction, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.CashFlows.Modules.PettyCash.EditTransaction, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload("reload-transactions");
 
-				MyGlobal.AddActivity(`Edited transaction in <b>${MyConstants.Modules.Other.CashFlowModules.PettyCash.name}</b>.`, MyConstants.Modules.Base.CashFlow);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionEdited);
+				MyGlobal.AddActivity(`Edited transaction in <b>${CashFlowSubModules.PettyCash.name}</b>.`, BaseModules.CashFlow);
+				MyGlobal.ShowSuccessToast(Messages.TransactionEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `Cash Flow => ${MyConstants.Modules.Other.CashFlowModules.PettyCash.name} => Edit Transaction`);
+			MyGlobal.HandleErrors(error, `Cash Flow => ${CashFlowSubModules.PettyCash.name} => Edit Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, editing: false }));
 			unmount();
@@ -113,7 +113,7 @@ export function EditTransaction({ lastTransaction, mount, reload, transaction, u
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
+			const response = await axios.get(ApiEndpoints.CashFlows.Modules.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
 				setApi({
@@ -136,7 +136,7 @@ export function EditTransaction({ lastTransaction, mount, reload, transaction, u
 				});
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Other.CashFlowModules.PettyCash.name} => New Transaction`);
+			MyGlobal.HandleErrors(error, `${BaseModules.CashFlow} => ${CashFlowSubModules.PettyCash.name} => New Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -382,18 +382,18 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.PettyCash.AddTransaction, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.CashFlows.Modules.PettyCash.AddTransaction, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload("reload-transactions");
 
-				MyGlobal.AddActivity(`Added transaction in <b>${MyConstants.Modules.Other.CashFlowModules.PettyCash.name}</b>.`, MyConstants.Modules.Base.CashFlow);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionAdded);
+				MyGlobal.AddActivity(`Added transaction in <b>${CashFlowSubModules.PettyCash.name}</b>.`, BaseModules.CashFlow);
+				MyGlobal.ShowSuccessToast(Messages.TransactionAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `Cash Flow => ${MyConstants.Modules.Other.CashFlowModules.PettyCash.name} => New Transaction`);
+			MyGlobal.HandleErrors(error, `Cash Flow => ${CashFlowSubModules.PettyCash.name} => New Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, adding: false }));
 			unmount();
@@ -422,7 +422,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
+			const response = await axios.get(ApiEndpoints.CashFlows.Modules.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
 				setApi({
@@ -433,7 +433,7 @@ export function NewTransaction({ lastTransaction, mount, reload, unmount }) {
 				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Other.CashFlowModules.PettyCash.name} => New Transaction`);
+			MyGlobal.HandleErrors(error, `${BaseModules.CashFlow} => ${CashFlowSubModules.PettyCash.name} => New Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}

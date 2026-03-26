@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Designations, EmploymentTypes, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -61,7 +61,7 @@ export default function EditEmployee() {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Employees.EditEmployee, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Employees.EditEmployee, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				setMain({
@@ -79,14 +79,14 @@ export default function EditEmployee() {
 					},
 				});
 
-				MyGlobal.AddActivity(`Edited employee <b>${main.employee.name} (${main.employee.id})</b>.`, MyConstants.Modules.Base.Employees);
+				MyGlobal.AddActivity(`Edited employee <b>${main.employee.name} (${main.employee.id})</b>.`, BaseModules.Employees);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.EmployeeEdited);
+				MyGlobal.ShowSuccessToast(Messages.EmployeeEdited);
 
 				getSupportData();
 				setEmployee();
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Employees => New Employee => Do Editing");
@@ -99,7 +99,7 @@ export default function EditEmployee() {
 		try {
 			setLoading((s) => ({ ...s, supportData: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Employees.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Employees.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				const administrators = [];
@@ -218,84 +218,19 @@ export default function EditEmployee() {
 	}
 
 	function uiEmployees() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.employee.name}
-				displayValue="name"
-				filteredData={api.employees}
-				hasDataObject
-				icon={faUsers}
-				isReadOnly={false}
-				label="Employee"
-				onChange={(e) => setHeavyInputs("employee", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("employee", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.employee}
-				tabIndex="1"
-				value={main.employee.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.employee.name} displayValue="name" filteredData={api.employees} hasDataObject icon={faUsers} isReadOnly={false} label="Employee" onChange={(e) => setHeavyInputs("employee", e)} onClick={() => {}} onInputChange={(e) => setFind("employee", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.employee} tabIndex="1" value={main.employee.name} width="w-full" />;
 	}
 
 	function uiDeactivate() {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={["Active", "Ad-Hoc", "Inactive", "On Contract", "On Leave", "Probation", "Resigned", "Terminated"]}
-				icon={faStar}
-				label="Employment Status"
-				onChange={(e) => setLightInputs("employmentStatus", e)}
-				onClick={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="4"
-				value={main.employmentStatus}
-				width="w-full"
-			/>
-		);
+		return <ComboBox allowCreatingNewItem={false} comparisonValue="" filteredData={["Active", "Ad-Hoc", "Inactive", "On Contract", "On Leave", "Probation", "Resigned", "Terminated"]} icon={faStar} label="Employment Status" onChange={(e) => setLightInputs("employmentStatus", e)} onClick={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex="4" value={main.employmentStatus} width="w-full" />;
 	}
 
 	function uiDesignation() {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={Object.values(MyConstants.Designation)}
-				icon={faBriefcase}
-				label="Designation"
-				onChange={(e) => setLightInputs("designation", e)}
-				onClick={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="3"
-				value={main.designation}
-				width="w-full"
-			/>
-		);
+		return <ComboBox allowCreatingNewItem={false} comparisonValue="" filteredData={Object.values(Designations)} icon={faBriefcase} label="Designation" onChange={(e) => setLightInputs("designation", e)} onClick={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex="3" value={main.designation} width="w-full" />;
 	}
 
 	function uiEmploymentType() {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={Object.values(MyConstants.EmploymentType)}
-				icon={faBriefcase}
-				label="Employment Type"
-				onChange={(e) => setLightInputs("employmentType", e)}
-				onClick={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="4"
-				value={main.employmentType}
-				width="w-full"
-			/>
-		);
+		return <ComboBox allowCreatingNewItem={false} comparisonValue="" filteredData={Object.values(EmploymentTypes)} icon={faBriefcase} label="Employment Type" onChange={(e) => setLightInputs("employmentType", e)} onClick={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex="4" value={main.employmentType} width="w-full" />;
 	}
 
 	function uiPermissions() {
@@ -314,14 +249,8 @@ export default function EditEmployee() {
 			const iconColour = `cursor-pointer ${isSelected ? "primary-text" : "gray-text"}`;
 
 			return (
-				<div
-					className="flex w-full space-x-2 justify-start items-center"
-					key={n}>
-					<FontAwesomeIcon
-						className={iconColour}
-						icon={icon}
-						onClick={() => setPermission(m)}
-					/>
+				<div className="flex w-full space-x-2 justify-start items-center" key={n}>
+					<FontAwesomeIcon className={iconColour} icon={icon} onClick={() => setPermission(m)} />
 					<span className="font-regular-10 black-text">{m.name}</span>
 				</div>
 			);
@@ -329,27 +258,7 @@ export default function EditEmployee() {
 	}
 
 	function uiReportTo() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.reportsTo.name}
-				displayValue="name"
-				filteredData={api.administrators}
-				hasDataObject
-				icon={faUsers}
-				isReadOnly={false}
-				label="Will Report To"
-				onChange={(e) => setHeavyInputs("reportsTo", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("reportsTo", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.reportsTo}
-				tabIndex="2"
-				value={main.reportsTo.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.reportsTo.name} displayValue="name" filteredData={api.administrators} hasDataObject icon={faUsers} isReadOnly={false} label="Will Report To" onChange={(e) => setHeavyInputs("reportsTo", e)} onClick={() => {}} onInputChange={(e) => setFind("reportsTo", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.reportsTo} tabIndex="2" value={main.reportsTo.name} width="w-full" />;
 	}
 
 	// Hooks
@@ -378,9 +287,7 @@ export default function EditEmployee() {
 			</div>
 			<div className="flex w-full px-5 py-2.5 justify-between items-center">{uiPermissions()}</div>
 			<footer className="w-full dialog-footer !px-7 !py-5">
-				<button
-					className={editButtonStyle}
-					onClick={() => doEditing()}>
+				<button className={editButtonStyle} onClick={() => doEditing()}>
 					{uiEdit()}
 				</button>
 			</footer>

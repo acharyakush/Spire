@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import dynamic from "next/dynamic";
-import MyConstants from "@/utilities/constants";
+import { AccountMenu, ApiEndpoints, BaseModules, DerivedModules, Messages } from "@/utilities/constants";
 
 import { useRouter } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
@@ -11,7 +11,8 @@ import { ErrorFallbackComponent } from "@/components/Elements";
 import { applicationName, MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { faCog, faDatabase, faSignOut, faSun, faUserCircle, faUserClock, faUserCog, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { faSignOut, faSun, faUserCircle, faUserClock, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { clearAllUserData } from "@/utilities/myGlobal";
 
 const DynamicMySpace = dynamic(() => import("./mySpace"), { ssr: false });
 const DynamicTodos = dynamic(() => import("@/modules/todo/Index"), { ssr: false });
@@ -33,7 +34,6 @@ export default function Home() {
 	const gliderRef = useRef(null);
 	const tabsContainerRef = useRef(null);
 
-	const baseModules = useMemo(() => MyConstants.Modules.Base, []);
 	const backgroundColour = useMemo(() => (MyGlobal.GetUserId() === "A3" ? "background-color: lightsteelblue" : ""), []);
 
 	const [api, setApi] = useState({
@@ -49,7 +49,7 @@ export default function Home() {
 		mode: null,
 		selectedModule: {
 			index: 0,
-			name: baseModules.Dashboard,
+			name: BaseModules.Dashboard,
 		},
 		singleProjectObject: {},
 		status: {
@@ -77,7 +77,7 @@ export default function Home() {
 	// Functions
 	async function getPermissions() {
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-permissions" }));
+			const response = await axios.get(ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-permissions" }));
 
 			const modules = [];
 			const myPermissions = [];
@@ -134,21 +134,21 @@ export default function Home() {
 
 	function getSequence(module) {
 		switch (module) {
-			case baseModules.Todos:
+			case BaseModules.Todos:
 				return 9;
-			case baseModules.CashFlow:
+			case BaseModules.CashFlow:
 				return 7;
-			case baseModules.Clients:
+			case BaseModules.Clients:
 				return 5;
-			case baseModules.Dashboard:
+			case BaseModules.Dashboard:
 				return 0;
-			case baseModules.Inquiries:
+			case BaseModules.Inquiries:
 				return 2;
-			case baseModules.Projects:
+			case BaseModules.Projects:
 				return 3;
-			case baseModules.Firms:
+			case BaseModules.Firms:
 				return 8;
-			case baseModules.MySpace:
+			case BaseModules.MySpace:
 				return 1;
 			default:
 				return -1;
@@ -157,7 +157,7 @@ export default function Home() {
 
 	function getUserData() {
 		if (!MyGlobal.Storages.Session.DoesExist(`${applicationName}Token`)) {
-			MyGlobal.ShowErrorToast(MyConstants.Messages.UnauthorizedAccess);
+			MyGlobal.ShowErrorToast(Messages.UnauthorizedAccess);
 			router.replace("/");
 		} else {
 			const userData = MyGlobal.GetUserData();
@@ -175,19 +175,13 @@ export default function Home() {
 
 	function getUserMenuClickAction(menuItem) {
 		switch (menuItem) {
-			case MyConstants.UserMenu.Activity:
+			case AccountMenu.Activity:
 				toggleActivitiesView();
 				break;
-			case MyConstants.UserMenu.Employees:
+			case AccountMenu.Employees:
 				toggleEmployeeView();
 				break;
-			case MyConstants.UserMenu.Profile:
-				toggleProfileView();
-				break;
-			case MyConstants.UserMenu.Settings:
-				toggleSettingsView();
-				break;
-			case MyConstants.UserMenu.Logout:
+			case AccountMenu.Logout:
 				logout();
 				break;
 		}
@@ -195,17 +189,11 @@ export default function Home() {
 
 	function getUserMenuIcons(menuItem) {
 		switch (menuItem) {
-			case MyConstants.UserMenu.Activity:
+			case AccountMenu.Activity:
 				return faUserClock;
-			case MyConstants.UserMenu.Employees:
+			case AccountMenu.Employees:
 				return faUserGroup;
-			case MyConstants.UserMenu.Profile:
-				return faUserCog;
-			case MyConstants.UserMenu.Settings:
-				return faCog;
-			case MyConstants.UserMenu.Storage:
-				return faDatabase;
-			case MyConstants.UserMenu.Logout:
+			case AccountMenu.Logout:
 				return faSignOut;
 			default:
 				return faSun;
@@ -214,7 +202,7 @@ export default function Home() {
 
 	async function getUsers() {
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-users" }));
+			const response = await axios.get(ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-users" }));
 
 			if (response.status == 200) {
 				const allUsers = [];
@@ -237,7 +225,7 @@ export default function Home() {
 	function logout() {
 		try {
 			MyGlobal.AddActivity("Logged out.");
-			MyGlobal.ClearAllUserData();
+			clearAllUserData();
 
 			setTimeout(() => {
 				router.replace("/");
@@ -266,7 +254,7 @@ export default function Home() {
 	function setModuleProps(key, value) {
 		const _key = String(key).toLowerCase();
 
-		if (key === baseModules.Invoices || key === baseModules.Rv) {
+		if (key === BaseModules.Invoices || key === BaseModules.Rv) {
 			setMain((s) => ({ ...s, status: { ...s.status, invoicesOrRv: { find: value, module: value ? key : null } } }));
 		} else if (key === "projectsOrTasks") {
 			setMain((s) => ({ ...s, status: { ...s.status, projectsOrTasks: value } }));
@@ -337,11 +325,11 @@ export default function Home() {
 
 	function uiModules() {
 		const _modules = api.modules
-			.filter((f) => f.name != baseModules.Affiliates && f.name != baseModules.Invoices)
+			.filter((f) => f.name != BaseModules.Affiliates && f.name != BaseModules.Invoices)
 			.filter((f) => f.sequence >= 0)
 			.filter((f) => {
 				if (!MyGlobal.IsUserAdministrator()) {
-					return f.name != baseModules.Firms;
+					return f.name != BaseModules.Firms;
 				}
 				return f;
 			})
@@ -363,57 +351,57 @@ export default function Home() {
 
 	function uiSelectedModule() {
 		switch (main.selectedModule.name) {
-			case baseModules.Affiliates:
+			case BaseModules.Affiliates:
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.Affiliates}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Affiliates)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Affiliates}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Affiliates)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicAffiliates />
 					</ErrorBoundary>
 				);
-			case baseModules.CashFlow:
+			case BaseModules.CashFlow:
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.CashFlow}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.CashFlow)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.CashFlow}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.CashFlow)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicCashFlows presetStatus={main.status.invoicesOrRv} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
-			case baseModules.Clients:
+			case BaseModules.Clients:
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.Clients}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Clients)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Clients}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Clients)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicClients />
 					</ErrorBoundary>
 				);
-			case baseModules.Dashboard:
+			case BaseModules.Dashboard:
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.Dashboard}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Dashboard)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Dashboard}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Dashboard)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicDashboard setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
-			case baseModules.MySpace:
+			case BaseModules.MySpace:
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.MySpace}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.MySpace)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.MySpace}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.MySpace)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicMySpace setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
-			case baseModules.Firms:
+			case BaseModules.Firms:
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.Firms}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Firms)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Firms}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Firms)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicFirms presetStatus={main.status.firms} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
-			case baseModules.Inquiries:
+			case BaseModules.Inquiries:
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.Inquiries}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Inquiries)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Inquiries}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Inquiries)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicInquiries presetStatus={main.status.inquiries} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
-			case baseModules.Projects:
+			case BaseModules.Projects:
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.Projects}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Projects)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Projects}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Projects)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicProjects presetStatus={main.status.projectsOrTasks} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
-			case baseModules.Todos:
+			case BaseModules.Todos:
 				return (
-					<ErrorBoundary key={`ErrorBoundary_${baseModules.Todos}`} onError={(e) => MyGlobal.LogErrors(e.message, baseModules.Todos)} FallbackComponent={ErrorFallbackComponent}>
+					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Todos}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Todos)} FallbackComponent={ErrorFallbackComponent}>
 						<DynamicTodos presetStatus={main.status.todos} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);
@@ -438,18 +426,18 @@ export default function Home() {
 	}
 
 	function uiUserMenuList() {
-		return Object.values(MyConstants.UserMenu)
+		return Object.values(AccountMenu)
 			.filter((menuItem) => {
 				const isAdmin = MyGlobal.IsUserAdministrator();
 
-				const hasEmployeePermission = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditEmployee) || MyGlobal.HasPermission(MyConstants.Modules.Derived.NewEmployee);
+				const hasEmployeePermission = MyGlobal.HasPermission(DerivedModules.EditEmployee) || MyGlobal.HasPermission(DerivedModules.NewEmployee);
 
 				// Special handling for restricted items
-				if (menuItem === MyConstants.UserMenu.Activity || menuItem === MyConstants.UserMenu.Storage) {
+				if (menuItem === AccountMenu.Activity) {
 					return isAdmin; // only admin sees them
 				}
 
-				if (menuItem === MyConstants.UserMenu.Employees) {
+				if (menuItem === AccountMenu.Employees) {
 					return hasEmployeePermission || isAdmin;
 				}
 
@@ -471,7 +459,7 @@ export default function Home() {
 		document.body.setAttribute("app-theme", "light");
 
 		if (!MyGlobal.Storages.Session.DoesExist(`${applicationName}Token`)) {
-			MyGlobal.ShowErrorToast(MyConstants.Messages.UnauthorizedAccess);
+			MyGlobal.ShowErrorToast(Messages.UnauthorizedAccess);
 			router.replace("/");
 			return;
 		}
@@ -510,22 +498,22 @@ export default function Home() {
 
 	useEffect(() => {
 		if (main.status.inquiries) {
-			setModule(2, { name: baseModules.Inquiries });
+			setModule(2, { name: BaseModules.Inquiries });
 		} else if (main.status.invoicesOrRv.find && main.status.invoicesOrRv.module) {
-			setModule(5, { name: baseModules.CashFlow });
+			setModule(5, { name: BaseModules.CashFlow });
 		} else if (main.status.projectsOrTasks) {
-			setModule(3, { name: baseModules.Projects });
+			setModule(3, { name: BaseModules.Projects });
 		} else if (main.status.todos) {
-			setModule(7, { name: baseModules.Todos });
+			setModule(7, { name: BaseModules.Todos });
 		}
 	}, [main.status]);
 
 	// Main UI
 	return (
 		<main className="flex flex-col min-w-5xl h-screen overflow-y-hidden">
-			<div className="flex w-full h-13 px-5 justify-between items-center-safe relative shadow dashboard-blue-2">
+			<div className="flex w-full h-13 px-5 justify-between items-center-safe relative shadow blue-background">
 				<div className="flex w-full items-center-safe">
-					<span className="cursor-pointer uppercase dashboard-heading" onClick={() => setModule(0, { name: baseModules.Dashboard })}>
+					<span className="cursor-pointer uppercase dashboard-heading" onClick={() => setModule(0, { name: BaseModules.Dashboard })}>
 						{applicationName}
 					</span>
 				</div>

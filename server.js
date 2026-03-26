@@ -11,7 +11,7 @@ const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
-	createServer((req, res) => {
+	createServer(function (req, res) {
 		try {
 			const parsedUrl = parse(req.url, true);
 			handle(req, res, parsedUrl);
@@ -20,8 +20,8 @@ app.prepare().then(() => {
 			res.statusCode = 500;
 			res.end("Internal server error occured.");
 		}
-	}).listen(port, (err) => {
-		if (err) throw err;
-		console.log(`\nServing on http://${hostname}:${port}`);
+	}).listen(port, function (error) {
+		if (error) throw error;
+		console.log("\nServing on http://" + hostname + ":" + port);
 	});
 });

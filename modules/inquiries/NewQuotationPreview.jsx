@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import jsPDF from "jspdf";
 import axios from "axios";
 import html2canvas from "html2canvas";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, DerivedModules, Messages } from "@/utilities/constants";
 
 import { useState } from "react";
 import { QRCode } from "react-qrcode-logo";
@@ -41,19 +41,19 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 				userId: MyGlobal.GetUserId(),
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.AddQuotation, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Inquiries.AddQuotation, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Generated quotation <b>${quotation?.proposalNumber}</b> for <b>${inquiry?.id}</b>`, MyConstants.Modules.Derived.NewQuotation);
+				MyGlobal.AddActivity(`Generated quotation <b>${quotation?.proposalNumber}</b> for <b>${inquiry?.id}</b>`, DerivedModules.NewQuotation);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.QuotationAdded);
+				MyGlobal.ShowSuccessToast(Messages.QuotationAdded);
 			} else {
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowSuccessToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewQuotation);
+			MyGlobal.HandleErrors(error, DerivedModules.NewQuotation);
 		} finally {
 			unmount(false);
 		}
@@ -170,7 +170,7 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 			const formData = new FormData();
 			formData.append("file", pdfBlob, `${fileName}.pdf`);
 
-			await axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData, {
+			await axios.post(ApiEndpoints.Inquiries.UploadQuotation, formData, {
 				headers: { "Content-Type": "multipart/form-data" },
 			});
 

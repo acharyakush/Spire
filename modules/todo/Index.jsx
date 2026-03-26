@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
 import Tippy from "@tippyjs/react";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { CSS } from "@dnd-kit/utilities";
 import { MyGlobal, safeJsonParse } from "@/utilities/global";
@@ -18,6 +18,7 @@ import { AvatarCircle, Badge, BadgeSmall, Tooltip } from "@/components/Elements"
 import { faClock, faClockRotateLeft, faFilter, faFilterCircleXmark, faHourglassEnd, faHourglassHalf, faPencilAlt, faPlusCircle, faSearch, faTrash, faTrashRestore, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, useDroppable, DragOverlay } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable, sortableKeyboardCoordinates, defaultAnimateLayoutChanges, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { capitalize } from "@/utilities/myGlobal";
 
 const DynamicAddToDo = dynamic(() => import("@/modals/todos/AddTodo"), { ssr: false });
 const DynamicDeleteTodo = dynamic(() => import("@/modals/todos/DeleteTodo"), { ssr: false });
@@ -76,7 +77,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		}),
 	);
 
-	const thisView = MyConstants.Modules.Base.Todos;
+	const thisView = BaseModules.Todos;
 	const showFindClearButton = useMemo(() => (main.find ? "cursor-pointer primary-text" : "hidden"), [main.find]);
 
 	const totalCount = columns.completed.length + columns.inProgress.length + columns.pending.length;
@@ -312,7 +313,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		try {
 			setMain((s) => ({ ...s, isLoading: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Todos.GetTodos, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Todos.GetTodos, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				const completed = [];
@@ -489,22 +490,22 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		try {
 			setIsLoading((s) => ({ ...s, updateStatus: true }));
 
-			const newStatus = MyGlobal.Capitalize(over.column);
+			const newStatus = capitalize(over.column);
 
 			const body = {
 				id: active.id,
 				status: newStatus,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Todos.UpdateStatus, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Todos.UpdateStatus, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				getTodos();
 
-				const activityMessage = `Updated status from <b>${MyGlobal.Capitalize(active?.column)}</b> to <b>${newStatus}</b>.`;
+				const activityMessage = `Updated status from <b>${capitalize(active?.column)}</b> to <b>${newStatus}</b>.`;
 
-				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Todos);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TodoStatusUpdated);
+				MyGlobal.AddActivity(activityMessage, BaseModules.Todos);
+				MyGlobal.ShowSuccessToast(Messages.TodoStatusUpdated);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Todos > Update Status");

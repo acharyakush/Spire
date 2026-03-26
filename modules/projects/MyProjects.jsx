@@ -8,7 +8,7 @@ import Tippy from "@tippyjs/react";
 import EditProject from "./EditProject";
 import writeXlsxFile from "write-excel-file/browser";
 import SingleProject from "../singleProject";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -19,6 +19,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
 import { faCheck, faCheckCircle, faChevronDown, faChevronRight, faFileExcel, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { ProjectsHeaders } from "@/utilities/headers";
 
 export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 	// Business Logic
@@ -50,13 +51,12 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 	});
 
 	const today = dayjs();
-	const statuses = MyConstants.Statuses.Projects;
-	const thisView = MyConstants.Modules.Base.Projects;
-	const tableHeaders = MyConstants.TableHeaders.Projects;
+	const statuses = Statuses.Projects;
+	const thisView = BaseModules.Projects;
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
-	const allowDeletingProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteProject);
-	const allowEditingProject = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditProject);
+	const allowDeletingProject = MyGlobal.HasPermission(DerivedModules.DeleteProject);
+	const allowEditingProject = MyGlobal.HasPermission(DerivedModules.EditProject);
 
 	const showFindBoxClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
@@ -109,37 +109,37 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 			const { column, isAscending } = main.sort;
 
 			switch (true) {
-				case column == tableHeaders.Started && isAscending:
+				case column == ProjectsHeaders.Started && isAscending:
 					return aStartedOn - bStartedOn;
-				case column == tableHeaders.Started && !isAscending:
+				case column == ProjectsHeaders.Started && !isAscending:
 					return bStartedOn - aStartedOn;
-				case column == tableHeaders.GovermentId && isAscending:
+				case column == ProjectsHeaders.GovermentId && isAscending:
 					if (a.government_id) {
 						return a.government_id.localeCompare(b.government_id);
 					}
-				case column == tableHeaders.GovermentId && !isAscending:
+				case column == ProjectsHeaders.GovermentId && !isAscending:
 					if (b.government_id) {
 						return b.government_id.localeCompare(a.government_id);
 					}
-				case column == tableHeaders.Client && isAscending:
+				case column == ProjectsHeaders.Client && isAscending:
 					return a.client_name.localeCompare(b.client_name);
-				case column == tableHeaders.Client && !isAscending:
+				case column == ProjectsHeaders.Client && !isAscending:
 					return b.client_name.localeCompare(a.client_name);
-				case column == tableHeaders.Company && isAscending:
+				case column == ProjectsHeaders.Company && isAscending:
 					return a.company_name.localeCompare(b.company_name);
-				case column == tableHeaders.Company && !isAscending:
+				case column == ProjectsHeaders.Company && !isAscending:
 					return b.company_name.localeCompare(a.company_name);
-				case column == tableHeaders.MainProject && isAscending:
+				case column == ProjectsHeaders.MainProject && isAscending:
 					return a.main_project_name.localeCompare(b.main_project_name);
-				case column == tableHeaders.MainProject && !isAscending:
+				case column == ProjectsHeaders.MainProject && !isAscending:
 					return b.main_project_name.localeCompare(a.main_project_name);
-				case column == tableHeaders.SubProject && isAscending:
+				case column == ProjectsHeaders.SubProject && isAscending:
 					return a.sub_project_name.localeCompare(b.sub_project_name);
-				case column == tableHeaders.SubProject && !isAscending:
+				case column == ProjectsHeaders.SubProject && !isAscending:
 					return b.sub_project_name.localeCompare(a.sub_project_name);
-				case column == tableHeaders.Status && isAscending:
+				case column == ProjectsHeaders.Status && isAscending:
 					return a.status.localeCompare(b.status);
-				case column == tableHeaders.Status && !isAscending:
+				case column == ProjectsHeaders.Status && !isAscending:
 					return b.status.localeCompare(a.status);
 			}
 		});
@@ -156,7 +156,7 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 		const headerHeight = 44;
 		const maximumColumnWidth = 20;
 
-		const headers = Object.values(tableHeaders);
+		const headers = Object.values(ProjectsHeaders);
 		const blankRows = [{ span: headers.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
@@ -393,7 +393,7 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 		setMain((s) => ({ ...s, isLoading: { ...s.isLoading, supportData: true } }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetMyProjects, MyGlobal.GetHeaders({ userId: MyGlobal.GetUserId() }));
+			const response = await axios.get(ApiEndpoints.Projects.GetMyProjects, MyGlobal.GetHeaders({ userId: MyGlobal.GetUserId() }));
 
 			if (response.status === 200) {
 				let revised = [];
@@ -611,7 +611,7 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(tableHeaders).map((m, i) => {
+		return Object.values(ProjectsHeaders).map((m, i) => {
 			const showArrow = m == main.sort.column ? "visible" : "invisible";
 
 			return (

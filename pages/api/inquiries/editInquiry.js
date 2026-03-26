@@ -1,13 +1,13 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
-import MyConstants from "@/utilities/constants";
+import { Messages } from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { query } from "@/utilities/dbConnection";
 
 export default async function handler(req, res) {
 	if (req.method !== "POST" || !MyGlobal.IsApiCallMethodValid(req)) {
-		return res.status(405).send(MyConstants.Messages.ApiCallForbidden);
+		return res.status(405).send(Messages.ApiCallForbidden);
 	}
 
 	res.setHeader("Cache-Control", "no-store, max-age=0");
@@ -59,23 +59,14 @@ export default async function handler(req, res) {
 		}
 
 		if (client.id == 0) {
-			const response = await query("INSERT INTO clients (id, reference_id, name, phone_number, email_address) VALUES (?, ?, ?, ?, ?)", [
-				newClientId,
-				newReferenceId,
-				client.name,
-				phoneNumber,
-				emailAddress,
-			]);
+			const response = await query("INSERT INTO clients (id, reference_id, name, phone_number, email_address) VALUES (?, ?, ?, ?, ?)", [newClientId, newReferenceId, client.name, phoneNumber, emailAddress]);
 
 			if (response.affectedRows == 0) {
 				return res.status(400).send("Could not add Client.");
 			}
 		}
 
-		const inquiryUpdateResult = await query(
-			`UPDATE inquiries SET client_id=?, reference_id=?, main_project_id=?, sub_project_id=?, entry_date=?, phone_number=?, email_address=?, follow_ups=?, is_edited=?, quote=? WHERE id=?`,
-			[newClientId, newReferenceId, mainProjectId, newSubProjectId, entryDate, phoneNumber, emailAddress, followUps, isEdited, quote, id],
-		);
+		const inquiryUpdateResult = await query(`UPDATE inquiries SET client_id=?, reference_id=?, main_project_id=?, sub_project_id=?, entry_date=?, phone_number=?, email_address=?, follow_ups=?, is_edited=?, quote=? WHERE id=?`, [newClientId, newReferenceId, mainProjectId, newSubProjectId, entryDate, phoneNumber, emailAddress, followUps, isEdited, quote, id]);
 
 		if (inquiryUpdateResult.affectedRows == 0) {
 			return res.status(400).send("Could not edit Inquiry.");

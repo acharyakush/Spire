@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -34,7 +34,7 @@ export default function RestoreTodos({ mount, refresh, _todos, unmount }) {
 		try {
 			setIsDeleting(true);
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-deleted-todos" }));
+			const response = await axios.get(ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-deleted-todos" }));
 
 			if (response.status === 200) {
 				setTodos(response.data);
@@ -56,13 +56,13 @@ export default function RestoreTodos({ mount, refresh, _todos, unmount }) {
 				type: "restore-todo",
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders({ id: todo.id }));
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders({ id: todo.id }));
 
 			if (response.status === 200) {
 				refresh();
 				getTodos();
 
-				MyGlobal.AddActivity("Todo restored <b>" + todo.description + "</b>", MyConstants.Modules.Base.Todos);
+				MyGlobal.AddActivity("Todo restored <b>" + todo.description + "</b>", BaseModules.Todos);
 				MyGlobal.ShowSuccessToast("Todo Restored");
 			}
 		} catch (error) {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 
-import MyConstants from "@/utilities/constants";
+import { Statuses } from "@/utilities/constants";
 
 export default function useInquiries() {
 	const [inquiries, setInquiries] = useState({
@@ -27,7 +27,7 @@ export default function useInquiries() {
 			totalQuote: 0,
 		};
 
-		const inqStatus = MyConstants.Statuses.Inquiries;
+		const inqStatus = Statuses.Inquiries;
 		const userId = MyGlobal.GetUserId();
 
 		for (const i of list) {

@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -45,7 +45,7 @@ export default function NewHead({ entity, mount, reload, unmount }) {
 		isBoxMoved: false,
 	});
 
-	const thisView = `${MyConstants.Modules.Base.CashFlow} => ${entity.module.name} => ${entity.name} => New Head`;
+	const thisView = `${BaseModules.CashFlow} => ${entity.module.name} => ${entity.name} => New Head`;
 
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -68,17 +68,17 @@ export default function NewHead({ entity, mount, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.AddHead, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.CashFlows.Modules.Entities.AddHead, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload(entity.id, entity.module.id);
 				resetFields();
 				getSupportData();
 
-				MyGlobal.AddActivity(`Added head <b>${main.purpose}</b> for <b>${entity.name}</b> in <b>${entity.module.name}</b>.`, MyConstants.Modules.Base.CashFlow);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.CardAdded);
+				MyGlobal.AddActivity(`Added head <b>${main.purpose}</b> for <b>${entity.name}</b> in <b>${entity.module.name}</b>.`, BaseModules.CashFlow);
+				MyGlobal.ShowSuccessToast(Messages.CardAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, thisView);
@@ -144,7 +144,7 @@ export default function NewHead({ entity, mount, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.GetNewHeadSupportData, MyGlobal.GetHeaders({}));
+			const response = await axios.get(ApiEndpoints.CashFlows.Modules.Entities.GetNewHeadSupportData, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
 				const basicPaymentSourceList = MyGlobal.GetBasicPaymentSourceList();

@@ -4,7 +4,7 @@
 
 import axios from "axios";
 import EditBank from "./EditBank";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, FirmsModules, Messages } from "@/utilities/constants";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -16,7 +16,7 @@ import { faBank, faChevronLeft, faFileInvoice, faFileLines, faFont, faIdCard, fa
 export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompany }) {
 	// Business Logic
 	const [data, setData] = useState({
-		activeTab: MyConstants.Modules.Other.Firms.EditFirm,
+		activeTab: FirmsModules.EditFirm,
 		company: {
 			address: thisAdminCompany?.address,
 			email: thisAdminCompany?.email_address,
@@ -44,17 +44,14 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 		const body = { id: thisAdminCompany.id, ...data.company, termsAndConditions: termsConditions };
 
 		axios
-			.post(MyConstants.ApiEndpoints.Firms.EditFirm, body, MyGlobal.GetHeaders())
-			.post(MyConstants.ApiEndpoints.Firms.EditFirm, body, MyGlobal.GetHeaders())
+			.post(ApiEndpoints.Firms.EditFirm, body, MyGlobal.GetHeaders())
 			.then((response) => {
 				if (response.status == 200) {
 					refreshAdminCompanies();
-					MyGlobal.ShowSuccessToast(MyConstants.Messages.FirmEdited);
-					MyGlobal.ShowSuccessToast(MyConstants.Messages.FirmEdited);
+					MyGlobal.ShowSuccessToast(Messages.FirmEdited);
 					close();
 				} else {
-					MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
-					MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+					MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 				}
 			})
 			.catch((error) => MyGlobal.HandleErrors(error, "Edit Firm"))
@@ -81,19 +78,7 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 	};
 
 	const uiCompanyGstNumber = () => {
-		return (
-			<TextInput
-				icon={faFileInvoice}
-				isNew={false}
-				label="GST"
-				maxLength={15}
-				onChange={(e) => handleCompanyInputs("gst", String(e.target.value).toUpperCase())}
-				onKeyPress={() => {}}
-				tabIndex={6}
-				value={data.company.gst}
-				width="w-1/2"
-			/>
-		);
+		return <TextInput icon={faFileInvoice} isNew={false} label="GST" maxLength={15} onChange={(e) => handleCompanyInputs("gst", String(e.target.value).toUpperCase())} onKeyPress={() => {}} tabIndex={6} value={data.company.gst} width="w-1/2" />;
 	};
 
 	const uiCompany = () => {
@@ -119,25 +104,11 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 	};
 
 	const uiCompanyPanNumber = () => {
-		return (
-			<TextInput icon={faIdCard} isNew={false} label="PAN" maxLength={10} onChange={(e) => handleCompanyInputs("pan", String(e.target.value).toUpperCase())} onKeyPress={() => {}} tabIndex={5} value={data.company.pan} width="w-1/2" />
-		);
+		return <TextInput icon={faIdCard} isNew={false} label="PAN" maxLength={10} onChange={(e) => handleCompanyInputs("pan", String(e.target.value).toUpperCase())} onKeyPress={() => {}} tabIndex={5} value={data.company.pan} width="w-1/2" />;
 	};
 
 	const uiCompanyPhoneNumber = () => {
-		return (
-			<TextInput
-				icon={faPhone}
-				isNew={false}
-				label="Phone Number"
-				maxLength={10}
-				onChange={(e) => handleCompanyInputs("phone", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={2}
-				value={data.company.phone}
-				width="w-1/3"
-			/>
-		);
+		return <TextInput icon={faPhone} isNew={false} label="Phone Number" maxLength={10} onChange={(e) => handleCompanyInputs("phone", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={data.company.phone} width="w-1/3" />;
 	};
 
 	const uiCompanyTermsAndConditions = () => {
@@ -149,20 +120,7 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 			termsConditionsLength = termsConditions.split("\n").length;
 		}
 
-		return (
-			<TextArea
-				icon={faFileLines}
-				isNew={false}
-				key={14}
-				label="Terms & Conditions"
-				onChange={(e) => handleCompanyInputs("termsAndConditions", e.target.value)}
-				onKeyDown={() => {}}
-				rows={termsConditionsLength}
-				tabIndex={14}
-				value={termsConditions}
-				width="w-full"
-			/>
-		);
+		return <TextArea icon={faFileLines} isNew={false} key={14} label="Terms & Conditions" onChange={(e) => handleCompanyInputs("termsAndConditions", e.target.value)} onKeyDown={() => {}} rows={termsConditionsLength} tabIndex={14} value={termsConditions} width="w-full" />;
 	};
 
 	// Miscellaneous UI
@@ -179,7 +137,7 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 	};
 
 	const uiTabs = () => {
-		return Object.values(MyConstants.Modules.Other.Firms).map((m, i) => {
+		return Object.values(FirmsModules).map((m, i) => {
 			const icon = i == 0 ? faBank : faPencil;
 			const aesthetics = m == data.activeTab ? "primary-background-transparent-01 primary-text" : "bg-transparent gray-text";
 			const wrapper = `w-full p-2 space-x-2.5 text-left font-medium-11 ${aesthetics}`;
@@ -193,7 +151,7 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 		});
 	};
 
-	const height = data.activeTab === MyConstants.Modules.Other.Firms.EditFirm ? 148 : 110;
+	const height = data.activeTab === FirmsModules.EditFirm ? 148 : 110;
 
 	// Main UI
 	return (
@@ -206,11 +164,9 @@ export default function EditFirm({ close, refreshAdminCompanies, thisAdminCompan
 			</div>
 			<div className="flex w-full h-[calc(100vh-137px)] justify-center items-center contrast-background">
 				<div className="flex flex-col w-1/6 h-full py-4 space-y-1.5 justify-center items-center">{uiTabs()}</div>
-				<div className={`w-5/6 h-[calc(100vh-${height}px)] overflow-y-auto left-border`}>
-					{data.activeTab === MyConstants.Modules.Other.Firms.EditBanks ? <EditBank bank={bankObject} reload={refreshAdminCompanies} /> : uiCompany()}
-				</div>
+				<div className={`w-5/6 h-[calc(100vh-${height}px)] overflow-y-auto left-border`}>{data.activeTab === FirmsModules.EditBanks ? <EditBank bank={bankObject} reload={refreshAdminCompanies} /> : uiCompany()}</div>
 			</div>
-			{data.activeTab === MyConstants.Modules.Other.Firms.EditFirm && (
+			{data.activeTab === FirmsModules.EditFirm && (
 				<footer className="w-full dialog-footer">
 					<button className={editButtonStyle} onClick={() => edit()}>
 						{uiEdit()}

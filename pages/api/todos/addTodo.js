@@ -1,13 +1,13 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
-import MyConstants from "@/utilities/constants";
+import { Messages } from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { query } from "@/utilities/dbConnection";
 
 export default async function handler(req, res) {
 	if (req.method !== "POST" || !MyGlobal.IsApiCallMethodValid(req)) {
-		return res.status(405).send(MyConstants.Messages.ApiCallForbidden);
+		return res.status(405).send(Messages.ApiCallForbidden);
 	}
 
 	res.setHeader("Cache-Control", "no-store, max-age=0");
@@ -20,18 +20,7 @@ export default async function handler(req, res) {
 
 		const _description = String(description).trim();
 
-		const todoInsertQueryResult = await query("INSERT INTO todos (custom_id, client_id, company_id, project_id, description, description_timeline, assigned_to, due_date, priority, entry_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-			storedProcedureResult.new_id,
-			clientId ?? "",
-			companyId ?? "",
-			projectId ?? "",
-			_description,
-			JSON.stringify([_description]),
-			assignedTo,
-			dueDate,
-			priority,
-			userId,
-		]);
+		const todoInsertQueryResult = await query("INSERT INTO todos (custom_id, client_id, company_id, project_id, description, description_timeline, assigned_to, due_date, priority, entry_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [storedProcedureResult.new_id, clientId ?? "", companyId ?? "", projectId ?? "", _description, JSON.stringify([_description]), assignedTo, dueDate, priority, userId]);
 
 		if (todoInsertQueryResult.affectedRows > 0) {
 			res.status(200).end();

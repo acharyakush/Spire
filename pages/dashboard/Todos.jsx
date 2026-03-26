@@ -6,7 +6,7 @@ import "tippy.js/animations/shift-away.css";
 
 import Tippy from "@tippyjs/react";
 import SlotCounter from "react-slot-counter";
-import MyConstants from "@/utilities/constants";
+import { BaseModules } from "@/utilities/constants";
 
 import { isDevelopment } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -62,9 +62,7 @@ export default function Todos({ setModuleProps, todos }) {
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div
-				className={wrapper}
-				onClick={() => setModuleProps("todos", key)}>
+			<div className={wrapper} onClick={() => setModuleProps("todos", key)}>
 				<div className={`flex w-full py-6 justify-center items-center rounded shadow-md ${zoomRotate} ${aesthetics.background}`}>
 					<div className="flex flex-col justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
@@ -85,17 +83,11 @@ export default function Todos({ setModuleProps, todos }) {
 			<div className={wrapper}>
 				<div className="flex w-full space-x-2.5 justify-between items-center font-bold-16 primary-text">
 					<div className="flex w-full space-x-2.5 justify-start items-center">
-						<span>{MyConstants.Modules.Base.Todos}</span>
+						<span>{BaseModules.Todos}</span>
 						<BadgeLarge2>{todos?.all ?? 0}</BadgeLarge2>
 					</div>
-					<Tippy
-						animation="shift-away"
-						content={<TooltipList payload={[`Completed :: ${todos?.completed}`, `In Progress :: ${todos?.inProgress}`, `Pending :: ${todos?.pending}`]} />}
-						placement="bottom">
-						<FontAwesomeIcon
-							className="text-yellow-500"
-							icon={faStar}
-						/>
+					<Tippy animation="shift-away" content={<TooltipList payload={[`Completed :: ${todos?.completed}`, `In Progress :: ${todos?.inProgress}`, `Pending :: ${todos?.pending}`]} />} placement="bottom">
+						<FontAwesomeIcon className="text-yellow-500" icon={faStar} />
 					</Tippy>
 				</div>
 				<div className="w-full pt-2.5 grid grid-cols-2 gap-5">

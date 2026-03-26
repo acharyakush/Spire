@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, CashFlowSubModules, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -56,7 +56,7 @@ export default function EditTransaction({ entity, mount, reload, transaction, un
 		totalHeadAmount = entity.head.amountPending;
 	}
 
-	const isOfficeExpense = entity.module.id === MyConstants.Modules.Other.CashFlowModules.OfficeExpense.id;
+	const isOfficeExpense = entity.module.id === CashFlowSubModules.OfficeExpense.id;
 
 	const titleBarCursor = other.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
 	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
@@ -83,15 +83,15 @@ export default function EditTransaction({ entity, mount, reload, transaction, un
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.CashFlows.Modules.EditTransaction, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.CashFlows.Modules.EditTransaction, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Edited transaction of <b>${entity.module.name}</b> in <b>${entity.name}</b> in <b>${entity.purpose}</b>.`, MyConstants.Modules.Base.CashFlow);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionEdited);
+				MyGlobal.AddActivity(`Edited transaction of <b>${entity.module.name}</b> in <b>${entity.name}</b> in <b>${entity.purpose}</b>.`, BaseModules.CashFlow);
+				MyGlobal.ShowSuccessToast(Messages.TransactionEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `Cash Flow => ${entity.module.name} => ${entity.name} => ${entity.purpose} => New Transaction`);
@@ -156,7 +156,7 @@ export default function EditTransaction({ entity, mount, reload, transaction, un
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
+			const response = await axios.get(ApiEndpoints.CashFlows.Modules.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
 				const basicPaymentSourceList = MyGlobal.GetBasicPaymentSourceList();
@@ -198,7 +198,7 @@ export default function EditTransaction({ entity, mount, reload, transaction, un
 				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${entity.name} => Edit Transaction`);
+			MyGlobal.HandleErrors(error, `${BaseModules.CashFlow} => ${entity.name} => Edit Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}

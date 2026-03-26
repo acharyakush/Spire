@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 import EditProjectPreview from "@/modals/projects/EditProjectPreview";
 
 import { MyGlobal } from "@/utilities/global";
@@ -125,26 +125,26 @@ export default function EditProject({ project, reload, unmount }) {
 				userId: MyGlobal.GetUserId(),
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Projects.EditProject, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Projects.EditProject, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Edited <b>${project.id}</b>.`, MyConstants.Modules.Base.Projects);
+				MyGlobal.AddActivity(`Edited <b>${project.id}</b>.`, BaseModules.Projects);
 
 				if (main.isInvoiceGenerated) {
-					MyGlobal.AddActivity(`Edited already generated invoices amount of <b>${project.id}</b> from <b>${main.generatedInvoice?.amount}</b> to <b>${main.invoiceFees}</b>.`, MyConstants.Modules.Base.Projects);
+					MyGlobal.AddActivity(`Edited already generated invoices amount of <b>${project.id}</b> from <b>${main.generatedInvoice?.amount}</b> to <b>${main.invoiceFees}</b>.`, BaseModules.Projects);
 				}
 
 				if (main.isInvoiceTransactionDone) {
-					MyGlobal.AddActivity(`Edited invoices transactions amount of <b>${project.id}</b> from <b>${main.generatedInvoiceTransaction?.amount}</b> to <b>${main.invoiceFees}</b>.`, MyConstants.Modules.Base.Projects);
+					MyGlobal.AddActivity(`Edited invoices transactions amount of <b>${project.id}</b> from <b>${main.generatedInvoiceTransaction?.amount}</b> to <b>${main.invoiceFees}</b>.`, BaseModules.Projects);
 				}
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectEdited);
+				MyGlobal.ShowSuccessToast(Messages.ProjectEdited);
 
 				unmount();
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Projects => Edit Project");
@@ -205,7 +205,7 @@ export default function EditProject({ project, reload, unmount }) {
 		try {
 			setOther((s) => ({ ...s, supportData: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Projects.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
 				const firms = response.data.firms;

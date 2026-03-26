@@ -4,7 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages, Statuses } from "@/utilities/constants";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { DatePicker, TextArea, TextInput } from "@/components/Inputs";
 import { faCalendar, faFaceAngry, faIndianRupee, faListCheck, faNoteSticky, faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { capitalize, escapeString } from "@/utilities/myGlobal";
 
 export function AddParticularRemark({ mount, reload, task, unmount }) {
 	// Business Logic
@@ -38,24 +39,24 @@ export function AddParticularRemark({ mount, reload, task, unmount }) {
 			allotedTo: "",
 			createdBy: MyGlobal.GetUserId(),
 			dueOn: dayjs(main.dueOn).format("YYYY-MM-DD"),
-			particular: MyGlobal.EscapeString(main.particular),
+			particular: escapeString(main.particular),
 			projectId: task.project_id,
-			remark: MyGlobal.EscapeString(main.remark),
+			remark: escapeString(main.remark),
 			taskId: task.id,
 			type: "add-tasks-particular-remark",
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Added a particular and remark in <b>${task.id}</b> in <b>${task.project_id}</b>.`, MyConstants.Modules.Base.Tasks);
+				MyGlobal.AddActivity(`Added a particular and remark in <b>${task.id}</b> in <b>${task.project_id}</b>.`, BaseModules.Tasks);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskParticularRemarkAdded);
+				MyGlobal.ShowSuccessToast(Messages.TaskParticularRemarkAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Add Particular And Remark");
@@ -145,20 +146,20 @@ export function AddRVExpense({ mount, reload, project, tasks, unmount }) {
 			projectId: project.id,
 			expense: main.expense,
 			entryDate: main.entryDate,
-			description: MyGlobal.EscapeString(main.description),
+			description: escapeString(main.description),
 			userId: MyGlobal.GetUserId(),
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Tasks.AddRVExpense, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Tasks.AddRVExpense, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Added RV Expense in <b>${project.id}</b>`, MyConstants.Modules.Base.Tasks);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.RVExpenseAdded);
+				MyGlobal.AddActivity(`Added RV Expense in <b>${project.id}</b>`, BaseModules.Tasks);
+				MyGlobal.ShowSuccessToast(Messages.RVExpenseAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Add RV Expense");
@@ -249,20 +250,20 @@ export function EditRVExpense({ mount, reload, project, rv, unmount }) {
 			projectId: project.id,
 			expense: main.expense,
 			entryDate: main.entryDate,
-			description: MyGlobal.EscapeString(main.description),
+			description: escapeString(main.description),
 			userId: MyGlobal.GetUserId(),
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Tasks.EditRVExpense, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Tasks.EditRVExpense, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Edited RV Expense in <b>${project.id}</b>`, MyConstants.Modules.Base.Tasks);
+				MyGlobal.AddActivity(`Edited RV Expense in <b>${project.id}</b>`, BaseModules.Tasks);
 				MyGlobal.ShowSuccessToast("RV expense edited");
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit RV Expense");
@@ -359,20 +360,20 @@ export function AddTask({ mount, reload, project, tasks, unmount }) {
 		const body = {
 			clientId: project.client_id,
 			projectId: project.id,
-			task: MyGlobal.EscapeString(main.task),
+			task: escapeString(main.task),
 			userId: MyGlobal.GetUserId(),
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Tasks.AddTask, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Tasks.AddTask, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Added <b>${response.data}</b> in <b>${project.id}</b>`, MyConstants.Modules.Base.Tasks);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskAdded);
+				MyGlobal.AddActivity(`Added <b>${response.data}</b> in <b>${project.id}</b>`, BaseModules.Tasks);
+				MyGlobal.ShowSuccessToast(Messages.TaskAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Add Task");
@@ -481,15 +482,15 @@ export function DeleteParticularRemark({ mount, reload, task, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Deleted particular <b>${task.particular}</b> with remark <b>${task.remark}</b> of <b>${task.task_id}</b> in <b>${task.project_id}</b>`, MyConstants.Modules.Base.Tasks);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskParticularRemarkDeleted);
+				MyGlobal.AddActivity(`Deleted particular <b>${task.particular}</b> with remark <b>${task.remark}</b> of <b>${task.task_id}</b> in <b>${task.project_id}</b>`, BaseModules.Tasks);
+				MyGlobal.ShowSuccessToast(Messages.TaskParticularRemarkDeleted);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Delete Tasks Particular / Remark");
@@ -568,15 +569,15 @@ export function DeleteTask({ mount, reload, task, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Deleted <b>${task.id}</b> in <b>${task.project_id}</b>`, MyConstants.Modules.Base.Tasks);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskDeleted);
+				MyGlobal.AddActivity(`Deleted <b>${task.id}</b> in <b>${task.project_id}</b>`, BaseModules.Tasks);
+				MyGlobal.ShowSuccessToast(Messages.TaskDeleted);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Delete Task");
@@ -656,9 +657,9 @@ export function EditParticularRemark({ mount, reload, task, unmount }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		const body = {
-			particular: MyGlobal.EscapeString(main.particular),
+			particular: escapeString(main.particular),
 			projectId: task.project_id,
-			remark: MyGlobal.EscapeString(main.remark),
+			remark: escapeString(main.remark),
 			dueOn: dayjs(main.dueOn).format("YYYY-MM-DD"),
 			rowId: task.id,
 			taskId: task.task_id,
@@ -666,15 +667,15 @@ export function EditParticularRemark({ mount, reload, task, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(getAddActivityMessage(), MyConstants.Modules.Base.Tasks);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskParticularRemarkEdited);
+				MyGlobal.AddActivity(getAddActivityMessage(), BaseModules.Tasks);
+				MyGlobal.ShowSuccessToast(Messages.TaskParticularRemarkEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Tasks Particular / Remark");
@@ -692,7 +693,7 @@ export function EditParticularRemark({ mount, reload, task, unmount }) {
 				changes.push({
 					old: task[fe],
 					new: main[fe],
-					label: MyGlobal.Capitalize(fe),
+					label: capitalize(fe),
 				});
 			}
 		});
@@ -776,21 +777,21 @@ export function EditTask({ mount, reload, task, unmount }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		const editTaskBody = {
-			task: MyGlobal.EscapeString(main.task),
+			task: escapeString(main.task),
 			taskId: task.id,
 			type: "edit-task",
 		};
 
 		try {
-			const editTaskBodyResponse = await axios.post(MyConstants.ApiEndpoints.Setter, editTaskBody, MyGlobal.GetHeaders());
+			const editTaskBodyResponse = await axios.post(ApiEndpoints.Setter, editTaskBody, MyGlobal.GetHeaders());
 
 			if (editTaskBodyResponse.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(getAddActivityMessage(), MyConstants.Modules.Base.Tasks);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskEdited);
+				MyGlobal.AddActivity(getAddActivityMessage(), BaseModules.Tasks);
+				MyGlobal.ShowSuccessToast(Messages.TaskEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Task");
@@ -808,7 +809,7 @@ export function EditTask({ mount, reload, task, unmount }) {
 				changes.push({
 					old: task[fe],
 					new: main[fe],
-					label: fe === "due_on" ? "Due Date" : MyGlobal.Capitalize(fe),
+					label: fe === "due_on" ? "Due Date" : capitalize(fe),
 				});
 			}
 		});
@@ -894,16 +895,16 @@ export function EditTaskStatus({ mount, reload, task, unmount }) {
 	let activityMessage = "";
 
 	switch (task.status) {
-		case MyConstants.Statuses.Tasks.Enable:
+		case Statuses.Tasks.Enable:
 			activityMessage = `Enabled <b>${task.id}</b> in <b>${task.project_id}</b> due to <b>${main.reason}</b>`;
 			messageBody = "Are you sure you want to enable this task?";
 			break;
-		case MyConstants.Statuses.Tasks.Disable:
+		case Statuses.Tasks.Disable:
 			isDisabled = 1;
 			activityMessage = `Disabled <b>${task.id}</b> in <b>${task.project_id}</b> due to <b>${main.reason}</b>`;
 			messageBody = "Are you sure you want to disable this task?";
 			break;
-		case MyConstants.Statuses.Tasks.Completed:
+		case Statuses.Tasks.Completed:
 			isCompleted = 1;
 			activityMessage = `Marked Task as Completed <b>${task.id}</b> in <b>${task.project_id}</b> due to <b>${main.reason}</b>`;
 			messageBody = "Are you sure you want to mark this task completed?";
@@ -923,16 +924,16 @@ export function EditTaskStatus({ mount, reload, task, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				markAllSubTasksCompleted();
 				reload();
 
-				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Tasks);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TaskEdited);
+				MyGlobal.AddActivity(activityMessage, BaseModules.Tasks);
+				MyGlobal.ShowSuccessToast(Messages.TaskEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Task Status");
@@ -950,12 +951,12 @@ export function EditTaskStatus({ mount, reload, task, unmount }) {
 				type: "mark-all-sub-tasks-completed",
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				MyGlobal.AddActivity(`Marked all sub tasks as completed of <b>${task.id}</b> in <b>${task.project_id}</b>`, MyConstants.Modules.Base.Tasks);
+				MyGlobal.AddActivity(`Marked all sub tasks as completed of <b>${task.id}</b> in <b>${task.project_id}</b>`, BaseModules.Tasks);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.AllSubTasksMarkedCompleted);
+				MyGlobal.ShowSuccessToast(Messages.AllSubTasksMarkedCompleted);
 			}
 		}
 	}
@@ -1039,16 +1040,16 @@ export function MarkSubTaskCompleted({ mount, reload, remark, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Marked sub task having <b>${remark.particular}</b> & <b>${remark.remark}</b> as completed of <b>${remark.task_id}</b> in <b>${remark.project_id}</b>`, MyConstants.Modules.Base.Tasks);
+				MyGlobal.AddActivity(`Marked sub task having <b>${remark.particular}</b> & <b>${remark.remark}</b> as completed of <b>${remark.task_id}</b> in <b>${remark.project_id}</b>`, BaseModules.Tasks);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.SubTaskMarkedCompleted);
+				MyGlobal.ShowSuccessToast(Messages.SubTaskMarkedCompleted);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Mark Sub Task Completed");

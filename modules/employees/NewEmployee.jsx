@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Designations, EmploymentTypes, Gender, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -11,6 +11,7 @@ import { Spinner } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox, ComboBox2, DatePicker, EmailAddress, Password, TextArea, TextInput } from "@/components/Inputs";
 import { faBirthdayCake, faBriefcase, faCity, faEye, faEyeSlash, faFont, faHome, faPhone, faSquare, faSquareCheck, faUsers, faVenusMars } from "@fortawesome/free-solid-svg-icons";
+import { encrypt } from "@/utilities/myGlobal";
 
 export default function NewEmployee() {
 	// Business Logic
@@ -58,20 +59,20 @@ export default function NewEmployee() {
 		const body = {
 			...main,
 			emailAddress: main.emailAddress + "@spire.com",
-			password: MyGlobal.Encrypt(main.password),
+			password: encrypt(main.password),
 			permissions: main.permissions.map((m) => m.id).join(","),
 			userId: MyGlobal.GetUserId(),
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Employees.AddEmployee, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Employees.AddEmployee, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
-				MyGlobal.AddActivity(`Added employee <b>${response.data}</b>.`, MyConstants.Modules.Base.Employees);
+				MyGlobal.AddActivity(`Added employee <b>${response.data}</b>.`, BaseModules.Employees);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.EmployeeAdded);
+				MyGlobal.ShowSuccessToast(Messages.EmployeeAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Employees => New Employee => Do Addition");
@@ -84,7 +85,7 @@ export default function NewEmployee() {
 		try {
 			setLoading((s) => ({ ...s, supportData: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Employees.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Employees.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				const administrators = [];
@@ -181,22 +182,7 @@ export default function NewEmployee() {
 	}
 
 	function uiDesignation() {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={Object.values(MyConstants.Designation)}
-				icon={faBriefcase}
-				label="Designation"
-				onChange={(e) => setLightInputs("designation", e)}
-				onClick={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="14"
-				value={main.designation}
-				width="w-full"
-			/>
-		);
+		return <ComboBox allowCreatingNewItem={false} comparisonValue="" filteredData={Object.values(Designations)} icon={faBriefcase} label="Designation" onChange={(e) => setLightInputs("designation", e)} onClick={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex="14" value={main.designation} width="w-full" />;
 	}
 
 	function uiEmailAddress() {
@@ -204,22 +190,7 @@ export default function NewEmployee() {
 	}
 
 	function uiEmploymentType() {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={Object.values(MyConstants.EmploymentType)}
-				icon={faBriefcase}
-				label="Employment Type"
-				onChange={(e) => setLightInputs("employmentType", e)}
-				onClick={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="14"
-				value={main.employmentType}
-				width="w-full"
-			/>
-		);
+		return <ComboBox allowCreatingNewItem={false} comparisonValue="" filteredData={Object.values(EmploymentTypes)} icon={faBriefcase} label="Employment Type" onChange={(e) => setLightInputs("employmentType", e)} onClick={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex="14" value={main.employmentType} width="w-full" />;
 	}
 
 	function uiEye() {
@@ -239,22 +210,7 @@ export default function NewEmployee() {
 	}
 
 	function uiGender() {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={Object.values(MyConstants.Gender)}
-				icon={faVenusMars}
-				label="Gender"
-				onChange={(e) => setLightInputs("gender", e)}
-				onClick={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="9"
-				value={main.gender}
-				width="w-full"
-			/>
-		);
+		return <ComboBox allowCreatingNewItem={false} comparisonValue="" filteredData={Object.values(Gender)} icon={faVenusMars} label="Gender" onChange={(e) => setLightInputs("gender", e)} onClick={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex="9" value={main.gender} width="w-full" />;
 	}
 
 	function uiMiddleName() {
@@ -262,20 +218,7 @@ export default function NewEmployee() {
 	}
 
 	function uiPassword() {
-		return (
-			<Password
-				eyeIconStyle={eyeIconStyle}
-				eyeIconUi={uiEye}
-				key="2"
-				onChange={(e) => setLightInputs("password", e.target.value)}
-				reference={{}}
-				tabIndex="7"
-				toggleCharacters={togglePasswordCharacters}
-				type={passwordType}
-				value={main.password}
-				width="w-full"
-			/>
-		);
+		return <Password eyeIconStyle={eyeIconStyle} eyeIconUi={uiEye} key="2" onChange={(e) => setLightInputs("password", e.target.value)} reference={{}} tabIndex="7" toggleCharacters={togglePasswordCharacters} type={passwordType} value={main.password} width="w-full" />;
 	}
 
 	function uiPermissions() {
@@ -303,42 +246,11 @@ export default function NewEmployee() {
 	}
 
 	function uiPhoneNumber() {
-		return (
-			<TextInput
-				icon={faPhone}
-				label="Phone Number"
-				maxLength={12}
-				onChange={(e) => setLightInputs("phoneNumber", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex="10"
-				value={main.phoneNumber}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faPhone} label="Phone Number" maxLength={12} onChange={(e) => setLightInputs("phoneNumber", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex="10" value={main.phoneNumber} width="w-full" />;
 	}
 
 	function uiReportTo() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.reportsTo.name}
-				displayValue="name"
-				filteredData={api.administrators}
-				hasDataObject
-				icon={faUsers}
-				isReadOnly={false}
-				label="Will Report To"
-				onChange={(e) => setHeavyInputs("reportsTo", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("reportsTo", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.reportsTo}
-				tabIndex="1"
-				value={main.reportsTo.name}
-				width="w-1/3"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.reportsTo.name} displayValue="name" filteredData={api.administrators} hasDataObject icon={faUsers} isReadOnly={false} label="Will Report To" onChange={(e) => setHeavyInputs("reportsTo", e)} onClick={() => {}} onInputChange={(e) => setFind("reportsTo", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.reportsTo} tabIndex="1" value={main.reportsTo.name} width="w-1/3" />;
 	}
 
 	function uiState() {

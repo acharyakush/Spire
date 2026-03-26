@@ -1,18 +1,17 @@
 "use client";
 
-/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
-
 import axios from "axios";
-import Global from "@/utilities/global";
-import Constants from "@/utilities/constants";
-import Elements from "@/utilities/ui-elements";
+import { MyGlobal } from "@/utilities/global";
+import { ApiEndpoints, Messages, ToastTypes } from "@/utilities/constants";
 
 import { useState } from "react";
-import { Menu } from "@headlessui/react";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGooglePay } from "@fortawesome/free-brands-svg-icons";
 import { EmailAddress, TextArea, TextInput } from "@/components/Inputs";
 import { faBank, faCheck, faChevronDown, faFileLines, faFileInvoice, faFont, faHashtag, faHome, faIdCard, faList, faPhone, faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import { encrypt } from "@/utilities/myGlobal";
+import { Spinner } from "@/components/Elements";
 
 export default function NewCompany({ close, refreshAdminCompanies }) {
 	// Business Logic
@@ -46,28 +45,28 @@ export default function NewCompany({ close, refreshAdminCompanies }) {
 	const add = () => {
 		setData((s) => ({ ...s, pendingResult: true }));
 
-		const companyIntials = Global.getInitials(data.name);
+		const companyIntials = MyGlobal.GetInitials(data.name);
 		const termsAndConditions = data.termsAndConditions.replace(new RegExp("\n", "g"), "nnn.");
 
-		const query = Global.encrypt(`INSERT INTO admin_companies (admin_company_id, name, address, phone, email, pan, gst, banks, terms_conditions) VALUES('${companyIntials}', '${data.name}', '${data.address}', '${data.phone}', '${data.email}', '${data.pan}', '${data.gst}', '[${JSON.stringify(data.bank)}]', '${termsAndConditions}')`);
+		const query = encrypt(`INSERT INTO admin_companies (admin_company_id, name, address, phone, email, pan, gst, banks, terms_conditions) VALUES('${companyIntials}', '${data.name}', '${data.address}', '${data.phone}', '${data.email}', '${data.pan}', '${data.gst}', '[${JSON.stringify(data.bank)}]', '${termsAndConditions}')`);
 
 		const body = { request: query, source: "admin_companies" };
 
 		axios
-			.post(Constants.apiEndpoints.setter, body, Global.getHeaders())
+			.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders())
 			.then((response) => {
 				if (response.status == 200) {
-					Global.addActivity(`Added new admin company ${companyIntials}.`);
-					Global.showToasts(Constants.toastType.success, Constants.messages.adminCompanyAdded);
+					MyGlobal.AddActivity(`Added new admin company ${companyIntials}.`);
+					MyGlobal.ShowToasts(ToastTypes.Success, Messages.CompanyAdded);
 				} else {
-					Global.showToasts(Constants.toastType.error, Constants.messages.someErrorOccurred);
+					MyGlobal.ShowToasts(ToastTypes.Error, Messages.SomeErrorOccurred);
 				}
 
 				refreshAdminCompanies();
 				setData(null);
 				close(true);
 			})
-			.catch((error) => Global.handleErrors(error, "Add Admin Company"))
+			.catch((error) => MyGlobal.HandleErrors(error, "Add Admin Company"))
 			.finally(() => setData((s) => ({ ...s, pendingResult: false })));
 	};
 
@@ -87,10 +86,10 @@ export default function NewCompany({ close, refreshAdminCompanies }) {
 	const uiAccountTypeList = () => {
 		return ["Current", "Savings"].map((type, index) => {
 			return (
-				<Menu.Item as="div" className="flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer font-regular-10 black-text hovered-rows" key={index} onClick={() => handleBankInputs("accountType", type)}>
+				<MenuItem as="div" className="flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer font-regular-10 black-text hovered-rows" key={index} onClick={() => handleBankInputs("accountType", type)}>
 					<span>{type}</span>
 					{data.bank.accountType == type && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
-				</Menu.Item>
+				</MenuItem>
 			);
 		});
 	};
@@ -102,11 +101,11 @@ export default function NewCompany({ close, refreshAdminCompanies }) {
 				<div className="flex w-full h-8 px-2 space-x-1 justify-start items-center rounded bottom-shadow full-border black-white-background">
 					<FontAwesomeIcon className="primary-text" icon={faList} />
 					<Menu as="div" className="w-full relative text-left">
-						<Menu.Button className="flex w-full px-1 space-x-1 justify-between items-center rounded focus:outline-none relative z-40" tabIndex={10}>
+						<MenuButton className="flex w-full px-1 space-x-1 justify-between items-center rounded focus:outline-none relative z-40" tabIndex={10}>
 							<span className="font-regular-10">{data.bank.accountType}</span>
 							<FontAwesomeIcon className="gray-text" icon={faChevronDown} size="xs" />
-						</Menu.Button>
-						<Menu.Items className="absolute w-full top-[26px] -right-[8.5px] origin-top-right divide-y divide-gray-100 rounded bottom-shadow focus:outline-none z-50 black-white-background full-border">{uiAccountTypeList()}</Menu.Items>
+						</MenuButton>
+						<MenuItems className="absolute w-full top-6.5 -right-[8.5px] origin-top-right divide-y divide-gray-100 rounded bottom-shadow focus:outline-none z-50 black-white-background full-border">{uiAccountTypeList()}</MenuItems>
 					</Menu>
 				</div>
 			</div>
@@ -117,7 +116,7 @@ export default function NewCompany({ close, refreshAdminCompanies }) {
 		if (data.pendingResult) {
 			return (
 				<span className="px-3.5">
-					<Elements.Spinner />
+					<Spinner />
 				</span>
 			);
 		} else {
@@ -134,11 +133,11 @@ export default function NewCompany({ close, refreshAdminCompanies }) {
 	};
 
 	const uiBankName = () => {
-		return <TextInput icon={faBank} isNew={false} label="Bank Name" onChange={(e) => handleBankInputs("name", Global.capitalize(e.target.value))} onKeyPress={() => {}} tabIndex={8} value={data.bank.name} width="w-1/3" />;
+		return <TextInput icon={faBank} isNew={false} label="Bank Name" onChange={(e) => handleBankInputs("name", MyGlobal.capitalize(e.target.value))} onKeyPress={() => {}} tabIndex={8} value={data.bank.name} width="w-1/3" />;
 	};
 
 	const uiBankPhoneNumber = () => {
-		return <TextInput icon={faPhone} isNew={false} label="Bank Phone Number" onChange={(e) => handleBankInputs("phone", e.target.value)} onKeyPress={(e) => !Global.hasNumbers(e.key) && e.preventDefault()} tabIndex={11} value={data.bank.phone} width="w-1/3" />;
+		return <TextInput icon={faPhone} isNew={false} label="Bank Phone Number" onChange={(e) => handleBankInputs("phone", e.target.value)} onKeyPress={(e) => !MyGlobal.hasNumbers(e.key) && e.preventDefault()} tabIndex={11} value={data.bank.phone} width="w-1/3" />;
 	};
 
 	const uiEmailAddress = () => {
@@ -154,7 +153,7 @@ export default function NewCompany({ close, refreshAdminCompanies }) {
 	};
 
 	const uiName = () => {
-		return <TextInput icon={faFont} isNew={false} label="Name" onChange={(e) => handleInputs("name", Global.capitalize(e.target.value))} onKeyPress={() => {}} tabIndex={1} value={data.name} width="w-1/3" />;
+		return <TextInput icon={faFont} isNew={false} label="Name" onChange={(e) => handleInputs("name", MyGlobal.capitalize(e.target.value))} onKeyPress={() => {}} tabIndex={1} value={data.name} width="w-1/3" />;
 	};
 
 	const uiPan = () => {
@@ -162,7 +161,7 @@ export default function NewCompany({ close, refreshAdminCompanies }) {
 	};
 
 	const uiPhoneNumber = () => {
-		return <TextInput icon={faPhone} isNew={false} label="Phone Number" maxLength={20} onChange={(e) => handleInputs("phone", e.target.value)} onKeyPress={(e) => !Global.hasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={data.phone} width="w-1/3" />;
+		return <TextInput icon={faPhone} isNew={false} label="Phone Number" maxLength={20} onChange={(e) => handleInputs("phone", e.target.value)} onKeyPress={(e) => !MyGlobal.hasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={data.phone} width="w-1/3" />;
 	};
 
 	const uiTermsAndConditions = () => {

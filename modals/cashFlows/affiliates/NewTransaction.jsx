@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -77,17 +77,17 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Affiliates.AddTransaction, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Affiliates.AddTransaction, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload("reload-root-statistics");
 				getSupportData();
 
-				MyGlobal.AddActivity(`Added transaction for <b>${project.affiliate_id}</b>.`, MyConstants.Modules.Base.Affiliates);
+				MyGlobal.AddActivity(`Added transaction for <b>${project.affiliate_id}</b>.`, BaseModules.Affiliates);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionAdded);
+				MyGlobal.ShowSuccessToast(Messages.TransactionAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Cash Flow => Affiliates => Single Affiliate => New Transaction");
@@ -148,7 +148,7 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Affiliates.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
+			const response = await axios.get(ApiEndpoints.Affiliates.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
 				const basicPaymentSourceList = MyGlobal.GetBasicPaymentSourceList();
@@ -169,7 +169,7 @@ export default function NewTransaction({ mount, project, reload, unmount }) {
 				setOther((s) => ({ ...s, hasMounted: true }));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Base.Affiliates} => New Transaction`);
+			MyGlobal.HandleErrors(error, `${BaseModules.CashFlow} => ${BaseModules.Affiliates} => New Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}

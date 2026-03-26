@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, DerivedModules, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -44,16 +44,16 @@ export default function NewVendor({ reload, unmount }) {
 
 			const body = { group: revisedGroup, userId: MyGlobal.GetUserId() };
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Vendors.AddVendor, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Vendors.AddVendor, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity("Added vendor(s).", MyConstants.Modules.Base.Vendors);
+				MyGlobal.AddActivity("Added vendor(s).", BaseModules.Vendors);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.VendorAdded);
+				MyGlobal.ShowSuccessToast(Messages.VendorAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 
 			unmount();
@@ -88,7 +88,7 @@ export default function NewVendor({ reload, unmount }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-vendors" }));
+			const response = await axios.get(ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-vendors" }));
 
 			if (response.status === 200) {
 				setApi({ allVendors: response.data });
@@ -139,63 +139,19 @@ export default function NewVendor({ reload, unmount }) {
 	}
 
 	function uiEmailAddress(object, rowId) {
-		return (
-			<EmailAddress
-				key={1}
-				label="Email Address"
-				onChange={(e) => setInputs("emailAddress", rowId, e.target.value)}
-				suffix=""
-				tabIndex={`${rowId}3`}
-				value={object.emailAddress}
-				width="w-1/4"
-			/>
-		);
+		return <EmailAddress key={1} label="Email Address" onChange={(e) => setInputs("emailAddress", rowId, e.target.value)} suffix="" tabIndex={`${rowId}3`} value={object.emailAddress} width="w-1/4" />;
 	}
 
 	function uiName(object, rowId) {
-		return (
-			<TextInput
-				icon={faUser}
-				id={`name${rowId}`}
-				label="Name"
-				onChange={(e) => setInputs("name", rowId, e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex={`${rowId}1`}
-				value={object.name}
-				width="w-1/4"
-			/>
-		);
+		return <TextInput icon={faUser} id={`name${rowId}`} label="Name" onChange={(e) => setInputs("name", rowId, e.target.value)} onKeyPress={() => {}} tabIndex={`${rowId}1`} value={object.name} width="w-1/4" />;
 	}
 
 	function uiPhoneNumber(object, rowId) {
-		return (
-			<TextInput
-				icon={faPhone}
-				id={`phoneNumber${rowId}`}
-				label="Phone Number"
-				onChange={(e) => setInputs("phoneNumber", rowId, e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={`${rowId}2`}
-				value={object.phoneNumber}
-				width="w-1/4"
-			/>
-		);
+		return <TextInput icon={faPhone} id={`phoneNumber${rowId}`} label="Phone Number" onChange={(e) => setInputs("phoneNumber", rowId, e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={`${rowId}2`} value={object.phoneNumber} width="w-1/4" />;
 	}
 
 	function uiUpiId(object, rowId) {
-		return (
-			<TextInput
-				icon={faGooglePay}
-				iconSize="2x"
-				id={`upiId${rowId}`}
-				label="UPI ID"
-				onChange={(e) => setInputs("upiId", rowId, e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex={`${rowId}4`}
-				value={object.upiId}
-				width="w-1/4"
-			/>
-		);
+		return <TextInput icon={faGooglePay} iconSize="2x" id={`upiId${rowId}`} label="UPI ID" onChange={(e) => setInputs("upiId", rowId, e.target.value)} onKeyPress={() => {}} tabIndex={`${rowId}4`} value={object.upiId} width="w-1/4" />;
 	}
 
 	function uiRows() {
@@ -247,10 +203,10 @@ export default function NewVendor({ reload, unmount }) {
 					<div className="flex w-full space-x-2.5 justify-start items-center">
 						<div className="flex w-full space-x-2.5 justify-start items-center">
 							<span className="cursor-pointer view-heading" onClick={() => unmount()}>
-								{MyConstants.Modules.Base.Vendors}
+								{BaseModules.Vendors}
 							</span>
 							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-							<span className="view-heading">{MyConstants.Modules.Derived.NewVendor}</span>
+							<span className="view-heading">{DerivedModules.NewVendor}</span>
 						</div>
 					</div>
 				</div>

@@ -3,15 +3,114 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
+import { capitalize } from "@/utilities/myGlobal";
 import { TextArea, TextInput } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { faAt, faFont, faHome, faIdBadge, faPhone, faStickyNote, faXmark } from "@fortawesome/free-solid-svg-icons";
+
+export function DeleteCompany({ company, mount, reload, unmount }) {
+	// Business Logic
+	const [main, setMain] = useState({ isLoading: false, promptedKeyword: "" });
+
+	const titleBarCursor = main.isBoxMoved ? "cursor-grabbing" : "cursor-grab";
+	const titleBarStyle = `dialog-header shadow draggable-handle ${titleBarCursor}`;
+
+	const disableEditButton = main.isLoading || main.promptedKeyword !== "Delete" ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+
+	const editButtonStyle = `primary-button-condensed ${disableEditButton}`;
+
+	// Functions
+	async function doDeletion() {
+		setMain((s) => ({ ...s, isLoading: true }));
+
+		const body = {
+			id: company.id,
+			type: "delete-company",
+		};
+
+		try {
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reload("reload-root");
+
+				MyGlobal.AddActivity(company.name + " deleted by " + MyGlobal.GetUserId(), "Single Client");
+				MyGlobal.ShowSuccessToast("Company deleted.");
+			} else {
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			MyGlobal.HandleErrors(error, "Delete Company");
+		} finally {
+			setMain((s) => ({ ...s, isLoading: false }));
+			unmount(false);
+		}
+	}
+
+	function setInputs(key, value) {
+		setMain((s) => ({ ...s, [key]: value }));
+	}
+
+	// UI Components
+	function uiButton() {
+		if (main.isLoading) {
+			return (
+				<span className="px-3.5">
+					<Spinner />
+				</span>
+			);
+		} else {
+			return "Delete";
+		}
+	}
+
+	function uiSection1() {
+		return (
+			<div className="flex flex-col w-full space-y-2.5 justify-center items-start">
+				<span>
+					Are you sure you want to delete <b>{company.name}</b>.
+				</span>
+				<span>
+					Type <b>Delete</b> in the below box to confirm that this is not an accidental delete.
+				</span>
+				<TextInput icon={faFont} key={1} label="Prompted Keyword" onChange={(e) => setInputs("promptedKeyword", e.target.value)} onKeyPress={() => {}} tabIndex={1} value={main.promptedKeyword} width="w-full" />
+			</div>
+		);
+	}
+
+	function uiTitleBar() {
+		return (
+			<DialogTitle as="h2" className={titleBarStyle}>
+				<span className="flex w-full justify-start items-center">Delete Company</span>
+				<FontAwesomeIcon className="cursor-pointer" icon={faXmark} onClick={() => unmount(false)} />
+			</DialogTitle>
+		);
+	}
+
+	// Main UI
+	return (
+		<Dialog as="div" className="relative z-50" open={mount} onClose={() => unmount(false)}>
+			<div className="fixed inset-0 bg-black/50" />
+			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
+				<DialogPanel className="w-1/2 transform overflow-hidden rounded shadow contrast-background">
+					{uiTitleBar()}
+					<div className="flex w-full p-5 space-x-10 justify-between items-start">{uiSection1()}</div>
+					<footer className="dialog-footer">
+						<button className={editButtonStyle} onClick={() => doDeletion()}>
+							{uiButton()}
+						</button>
+					</footer>
+				</DialogPanel>
+			</div>
+		</Dialog>
+	);
+}
 
 export function EditClient({ client, mount, reload, unmount }) {
 	// Business Logic
@@ -47,16 +146,16 @@ export function EditClient({ client, mount, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(getActivityMessage(), MyConstants.Modules.Other.SingleClient);
+				MyGlobal.AddActivity(getActivityMessage(), "Single Client");
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.ClientEdited);
+				MyGlobal.ShowSuccessToast(Messages.ClientEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Client");
@@ -74,7 +173,7 @@ export function EditClient({ client, mount, reload, unmount }) {
 				changes.push({
 					old: client[fe] ?? "blank",
 					new: main[fe],
-					label: MyGlobal.Capitalize(fe.replace("_", " ")),
+					label: capitalize(fe.replace("_", " ")),
 				});
 			}
 		});
@@ -208,15 +307,15 @@ export function EditCompany({ company, mount, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload("reload-root");
 
-				MyGlobal.AddActivity(getActivityMessage(), MyConstants.Modules.Other.SingleClient);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.CompanyEdited);
+				MyGlobal.AddActivity(getActivityMessage(), "Single Client");
+				MyGlobal.ShowSuccessToast(Messages.CompanyEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Company");
@@ -234,7 +333,7 @@ export function EditCompany({ company, mount, reload, unmount }) {
 				changes.push({
 					old: company.details[fe] ?? "blank",
 					new: main[fe],
-					label: MyGlobal.Capitalize(fe.replace("_", " ")),
+					label: capitalize(fe.replace("_", " ")),
 				});
 			}
 		});

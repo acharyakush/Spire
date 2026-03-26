@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import jsPDF from "jspdf";
 import Tippy from "@tippyjs/react";
 import html2canvas from "html2canvas";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, DerivedModules, Messages } from "@/utilities/constants";
 
 import { QRCode } from "react-qrcode-logo";
 import { useEffect, useState } from "react";
@@ -95,19 +95,19 @@ export default function NewRv({ project, reload, unmount }) {
 				receiptDate: main.rvDate,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Rv.AddRv, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Rv.AddRv, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Generated RV <b>${customId}</b> for <b>${project.id}</b>`, MyConstants.Modules.Derived.NewRv);
+				MyGlobal.AddActivity(`Generated RV <b>${customId}</b> for <b>${project.id}</b>`, DerivedModules.NewRv);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.RvAdded);
+				MyGlobal.ShowSuccessToast(Messages.RvAdded);
 			} else {
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowSuccessToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewRv);
+			MyGlobal.HandleErrors(error, DerivedModules.NewRv);
 		} finally {
 			setLoading((s) => ({ ...s, downloadPdf: false }));
 			unmount();
@@ -199,7 +199,7 @@ export default function NewRv({ project, reload, unmount }) {
 					const formData = new FormData();
 					formData.append("file", pdfBlob, `${project.id}.pdf`);
 
-					return axios.post(MyConstants.ApiEndpoints.Rv.UploadRv, formData, {
+					return axios.post(ApiEndpoints.Rv.UploadRv, formData, {
 						headers: { "Content-Type": "multipart/form-data" },
 					});
 				})
@@ -277,7 +277,7 @@ export default function NewRv({ project, reload, unmount }) {
 		try {
 			setLoading((s) => ({ ...s, supportData: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Rv.GetNewRvSupportData, MyGlobal.GetHeaders({ projectId: project.id }));
+			const response = await axios.get(ApiEndpoints.Rv.GetNewRvSupportData, MyGlobal.GetHeaders({ projectId: project.id }));
 
 			if (response.status === 200) {
 				const firmObj = {
@@ -387,7 +387,7 @@ export default function NewRv({ project, reload, unmount }) {
 				}));
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, MyConstants.Modules.Derived.NewRv);
+			MyGlobal.HandleErrors(error, DerivedModules.NewRv);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}

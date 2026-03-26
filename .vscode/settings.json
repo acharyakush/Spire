@@ -1,5 +1,5 @@
 {
-	"debug.console.fontFamily": "Consolas, monospace",
+	"debug.console.fontFamily": "'MesloLGS NF Regular', Consolas, monospace",
 	"debug.console.fontSize": 14,
 	"debug.console.lineHeight": 1.5,
 	"editor.acceptSuggestionOnEnter": "smart",
@@ -19,8 +19,8 @@
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.foldingImportsByDefault": true,
 	"editor.foldingStrategy": "indentation",
-	"editor.fontFamily": "Consolas, monospace",
-	"editor.fontSize": 14,
+	"editor.fontFamily": "'MesloLGS NF Regular', Consolas, monospace",
+	"editor.fontSize": 16,
 	"editor.formatOnSave": true,
 	"editor.formatOnSaveMode": "file",
 	"editor.formatOnType": true,
@@ -28,7 +28,7 @@
 	"editor.guides.highlightActiveIndentation": true,
 	"editor.indentSize": "tabSize",
 	"editor.insertSpaces": true,
-	"editor.lineHeight": 26,
+	"editor.lineHeight": 2,
 	"editor.linkedEditing": true,
 	"editor.parameterHints.enabled": true,
 	"editor.quickSuggestions": {
@@ -69,9 +69,10 @@
 		"javascript": "html",
 		"javascriptreact": "html"
 	},
-	"terminal.integrated.fontFamily": "Consolas, monospace",
+	"terminal.integrated.fontFamily": "'MesloLGS NF Regular', Consolas, monospace",
 	"terminal.integrated.fontSize": 14,
 	"terminal.integrated.lineHeight": 1.5,
+	"window.zoomLevel": 1,
 	"workbench.list.smoothScrolling": true,
 	"workbench.list.scrollByPage": true
 }

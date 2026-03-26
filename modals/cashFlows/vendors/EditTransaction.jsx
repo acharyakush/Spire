@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -83,16 +83,16 @@ export default function EditTransaction({ mount, reload, transaction, unmount })
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Vendors.EditTransaction, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Vendors.EditTransaction, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload("reload-root-statistics");
 
-				MyGlobal.AddActivity(`Edited transaction for <b>${transaction.vendor_id}</b>.`, MyConstants.Modules.Base.Vendors);
+				MyGlobal.AddActivity(`Edited transaction for <b>${transaction.vendor_id}</b>.`, BaseModules.Vendors);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionEdited);
+				MyGlobal.ShowSuccessToast(Messages.TransactionEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Cash Flow => Vendors => Single Vendor => Edit Transaction");
@@ -153,7 +153,7 @@ export default function EditTransaction({ mount, reload, transaction, unmount })
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Vendors.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
+			const response = await axios.get(ApiEndpoints.Vendors.GetNewTransactionSupportData, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
 				const basicPaymentSourceList = MyGlobal.GetBasicPaymentSourceList();
@@ -195,7 +195,7 @@ export default function EditTransaction({ mount, reload, transaction, unmount })
 				});
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Base.Vendors} => Edit Transaction`);
+			MyGlobal.HandleErrors(error, `${BaseModules.CashFlow} => ${BaseModules.Vendors} => Edit Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}

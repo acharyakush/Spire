@@ -12,7 +12,7 @@ import NewInvoice from "./NewInvoice";
 import EditInvoice from "./EditInvoice";
 import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -23,11 +23,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Transactions } from "../../../modals/invoices/Transactions";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
 import { faCalendar, faCheck, faChevronRight, faCoins, faFileDownload, faFileExcel, faIndustry, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { InvoicesHeaders } from "@/utilities/headers";
 
 export default function Invoices({ presetStatus, unmount }) {
 	// Business Logic
-	const headers = MyConstants.TableHeaders.Invoices;
-	const thisView = MyConstants.Modules.Base.Invoices;
+	const thisView = BaseModules.Invoices;
 
 	const [api, setApi] = useState({
 		firms: [],
@@ -44,7 +44,7 @@ export default function Invoices({ presetStatus, unmount }) {
 		},
 		isLoading: false,
 		selectedProject: {},
-		sort: { column: headers.Id, isAscending: false },
+		sort: { column: InvoicesHeaders.Id, isAscending: false },
 	});
 
 	const [mounted, setMounted] = useState({
@@ -54,8 +54,8 @@ export default function Invoices({ presetStatus, unmount }) {
 	});
 
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
-	const allowEditInvoice = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditInvoice);
-	const allowNewInvoice = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewInvoice);
+	const allowEditInvoice = MyGlobal.HasPermission(DerivedModules.EditInvoice);
+	const allowNewInvoice = MyGlobal.HasPermission(DerivedModules.NewInvoice);
 
 	const showClearCompanyButton = Object.values(main.company).length ? "cursor-pointer primary-text visible" : "invisible";
 	const showFromDateClearIcon = main.filter.from ? "cursor-pointer primary-text visible" : "invisible";
@@ -84,7 +84,7 @@ export default function Invoices({ presetStatus, unmount }) {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const rowHeaders = Object.values(headers);
+		const rowHeaders = Object.values(InvoicesHeaders);
 		rowHeaders.pop();
 
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
@@ -198,41 +198,41 @@ export default function Invoices({ presetStatus, unmount }) {
 				.sort((a, b) => {
 					const { column, isAscending } = main.sort;
 
-					if (column == headers.Id && isAscending) {
+					if (column == InvoicesHeaders.Id && isAscending) {
 						return a.id.localeCompare(b.id);
-					} else if (column == headers.Id && !isAscending) {
+					} else if (column == InvoicesHeaders.Id && !isAscending) {
 						return b.id.localeCompare(a.id);
-					} else if (column == headers.Company && isAscending) {
+					} else if (column == InvoicesHeaders.Company && isAscending) {
 						return a.company_name.localeCompare(b.company_name);
-					} else if (column == headers.Company && !isAscending) {
+					} else if (column == InvoicesHeaders.Company && !isAscending) {
 						return b.company_name.localeCompare(a.company_name);
-					} else if (column == headers.MainProject && isAscending) {
+					} else if (column == InvoicesHeaders.MainProject && isAscending) {
 						return a.main_project_name.localeCompare(b.main_project_name);
-					} else if (column == headers.MainProject && !isAscending) {
+					} else if (column == InvoicesHeaders.MainProject && !isAscending) {
 						return b.main_project_name.localeCompare(a.main_project_name);
-					} else if (column == headers.SubProject && isAscending) {
+					} else if (column == InvoicesHeaders.SubProject && isAscending) {
 						return a.sub_project_name.localeCompare(b.sub_project_name);
-					} else if (column == headers.SubProject && !isAscending) {
+					} else if (column == InvoicesHeaders.SubProject && !isAscending) {
 						return b.sub_project_name.localeCompare(a.sub_project_name);
-					} else if (column == headers.CreatedAt && isAscending) {
+					} else if (column == InvoicesHeaders.CreatedAt && isAscending) {
 						return a.created_at - b.created_at;
-					} else if (column == headers.CreatedAt && !isAscending) {
+					} else if (column == InvoicesHeaders.CreatedAt && !isAscending) {
 						return b.created_at - a.created_at;
-					} else if (column == headers.DueDate && isAscending) {
+					} else if (column == InvoicesHeaders.DueDate && isAscending) {
 						return a.due_date - b.due_date;
-					} else if (column == headers.DueDate && !isAscending) {
+					} else if (column == InvoicesHeaders.DueDate && !isAscending) {
 						return b.due_date - a.due_date;
-					} else if (column == headers.Amount && isAscending) {
+					} else if (column == InvoicesHeaders.Amount && isAscending) {
 						return a.amount - b.amount;
-					} else if (column == headers.Amount && !isAscending) {
+					} else if (column == InvoicesHeaders.Amount && !isAscending) {
 						return b.amount - a.amount;
-					} else if (column == headers.AmountReceived && isAscending) {
+					} else if (column == InvoicesHeaders.AmountReceived && isAscending) {
 						return a.amount_received - b.amount_received;
-					} else if (column == headers.AmountReceived && !isAscending) {
+					} else if (column == InvoicesHeaders.AmountReceived && !isAscending) {
 						return b.amount_received - a.amount_received;
-					} else if (column == headers.InvoiceId && isAscending) {
+					} else if (column == InvoicesHeaders.InvoiceId && isAscending) {
 						return a.status.localeCompare(b.status);
-					} else if (column == headers.InvoiceId && !isAscending) {
+					} else if (column == InvoicesHeaders.InvoiceId && !isAscending) {
 						return b.status.localeCompare(a.status);
 					} else {
 						return b.id.localeCompare(a.id);
@@ -293,11 +293,11 @@ export default function Invoices({ presetStatus, unmount }) {
 		try {
 			setMain((s) => ({ ...s, isLoading: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Invoices.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				const revised = response.data.projects
-					.filter((f) => f.status !== MyConstants.Statuses.Projects.Cancelled)
+					.filter((f) => f.status !== Statuses.Projects.Cancelled)
 					.map((m) => {
 						let amountPending = 0;
 						let amountReceived = 0;
@@ -484,7 +484,7 @@ export default function Invoices({ presetStatus, unmount }) {
 	function uiFooter() {
 		const totals = getTotals();
 
-		return Object.values(headers).map((m, i) => {
+		return Object.values(InvoicesHeaders).map((m, i) => {
 			return (
 				<span className="flex w-[9.09%] space-x-2 justify-center items-center text-white font-semibold-12" key={i}>
 					<span>{i == 6 && MyGlobal.ThousandSeparator(totals.amount)}</span>
@@ -508,7 +508,7 @@ export default function Invoices({ presetStatus, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(headers).map((m, i) => {
+		return Object.values(InvoicesHeaders).map((m, i) => {
 			const showSortArrow = m == main.sort.column ? "block" : "hidden";
 
 			return (
@@ -527,10 +527,10 @@ export default function Invoices({ presetStatus, unmount }) {
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
 						<div className="flex w-1/2 space-x-2 justify-start items-center">
 							<span className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading" onClick={() => unmount()}>
-								{MyConstants.Modules.Base.CashFlow}
+								{BaseModules.CashFlow}
 							</span>
 							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-							<span className="view-heading">{MyConstants.Modules.Base.Invoices}</span>
+							<span className="view-heading">{BaseModules.Invoices}</span>
 							{getIconOrBadge()}
 						</div>
 						<div className="flex w-1/2 space-x-2 justify-end items-center">

@@ -3,16 +3,13 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import SlotCounter from "react-slot-counter";
-import MyConstants from "@/utilities/constants";
+import { BaseModules } from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { BadgeLarge2 } from "@/components/Elements";
 import { faCheckDouble, faCirclePause, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
 
 export default function Invoices({ invoices, setModuleProps }) {
-	// Business Logic
-	const baseModules = MyConstants.Modules.Base;
-
 	// Functions
 	function getBackgroundAndIcon(status) {
 		const object = { background: "", icon: "" };
@@ -58,7 +55,7 @@ export default function Invoices({ invoices, setModuleProps }) {
 		const wrapper = `flex w-full text-white cursor-pointer`;
 
 		return (
-			<div className={wrapper} onClick={() => setModuleProps(baseModules.Invoices, key)}>
+			<div className={wrapper} onClick={() => setModuleProps(BaseModules.Invoices, key)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded shadow-md ${zoomRotate} ${aesthetics.background}`}>
 					{/* <div className="p-4 rounded-r-full shadow-2xl font-bold-16 text-white gray-background-transparent-02">{count}</div> */}
 					<div className="flex flex-col w-full px-8 justify-center items-center">
@@ -76,7 +73,7 @@ export default function Invoices({ invoices, setModuleProps }) {
 		return (
 			<div className="flex flex-col w-full justify-between items-center">
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-16 primary-text">
-					<span>{baseModules.Invoices}</span>
+					<span>{BaseModules.Invoices}</span>
 					<BadgeLarge2>
 						<SlotCounter animateOnVisible={{ triggerOnce: true, rootMargin: "0px 0px -100px 0px" }} value={invoices?.totalCount ?? 0} />
 					</BadgeLarge2>

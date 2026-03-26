@@ -5,7 +5,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import Transactions from "./Transactions";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, CashFlowSubModules } from "@/utilities/constants";
 import NewHead from "@/modals/cashFlows/others/NewHead";
 import NewEntity from "@/modals/cashFlows/others/NewEntity";
 
@@ -89,7 +89,7 @@ export default function Others({ module, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.GetEntities, MyGlobal.GetHeaders({ moduleId: module.id }));
+			const response = await axios.get(ApiEndpoints.CashFlows.Modules.Entities.GetEntities, MyGlobal.GetHeaders({ moduleId: module.id }));
 
 			const list = [];
 
@@ -139,7 +139,7 @@ export default function Others({ module, unmount }) {
 		setLoading((s) => ({ ...s, entities: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.Entities.GetHeads, MyGlobal.GetHeaders({ entityId, moduleId }));
+			const response = await axios.get(ApiEndpoints.CashFlows.Modules.Entities.GetHeads, MyGlobal.GetHeaders({ entityId, moduleId }));
 
 			const heads = [];
 
@@ -147,9 +147,7 @@ export default function Others({ module, unmount }) {
 				response.data.heads.forEach((fe) => {
 					let amountPaid = 0;
 
-					const transaction = response.data.transactions.filter(
-						(f) => f.entity_id === fe.entity_id && f.head_id === fe.id && f.module_id === fe.module_id,
-					);
+					const transaction = response.data.transactions.filter((f) => f.entity_id === fe.entity_id && f.head_id === fe.id && f.module_id === fe.module_id);
 
 					if (Array.isArray(transaction) && transaction.length) {
 						transaction.forEach((_fe) => {
@@ -259,8 +257,7 @@ export default function Others({ module, unmount }) {
 
 	function uiEntities() {
 		return api.list.map((m, i) => {
-			const selectedStyle =
-				m.id == main.selectedEntity.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+			const selectedStyle = m.id == main.selectedEntity.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
 			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedStyle} font-regular-10 hovered-rows`;
 
@@ -281,12 +278,10 @@ export default function Others({ module, unmount }) {
 			);
 		} else {
 			return api.heads.map((m, i) => {
-				const totalPaidOrReceived = module.name === MyConstants.Modules.Other.CashFlowModules.OtherIncome.name ? "Total Received" : "Total Paid";
+				const totalPaidOrReceived = module.name === CashFlowSubModules.OtherIncome.name ? "Total Received" : "Total Paid";
 
 				return (
-					<div
-						className="flex flex-col w-full p-4 space-y-3 justify-center items-center relative rounded shadow full-border primary-background-transparent-01"
-						key={m.id}>
+					<div className="flex flex-col w-full p-4 space-y-3 justify-center items-center relative rounded shadow full-border primary-background-transparent-01" key={m.id}>
 						<span className="absolute -left-5 -top-2.5">
 							<BadgeGreenLarge value={i + 1} />
 						</span>
@@ -342,9 +337,7 @@ export default function Others({ module, unmount }) {
 						<div className="absolute -bottom-5 cursor-pointer group" onClick={() => toggleTransactions(m)}>
 							<span className="flex w-fit px-4 py-2 justify-center items-center rounded-full text-white font-medium-11 primary-background primary-border transition-all duration-500 ease-in-out">
 								<FontAwesomeIcon icon={faCoins} />
-								<span className="flex justify-center items-center max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-in-out whitespace-nowrap">
-									Transactions
-								</span>
+								<span className="flex justify-center items-center max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-in-out whitespace-nowrap">Transactions</span>
 							</span>
 						</div>
 					</div>
@@ -395,9 +388,7 @@ export default function Others({ module, unmount }) {
 
 	function uiSelectedEntity() {
 		if (main.selectedEntity.id == 0) {
-			return (
-				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-center items-center font-medium-12 gray-text">Select an entity</div>
-			);
+			return <div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-center items-center font-medium-12 gray-text">Select an entity</div>;
 		} else {
 			const showAccountHolderName = main.selectedEntity.accountHolderName && main.selectedEntity.accountHolderName.length > 0;
 
@@ -511,10 +502,8 @@ export default function Others({ module, unmount }) {
 			<div className="flex flex-col w-full h-full justify-start items-center">
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-full space-x-2 justify-start items-center">
-						<span
-							className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
-							onClick={() => unmount()}>
-							{MyConstants.Modules.Base.CashFlow}
+						<span className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading" onClick={() => unmount()}>
+							{BaseModules.CashFlow}
 						</span>
 						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
 						<span className="view-heading">{module.name}</span>

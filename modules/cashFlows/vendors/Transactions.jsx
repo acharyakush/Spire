@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, DerivedModules } from "@/utilities/constants";
 import NewTransaction from "@/modals/cashFlows/vendors/NewTransaction";
 import EditTransaction from "@/modals/cashFlows/vendors/EditTransaction";
 
@@ -17,10 +17,10 @@ import { TextInputNative } from "@/components/Inputs";
 import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar, faChevronRight, faExclamationTriangle, faFileExcel, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { GeneralTransactionsHeaders } from "@/utilities/headers";
 
 export default function Transactions({ head, reload, unmount }) {
 	// Business Logic
-	const headers = MyConstants.TableHeaders.Transactions.General;
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
 	const [api, setApi] = useState({
@@ -63,7 +63,7 @@ export default function Transactions({ head, reload, unmount }) {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const rowHeaders = Object.values(headers);
+		const rowHeaders = Object.values(GeneralTransactionsHeaders);
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
@@ -103,7 +103,7 @@ export default function Transactions({ head, reload, unmount }) {
 				fontWeight: "bold",
 				height: 44,
 				span: rowHeaders.length,
-				value: `${MyConstants.Modules.Base.Vendors} > ${head.purpose}'s Transactions (${api.transactions.data.length})`,
+				value: `${BaseModules.Vendors} > ${head.purpose}'s Transactions (${api.transactions.data.length})`,
 			},
 		];
 
@@ -112,7 +112,7 @@ export default function Transactions({ head, reload, unmount }) {
 
 		writeXlsxFile(finalData, {
 			columns: columnsWidth,
-			fileName: `${MyConstants.Modules.Base.Vendors} > ${head.purpose}'s Transactions.xlsx`,
+			fileName: `${BaseModules.Vendors} > ${head.purpose}'s Transactions.xlsx`,
 			fontFamily: "Segoe UI",
 			fontSize: 9,
 		});
@@ -154,41 +154,41 @@ export default function Transactions({ head, reload, unmount }) {
 
 				const { column, isAscending } = other.sort;
 
-				if (column == headers.Date && isAscending) {
+				if (column == GeneralTransactionsHeaders.Date && isAscending) {
 					return aEntryAt - bEntryAt;
-				} else if (column == headers.Date && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Date && !isAscending) {
 					return bEntryAt - aEntryAt;
-				} else if (column == headers.Firm && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Firm && isAscending) {
 					return a.firm_name.localeCompare(b.firm_name);
-				} else if (column == headers.Firm && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Firm && !isAscending) {
 					return b.firm_name.localeCompare(a.firm_name);
-				} else if (column == headers.Bank && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Bank && isAscending) {
 					return a.bank_name.localeCompare(b.bank_name);
-				} else if (column == headers.Bank && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Bank && !isAscending) {
 					return b.bank_name.localeCompare(a.bank_name);
-				} else if (column == headers.Amount && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Amount && isAscending) {
 					return a.amount - b.amount;
-				} else if (column == headers.Amount && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Amount && !isAscending) {
 					return b.amount - a.amount;
-				} else if (column == headers.Particulars && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Particulars && isAscending) {
 					return a.particulars.localeCompare(b.particulars);
-				} else if (column == headers.Particulars && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Particulars && !isAscending) {
 					return b.particulars.localeCompare(a.particulars);
-				} else if (column == headers.PaymentSource && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.PaymentSource && isAscending) {
 					return a.payment_source.localeCompare(b.payment_source);
-				} else if (column == headers.PaymentSource && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.PaymentSource && !isAscending) {
 					return b.payment_source.localeCompare(a.payment_source);
-				} else if (column == headers.PaymentType && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.PaymentType && isAscending) {
 					return a.payment_type.localeCompare(b.payment_type);
-				} else if (column == headers.PaymentType && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.PaymentType && !isAscending) {
 					return b.payment_type.localeCompare(a.payment_type);
-				} else if (column == headers.Remarks && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Remarks && isAscending) {
 					return a.remarks.localeCompare(b.remarks);
-				} else if (column == headers.Remarks && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.Remarks && !isAscending) {
 					return b.remarks.localeCompare(a.remarks);
-				} else if (column == headers.EntryBy && isAscending) {
+				} else if (column == GeneralTransactionsHeaders.EntryBy && isAscending) {
 					return a.entry_by_name.localeCompare(b.entry_by_name);
-				} else if (column == headers.EntryBy && !isAscending) {
+				} else if (column == GeneralTransactionsHeaders.EntryBy && !isAscending) {
 					return b.entry_by_name.localeCompare(a.entry_by_name);
 				} else {
 					return bEntryAt - aEntryAt;
@@ -215,7 +215,7 @@ export default function Transactions({ head, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Vendors.GetTransactionsSupportData, MyGlobal.GetHeaders({ headId: head.id, vendorId: head.vendorId }));
+			const response = await axios.get(ApiEndpoints.Vendors.GetTransactionsSupportData, MyGlobal.GetHeaders({ headId: head.id, vendorId: head.vendorId }));
 
 			if (response.status === 200) {
 				const transactions = response.data.transactions.map((m) => {
@@ -263,7 +263,7 @@ export default function Transactions({ head, reload, unmount }) {
 				});
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${MyConstants.Modules.Base.CashFlow} => ${MyConstants.Modules.Base.Vendors} => ${MyConstants.Modules.Derived.NewVendor} => Add Transaction`);
+			MyGlobal.HandleErrors(error, `${BaseModules.CashFlow} => ${BaseModules.Vendors} => ${DerivedModules.NewVendor} => Add Transaction`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -278,7 +278,7 @@ export default function Transactions({ head, reload, unmount }) {
 	}
 
 	function setSort(header) {
-		if (header != headers.Date) {
+		if (header != GeneralTransactionsHeaders.Date) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
 	}
@@ -360,7 +360,7 @@ export default function Transactions({ head, reload, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(headers).map((m, i) => {
+		return Object.values(GeneralTransactionsHeaders).map((m, i) => {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
@@ -381,7 +381,7 @@ export default function Transactions({ head, reload, unmount }) {
 					<div className="flex w-1/2 space-x-2 justify-start items-center">
 						<div className="flex w-full space-x-2.5 justify-start items-center">
 							<span className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading" onClick={() => unmount()}>
-								{MyConstants.Modules.Base.Vendors}
+								{BaseModules.Vendors}
 							</span>
 							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
 							<span className="view-heading">{head.purpose}'s Transactions</span>

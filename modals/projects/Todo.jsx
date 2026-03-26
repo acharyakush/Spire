@@ -4,7 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal, safeJsonParse } from "@/utilities/global";
@@ -66,7 +66,7 @@ export default function ProjectTodos({ mount, project, reload, unmount }) {
 				status: main.activeModuleData.status,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Todos.EditDetails, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Todos.EditDetails, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload(project.id);
@@ -95,15 +95,15 @@ export default function ProjectTodos({ mount, project, reload, unmount }) {
 				type: "update-todo-status",
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
 				const activityMessage = `Edited Todo status from <b>${main.activeModuleData.status}</b> to <b>${status}</b>.`;
 
-				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Projects);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TodoEdited);
+				MyGlobal.AddActivity(activityMessage, BaseModules.Projects);
+				MyGlobal.ShowSuccessToast(Messages.TodoEdited);
 
 				unmount();
 			}

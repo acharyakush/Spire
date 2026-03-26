@@ -1,13 +1,14 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
-import MyConstants from "@/utilities/constants";
+import { BaseModules, Messages, Statuses } from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { query } from "@/utilities/dbConnection";
+import { escapeString } from "@/utilities/myGlobal";
 
 export default async function handler(req, res) {
 	if (req.method !== "POST" || !MyGlobal.IsApiCallMethodValid(req)) {
-		return res.status(405).send(MyConstants.Messages.ApiCallForbidden);
+		return res.status(405).send(Messages.ApiCallForbidden);
 	}
 
 	res.setHeader("Cache-Control", "no-store, max-age=0");
@@ -51,19 +52,16 @@ export default async function handler(req, res) {
 			}
 		}
 
-		const response = await query(
-			`INSERT INTO projects (id, client_id, company_id, inquiry_id, firm_id, main_project_id, sub_project_id, quote, remarks, invoice_fees, teams, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			[projectResponse.new_id, clientId, newCompanyId, inquiryId, invoiceFirm.id, mainProject.id, newSubProjectId, quote, remarks, invoiceFees, teams, MyConstants.Statuses.Projects.Active, userId],
-		);
+		const response = await query(`INSERT INTO projects (id, client_id, company_id, inquiry_id, firm_id, main_project_id, sub_project_id, quote, remarks, invoice_fees, teams, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [projectResponse.new_id, clientId, newCompanyId, inquiryId, invoiceFirm.id, mainProject.id, newSubProjectId, quote, remarks, invoiceFees, teams, Statuses.Projects.Active, userId]);
 
 		const clientQuery = `UPDATE clients SET company_id=?, is_confirmed=1 WHERE id=?`;
 		const clientParameters = [newCompanyId, clientId];
 
 		const inquiryQuery = `UPDATE inquiries SET closure_reason=?, follow_ups=?, main_project_id=?, sub_project_id=?, status=?, quote=? WHERE id=?`;
-		const inquiryParameters = ["", teams, mainProject.id, newSubProjectId, MyConstants.Statuses.Inquiries.Confirmed, quote, inquiryId];
+		const inquiryParameters = ["", teams, mainProject.id, newSubProjectId, Statuses.Inquiries.Confirmed, quote, inquiryId];
 
 		const noteQuery = `INSERT INTO notes (inquiry_id, project_id, original_entry_by_id, entry_by_id, content, source) VALUES (?, ?, ?, ?, ?, ?)`;
-		const noteParameters = [inquiryId, projectResponse.new_id, userId, userId, MyGlobal.EscapeString(note), MyConstants.Modules.Base.Projects];
+		const noteParameters = [inquiryId, projectResponse.new_id, userId, userId, escapeString(note), BaseModules.Projects];
 
 		const [clientRows, inquiryRows, noteRows] = await Promise.all([query(clientQuery, clientParameters), query(inquiryQuery, inquiryParameters), query(noteQuery, noteParameters)]);
 

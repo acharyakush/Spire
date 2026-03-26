@@ -3,17 +3,18 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, FilesModules } from "@/utilities/constants";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { SpinnerSmall } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft, faFile, faFileCircleCheck, faFileCirclePlus, faTrash, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { formatBytes } from "@/utilities/myGlobal";
 
 export default function Files({ close, files, refresh, thisClient }) {
 	// Business Logic
-	const defaultView = files?.length ? MyConstants.Modules.Other.Files.Existing : MyConstants.Modules.Other.Files.New;
+	const defaultView = files?.length ? FilesModules.Existing : FilesModules.New;
 
 	const [data, setData] = useState({
 		activeTab: defaultView,
@@ -24,7 +25,7 @@ export default function Files({ close, files, refresh, thisClient }) {
 		},
 	});
 
-	const isNew = data.activeTab == MyConstants.Modules.Other.Files.New;
+	const isNew = data.activeTab == FilesModules.New;
 
 	const headerCellStyle1 = "flex w-4/5 h-9 pl-2 items-center text-left text-white font-medium-10";
 	const headerCellStyle2 = "flex w-[10%] h-9 justify-center items-center text-white font-medium-10";
@@ -46,7 +47,7 @@ export default function Files({ close, files, refresh, thisClient }) {
 		const parameters = { clientId: thisClient?.id, fileNames: file?.name };
 
 		axios
-			.delete(MyConstants.ApiEndpoints.Clients.DeleteFile, MyGlobal.GetHeaders(parameters))
+			.delete(ApiEndpoints.Clients.DeleteFile, MyGlobal.GetHeaders(parameters))
 			.then((response) => {
 				if (response.status == 200) {
 					refresh();
@@ -79,7 +80,7 @@ export default function Files({ close, files, refresh, thisClient }) {
 			[...data.files].forEach((file) => formData.append("files", file));
 
 			try {
-				const response = await axios.post(MyConstants.ApiEndpoints.Clients.UploadFiles, formData, {
+				const response = await axios.post(ApiEndpoints.Clients.UploadFiles, formData, {
 					headers: {
 						"Content-Type": "multipart/form-data",
 					},
@@ -162,7 +163,7 @@ export default function Files({ close, files, refresh, thisClient }) {
 											{index + 1}. {file.name}
 										</span>
 									</div>
-									<div className={`${rowCellStyle2} left-border right-border`}>{MyGlobal.FormatBytes(file.size)}</div>
+									<div className={`${rowCellStyle2} left-border right-border`}>{formatBytes(file.size)}</div>
 									<div className={`${rowCellStyle2} relative right-border`}>{uiDeleteExistingFile(file, index)}</div>
 								</div>
 							);
@@ -180,7 +181,7 @@ export default function Files({ close, files, refresh, thisClient }) {
 			<div className="flex w-full py-2 justify-start items-center font-medium-10 black-text">
 				{files?.length > 0 && (
 					<div className="flex w-1/2 h-[46px] space-x-2 justify-start items-center">
-						<span>Total {MyGlobal.FormatBytes(size)}</span>
+						<span>Total {formatBytes(size)}</span>
 					</div>
 				)}
 			</div>
@@ -219,7 +220,7 @@ export default function Files({ close, files, refresh, thisClient }) {
 									<div className={rowCellStyle1}>
 										{index + 1}. {file.name}
 									</div>
-									<div className={`${rowCellStyle2} left-border right-border`}>{MyGlobal.FormatBytes(file.size)}</div>
+									<div className={`${rowCellStyle2} left-border right-border`}>{formatBytes(file.size)}</div>
 									<div className={`${rowCellStyle2} right-border`}>
 										<FontAwesomeIcon className="cursor-pointer red-text" icon={faTrash} onClick={() => deleteFileFromList(index)} size="sm" />
 									</div>
@@ -241,7 +242,7 @@ export default function Files({ close, files, refresh, thisClient }) {
 					<div className="flex w-1/2 h-[46px] space-x-2 justify-start items-center">
 						<span>{Object.values(data.files).length} files</span>
 						<span>{String.fromCharCode(183)}</span>
-						<span>{MyGlobal.FormatBytes(size)}</span>
+						<span>{formatBytes(size)}</span>
 					</div>
 				)}
 				{Object.values(data.files).length > 0 && (
@@ -259,19 +260,19 @@ export default function Files({ close, files, refresh, thisClient }) {
 
 	const uiTabsContent = () => {
 		switch (data.activeTab) {
-			case MyConstants.Modules.Other.Files.Existing:
+			case FilesModules.Existing:
 				return uiExisting();
-			case MyConstants.Modules.Other.Files.New:
+			case FilesModules.New:
 				return uiNew();
 		}
 	};
 
 	const uiTabs = () => {
-		return Object.values(MyConstants.Modules.Other.Files).map((tab, index) => {
+		return Object.values(FilesModules).map((tab, index) => {
 			const icon = index == 0 ? faFileCircleCheck : faFileCirclePlus;
 			const aesthetics = isNew ? "green-background-transparent-01 green-text" : "primary-background-transparent-01 primary-text";
 			const counts = files?.length;
-			const counterStyle = tab == MyConstants.Modules.Other.Files.Existing && counts > 0 ? "block font-regular-9 gray-text" : "hidden";
+			const counterStyle = tab == FilesModules.Existing && counts > 0 ? "block font-regular-9 gray-text" : "hidden";
 			const background = tab == data.activeTab ? aesthetics : "bg-transparent gray-text";
 			const wrapper = `flex w-full px-5 py-2 space-x-2 justify-between items-center ${background} font-medium-11`;
 

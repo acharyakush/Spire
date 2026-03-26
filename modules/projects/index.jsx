@@ -8,7 +8,7 @@ import Tippy from "@tippyjs/react";
 import EditProject from "./EditProject";
 import writeXlsxFile from "write-excel-file/browser";
 import SingleProject from "../singleProject";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 import ProjectTodos from "@/modals/projects/Todo";
 
 import { Virtuoso } from "react-virtuoso";
@@ -20,6 +20,7 @@ import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/misc
 import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { MyGlobal } from "@/utilities/global";
 import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faPlaneUp, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
+import { ProjectsHeaders } from "@/utilities/headers";
 
 export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -34,6 +35,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		projects: { data: [], copy: [] },
 	});
 	const [showGoToTopOrb, setShowGoToTopOrb] = useState(false);
+	const [shouldRestoreScrollPosition, setShouldRestoreScrollPosition] = useState(false);
 
 	const [main, setMain] = useState({
 		activeModule: { items: [], name: "All" },
@@ -60,13 +62,12 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	});
 
 	const today = useMemo(() => dayjs(), []);
-	const statuses = MyConstants.Statuses.Projects2;
-	const thisView = MyConstants.Modules.Base.Projects;
-	const tableHeaders = MyConstants.TableHeaders.Projects2;
+	const statuses = Statuses.Projects;
+	const thisView = BaseModules.Projects;
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
-	const allowDeletingProject = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteProject), []);
-	const allowEditingProject = useMemo(() => MyGlobal.HasPermission(MyConstants.Modules.Derived.EditProject), []);
+	const allowDeletingProject = useMemo(() => MyGlobal.HasPermission(DerivedModules.DeleteProject), []);
+	const allowEditingProject = useMemo(() => MyGlobal.HasPermission(DerivedModules.EditProject), []);
 
 	const showFindBoxClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
@@ -291,7 +292,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			}));
 
 			try {
-				const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetProjects, MyGlobal.GetHeaders());
+				const response = await axios.get(ApiEndpoints.Projects.GetProjects, MyGlobal.GetHeaders());
 
 				if (response.status === 200) {
 					// Create lookup maps for faster access
@@ -583,43 +584,43 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			const { column, isAscending } = main.sort;
 
 			switch (true) {
-				case column == tableHeaders.Started && isAscending:
+				case column == ProjectsHeaders.Started && isAscending:
 					return aStartedOn - bStartedOn;
-				case column == tableHeaders.Started && !isAscending:
+				case column == ProjectsHeaders.Started && !isAscending:
 					return bStartedOn - aStartedOn;
-				case column == tableHeaders.GovermentId && isAscending:
+				case column == ProjectsHeaders.GovermentId && isAscending:
 					if (a.government_id) {
 						return a.government_id.localeCompare(b.government_id);
 					}
-				case column == tableHeaders.GovermentId && !isAscending:
+				case column == ProjectsHeaders.GovermentId && !isAscending:
 					if (b.government_id) {
 						return b.government_id.localeCompare(a.government_id);
 					}
-				case column == tableHeaders.Client && isAscending:
+				case column == ProjectsHeaders.Client && isAscending:
 					return a.client_name.localeCompare(b.client_name);
-				case column == tableHeaders.Client && !isAscending:
+				case column == ProjectsHeaders.Client && !isAscending:
 					return b.client_name.localeCompare(a.client_name);
-				case column == tableHeaders.Company && isAscending:
+				case column == ProjectsHeaders.Company && isAscending:
 					return a.company_name.localeCompare(b.company_name);
-				case column == tableHeaders.Company && !isAscending:
+				case column == ProjectsHeaders.Company && !isAscending:
 					return b.company_name.localeCompare(a.company_name);
-				case column == tableHeaders.MainProject && isAscending:
+				case column == ProjectsHeaders.MainProject && isAscending:
 					return a.main_project_name.localeCompare(b.main_project_name);
-				case column == tableHeaders.MainProject && !isAscending:
+				case column == ProjectsHeaders.MainProject && !isAscending:
 					return b.main_project_name.localeCompare(a.main_project_name);
-				case column == tableHeaders.SubProject && isAscending:
+				case column == ProjectsHeaders.SubProject && isAscending:
 					return a.sub_project_name.localeCompare(b.sub_project_name);
-				case column == tableHeaders.SubProject && !isAscending:
+				case column == ProjectsHeaders.SubProject && !isAscending:
 					return b.sub_project_name.localeCompare(a.sub_project_name);
-				case column == tableHeaders.Status && isAscending:
+				case column == ProjectsHeaders.Status && isAscending:
 					return a.status.localeCompare(b.status);
-				case column == tableHeaders.Status && !isAscending:
+				case column == ProjectsHeaders.Status && !isAscending:
 					return b.status.localeCompare(a.status);
 				default:
 					return 0;
 			}
 		});
-	}, [filteredProjects, main.sort, tableHeaders]);
+	}, [filteredProjects, main.sort]);
 
 	const doExcelExport = useCallback(() => {
 		const records = [];
@@ -632,7 +633,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		const headerHeight = 44;
 		const maximumColumnWidth = 20;
 
-		const headers = Object.values(tableHeaders);
+		const headers = Object.values(ProjectsHeaders);
 		const blankRows = [{ span: headers.length, height: rowHeight, colSpan: 2 }];
 
 		// Use the already sorted data to avoid re-sorting
@@ -695,7 +696,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			columns: columnsWidth,
 			fileName: `${thisView}.xlsx`,
 		});
-	}, [sortedProjects, api.notes, tableHeaders, thisView]);
+	}, [sortedProjects, api.notes, thisView]);
 
 	// UI Component Optimizations
 	const getRowsCount = useCallback(() => {
@@ -775,7 +776,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}, [main.filter, uiFilterMenuList]);
 
 	const uiHeaders = useCallback(() => {
-		return Object.values(tableHeaders).map((header, i) => {
+		return Object.values(ProjectsHeaders).map((header, i) => {
 			const showArrow = header == main.sort.column ? "visible" : "invisible";
 			const sortIcon = main.sort.isAscending ? faSortAmountDesc : faSortAmountAsc;
 
@@ -788,7 +789,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				</span>
 			);
 		});
-	}, [tableHeaders, main.sort.column, main.sort.isAscending, setSort]);
+	}, [main.sort.column, main.sort.isAscending, setSort]);
 
 	const uiList = useCallback(() => {
 		if (!api.projects.copy.length) return null;
@@ -858,6 +859,19 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const toggleSingleProjectView = useCallback((project) => {
 		const newProject = project ?? {};
+
+		if (project) {
+			if (rangeChangeTimeoutReference.current) {
+				clearTimeout(rangeChangeTimeoutReference.current);
+				rangeChangeTimeoutReference.current = null;
+			}
+
+			localStorage.setItem("projectsScrollPosition", String(currentTopIndexReference.current));
+			setShouldRestoreScrollPosition(false);
+		} else {
+			setShouldRestoreScrollPosition(true);
+		}
+
 		setMain((s) => ({
 			...s,
 			selectedProject: newProject,
@@ -1058,7 +1072,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const uiStatusMenuList = useCallback(
 		(row) => {
-			return Object.values(MyConstants.Statuses.Projects).map((status, i) => {
+			return Object.values(Statuses.Projects).map((status, i) => {
 				const isSelected = status == row.status;
 				const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
 				const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
@@ -1298,7 +1312,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const uiBody = useCallback(() => {
 		const savedIndexStr = localStorage.getItem("projectsScrollPosition");
-		const savedIndex = savedIndexStr ? Math.max(0, Math.min(Number(savedIndexStr), sortedProjects.length - 1)) : 0;
+		const savedIndex = shouldRestoreScrollPosition && savedIndexStr ? Math.max(0, Math.min(Number(savedIndexStr), sortedProjects.length - 1)) : 0;
 
 		return (
 			<div className="flex w-full h-full justify-center items-start">
@@ -1321,7 +1335,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				</div>
 			</div>
 		);
-	}, [uiList, uiHeaders, sortedProjects, uiRows, showGoToTopOrb]);
+	}, [uiList, uiHeaders, sortedProjects, uiRows, showGoToTopOrb, shouldRestoreScrollPosition]);
 
 	function uiTotalQuote() {
 		return (
@@ -1383,7 +1397,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}, [setSupportData, autoFocusFindBox, setModuleProps]);
 
 	useEffect(() => {
-		if (currentScrollPositionReference.current) {
+		if (shouldRestoreScrollPosition && currentScrollPositionReference.current) {
 			const savedIndex = localStorage.getItem("projectsScrollPosition");
 
 			currentScrollPositionReference.current.scrollToIndex({
@@ -1391,6 +1405,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				align: "start",
 				behavior: "auto",
 			});
+
+			setShouldRestoreScrollPosition(false);
 		}
 
 		if (mounted.mainComponent) {
@@ -1401,36 +1417,39 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			// First, calculate status counts based on text filter ONLY
 			// This updates the counts shown in the status filter menu
 			if (debouncedFindText) {
-				const textFilteredData = source.filter((project) => {
-					if (Object.values(statuses).includes(debouncedFindText)) {
-						return project.status.includes(debouncedFindText);
-					} else if (debouncedFindText === "Overdue") {
-						// Important: This filter is coming from the dashboard
-						return project.has_tasks_overdue;
-					} else if (debouncedFindText === "Today") {
-						return project.has_tasks_due_today;
-					} else if (debouncedFindText === "Tomorrow") {
-						return project.has_tasks_due_tomorrow;
-					} else if (debouncedFindText === "Upcoming") {
-						return project.has_tasks_upcoming;
-					} else {
-						const findText = debouncedFindText.toLowerCase();
-						return (
-							String(project.id).toLowerCase().includes(findText) ||
-							String(project.government_id || "")
-								.toLowerCase()
-								.includes(findText) ||
-							String(project.client_id).toLowerCase().includes(findText) ||
-							project.client_name.toLowerCase().includes(findText) ||
-							project.company_name.toLowerCase().includes(findText) ||
-							project.main_project_name.toLowerCase().includes(findText) ||
-							project.sub_project_name.toLowerCase().includes(findText) ||
-							String(project.team_names).toLowerCase().includes(findText) ||
-							String(project.team_names_initials).toLowerCase().includes(findText) ||
-							project.status.toLowerCase().includes(findText)
-						);
-					}
-				});
+				const textFilteredData = source.filter(
+					(project) => {
+						if (Object.values(statuses).includes(debouncedFindText)) {
+							return project.status.includes(debouncedFindText);
+						} else if (debouncedFindText === "Overdue") {
+							// Important: This filter is coming from the dashboard
+							return project.has_tasks_overdue;
+						} else if (debouncedFindText === "Today") {
+							return project.has_tasks_due_today;
+						} else if (debouncedFindText === "Tomorrow") {
+							return project.has_tasks_due_tomorrow;
+						} else if (debouncedFindText === "Upcoming") {
+							return project.has_tasks_upcoming;
+						} else {
+							const findText = debouncedFindText.toLowerCase();
+							return (
+								String(project.id).toLowerCase().includes(findText) ||
+								String(project.government_id || "")
+									.toLowerCase()
+									.includes(findText) ||
+								String(project.client_id).toLowerCase().includes(findText) ||
+								project.client_name.toLowerCase().includes(findText) ||
+								project.company_name.toLowerCase().includes(findText) ||
+								project.main_project_name.toLowerCase().includes(findText) ||
+								project.sub_project_name.toLowerCase().includes(findText) ||
+								String(project.team_names).toLowerCase().includes(findText) ||
+								String(project.team_names_initials).toLowerCase().includes(findText) ||
+								project.status.toLowerCase().includes(findText)
+							);
+						}
+					},
+					[mounted.mainComponent, shouldRestoreScrollPosition],
+				);
 
 				// Update status counts to reflect text-filtered data
 				const revisedStatuses = calculateStatusCounts(textFilteredData);

@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import NewVendor from "./NewVendor";
 import Transactions from "./Transactions";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules } from "@/utilities/constants";
 import NewHead from "@/modals/cashFlows/vendors/NewHead";
 
 import { useEffect, useState } from "react";
@@ -50,7 +50,7 @@ export default function Vendors({ unmount }) {
 		transactions: false,
 	});
 
-	const thisView = MyConstants.Modules.Base.Vendors;
+	const thisView = BaseModules.Vendors;
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
 	// Functions
@@ -79,7 +79,7 @@ export default function Vendors({ unmount }) {
 		setLoading((s) => ({ ...s, entities: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Vendors.GetHeads, MyGlobal.GetHeaders({ vendorId }));
+			const response = await axios.get(ApiEndpoints.Vendors.GetHeads, MyGlobal.GetHeaders({ vendorId }));
 
 			const heads = [];
 			const firms = response.data.firms;
@@ -203,7 +203,7 @@ export default function Vendors({ unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Vendors.GetVendors, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Vendors.GetVendors, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				const vendors = [];
@@ -326,9 +326,7 @@ export default function Vendors({ unmount }) {
 		return (
 			<div className="flex w-full h-full justify-center items-start">
 				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiModules()}</div>
-				<div className="flex flex-col w-[90%] h-[calc(100vh-100px)] mr-5 justify-start items-center rounded shadow contrast-background">
-					{uiSelectedVendor()}
-				</div>
+				<div className="flex flex-col w-[90%] h-[calc(100vh-100px)] mr-5 justify-start items-center rounded shadow contrast-background">{uiSelectedVendor()}</div>
 			</div>
 		);
 	}
@@ -343,9 +341,7 @@ export default function Vendors({ unmount }) {
 		} else {
 			return api.heads.map((m, i) => {
 				return (
-					<div
-						className="flex flex-col w-full p-4 space-y-3 justify-center items-center relative rounded shadow full-border primary-background-transparent-01"
-						key={m.id}>
+					<div className="flex flex-col w-full p-4 space-y-3 justify-center items-center relative rounded shadow full-border primary-background-transparent-01" key={m.id}>
 						<span className="absolute -left-5 -top-2.5">
 							<BadgeGreenLarge value={i + 1} />
 						</span>
@@ -401,9 +397,7 @@ export default function Vendors({ unmount }) {
 						<div className="absolute -bottom-5 cursor-pointer group" onClick={() => toggleTransactions(m)}>
 							<span className="flex w-fit px-4 py-2 justify-center items-center rounded-full text-white font-medium-11 primary-background primary-border transition-all duration-500 ease-in-out">
 								<FontAwesomeIcon icon={faCoins} />
-								<span className="flex justify-center items-center max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-in-out whitespace-nowrap">
-									Transactions
-								</span>
+								<span className="flex justify-center items-center max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-in-out whitespace-nowrap">Transactions</span>
 							</span>
 						</div>
 					</div>
@@ -440,8 +434,7 @@ export default function Vendors({ unmount }) {
 		const modules = api.vendors.length ? [...api.vendors] : [];
 
 		return modules.map((m, i) => {
-			const selectedStyle =
-				m.id == main.selectedVendor.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+			const selectedStyle = m.id == main.selectedVendor.id ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
 			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedStyle} font-regular-10 hovered-rows`;
 
@@ -464,9 +457,7 @@ export default function Vendors({ unmount }) {
 
 	function uiSelectedVendor() {
 		if (main.selectedVendor.id == 0) {
-			return (
-				<div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-center items-center font-medium-12 gray-text">Select a vendor</div>
-			);
+			return <div className="flex flex-col w-full h-full px-5 py-2.5 space-y-5 justify-center items-center font-medium-12 gray-text">Select a vendor</div>;
 		} else {
 			const showEmailAddress = main.selectedVendor.details.email_address && main.selectedVendor.details.email_address.length > 0;
 
@@ -488,9 +479,7 @@ export default function Vendors({ unmount }) {
 								{main.selectedVendor.details.name}
 								{uiNewHead()}
 							</span>
-							<span className="font-regular-11 gray-text">
-								Associated since {dayjs(main.selectedVendor.details.joined_on).format("DD MMM, YYYY")}
-							</span>
+							<span className="font-regular-11 gray-text">Associated since {dayjs(main.selectedVendor.details.joined_on).format("DD MMM, YYYY")}</span>
 						</div>
 						<div className="flex flex-col w-1/2 space-y-2 justify-center items-start">
 							<div className={phoneNumberWrapper}>
@@ -545,10 +534,8 @@ export default function Vendors({ unmount }) {
 			<div className="flex flex-col w-full h-full justify-start items-center">
 				<div className="flex w-full px-5 py-2.5 justify-between items-center">
 					<div className="flex w-full space-x-2 justify-start items-center">
-						<span
-							className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading"
-							onClick={() => unmount()}>
-							{MyConstants.Modules.Base.CashFlow}
+						<span className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading" onClick={() => unmount()}>
+							{BaseModules.CashFlow}
 						</span>
 						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
 						<span className="view-heading">{thisView}</span>
@@ -558,9 +545,7 @@ export default function Vendors({ unmount }) {
 				</div>
 				{uiMain()}
 
-				{mounted.newHead && (
-					<NewHead mount={mounted.newHead} reload={getSelectedVendorHeads} vendor={main.selectedVendor.details} unmount={toggleNewHead} />
-				)}
+				{mounted.newHead && <NewHead mount={mounted.newHead} reload={getSelectedVendorHeads} vendor={main.selectedVendor.details} unmount={toggleNewHead} />}
 			</div>
 		);
 	}

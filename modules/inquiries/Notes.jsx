@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import dynamic from "next/dynamic";
 import Tippy from "@tippyjs/react";
 import ReactDatePicker from "react-datepicker";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages, Statuses } from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { MyGlobal } from "@/utilities/global";
@@ -43,7 +43,7 @@ export default function Notes({ clients, inquiry, reload, unmount }) {
 
 	const isAdministrator = MyGlobal.IsUserAdministrator();
 
-	const statuses = useMemo(() => MyConstants.Statuses.Inquiries, []);
+	const statuses = useMemo(() => Statuses.Inquiries, []);
 
 	const showSearchClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
 	const showFromDateClearButton = main.filter.from ? "cursor-pointer primary-text" : "hidden";
@@ -60,22 +60,22 @@ export default function Notes({ clients, inquiry, reload, unmount }) {
 			content: main.note,
 			id: inquiry?.id,
 			nextfollowUpOn: main.nextfollowUpOn,
-			source: MyConstants.Modules.Base.Inquiries,
+			source: BaseModules.Inquiries,
 			type: "add-note",
 			userId: MyGlobal.GetUserId(),
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				setInputs("note", "");
 				getNotes();
 
-				MyGlobal.AddActivity(`Added in <b>${inquiry?.id}</b>.`, MyConstants.Modules.Base.Notes);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.NoteAdded);
+				MyGlobal.AddActivity(`Added in <b>${inquiry?.id}</b>.`, BaseModules.Notes);
+				MyGlobal.ShowSuccessToast(Messages.NoteAdded);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Inquiries => Add Note");
@@ -130,7 +130,7 @@ export default function Notes({ clients, inquiry, reload, unmount }) {
 
 	async function getNotes() {
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-notes" }));
+			const response = await axios.get(ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-notes" }));
 
 			if (response.status === 200) {
 				reload();
@@ -194,7 +194,7 @@ export default function Notes({ clients, inquiry, reload, unmount }) {
 
 	async function setSupportData() {
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Notes.GetNotes, MyGlobal.GetHeaders({ inquiryId: inquiry.id }));
+			const response = await axios.get(ApiEndpoints.Notes.GetNotes, MyGlobal.GetHeaders({ inquiryId: inquiry.id }));
 
 			if (response.status === 200) {
 				setApi({ notes: { copy: response.data, data: response.data } });
@@ -342,36 +342,14 @@ export default function Notes({ clients, inquiry, reload, unmount }) {
 	}
 
 	function uiFind() {
-		return (
-			<TextInputNative
-				id=""
-				icon={faSearch}
-				onChange={(e) => setInputs("findText", e.target.value)}
-				onClearButtonClick={() => setInputs("findText", "")}
-				placeholder="Find"
-				showClearButton={showSearchClearButton}
-				tabIndex={3}
-				value={main.findText}
-				width="w-36"
-			/>
-		);
+		return <TextInputNative id="" icon={faSearch} onChange={(e) => setInputs("findText", e.target.value)} onClearButtonClick={() => setInputs("findText", "")} placeholder="Find" showClearButton={showSearchClearButton} tabIndex={3} value={main.findText} width="w-36" />;
 	}
 
 	function uiFromDate() {
 		return (
 			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background full-border">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-medium-11"
-					dateFormat="dd-MM-YYYY"
-					endDate={main.filter.to}
-					onChange={(e) => setInputs("from", e)}
-					placeholderText="From"
-					tabIndex={1}
-					selected={main.filter.from}
-					selectsStart
-					startDate={main.filter.from}
-				/>
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-medium-11" dateFormat="dd-MM-YYYY" endDate={main.filter.to} onChange={(e) => setInputs("from", e)} placeholderText="From" tabIndex={1} selected={main.filter.from} selectsStart startDate={main.filter.from} />
 				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
 			</div>
 		);
@@ -408,17 +386,7 @@ export default function Notes({ clients, inquiry, reload, unmount }) {
 		return (
 			<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bottom-shadow contrast-background full-border">
 				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-				<ReactDatePicker
-					className="w-20 h-6 bg-transparent outline-none font-medium-11"
-					dateFormat="dd-MM-YYYY"
-					endDate={main.filter.to}
-					onChange={(e) => setInputs("to", e)}
-					placeholderText="To"
-					tabIndex={2}
-					selected={main.filter.to}
-					selectsEnd
-					startDate={main.filter.to}
-				/>
+				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-medium-11" dateFormat="dd-MM-YYYY" endDate={main.filter.to} onChange={(e) => setInputs("to", e)} placeholderText="To" tabIndex={2} selected={main.filter.to} selectsEnd startDate={main.filter.to} />
 				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
 			</div>
 		);

@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, Messages } from "@/utilities/constants";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -24,13 +24,13 @@ export default function EditBank({ bank, reload }) {
 		setMain((s) => ({ ...s, pendingResult: true }));
 
 		axios
-			.post(MyConstants.ApiEndpoints.Firms.EditBank, main.bank, MyGlobal.GetHeaders())
+			.post(ApiEndpoints.Firms.EditBank, main.bank, MyGlobal.GetHeaders())
 			.then((response) => {
 				if (response.status == 200) {
 					reload();
-					MyGlobal.ShowSuccessToast(MyConstants.Messages.BankEdited);
+					MyGlobal.ShowSuccessToast(Messages.BankEdited);
 				} else {
-					MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+					MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 				}
 			})
 			.catch((error) => MyGlobal.HandleErrors(error, "Edit Bank"))
@@ -55,22 +55,7 @@ export default function EditBank({ bank, reload }) {
 	};
 
 	const uiAccountType = (value, index) => {
-		return (
-			<ComboBox
-				allowCreatingNewItem={false}
-				comparisonValue=""
-				filteredData={["Current", "Savings"]}
-				icon={faFile}
-				label="Account Type"
-				onChange={(e) => handleInputs("account_type", index, e)}
-				onClick={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex="3"
-				value={value}
-				width="w-1/2"
-			/>
-		);
+		return <ComboBox allowCreatingNewItem={false} comparisonValue="" filteredData={["Current", "Savings"]} icon={faFile} label="Account Type" onChange={(e) => handleInputs("account_type", index, e)} onClick={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex="3" value={value} width="w-1/2" />;
 	};
 
 	const uiEdit = () => {

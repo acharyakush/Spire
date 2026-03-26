@@ -6,7 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, CashFlowSubModules } from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -16,12 +16,11 @@ import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { EditTransaction, NewTransaction } from "@/modals/cashFlows/pettyCash/miscellaneous";
 import { faCalendar, faChevronRight, faExclamationTriangle, faFileExcel, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { PettyCashTransactionsHeaders } from "@/utilities/headers";
 
 export default function Transactions({ reload, unmount }) {
 	// Business Logic
-	const headers = MyConstants.TableHeaders.Transactions.PettyCash;
-	const modules = MyConstants.Modules.Other.CashFlowModules;
-	const thisView = MyConstants.Modules.Base.CashFlow;
+	const thisView = BaseModules.CashFlow;
 
 	const [api, setApi] = useState({
 		transactions: { copy: [], data: [] },
@@ -66,7 +65,7 @@ export default function Transactions({ reload, unmount }) {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const rowHeaders = Object.values(headers);
+		const rowHeaders = Object.values(PettyCashTransactionsHeaders);
 
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
@@ -107,7 +106,7 @@ export default function Transactions({ reload, unmount }) {
 				fontWeight: "bold",
 				height: 44,
 				span: rowHeaders.length,
-				value: `${modules.PettyCash.name} (${api.transactions.data.length})`,
+				value: `${CashFlowSubModules.PettyCash.name} (${api.transactions.data.length})`,
 			},
 		];
 
@@ -116,7 +115,7 @@ export default function Transactions({ reload, unmount }) {
 
 		writeXlsxFile(finalData, {
 			columns: columnsWidth,
-			fileName: `${modules.PettyCash.name}.xlsx`,
+			fileName: `${CashFlowSubModules.PettyCash.name}.xlsx`,
 			fontFamily: "Segoe UI",
 			fontSize: 9,
 		});
@@ -160,49 +159,49 @@ export default function Transactions({ reload, unmount }) {
 
 				const { column, isAscending } = other.sort;
 
-				if (column == headers.Date && isAscending) {
+				if (column == PettyCashTransactionsHeaders.Date && isAscending) {
 					return aEntryAt - bEntryAt;
-				} else if (column == headers.Date && !isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.Date && !isAscending) {
 					return bEntryAt - aEntryAt;
-				} else if (column == headers.Firm && isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.Firm && isAscending) {
 					return a.firm_name.localeCompare(b.firm_name);
-				} else if (column == headers.Firm && !isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.Firm && !isAscending) {
 					return b.firm_name.localeCompare(a.firm_name);
-				} else if (column == headers.Bank && isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.Bank && isAscending) {
 					return a.bank_name.localeCompare(b.bank_name);
-				} else if (column == headers.Bank && !isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.Bank && !isAscending) {
 					return b.bank_name.localeCompare(a.bank_name);
-				} else if (column == headers.AmountPaid && isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.AmountPaid && isAscending) {
 					return a.amount_paid - b.amount_paid;
-				} else if (column == headers.AmountPaid && !isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.AmountPaid && !isAscending) {
 					return b.amount_paid - a.amount_paid;
-				} else if (column == headers.AmountReceived && isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.AmountReceived && isAscending) {
 					return a.amount_received - b.amount_received;
-				} else if (column == headers.AmountReceived && !isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.AmountReceived && !isAscending) {
 					return b.amount_received - a.amount_received;
-				} else if (column == headers.Balance && isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.Balance && isAscending) {
 					return a.balance - b.balance;
-				} else if (column == headers.Balance && !isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.Balance && !isAscending) {
 					return b.balance - a.balance;
-				} else if (column == headers.Particulars && isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.Particulars && isAscending) {
 					return a.particulars.localeCompare(b.particulars);
-				} else if (column == headers.Particulars && !isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.Particulars && !isAscending) {
 					return b.particulars.localeCompare(a.particulars);
-				} else if (column == headers.PaymentSource && isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.PaymentSource && isAscending) {
 					return a.payment_source.localeCompare(b.payment_source);
-				} else if (column == headers.PaymentSource && !isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.PaymentSource && !isAscending) {
 					return b.payment_source.localeCompare(a.payment_source);
-				} else if (column == headers.PaymentType && isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.PaymentType && isAscending) {
 					return a.payment_type.localeCompare(b.payment_type);
-				} else if (column == headers.PaymentType && !isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.PaymentType && !isAscending) {
 					return b.payment_type.localeCompare(a.payment_type);
-				} else if (column == headers.Remarks && isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.Remarks && isAscending) {
 					return a.remarks.localeCompare(b.remarks);
-				} else if (column == headers.Remarks && !isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.Remarks && !isAscending) {
 					return b.remarks.localeCompare(a.remarks);
-				} else if (column == headers.EntryBy && isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.EntryBy && isAscending) {
 					return a.entry_by_name.localeCompare(b.entry_by_name);
-				} else if (column == headers.EntryBy && !isAscending) {
+				} else if (column == PettyCashTransactionsHeaders.EntryBy && !isAscending) {
 					return b.entry_by_name.localeCompare(a.entry_by_name);
 				} else {
 					return bEntryAt - aEntryAt;
@@ -229,7 +228,7 @@ export default function Transactions({ reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.CashFlows.Modules.PettyCash.GetTransactions, MyGlobal.GetHeaders({}));
+			const response = await axios.get(ApiEndpoints.CashFlows.Modules.PettyCash.GetTransactions, MyGlobal.GetHeaders({}));
 
 			if (response.status === 200) {
 				let transactions = [];
@@ -269,7 +268,7 @@ export default function Transactions({ reload, unmount }) {
 				});
 			}
 		} catch (error) {
-			MyGlobal.HandleErrors(error, `${thisView} => ${modules.PettyCash.name} => Transactions => Get Support Data`);
+			MyGlobal.HandleErrors(error, `${thisView} => ${CashFlowSubModules.PettyCash.name} => Transactions => Get Support Data`);
 		} finally {
 			setLoading((s) => ({ ...s, supportData: false }));
 		}
@@ -284,7 +283,7 @@ export default function Transactions({ reload, unmount }) {
 	}
 
 	function setSort(header) {
-		if (header != headers.Date) {
+		if (header != PettyCashTransactionsHeaders.Date) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
 	}
@@ -355,7 +354,7 @@ export default function Transactions({ reload, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(headers).map((m, i) => {
+		return Object.values(PettyCashTransactionsHeaders).map((m, i) => {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (
@@ -513,7 +512,7 @@ export default function Transactions({ reload, unmount }) {
 							{thisView}
 						</span>
 						<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-						<span className="view-heading">{modules.PettyCash.name}'s Transactions</span>
+						<span className="view-heading">{CashFlowSubModules.PettyCash.name}'s Transactions</span>
 						{api.transactions.copy.length > 0 && <Badge value={getRowsCount()} />}
 					</div>
 				</div>

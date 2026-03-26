@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, DerivedModules, Messages } from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -18,11 +18,11 @@ import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { Spinner, SpinnerBig, Tooltip } from "@/components/Elements";
 import { ComboBox2, DatePicker, TextArea, TextInput, TextInputNative } from "@/components/Inputs";
 import { faAngleRight, faBank, faCalendar, faExclamationTriangle, faFileExcel, faIndianRupee, faMultiply, faNoteSticky, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { InvoiceTransactionsHeaders } from "@/utilities/headers";
 
 export function Transactions({ mount, project, reload, unmount }) {
 	// Business Logic
-	const headers = MyConstants.TableHeaders.Transactions.Invoice;
-	const thisView = MyConstants.Modules.Base.Invoices;
+	const thisView = BaseModules.Invoices;
 
 	const [api, setApi] = useState({
 		banks: { copy: [], data: [] },
@@ -64,8 +64,8 @@ export function Transactions({ mount, project, reload, unmount }) {
 		totalAmountPending = project.amount_pending;
 	}
 
-	const allowDeleteTransaction = MyGlobal.HasPermission(MyConstants.Modules.Derived.DeleteInvoiceTransaction);
-	const allowEditTransaction = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditInvoiceTransaction);
+	const allowDeleteTransaction = MyGlobal.HasPermission(DerivedModules.DeleteInvoiceTransaction);
+	const allowEditTransaction = MyGlobal.HasPermission(DerivedModules.EditInvoiceTransaction);
 
 	const wrapper = "flex flex-col w-full h-full justify-center items-center";
 
@@ -90,7 +90,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 				source: main.paymentSource.id,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Invoices.AddTransaction, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Invoices.AddTransaction, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
@@ -104,11 +104,11 @@ export function Transactions({ mount, project, reload, unmount }) {
 
 				MyGlobal.AddActivity(`Added transaction in <b>${project.invoice_id}</b>.`, thisView);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TransactionAdded);
+				MyGlobal.ShowSuccessToast(Messages.TransactionAdded);
 
 				getSupportData();
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, `${thisView} => Transaction History => Add Transaction`);
@@ -127,7 +127,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const rowHeaders = Object.values(headers);
+		const rowHeaders = Object.values(InvoiceTransactionsHeaders);
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
@@ -208,17 +208,17 @@ export function Transactions({ mount, project, reload, unmount }) {
 			return api.transactions.data.sort((a, b) => {
 				const { column, isAscending } = other.sort;
 
-				if (column == headers.Particulars && isAscending) {
+				if (column == InvoiceTransactionsHeaders.Particulars && isAscending) {
 					return a.particulars.localeCompare(b.particulars);
-				} else if (column == headers.Particulars && !isAscending) {
+				} else if (column == InvoiceTransactionsHeaders.Particulars && !isAscending) {
 					return b.particulars.localeCompare(a.particulars);
-				} else if (column == headers.AmountReceived && isAscending) {
+				} else if (column == InvoiceTransactionsHeaders.AmountReceived && isAscending) {
 					return a.amount - b.amount;
-				} else if (column == headers.AmountReceived && !isAscending) {
+				} else if (column == InvoiceTransactionsHeaders.AmountReceived && !isAscending) {
 					return b.amount - a.amount;
-				} else if (column == headers.PaymentSource && isAscending) {
+				} else if (column == InvoiceTransactionsHeaders.PaymentSource && isAscending) {
 					return a.source.localeCompare(b.source);
-				} else if (column == headers.PaymentSource && !isAscending) {
+				} else if (column == InvoiceTransactionsHeaders.PaymentSource && !isAscending) {
 					return b.source.localeCompare(a.source);
 				}
 			});
@@ -253,7 +253,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 		setLoading((s) => ({ ...s, supportData: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Invoices.GetHistorySupportData, MyGlobal.GetHeaders({ firmId: project.firm_id, projectId: project.id }));
+			const response = await axios.get(ApiEndpoints.Invoices.GetHistorySupportData, MyGlobal.GetHeaders({ firmId: project.firm_id, projectId: project.id }));
 
 			if (response.status === 200) {
 				const banks = MyGlobal.GetRevisedPaymentSourceList(response.data.banks);
@@ -356,7 +356,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function setSort(header) {
-		if (header != headers.Date) {
+		if (header != InvoiceTransactionsHeaders.Date) {
 			setOther((s) => ({ ...s, sort: { column: header, isAscending: !s.sort.isAscending } }));
 		}
 	}
@@ -434,7 +434,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiFooter() {
-		return Object.values(headers).map((m, i) => {
+		return Object.values(InvoiceTransactionsHeaders).map((m, i) => {
 			const showTotalAmount = i == 2 ? "visible" : "invisible";
 			const wrapper = `w-1/4 space-x-1 text-center text-white font-medium-10 ${showTotalAmount}`;
 
@@ -457,7 +457,7 @@ export function Transactions({ mount, project, reload, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(headers).map((m, i) => {
+		return Object.values(InvoiceTransactionsHeaders).map((m, i) => {
 			const showSortArrow = m == other.sort.column ? "block" : "hidden";
 
 			return (

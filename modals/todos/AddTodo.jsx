@@ -4,7 +4,7 @@
 
 import dayjs from "dayjs";
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { Spinner } from "@/components/Elements";
@@ -63,7 +63,7 @@ export default function AddTodo({ mount, refresh, unmount }) {
 				userId: MyGlobal.GetUserId(),
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Todos.AddTodo, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Todos.AddTodo, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				refresh();
@@ -76,8 +76,8 @@ export default function AddTodo({ mount, refresh, unmount }) {
 					activityMessage = `Added <b>${data.description}</b> for <b>${assignedTos}</b> to be completed by <b>${dayjs(data.dueDate).format("DD/MM/YYYY")}</b> on <b>${data.priority}</b> basis.`;
 				}
 
-				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Todos);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TodoAdded);
+				MyGlobal.AddActivity(activityMessage, BaseModules.Todos);
+				MyGlobal.ShowSuccessToast(Messages.TodoAdded);
 
 				unmount();
 			}
@@ -140,7 +140,7 @@ export default function AddTodo({ mount, refresh, unmount }) {
 		try {
 			setIsFetching(true);
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Todos.GetAddTodoSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Todos.GetAddTodoSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				const clients = response.data.clients.map((m) => {

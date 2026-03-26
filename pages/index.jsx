@@ -2,7 +2,7 @@
 
 import dayjs from "dayjs";
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, Messages } from "@/utilities/constants";
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -10,6 +10,7 @@ import { EmailAddress, Password } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { applicationName, isDevelopment, MyGlobal } from "@/utilities/global";
+import { clearAllUserData, encrypt } from "@/utilities/myGlobal";
 
 export default function Home() {
 	// Business Logic
@@ -46,20 +47,20 @@ export default function Home() {
 		if (emailAddressValidation.hasError) {
 			MyGlobal.ShowErrorToast(emailAddressValidation.text);
 		} else if (!password) {
-			MyGlobal.ShowErrorToast(MyConstants.Messages.NoPassword);
+			MyGlobal.ShowErrorToast(Messages.NoPassword);
 		} else {
 			setUserData((s) => ({ ...s, isLoading: true }));
 
 			const currentTimestamp = dayjs().format("hh:mm:ss a DD-MM-YYYY");
-			const sessionToken = MyGlobal.Encrypt(`${currentTimestamp}${emailAddress}${password}`);
+			const sessionToken = encrypt(`${currentTimestamp}${emailAddress}${password}`);
 
 			const jsonBody = JSON.stringify({ emailAddress, password });
-			const body = { credentials: MyGlobal.Encrypt(jsonBody) };
+			const body = { credentials: encrypt(jsonBody) };
 
 			try {
 				setUserData((s) => ({ ...s, isLoading: true }));
 
-				const response = await axios.post(MyConstants.ApiEndpoints.Authenticate, body);
+				const response = await axios.post(ApiEndpoints.Authenticate, body);
 
 				MyGlobal.Storages.Local.Set(`${applicationName}UserDetails`, response.data);
 				MyGlobal.Storages.Session.Set(`${applicationName}Token`, sessionToken);
@@ -105,7 +106,7 @@ export default function Home() {
 		document.body.setAttribute("app-theme", "light");
 		document.title = `Welcome ${String.fromCharCode(183)} ${process.env.NEXT_PUBLIC_APPLICATION_NAME}`;
 
-		MyGlobal.ClearAllUserData();
+		clearAllUserData();
 
 		// Kush Acharya => "saa.ka.spire.2024"
 		// Abhishek Gor => "saa.ag.spire.2024"
@@ -126,18 +127,7 @@ export default function Home() {
 
 				<EmailAddress onChange={(e) => handleInputs("emailAddress", e.target.value)} reference={emailAddressReference} suffix="" tabIndex="1" value={userData.emailAddress} width="w-full" />
 
-				<Password
-					eyeIconStyle={eyeIconStyle}
-					eyeIconUi={uiEye}
-					key={2}
-					onChange={(e) => handleInputs("password", e.target.value)}
-					reference={passwordReference}
-					tabIndex="2"
-					toggleCharacters={togglePasswordCharacters}
-					type={passwordType}
-					value={userData.password}
-					width="w-full"
-				/>
+				<Password eyeIconStyle={eyeIconStyle} eyeIconUi={uiEye} key={2} onChange={(e) => handleInputs("password", e.target.value)} reference={passwordReference} tabIndex="2" toggleCharacters={togglePasswordCharacters} type={passwordType} value={userData.password} width="w-full" />
 
 				<div className="flex w-full px-2 py-4 justify-center items-center">
 					<button className={signInButtonClass} disabled={userData.isLoading} onClick={() => authenticate("click")} tabIndex={3}>

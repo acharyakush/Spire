@@ -5,7 +5,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import ReactDatePicker from "react-datepicker";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints } from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
 import { useEffect, useState } from "react";
@@ -15,11 +15,10 @@ import { Badge, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { faCalendar, faChevronLeft, faFilter, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { ActivitiesHeaders } from "@/utilities/headers";
 
 export default function Activities({ source = "", unmount }) {
 	// Business Logic
-	const tableHeaders = MyConstants.TableHeaders.Activities;
-
 	const [api, setApi] = useState({
 		activities: { copy: [], data: [] },
 		staff: [],
@@ -32,7 +31,7 @@ export default function Activities({ source = "", unmount }) {
 		},
 		modules: { list: [], selected: "" },
 		selectedStaff: 0,
-		sort: { column: tableHeaders.EntryAt, isAscending: false },
+		sort: { column: ActivitiesHeaders.EntryAt, isAscending: false },
 	});
 
 	const [loading, setLoading] = useState({
@@ -90,21 +89,21 @@ export default function Activities({ source = "", unmount }) {
 			const { column, isAscending } = main.sort;
 
 			switch (true) {
-				case column == tableHeaders.EntryAt && isAscending:
+				case column == ActivitiesHeaders.EntryAt && isAscending:
 					return aEntryAt - bEntryAt;
-				case column == tableHeaders.EntryAt && !isAscending:
+				case column == ActivitiesHeaders.EntryAt && !isAscending:
 					return bEntryAt - aEntryAt;
-				case column == tableHeaders.Module && isAscending:
+				case column == ActivitiesHeaders.Module && isAscending:
 					return a.module.localeCompare(b.module);
-				case column == tableHeaders.Module && !isAscending:
+				case column == ActivitiesHeaders.Module && !isAscending:
 					return b.module.localeCompare(a.module);
-				case column == tableHeaders.Activity && isAscending:
+				case column == ActivitiesHeaders.Activity && isAscending:
 					return a.activity.localeCompare(b.activity);
-				case column == tableHeaders.Activity && !isAscending:
+				case column == ActivitiesHeaders.Activity && !isAscending:
 					return b.activity.localeCompare(a.activity);
-				case column == tableHeaders.EntryBy && isAscending:
+				case column == ActivitiesHeaders.EntryBy && isAscending:
 					return a.entry_by_name.localeCompare(b.entry_by_name);
-				case column == tableHeaders.EntryBy && !isAscending:
+				case column == ActivitiesHeaders.EntryBy && !isAscending:
 					return b.entry_by_name.localeCompare(a.entry_by_name);
 			}
 		});
@@ -114,7 +113,7 @@ export default function Activities({ source = "", unmount }) {
 		try {
 			setLoading((s) => ({ ...s, activities: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-activities" }));
+			const response = await axios.get(ApiEndpoints.Getter, MyGlobal.GetHeaders({ type: "get-activities" }));
 
 			if (response.status === 200) {
 				const revised = response.data.map((m) => {
@@ -239,19 +238,7 @@ export default function Activities({ source = "", unmount }) {
 
 	function uiFind() {
 		if (api.activities.copy.length) {
-			return (
-				<TextInputNative
-					id="findBox"
-					icon={faSearch}
-					onChange={(e) => setInputs("text", e.target.value)}
-					onClearButtonClick={() => setInputs("text", "")}
-					placeholder="Find"
-					showClearButton={showFindClearButton}
-					tabIndex="3"
-					value={main.find.text}
-					width="w-36"
-				/>
-			);
+			return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setInputs("text", e.target.value)} onClearButtonClick={() => setInputs("text", "")} placeholder="Find" showClearButton={showFindClearButton} tabIndex="3" value={main.find.text} width="w-36" />;
 		}
 	}
 
@@ -260,21 +247,7 @@ export default function Activities({ source = "", unmount }) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-start items-center rounded bg-white bottom-shadow full-border">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-					<ReactDatePicker
-						className="w-20 h-6 bg-transparent outline-none font-regular-10"
-						dateFormat="dd-MM-YYYY"
-						dropdownMode="select"
-						endDate={main.find.date.to}
-						onChange={(e) => setInputs("from", e)}
-						placeholderText="From"
-						peekNextMonth
-						selected={main.find.date.from}
-						selectsStart
-						startDate={main.find.date.from}
-						showMonthDropdown
-						showYearDropdown
-						tabIndex="1"
-					/>
+					<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={main.find.date.to} onChange={(e) => setInputs("from", e)} placeholderText="From" peekNextMonth selected={main.find.date.from} selectsStart startDate={main.find.date.from} showMonthDropdown showYearDropdown tabIndex="1" />
 					<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
 				</div>
 			);
@@ -282,7 +255,7 @@ export default function Activities({ source = "", unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(tableHeaders).map((m, i) => {
+		return Object.values(ActivitiesHeaders).map((m, i) => {
 			const showArrow = m == main.sort.column ? "visible" : "invisible";
 
 			return (
@@ -395,21 +368,7 @@ export default function Activities({ source = "", unmount }) {
 			return (
 				<div className="flex w-36 h-[30px] px-2.5 space-x-1 justify-center items-center rounded bottom-shadow bg-white full-border">
 					<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-					<ReactDatePicker
-						className="w-20 h-6 bg-transparent outline-none font-regular-10"
-						dateFormat="dd-MM-YYYY"
-						dropdownMode="select"
-						endDate={main.find.date.to}
-						onChange={(e) => setInputs("to", e)}
-						placeholderText="To"
-						peekNextMonth
-						selected={main.find.date.to}
-						selectsEnd
-						startDate={main.find.date.to}
-						showMonthDropdown
-						showYearDropdown
-						tabIndex="2"
-					/>
+					<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={main.find.date.to} onChange={(e) => setInputs("to", e)} placeholderText="To" peekNextMonth selected={main.find.date.to} selectsEnd startDate={main.find.date.to} showMonthDropdown showYearDropdown tabIndex="2" />
 					<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
 				</div>
 			);

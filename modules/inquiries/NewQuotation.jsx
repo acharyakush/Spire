@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints } from "@/utilities/constants";
 import NewQuotaionPreview from "./NewQuotationPreview";
 
 import { useEffect, useState } from "react";
@@ -121,7 +121,7 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 		try {
 			setValues("isLoading", true);
 
-			const result = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetAddQuotationSupport, MyGlobal.GetHeaders());
+			const result = await axios.get(ApiEndpoints.Inquiries.GetAddQuotationSupport, MyGlobal.GetHeaders());
 
 			if (result.status === 200) {
 				setApi({ banks: result.data.banks, firms: result.data.firms, quotations: result.data.quotations });
@@ -206,27 +206,7 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 
 	// UI Components
 	function uiClient() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={client.name}
-				displayValue="name"
-				filteredData={getFilteredClients}
-				hasDataObject={false}
-				icon={faUser}
-				isReadOnly={false}
-				label="Client"
-				onChange={(e) => setClientObject(e)}
-				onClick={() => {}}
-				onInputChange={(e) => setValues("find", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={main.find}
-				tabIndex={2}
-				value={getClientName()}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={client.name} displayValue="name" filteredData={getFilteredClients} hasDataObject={false} icon={faUser} isReadOnly={false} label="Client" onChange={(e) => setClientObject(e)} onClick={() => {}} onInputChange={(e) => setValues("find", e.target.value)} onKeyPress={() => {}} searchedItem={main.find} tabIndex={2} value={getClientName()} width="w-full" />;
 	}
 
 	function uiClientAddress() {
@@ -234,43 +214,11 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 	}
 
 	function uiClientPhoneNumber() {
-		return (
-			<TextInput
-				icon={faPhone}
-				id="clientPhoneNumber"
-				isReadOnly
-				label="Client's Phone Number"
-				onChange={(e) => setClientValue("phoneNumber", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex={8}
-				value={client.phoneNumber}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faPhone} id="clientPhoneNumber" isReadOnly label="Client's Phone Number" onChange={(e) => setClientValue("phoneNumber", e.target.value)} onKeyPress={() => {}} tabIndex={8} value={client.phoneNumber} width="w-full" />;
 	}
 
 	function uiFirm() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={firm.name}
-				displayValue="name"
-				filteredData={api.firms}
-				hasDataObject={false}
-				icon={faUser}
-				isReadOnly={false}
-				label="Firm"
-				onChange={(e) => setFirmValue(e)}
-				onClick={() => {}}
-				onInputChange={() => {}}
-				onKeyPress={() => {}}
-				searchedItem=""
-				tabIndex={1}
-				value={firm.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={firm.name} displayValue="name" filteredData={api.firms} hasDataObject={false} icon={faUser} isReadOnly={false} label="Firm" onChange={(e) => setFirmValue(e)} onClick={() => {}} onInputChange={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex={1} value={firm.name} width="w-full" />;
 	}
 
 	function uiDate() {
@@ -300,19 +248,7 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 	}
 
 	function uiProposalNumber() {
-		return (
-			<TextInput
-				icon={faHashtag}
-				id="proposalNumber"
-				isReadOnly
-				label="Proposal Number"
-				onChange={(e) => setValues("proposalNumber", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex={8}
-				value={firm.id ? proposalNumber : ""}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faHashtag} id="proposalNumber" isReadOnly label="Proposal Number" onChange={(e) => setValues("proposalNumber", e.target.value)} onKeyPress={() => {}} tabIndex={8} value={firm.id ? proposalNumber : ""} width="w-full" />;
 	}
 
 	function uiRemarks() {
@@ -320,54 +256,19 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 	}
 
 	function uiServices(row) {
-		return (
-			<TextInput icon={faTasks} id={`services${row.rowId}`} label="Services" onChange={(e) => setServicesValue("services", row.rowId, e.target.value)} onKeyPress={() => {}} tabIndex={row.rowId} value={row.services} width="w-full" />
-		);
+		return <TextInput icon={faTasks} id={`services${row.rowId}`} label="Services" onChange={(e) => setServicesValue("services", row.rowId, e.target.value)} onKeyPress={() => {}} tabIndex={row.rowId} value={row.services} width="w-full" />;
 	}
 
 	function uiServicesGovernmentFees(row) {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				id={`governmentFees${row.rowId}`}
-				label="Government Fees"
-				onChange={(e) => setServicesValue("governmentFees", row.rowId, e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={row.rowId}
-				value={row.governmentFees}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} id={`governmentFees${row.rowId}`} label="Government Fees" onChange={(e) => setServicesValue("governmentFees", row.rowId, e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={row.rowId} value={row.governmentFees} width="w-full" />;
 	}
 
 	function uiServicesInclusions(row) {
-		return (
-			<TextInput
-				icon={faTasks}
-				id={`inclusions${row.rowId}`}
-				label="Inclusions"
-				onChange={(e) => setServicesValue("inclusions", row.rowId, e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex={row.rowId}
-				value={row.inclusions}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faTasks} id={`inclusions${row.rowId}`} label="Inclusions" onChange={(e) => setServicesValue("inclusions", row.rowId, e.target.value)} onKeyPress={() => {}} tabIndex={row.rowId} value={row.inclusions} width="w-full" />;
 	}
 
 	function uiServicesProfessionalFees(row) {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				id={`professionalFees${row.rowId}`}
-				label="Professional Fees"
-				onChange={(e) => setServicesValue("professionalFees", row.rowId, e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={row.rowId}
-				value={row.professionalFees}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} id={`professionalFees${row.rowId}`} label="Professional Fees" onChange={(e) => setServicesValue("professionalFees", row.rowId, e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={row.rowId} value={row.professionalFees} width="w-full" />;
 	}
 
 	function uiServicesRows() {
@@ -416,18 +317,7 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 			termsConditionsLength = termsConditions.split("\n").length;
 		}
 
-		return (
-			<TextArea
-				icon={faListCheck}
-				label="Terms & Conditions"
-				onChange={(e) => setFirmSingleValue("termsConditions", e.target.value)}
-				onKeyDown={() => {}}
-				rows={termsConditionsLength + 1}
-				tabIndex={9}
-				value={termsConditions}
-				width="w-full"
-			/>
-		);
+		return <TextArea icon={faListCheck} label="Terms & Conditions" onChange={(e) => setFirmSingleValue("termsConditions", e.target.value)} onKeyDown={() => {}} rows={termsConditionsLength + 1} tabIndex={9} value={termsConditions} width="w-full" />;
 	}
 
 	// Hooks

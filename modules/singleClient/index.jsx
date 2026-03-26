@@ -1,105 +1,131 @@
 "use client";
 
-/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
-
 import axios from "axios";
 import dayjs from "dayjs";
 import Files from "./Files";
 import Tippy from "@tippyjs/react";
-import html2canvas from "html2canvas";
-import writeXlsxFile from "write-excel-file/browser";
+import html2canvas from "html2canvas-pro";
 import SingleProject from "../singleProject";
 import ReactDatePicker from "react-datepicker";
-import MyConstants from "@/utilities/constants";
+import writeXlsxFile from "write-excel-file/browser";
 
 import { Virtuoso } from "react-virtuoso";
 import { MyGlobal } from "@/utilities/global";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { EditCompany } from "@/modals/singleClient";
+import { DeleteCompany, EditCompany } from "@/modals/singleClient";
 import { TextInputNative } from "@/components/Inputs";
+import { SingleClientHeaders } from "@/utilities/headers";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AvatarCircle, BadgeSmallWithBackground, BadgeSmallWithBackground2, SpinnerSmall, Tooltip, UsersTooltipList } from "@/components/Elements";
-import { faCalendar, faCamera, faChevronLeft, faCloudUpload, faEnvelope, faFileExcel, faIdBadge, faMultiply, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faUserTag } from "@fortawesome/free-solid-svg-icons";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { ApiEndpoints, DerivedModules, Statuses } from "@/utilities/constants";
+import { AvatarCircle, BadgeSmallWithBackground2, Tooltip } from "@/components/Elements";
+import { faCalendar, faCamera, faCheck, faChevronLeft, faCloudUpload, faDownload, faEnvelope, faIndustry, faMultiply, faPencil, faSearch, faSortAmountAsc, faSortAmountDesc, faSpinner, faTrash, faUserTag } from "@fortawesome/free-solid-svg-icons";
+
+const statuses = Statuses.Projects;
+const arrHeaders = Object.values(SingleClientHeaders);
 
 export default function SingleClient({ client, unmount }) {
 	// Business Logic
-	const captureRef = useRef();
-	const headers = MyConstants.TableHeaders.SingleClient;
+	const screenshotRef = useRef();
+	const capturePreviewRef = useRef();
 
-	const [api, setApi] = useState({
-		companies: [],
-		projects: { copy: [], data: [] },
-		referenceName: "",
-		tasks: [],
-		uploadedFiles: [],
-	});
+	const [companies, setCompanies] = useState([]);
+	const [uploadedFiles, setUploadedFiles] = useState([]);
+	const [singleClientProjects, setSingleClientProjects] = useState([]);
+	const [allProjects, setAllProjects] = useState({ copy: [], data: [] });
+	const [singleClientProjectsCopy, setSingleClientProjectsCopy] = useState([]);
 
-	const [loading, setLoading] = useState({
-		supportData: false,
-		uploadedFiles: false,
-	});
+	const [captureWidth, setCaptureWidth] = useState(0);
+	const [referenceName, setReferenceName] = useState("");
+	const [selectedProject, setSelectedProject] = useState({});
+	const [isCapturingScreenshot, setIsCapturingScreenshot] = useState(false);
 
-	const [main, setMain] = useState({
-		filter: {
-			date: { from: "", to: "" },
-			find: "",
-		},
-		projects: [],
-		selectedCompany: {
-			id: 0,
-			index: 0,
-			name: "All",
-			details: {},
-		},
-		selectedProject: {},
-		sort: { column: headers.Id, isAscending: false },
-	});
+	const [sort, setSort] = useState({ column: SingleClientHeaders.Id, isAscending: false });
+	const [loading, setLoading] = useState({ singleClient: false, uploadedFiles: false });
+	const [filter, setFilter] = useState({ financialYear: "", find: "", fromDate: "", toDate: "" });
+	const [selectedCompany, setSelectedCompany] = useState({ id: 0, index: 0, name: "All", details: {} });
+	const [isOpen, setIsOpen] = useState({ deleteCompany: false, editCompany: false, singleProject: false, uploadedFiles: false });
 
-	const [mounted, setMounted] = useState({
-		editCompany: false,
-		mainComponent: false,
-		singleProject: false,
-		uploadedFiles: false,
-	});
+	const allowEditingCompany = MyGlobal.HasPermission(DerivedModules.EditCompany);
+	const allowDeletingCompany = MyGlobal.HasPermission(DerivedModules.DeleteCompany);
 
-	const allowEditingCompany = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditCompany);
+	const financialYears = useMemo(() => {
+		const set = new Set();
 
-	const showClearSearchButton = main.filter.find ? "cursor-pointer primary-text" : "hidden";
-	const showFromDateClearButton = main.filter.date.from ? "cursor-pointer primary-text" : "hidden";
-	const showToDateClearButton = main.filter.date.to ? "cursor-pointer primary-text" : "hidden";
+		singleClientProjectsCopy.forEach((fe) => {
+			const date = new Date(fe.started_on);
+			const year = date.getFullYear();
+			const month = date.getMonth();
+
+			let startYear;
+
+			if (month >= 3) {
+				startYear = year;
+			} else {
+				startYear = year - 1;
+			}
+
+			const fy = `${startYear}-${String(startYear + 1).slice(-2)}`;
+			set.add(fy);
+		});
+
+		return Array.from(set).sort();
+	}, [singleClientProjectsCopy]);
+
+	const showClearCompanyButton = filter.financialYear ? "cursor-pointer text-gray-300" : "hidden!";
+	const showClearSearchButton = filter.find ? "cursor-pointer text-gray-300" : "hidden!";
+	const showToDateClearButton = filter.toDate ? "cursor-pointer text-gray-300" : "hidden!";
+	const showFromDateClearButton = filter.fromDate ? "cursor-pointer text-gray-300" : "hidden!";
 
 	// Functions
 	async function captureScreenshot() {
-		const element = captureRef.current;
-		if (!element) return;
+		const sourceElement = capturePreviewRef.current;
+		if (!sourceElement || isCapturingScreenshot) return;
 
-		await new Promise((res) => setTimeout(res, 500));
+		setCaptureWidth(Math.ceil(sourceElement.getBoundingClientRect().width));
+		setIsCapturingScreenshot(true);
 
-		const canvas = await html2canvas(element, {
-			scale: 1,
-			useCORS: true,
-		});
+		try {
+			await new Promise((resolve) => {
+				if (typeof globalThis.requestAnimationFrame !== "function") {
+					setTimeout(resolve, 100);
+					return;
+				}
 
-		canvas.toBlob(async (blob) => {
+				globalThis.requestAnimationFrame(() => globalThis.requestAnimationFrame(resolve));
+			});
+
+			const element = screenshotRef.current;
+			if (!element) return;
+
+			const canvas = await html2canvas(element, {
+				backgroundColor: "#ffffff",
+				height: element.scrollHeight,
+				onclone: sanitizeScreenshotClone,
+				scale: 1,
+				useCORS: true,
+				width: element.scrollWidth,
+				windowHeight: element.scrollHeight,
+				windowWidth: element.scrollWidth,
+			});
+
+			const blob = await new Promise((r) => canvas.toBlob(r));
+
 			if (!blob) {
 				console.error("Screenshot failed: blob is null");
 				MyGlobal.ShowErrorToast("Screenshot failed. Try again.");
 				return;
 			}
 
-			try {
-				await navigator.clipboard.write([
-					new ClipboardItem({
-						[blob.type]: blob,
-					}),
-				]);
-				MyGlobal.ShowSuccessToast("Screenshot copied to clipboard.");
-			} catch (err) {
-				console.error("Failed to copy screenshot: ", err);
-				MyGlobal.ShowErrorToast("Failed to copy screenshot.");
-			}
-		});
+			await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+			MyGlobal.ShowSuccessToast("Screenshot copied to clipboard.");
+		} catch (err) {
+			console.error("Failed to copy screenshot: ", err);
+			MyGlobal.ShowErrorToast("Failed to copy screenshot.");
+		} finally {
+			setIsCapturingScreenshot(false);
+		}
 	}
 
 	function doExcelExport() {
@@ -113,22 +139,26 @@ export default function SingleClient({ client, unmount }) {
 		const headerHeight = 44;
 		const maximumColumnWidth = 20;
 
-		const _headers = Object.values(headers);
+		let _headers = Object.values(SingleClientHeaders);
+		_headers.push("Status");
+		_headers.push("Timestamp");
+
 		const blankRows = [{ span: _headers.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
 			records.push(
 				fe.id,
-				`${dayjs(fe.started_on).format("hh:mm:ss A")}\n${dayjs(fe.started_on).format("DD MMMM, YYYY")}`,
-				`${fe.main_project}\n${fe.sub_project}`,
+				`${fe.main_project_name}\n${fe.sub_project_name}`,
+				fe.company_name,
 				fe.teams.map((m) => m.full_name),
-				fe.invoice_firm,
+				fe.invoice_firm_name,
 				fe.invoice_fees,
-				fe.reimbursement_voucher,
-				fe.amoun_received,
+				fe.reimburse_voucher,
+				fe.amount_received,
 				fe.amount_pending,
 				fe.total_fees,
 				fe.status,
+				`${dayjs(fe.started_on).format("hh:mm:ss A")}\n${dayjs(fe.started_on).format("DD MMMM, YYYY")}`,
 			);
 		});
 
@@ -159,7 +189,7 @@ export default function SingleClient({ client, unmount }) {
 
 		const separatedRowValues = MyGlobal.SeparateObjectsIntoArrays(_records, _headers.length);
 
-		const headerText = `${client.id} - ${client.name} (${api.projects.data.length})`;
+		const headerText = `${client.id} - ${client.name} (${allProjects.data.length})`;
 
 		const header = [
 			{
@@ -180,245 +210,106 @@ export default function SingleClient({ client, unmount }) {
 			fontFamily: "Segoe UI",
 			fontSize: 10,
 			columns: columnsWidth,
-			fileName: `${client.id}_${client.name}_(${api.projects.data.length}).xlsx`,
+			fileName: `${client.id}_${client.name}_(${allProjects.data.length}).xlsx`,
 		});
 	}
 
 	function doFiltering(source) {
-		const filtered = main.projects.filter((f) => {
+		const filtered = getSelectedCompanyProjects().filter((f) => {
 			if (source == "date") {
 				const checkDate = new Date(f.started_on);
-				const startDate = main.filter.date.from;
-				const endDate = main.filter.date.to;
+				const startDate = filter.fromDate;
+				const endDate = filter.toDate;
 
-				if (checkDate >= startDate && checkDate <= endDate) {
-					return f;
-				}
+				if (checkDate >= startDate && checkDate <= endDate) return f;
+			} else if (source == "financialYear") {
+				const date = new Date(f.started_on);
+				const year = date.getFullYear();
+				const month = date.getMonth();
+
+				const startYear = month >= 3 ? year : year - 1;
+				const fy = `${startYear}-${String(startYear + 1).slice(-2)}`;
+
+				return fy === filter.financialYear;
 			} else {
-				const findText = main.filter.find.toLowerCase();
+				const findText = filter.find.toLowerCase();
 
 				const id = String(f.id).toLowerCase();
-				const company = String(f.company).toLowerCase();
-				const subProject = String(f.sub_project).toLowerCase();
-				const invoiceFirm = String(f.invoice_firm).toLowerCase();
+				const company = String(f.company_name).toLowerCase();
+				const subProject = String(f.sub_project_name).toLowerCase();
+				const invoiceFirm = String(f.invoice_firm_name).toLowerCase();
 				const status = String(f.status).toLowerCase();
 
-				return id.includes(findText) || company.includes(findText) || subProject.includes(findText) || invoiceFirm.includes(findText) || String(f.invoice_fees).includes(findText) || String(f.reimbursement_voucher).includes(findText) || String(f.amount_received).includes(findText) || String(f.amount_pending).includes(findText) || String(f.total_fees).includes(findText) || status.includes(findText);
+				return id.includes(findText) || company.includes(findText) || subProject.includes(findText) || invoiceFirm.includes(findText) || String(f.invoice_fees).includes(findText) || String(f.reimburse_voucher).includes(findText) || String(f.amount_received).includes(findText) || String(f.amount_pending).includes(findText) || String(f.total_fees).includes(findText) || status.includes(findText);
 			}
 		});
 
-		setMain((s) => ({ ...s, projects: filtered }));
+		setAllProjects((s) => ({ ...s, data: filtered }));
+		setSingleClientProjects(filtered);
 	}
 
 	function doSorting() {
-		return main.projects.sort((a, b) => {
-			const { column, isAscending } = main.sort;
+		const { column, isAscending } = sort;
 
-			if (column == headers.Id && isAscending) {
-				return a.id.localeCompare(b.id);
-			} else if (column == headers.Id && !isAscending) {
-				return b.id.localeCompare(a.id);
-			} else if (column == headers.SubProject && isAscending) {
-				return a.sub_project.localeCompare(b.sub_project);
-			} else if (column == headers.SubProject && !isAscending) {
-				return b.sub_project.localeCompare(a.sub_project);
-			} else if (column == headers.Company && isAscending) {
-				return a.company.localeCompare(b.company);
-			} else if (column == headers.Company && !isAscending) {
-				return b.company.localeCompare(a.company);
-			} else if (column == headers.Teams && isAscending) {
-				return a.teams.localeCompare(b.teams);
-			} else if (column == headers.Teams && !isAscending) {
-				return b.teams.localeCompare(a.teams);
-			} else if (column == headers.InvoiceFirm && isAscending) {
-				return a.invoice_firm.localeCompare(b.invoice_firm);
-			} else if (column == headers.InvoiceFirm && !isAscending) {
-				return b.invoice_firm.localeCompare(a.invoice_firm);
-			} else if (column == headers.InvoiceFees && isAscending) {
-				return a.invoice_fees - b.invoice_fees;
-			} else if (column == headers.InvoiceFees && !isAscending) {
-				return b.invoice_fees - a.invoice_fees;
-			} else if (column == headers.ReimbursementVoucher && isAscending) {
-				return a.reimbursement_voucher - b.reimbursement_voucher;
-			} else if (column == headers.ReimbursementVoucher && !isAscending) {
-				return b.reimbursement_voucher - a.reimbursement_voucher;
-			} else if (column == headers.Total && isAscending) {
-				return a.total_fees - b.total_fees;
-			} else if (column == headers.Total && !isAscending) {
-				return b.total_fees - a.total_fees;
-			} else if (column == headers.Status && isAscending) {
-				return a.status.localeCompare(b.status);
-			} else if (column == headers.Status && !isAscending) {
-				return b.status.localeCompare(a.status);
-			} else {
-				return b.id.localeCompare(a.id);
-			}
+		return [...singleClientProjects].sort((a, b) => {
+			if (column == SingleClientHeaders.Id && isAscending) return a.id.localeCompare(b.id);
+			if (column == SingleClientHeaders.Id && !isAscending) return b.id.localeCompare(a.id);
+			if (column == SingleClientHeaders.SubProject && isAscending) return a.sub_project_name.localeCompare(b.sub_project_name);
+			if (column == SingleClientHeaders.SubProject && !isAscending) return b.sub_project_name.localeCompare(a.sub_project_name);
+			if (column == SingleClientHeaders.Company && isAscending) return a.company_name.localeCompare(b.company_name);
+			if (column == SingleClientHeaders.Company && !isAscending) return b.company_name.localeCompare(a.company_name);
+			if (column == SingleClientHeaders.Teams && isAscending) return String(a.team_names).localeCompare(String(b.team_names));
+			if (column == SingleClientHeaders.Teams && !isAscending) return String(b.team_names).localeCompare(String(a.team_names));
+			if (column == SingleClientHeaders.InvoiceFirm && isAscending) return a.invoice_firm_name.localeCompare(b.invoice_firm_name);
+			if (column == SingleClientHeaders.InvoiceFirm && !isAscending) return b.invoice_firm_name.localeCompare(a.invoice_firm_name);
+			if (column == SingleClientHeaders.InvoiceFees && isAscending) return a.invoice_fees - b.invoice_fees;
+			if (column == SingleClientHeaders.InvoiceFees && !isAscending) return b.invoice_fees - a.invoice_fees;
+			if (column == SingleClientHeaders.ReimbursementVoucher && isAscending) return a.reimburse_voucher - b.reimburse_voucher;
+			if (column == SingleClientHeaders.ReimbursementVoucher && !isAscending) return b.reimburse_voucher - a.reimburse_voucher;
+			if (column == SingleClientHeaders.AmountPending && isAscending) return a.amount_pending - b.amount_pending;
+			if (column == SingleClientHeaders.AmountPending && !isAscending) return b.amount_pending - a.amount_pending;
+			if (column == SingleClientHeaders.AmountReceived && isAscending) return a.amount_received - b.amount_received;
+			if (column == SingleClientHeaders.AmountReceived && !isAscending) return b.amount_received - a.amount_received;
+			if (column == SingleClientHeaders.Total && isAscending) return a.total_fees - b.total_fees;
+			if (column == SingleClientHeaders.Total && !isAscending) return b.total_fees - a.total_fees;
+			return b.id.localeCompare(a.id);
 		});
 	}
 
-	function getTotalValues() {
-		const total = {
-			amountPending: 0,
-			amountReceived: 0,
-			invoiceFees: 0,
-			reimburseVoucher: 0,
-			totalFees: 0,
+	function normalizeSingleClientProject(project) {
+		const invoiceFirmName = String(project.invoice_firm_name ?? "");
+		const teamNames = MyGlobal.GetAnyDataFromId(project.teams, "full_name");
+
+		return {
+			...project,
+			completed_on: dayjs(project.completed_on).format("hh:mm:ss A - DD/MM/YYYY"),
+			invoice_fees: Number(project.invoice_fees),
+			invoice_firm_initials: MyGlobal.GetInitials(invoiceFirmName),
+			invoice_firm_name: invoiceFirmName,
+			amount_pending: Number(project.amount_pending),
+			amount_received: Number(project.amount_received),
+			invoice_amount_received: Number(project.invoice_amount_received),
+			reimburse_voucher: Number(project.reimburse_voucher),
+			rv_amount_received: Number(project.rv_amount_received),
+			teams: MyGlobal.GetFullDetailsFromIds(project.teams),
+			team_names: teamNames,
+			team_names_initials: MyGlobal.GetInitials(teamNames),
+			total_amount_received: Number(project.amount_received),
+			total_fees: Number(project.total_fees),
 		};
-
-		for (const i of main.projects) {
-			total.amountPending += Number(i.amount_pending);
-			total.amountReceived += Number(i.amount_received);
-			total.invoiceFees += Number(i.invoice_fees);
-			total.reimburseVoucher += Number(i.reimburse_voucher);
-			total.totalFees += Number(i.total_fees);
-		}
-
-		total.amountPending = MyGlobal.ThousandSeparator(total.amountPending);
-		total.amountReceived = MyGlobal.ThousandSeparator(total.amountReceived);
-		total.invoiceFees = MyGlobal.ThousandSeparator(total.invoiceFees);
-		total.reimburseVoucher = MyGlobal.ThousandSeparator(total.reimburseVoucher);
-		total.totalFees = MyGlobal.ThousandSeparator(total.totalFees);
-
-		return total;
 	}
 
-	function openEmailAddress(emailAddress) {
-		globalThis.window.open(`mailto:${emailAddress}`, "_blank");
-	}
-
-	function openWhatsApp(phoneNumber) {
-		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
-	}
-
-	function setInputs(key, value) {
-		if (key == "from" || key == "to") {
-			setMain((s) => ({
-				...s,
-				filter: { ...s.filter, date: { ...s.filter.date, [key]: value } },
-			}));
-		} else {
-			setMain((s) => ({ ...s, filter: { ...s.filter, find: value } }));
-		}
-	}
-
-	function setSelectedCompany(object, i) {
-		setMain((s) => ({
-			...s,
-			selectedCompany: {
-				details: object,
-				id: object.id,
-				index: i,
-				name: object.name,
-			},
-		}));
-	}
-
-	function setSelectedCompanysProjects() {
-		if (main.selectedCompany.id == 0) {
-			setMain((s) => ({ ...s, projects: api.projects.copy }));
-		} else {
-			const selectedCompanysProjects = api.projects.copy.filter((f) => f.company_id == main.selectedCompany.id);
-
-			setMain((s) => ({ ...s, projects: selectedCompanysProjects }));
-		}
-	}
-
-	function setSort(column) {
-		setMain((s) => ({
-			...s,
-			sort: { column, isAscending: !s.sort.isAscending },
-		}));
-	}
-
-	async function setSupportData(action) {
-		setMain((s) => ({ ...s, supportData: true }));
+	async function getSingleClientData(action) {
+		setLoading((s) => ({ ...s, singleClient: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetSupportData, MyGlobal.GetHeaders({ clientId: client.id }));
+			const response = await axios.get(ApiEndpoints.Clients.GetSupportData, MyGlobal.GetHeaders({ clientId: client.id }));
 
 			if (response.status === 200) {
 				const companies = response.data.companies;
-				const projects = response.data.projects;
-				const projectExpenses = response.data.projectExpenses;
+				const normalizedProjects = response.data.projects.map(normalizeSingleClientProject);
 
-				const revisedProjects = [];
-
-				projects
-					.filter((f) => f.client_id == client.id)
-					.forEach((fe) => {
-						let companyName = "";
-						const company = companies.find((f) => f.id == fe.company_id);
-
-						if (typeof company === "object") {
-							companyName = company.name;
-						}
-
-						const invoiceFees = Number(fe.invoice_fees);
-						let invoiceFirmName = "";
-
-						const invoiceFirm = response.data.firms.find((f) => f.id == fe.firm_id);
-
-						if (typeof invoiceFirm === "object") {
-							invoiceFirmName = invoiceFirm.name;
-						}
-
-						let mainProjectName = "";
-						const mainProject = response.data.mainProjects.find((f) => f.id == fe.main_project_id);
-
-						if (typeof mainProject === "object") {
-							mainProjectName = mainProject.name;
-						}
-
-						let subProjectName = "";
-						const subProject = response.data.subProjects.find((f) => f.id == fe.sub_project_id);
-
-						if (typeof subProject === "object") {
-							subProjectName = subProject.name;
-						}
-
-						const invoiceAmountReceived = response.data.transactions.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.amount), 0);
-
-						const rvAmountReceived = response.data.rvTransactions.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.amount), 0);
-
-						const totalAmountReceived = invoiceAmountReceived + rvAmountReceived;
-
-						const reimburseVoucher = projectExpenses.filter((f) => f.project_id == fe.id).reduce((pv, cv) => pv + Number(cv.expense), 0);
-
-						const teamNames = MyGlobal.GetAnyDataFromId(fe.teams, "full_name");
-
-						const totalFees = invoiceFees + reimburseVoucher;
-
-						revisedProjects.push({
-							...fe,
-							amount_pending: totalFees - totalAmountReceived,
-							amount_received: totalAmountReceived,
-							company_name: companyName,
-							completed_on: dayjs(fe.completed_on).format("hh:mm:ss A - DD/MM/YYYY"),
-							invoice_amount_received: invoiceAmountReceived,
-							invoice_fees: invoiceFees,
-							invoice_firm_name: invoiceFirmName,
-							invoice_firm_initials: MyGlobal.GetInitials(invoiceFirmName),
-							main_project_name: mainProjectName,
-							reimburse_voucher: reimburseVoucher,
-							rv_amount_received: rvAmountReceived,
-							sub_project_name: subProjectName,
-							teams: MyGlobal.GetFullDetailsFromIds(fe.teams),
-							team_names: teamNames,
-							team_names_initials: MyGlobal.GetInitials(teamNames),
-							total_amount_received: totalAmountReceived,
-							total_fees: totalFees,
-						});
-					});
-
-				let referenceName = "";
-
-				if ("reference" in response.data) {
-					if (response.data.reference.length) {
-						referenceName = response.data.reference.at(0).name;
-					}
-				}
-
-				const selectedCompany = {
+				let nextSelectedCompany = {
 					details: {
 						address: "",
 						client_id: "",
@@ -440,258 +331,65 @@ export default function SingleClient({ client, unmount }) {
 				};
 
 				if (action && action === "reload-root") {
-					const companyObj = companies.find((f) => f.id === main.selectedCompany.id);
+					const companyObj = companies.find((f) => f.id === selectedCompany.id);
 
 					if (typeof companyObj === "object") {
-						selectedCompany.details = {
-							address: companyObj.address,
-							client_id: companyObj.client_id,
-							email_address: companyObj.email_address,
-							entry_at: companyObj.entry_at,
-							entry_by_id: companyObj.entry_by_id,
-							gstin: companyObj.gstin,
+						nextSelectedCompany = {
+							details: {
+								address: companyObj.address,
+								client_id: companyObj.client_id,
+								email_address: companyObj.email_address,
+								entry_at: companyObj.entry_at,
+								entry_by_id: companyObj.entry_by_id,
+								gstin: companyObj.gstin,
+								id: companyObj.id,
+								invoice_fees: companyObj.invoice_fees,
+								name: companyObj.name,
+								pan: companyObj.pan,
+								phone_number: companyObj.phone_number,
+								reimbursement_voucher: companyObj.reimbursement_voucher,
+								total_affiliate_fees: companyObj.total_affiliate_fees,
+							},
 							id: companyObj.id,
-							invoice_fees: companyObj.invoice_fees,
+							index: selectedCompany.index,
 							name: companyObj.name,
-							pan: companyObj.pan,
-							phone_number: companyObj.phone_number,
-							reimbursement_voucher: companyObj.reimbursement_voucher,
-							total_affiliate_fees: companyObj.total_affiliate_fees,
 						};
-						selectedCompany.id = companyObj.id;
-						selectedCompany.index = main.selectedCompany.index;
-						selectedCompany.name = companyObj.name;
 					}
 				}
 
-				setApi((s) => ({
-					...s,
-					companies,
-					projects: {
-						copy: revisedProjects,
-						data: revisedProjects,
-					},
-					referenceName,
-					tasks: projectExpenses,
-				}));
+				const visibleProjects = nextSelectedCompany.id == 0 ? normalizedProjects : normalizedProjects.filter((f) => f.company_id == nextSelectedCompany.id);
 
-				setMain((s) => ({ ...s, projects: revisedProjects, selectedCompany }));
-				setMounted((s) => ({ ...s, mainComponent: true }));
+				console.log(visibleProjects);
+
+				setCompanies(companies);
+				setAllProjects({ copy: normalizedProjects, data: visibleProjects });
+				setReferenceName(response.data.referenceName || "");
+				setSelectedCompany(nextSelectedCompany);
+				setSingleClientProjects(visibleProjects);
+				setSingleClientProjectsCopy(visibleProjects);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Single Client => Set Support Data");
 		} finally {
-			setMain((s) => ({ ...s, supportData: false }));
+			setLoading((s) => ({ ...s, singleClient: false }));
 		}
 	}
 
-	async function setUploadedFiles() {
-		setLoading((s) => ({ ...s, uploadedFiles: true }));
-
-		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Clients.GetFiles, MyGlobal.GetHeaders({ clientId: client.id }));
-
-			if (response.status === 200) {
-				setApi((s) => ({ ...s, uploadedFiles: response.data }));
-			}
-		} catch (error) {
-			console.log("");
-			// MyGlobal.HandleErrors(error, "Single Client => Set Uploaded Files");
-		} finally {
-			setLoading((s) => ({ ...s, uploadedFiles: false }));
+	function getStatusSeverityBackground(status) {
+		switch (status) {
+			case statuses.Active:
+				return "orange-background";
+			case statuses.Closed:
+			case statuses.Cancelled:
+				return "gray-background";
+			case statuses.Hold:
+				return "red-background";
+			case statuses.Completed:
+				return "green-background";
+			default:
+				return "orange-background";
 		}
 	}
-
-	function toggleEditCompanyBox() {
-		setMounted((s) => ({ ...s, editCompany: !s.editCompany }));
-	}
-
-	function toggleFilesView() {
-		setMounted((s) => ({ ...s, uploadedFiles: !s.uploadedFiles }));
-	}
-
-	function toggleSingleProjectView(object) {
-		setMain((s) => ({ ...s, selectedProject: object }));
-		setMounted((s) => ({ ...s, singleProject: object ? true : false }));
-	}
-
-	// UI Components
-	function uiClientDetails() {
-		const wrapper = "flex h-6 space-x-2 justify-center items-center cursor-pointer relative primary-tag-transparent-01";
-
-		const uploadedFilesIcon = loading.uploadedFiles ? (
-			<span className="px-2">
-				<SpinnerSmall />
-			</span>
-		) : (
-			<FontAwesomeIcon className="primary-text" icon={faCloudUpload} />
-		);
-
-		return (
-			<div className="flex w-full justify-between items-center">
-				<div className="flex w-4/5 space-x-2.5 justify-start items-center">
-					<span className="view-heading text-lg!">{client.name}</span>
-					<span className={wrapper}>
-						<FontAwesomeIcon className="primary-text" icon={faIdBadge} />
-						<span>{client.id}</span>
-					</span>
-					<span className={wrapper} onClick={() => openWhatsApp(client.phone_number)}>
-						<FontAwesomeIcon className="primary-text" icon={faWhatsapp} />
-						<span>{client.phone_number}</span>
-					</span>
-					<span className={wrapper} onClick={() => openEmailAddress(client.email_address)}>
-						<FontAwesomeIcon className="primary-text" icon={faEnvelope} />
-						<span>{client.email_address}</span>
-					</span>
-					<span className={wrapper}>
-						<FontAwesomeIcon className="primary-text" icon={faUserTag} />
-						<span>{api.referenceName}</span>
-					</span>
-					<span className={wrapper} onClick={() => toggleFilesView()}>
-						{uploadedFilesIcon}
-						<span>{uiUploadedFiles()}</span>
-					</span>
-				</div>
-				<div className="flex w-1/5 space-x-2.5 justify-end items-center cursor-pointer font-regular-10 primary-text">
-					<button className="primary-button-transparent-background" onClick={() => doExcelExport()}>
-						<FontAwesomeIcon className="primary-text" icon={faFileExcel} />
-					</button>
-				</div>
-			</div>
-		);
-	}
-
-	function uiCompanies() {
-		const companies = api.companies.length ? [...api.companies] : [];
-		companies.unshift({ id: 0, name: "All" });
-
-		return companies.map((m, i) => {
-			const selectedCompanyStyle = i == main.selectedCompany.index ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
-
-			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${selectedCompanyStyle} font-regular-10 hovered-rows`;
-
-			return (
-				<button className={wrapper} key={i} onClick={() => setSelectedCompany(m, i)}>
-					<span>{m.name || "Unnamed"}</span>
-				</button>
-			);
-		});
-	}
-
-	function uiFind() {
-		return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setInputs("find", e.target.value)} onClearButtonClick={() => setInputs("find", "")} placeholder="Find" showClearButton={showClearSearchButton} tabIndex={1} value={main.filter.find} width="w-44" />;
-	}
-
-	function uiFooter() {
-		const totalValues = getTotalValues();
-
-		return Object.values(headers)
-			.filter((f) => {
-				if (main.selectedCompany.id != 0) {
-					return f != headers.Company;
-				}
-				return f;
-			})
-			.map((m, i) => {
-				if (main.selectedCompany.id != 0) {
-					return (
-						<span className="flex w-[11.11%] justify-center items-center text-white font-medium-12" key={i}>
-							<span>{i == 4 && totalValues.invoiceFees}</span>
-							<span>{i == 5 && totalValues.reimburseVoucher}</span>
-							<span>{i == 6 && totalValues.amountReceived}</span>
-							<span>{i == 7 && totalValues.amountPending}</span>
-							<span>{i == 8 && totalValues.totalFees}</span>
-						</span>
-					);
-				} else {
-					return (
-						<span className="flex w-[10%] justify-center items-center text-white font-medium-12" key={i}>
-							<span>{i == 5 && totalValues.invoiceFees}</span>
-							<span>{i == 6 && totalValues.reimburseVoucher}</span>
-							<span>{i == 7 && totalValues.amountReceived}</span>
-							<span>{i == 8 && totalValues.amountPending}</span>
-							<span>{i == 9 && totalValues.totalFees}</span>
-						</span>
-					);
-				}
-			});
-	}
-
-	function uiFromDate() {
-		return (
-			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-start items-center rounded shadow contrast-background">
-				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-medium-11" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={main.filter.date.from} onChange={(e) => setInputs("from", e)} peekNextMonth placeholderText="From" tabIndex={1} selected={main.filter.date.from} selectsStart startDate={main.filter.date.from} showMonthDropdown showYearDropdown />
-				<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("from", "")} icon={faMultiply} />
-			</div>
-		);
-	}
-
-	function uiHeaders() {
-		return Object.values(headers)
-			.filter((f) => {
-				if (main.selectedCompany.id != 0) {
-					return f != headers.Company;
-				}
-				return f;
-			})
-			.map((m, i) => {
-				const showArrow = m == main.sort.column ? "visible" : "invisible";
-				const width = main.selectedCompany.id != 0 ? "w-[11.11%]" : "w-[10%]";
-				const wrapper = `flex ${width} h-9 space-x-1.5 justify-center items-center cursor-pointer text-center text-white font-medium-10`;
-
-				return (
-					<span className={wrapper} onClick={() => setSort(m)} key={i}>
-						<span>{m}</span>
-						<span className={showArrow}>{uiSortArrows(m)}</span>
-					</span>
-				);
-			});
-	}
-
-	function uiMain() {
-		if (!mounted.singleProject && !mounted.uploadedFiles) {
-			const selectedCompanyNameStyle = main.selectedCompany.name != "All" ? "flex w-1/2 space-x-2.5 justify-start items-center visible" : "invisible";
-
-			const showEditCompanyIcon = allowEditingCompany && main.selectedCompany.name != "All" ? "cursor-pointer visible green-text" : "invisible";
-
-			return (
-				<>
-					<div className="flex w-full px-5 py-2.5 space-x-3 justify-center items-center">
-						<FontAwesomeIcon className="cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
-						{uiClientDetails()}
-					</div>
-					<div className="flex flex-col w-full h-full space-y-2 justify-start items-center">
-						<div className="flex w-full px-5 space-x-5 justify-between items-center">
-							<div className="w-[10%] h-7" />
-							<div className="flex w-[90%] justify-between items-center">
-								<div className={selectedCompanyNameStyle}>
-									<span className="view-heading text-lg!">{main.selectedCompany.name}</span>
-									<FontAwesomeIcon className={showEditCompanyIcon} icon={faPencil} onClick={() => toggleEditCompanyBox()} size="sm" />
-								</div>
-								<div className="flex w-1/2 space-x-5 justify-end items-center">
-									<FontAwesomeIcon className="cursor-pointer p-2 hover:w-fit hover:p-2 hover:bg-blue-500 hover:text-white hover:rounded-full hover:transition-all duration-500" icon={faCamera} onClick={() => captureScreenshot()} />
-									{uiFromDate()}
-									{uiToDate()}
-									{uiFind()}
-								</div>
-							</div>
-						</div>
-						<div className="flex w-full h-full px-5 space-x-5 justify-center items-start">
-							<div className="flex flex-col w-[10%] space-y-2.5 justify-start items-center">{uiCompanies()}</div>
-							<div className="flex flex-col w-[90%] h-full justify-start items-center full-border" ref={captureRef}>
-								<div className="flex w-full primary-background">{uiHeaders()}</div>
-								<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.data.length} />
-								<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
-							</div>
-						</div>
-					</div>
-				</>
-			);
-		}
-	}
-
-	const statuses = useMemo(() => MyConstants.Statuses.Projects2, []);
 
 	function getStatusSeverityBackground2(status) {
 		switch (status) {
@@ -729,27 +427,257 @@ export default function SingleClient({ client, unmount }) {
 		}
 	}
 
-	function getStatusSeverityBackground(status) {
-		switch (status) {
-			case statuses.Active:
-				return "orange-background";
-			case statuses.Closed:
-			case statuses.Cancelled:
-				return "gray-background";
-			case statuses.Hold:
-				return "red-background";
-			case statuses.Completed:
-				return "green-background";
-			default:
-				return "orange-background";
+	async function getUploadedFiles() {
+		try {
+			setLoading((s) => ({ ...s, uploadedFiles: true }));
+
+			const response = await axios.get(ApiEndpoints.Clients.GetFiles, MyGlobal.GetHeaders({ clientId: client.id }));
+
+			if (response.status === 200) {
+				setUploadedFiles(response.data);
+			}
+		} catch (error) {
+			console.log("");
+		} finally {
+			setLoading((s) => ({ ...s, uploadedFiles: false }));
 		}
 	}
 
-	function uiRows(row, i) {
-		const width = main.selectedCompany.id != 0 ? "w-[11.11%]" : "w-[10%]";
-		const style = `flex flex-wrap ${width} justify-center items-center text-center`;
+	function getTotalValues() {
+		const total = {
+			amountPending: 0,
+			amountReceived: 0,
+			invoiceFees: 0,
+			reimburseVoucher: 0,
+			totalFees: 0,
+		};
 
-		const tooltipStyle = `${style} cursor-help primary-text`;
+		singleClientProjects.map((i) => {
+			total.amountPending += Number(i.amount_pending);
+			total.amountReceived += Number(i.amount_received);
+			total.invoiceFees += Number(i.invoice_fees);
+			total.reimburseVoucher += Number(i.reimburse_voucher);
+			total.totalFees += Number(i.total_fees);
+		});
+
+		total.amountPending = MyGlobal.ThousandSeparator(total.amountPending);
+		total.amountReceived = MyGlobal.ThousandSeparator(total.amountReceived);
+		total.invoiceFees = MyGlobal.ThousandSeparator(total.invoiceFees);
+		total.reimburseVoucher = MyGlobal.ThousandSeparator(total.reimburseVoucher);
+		total.totalFees = MyGlobal.ThousandSeparator(total.totalFees);
+
+		return total;
+	}
+
+	function openEmailAddress(emailAddress) {
+		globalThis.window.open(`mailto:${emailAddress}`, "_blank");
+	}
+
+	function openWhatsApp(phoneNumber) {
+		globalThis.window.open(`https://wa.me/1${phoneNumber}`, "_blank");
+	}
+
+	function sanitizeScreenshotClone(clonedDocument) {
+		const sourceElement = screenshotRef.current;
+		const clonedElement = clonedDocument.querySelector("[data-screenshot-root='true']");
+		if (!sourceElement || !clonedElement) return;
+
+		const sourceNodes = [sourceElement, ...sourceElement.querySelectorAll("*")];
+		const clonedNodes = [clonedElement, ...clonedElement.querySelectorAll("*")];
+		const styleProperties = ["backgroundColor", "backgroundImage", "borderTopColor", "borderRightColor", "borderBottomColor", "borderLeftColor", "boxShadow", "caretColor", "color", "fill", "outlineColor", "stroke", "textDecorationColor", "textShadow"];
+
+		sourceNodes.forEach((sourceNode, index) => {
+			const clonedNode = clonedNodes[index];
+			if (!(sourceNode instanceof Element) || !(clonedNode instanceof Element)) return;
+
+			const computedStyle = globalThis.getComputedStyle(sourceNode);
+
+			clonedNode.style.animation = "none";
+			clonedNode.style.transition = "none";
+
+			styleProperties.forEach((fe) => {
+				const value = computedStyle[fe];
+				if (value) clonedNode.style[fe] = value;
+			});
+		});
+	}
+
+	function setInputs(key, value) {
+		setFilter((s) => ({ ...s, [key]: value }));
+	}
+
+	function getSelectedCompanyProjects() {
+		if (selectedCompany.id == 0) return allProjects.copy;
+		return allProjects.copy.filter((f) => f.company_id == selectedCompany.id);
+	}
+
+	function setSelectedCompanysProjects() {
+		const selectedCompanysProjects = getSelectedCompanyProjects();
+		setAllProjects((s) => ({ ...s, data: selectedCompanysProjects }));
+		setSingleClientProjects(selectedCompanysProjects);
+		setSingleClientProjectsCopy(selectedCompanysProjects);
+	}
+
+	function toggleEditCompanyBox() {
+		setIsOpen((s) => ({ ...s, editCompany: !s.editCompany }));
+	}
+
+	function toggleDeleteCompanyBox() {
+		setIsOpen((s) => ({ ...s, deleteCompany: !s.deleteCompany }));
+	}
+
+	function toggleFilesView() {
+		setIsOpen((s) => ({ ...s, uploadedFiles: !s.uploadedFiles }));
+	}
+
+	function toggleSingleProjectView(object) {
+		setSelectedProject(object);
+		setIsOpen((s) => ({ ...s, singleProject: object ? true : false }));
+	}
+
+	const sortedProjects = useMemo(() => doSorting(), [doSorting]);
+
+	// UI Components
+	function uiCompanies() {
+		const _companies = companies.length ? [...companies] : [];
+		_companies.unshift({ id: 0, name: "All" });
+
+		return _companies.map((m, i) => {
+			const selectedCompanyStyle = i == selectedCompany.index ? "blue-background text-white" : "bg-white text-gray-400";
+			const wrapper = `flex w-full items-center-safe rounded shadow ${selectedCompanyStyle} font-regular-10 cursor-pointer relative hover:bg-(--blue) hover:text-white`;
+
+			return (
+				<button className={wrapper} key={i} onClick={() => setSelectedCompany({ details: m, id: m.id, index: i, name: m.name })}>
+					<span className="px-4 py-2 w-full text-left">{m.name || "Unnamed"}</span>
+					<div className="absolute -top-1 -right-2.5 flex rounded-full bg-white justify-center-safe items-center-safe">
+						{allowEditingCompany && i > 0 && i == selectedCompany.index ? (
+							<Tippy content={<Tooltip text={"Edit Company"} />} placement="bottom">
+								<FontAwesomeIcon className="cursor-pointer text-green-600 bg-transparent p-2 rounded-full hover:text-white hover:bg-green-600 transition-colors duration-300" icon={faPencil} onClick={() => toggleEditCompanyBox()} size="md" />
+							</Tippy>
+						) : null}
+						{allowDeletingCompany && i > 0 && i == selectedCompany.index ? (
+							<Tippy content={<Tooltip text={"Delete Company"} />} placement="bottom">
+								<FontAwesomeIcon className="cursor-pointer text-rose-600 bg-transparent p-2 rounded-full hover:text-white hover:bg-rose-600 transition-colors duration-300" icon={faTrash} onClick={() => toggleDeleteCompanyBox()} size="md" />
+							</Tippy>
+						) : null}
+					</div>
+				</button>
+			);
+		});
+	}
+
+	function uiFinancialYearList() {
+		return financialYears.map((m, i) => {
+			const isSelected = m === filter.financialYear;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center-safe cursor-pointer ${aesthetics} font-regular-10 text-left`;
+
+			return (
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setFilter((s) => ({ ...s, financialYear: m }))}>
+					<div className="flex w-full space-x-2 items-center-safe">
+						<span>{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}</span>
+						<span>{m}</span>
+					</div>
+				</MenuItem>
+			);
+		});
+	}
+
+	function uiFooter() {
+		const totalValues = getTotalValues();
+
+		return arrHeaders
+			.filter((f) => {
+				if (selectedCompany.id != 0) return f != SingleClientHeaders.Company;
+				return f;
+			})
+			.map((m, i) => {
+				if (selectedCompany.id != 0) {
+					return (
+						<span className="flex w-[11.11%] justify-center-safe items-center-safe text-white font-medium-12" key={i}>
+							<span>{i == 4 && totalValues.invoiceFees}</span>
+							<span>{i == 5 && totalValues.reimburseVoucher}</span>
+							<span>{i == 6 && totalValues.amountReceived}</span>
+							<span>{i == 7 && totalValues.amountPending}</span>
+							<span>{i == 8 && totalValues.totalFees}</span>
+						</span>
+					);
+				} else {
+					return (
+						<span className="flex w-[10%] justify-center-safe items-center-safe text-white font-medium-12" key={i}>
+							<span>{i == 5 && totalValues.invoiceFees}</span>
+							<span>{i == 6 && totalValues.reimburseVoucher}</span>
+							<span>{i == 7 && totalValues.amountReceived}</span>
+							<span>{i == 8 && totalValues.amountPending}</span>
+							<span>{i == 9 && totalValues.totalFees}</span>
+						</span>
+					);
+				}
+			});
+	}
+
+	function uiHeaders() {
+		return arrHeaders
+			.filter((f) => {
+				if (selectedCompany.id != 0) return f != SingleClientHeaders.Company;
+				return f;
+			})
+			.map((m, i) => {
+				const showArrow = m == sort.column ? "visible" : "invisible";
+				const width = selectedCompany.id != 0 ? "w-[11.11%]" : "w-[10%]";
+				const wrapper = `flex ${width} h-9 space-x-1.5 justify-center-safe items-center-safe cursor-pointer text-center text-white font-medium-10`;
+
+				return (
+					<span className={wrapper} onClick={() => setSort((s) => ({ ...s, column: m, isAscending: !s.isAscending }))} key={i}>
+						<span>{m}</span>
+						<span className={showArrow}>{uiSortArrows(m)}</span>
+					</span>
+				);
+			});
+	}
+
+	function uiMain() {
+		if (!isOpen.singleProject && !isOpen.uploadedFiles) {
+			return (
+				<>
+					<div className="flex w-full px-5 py-2.5 space-x-3 justify-center-safe items-center-safe">
+						<FontAwesomeIcon className="cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
+						{uiTopBar()}
+					</div>
+					<div className="flex flex-col w-full h-full items-center-safe">
+						<div className="flex w-full h-full px-5 space-x-5 justify-center-safe items-start">
+							<div className="flex flex-col w-[10%] space-y-2.5 items-center-safe">{uiCompanies()}</div>
+							<div className="flex flex-col w-[90%] h-full items-center-safe full-border" ref={capturePreviewRef}>
+								<div className="flex w-full primary-background">{uiHeaders()}</div>
+								{uiProjectList(sortedProjects)}
+								<div className="flex w-full h-9 justify-center-safe items-center-safe primary-background">{uiFooter()}</div>
+							</div>
+						</div>
+						{isCapturingScreenshot && (
+							<div className="fixed top-0 -left-2500">
+								<div className="flex flex-col items-center-safe full-border bg-white" data-screenshot-root="true" ref={screenshotRef} style={captureWidth ? { width: `${captureWidth}px` } : undefined}>
+									<div className="flex w-full primary-background">{uiHeaders()}</div>
+									{uiProjectList(sortedProjects, true)}
+									<div className="flex w-full h-9 justify-center-safe items-center-safe primary-background">{uiFooter()}</div>
+								</div>
+							</div>
+						)}
+					</div>
+				</>
+			);
+		}
+	}
+
+	function uiProjectList(projectRows, captureMode = false) {
+		if (captureMode) return <div className="w-full bottom-border contrast-background">{projectRows.map((row, i) => uiRows(row, i))}</div>;
+
+		return <Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={projectRows} itemContent={(i, row) => uiRows(row, i)} totalCount={projectRows.length} />;
+	}
+
+	function uiRows(row, i) {
+		const width = selectedCompany.id != 0 ? "w-[11.11%]" : "w-[10%]";
+		const style = `flex ${width} justify-center-safe items-center-safe text-center`;
+
 		const tooltipStyle2 = `${style} cursor-help`;
 
 		const fancyRightBorderStyle = "absolute w-3 h-[50px] rounded-tr-full rounded-br-full " + getStatusSeverityBackground(row.status) + " -left-1";
@@ -770,17 +698,17 @@ export default function SingleClient({ client, unmount }) {
 		const totalFeesStyle = `${style} font-semibold-11 ${totalFeesColour}`;
 
 		return (
-			<div className="flex w-full py-3 justify-center items-center black-white-background bottom-border font-regular-10 black-text" key={i}>
+			<div className="flex w-full py-3 justify-center-safe items-center-safe contrast-background bottom-border font-regular-10 black-text" key={i}>
 				<div className={`${style} flex-col!`}>
 					<span className={fancyRightBorderStyle} />
 					<span
 						className="font-semibold-11"
 						dangerouslySetInnerHTML={{
-							__html: MyGlobal.HighlightText(row.id, main.filter.find),
+							__html: MyGlobal.HighlightText(row.id, filter.find),
 						}}
 					/>
 					<Tippy content={<Tooltip text={dayjs(row.started_on).format("hh:mm:ss A")} />} placement="bottom">
-						<span className={`${tooltipStyle2} font-regular-9 gray-text`}>{dayjs(row.started_on).format("DD/MM/YYYY")}</span>
+						<span className="cursor-pointer font-regular-9 gray-text">{dayjs(row.started_on).format("DD/MM/YYYY")}</span>
 					</Tippy>
 				</div>
 
@@ -788,17 +716,17 @@ export default function SingleClient({ client, unmount }) {
 					<span
 						className={`${tooltipStyle2} cursor-pointer font-semibold-10 primary-text`}
 						dangerouslySetInnerHTML={{
-							__html: MyGlobal.HighlightText(row.sub_project_name, main.filter.find),
+							__html: MyGlobal.HighlightText(row.sub_project_name, filter.find),
 						}}
 						onClick={() => toggleSingleProjectView(row)}
 					/>
 				</Tippy>
 
-				{main.selectedCompany.id == 0 && (
+				{selectedCompany.id == 0 && (
 					<span
 						className={`${style} overflow-hidden text-ellipsis [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]`}
 						dangerouslySetInnerHTML={{
-							__html: MyGlobal.HighlightText(row.company_name, main.filter.find),
+							__html: MyGlobal.HighlightText(row.company_name, filter.find),
 						}}
 					/>
 				)}
@@ -812,7 +740,7 @@ export default function SingleClient({ client, unmount }) {
 						<span
 							className="font-semibold-10"
 							dangerouslySetInnerHTML={{
-								__html: MyGlobal.HighlightText(row.invoice_firm_name, main.filter.find),
+								__html: MyGlobal.HighlightText(row.invoice_firm_name, filter.find),
 							}}
 						/>
 					</Tippy>
@@ -824,14 +752,14 @@ export default function SingleClient({ client, unmount }) {
 				<span
 					className={invoiceFeesStyle}
 					dangerouslySetInnerHTML={{
-						__html: MyGlobal.HighlightText(row.invoice_fees, main.filter.find),
+						__html: MyGlobal.HighlightText(row.invoice_fees, filter.find),
 					}}
 				/>
 
 				<span
 					className={rvFeesStyle}
 					dangerouslySetInnerHTML={{
-						__html: MyGlobal.HighlightText(row.reimburse_voucher, main.filter.find),
+						__html: MyGlobal.HighlightText(row.reimburse_voucher, filter.find),
 					}}
 				/>
 
@@ -840,7 +768,7 @@ export default function SingleClient({ client, unmount }) {
 						<span
 							className={`${amountReceivedStyle} w-4/5 underline underline-offset-4 cursor-help`}
 							dangerouslySetInnerHTML={{
-								__html: MyGlobal.HighlightText(row.amount_received, main.filter.find),
+								__html: MyGlobal.HighlightText(row.amount_received, filter.find),
 							}}
 						/>
 					</Tippy>
@@ -849,14 +777,14 @@ export default function SingleClient({ client, unmount }) {
 				<span
 					className={amountPendingStyle}
 					dangerouslySetInnerHTML={{
-						__html: MyGlobal.HighlightText(row.amount_pending, main.filter.find),
+						__html: MyGlobal.HighlightText(row.amount_pending, filter.find),
 					}}
 				/>
 
 				<span
 					className={totalFeesStyle}
 					dangerouslySetInnerHTML={{
-						__html: MyGlobal.HighlightText(row.total_fees, main.filter.find),
+						__html: MyGlobal.HighlightText(row.total_fees, filter.find),
 					}}
 				/>
 			</div>
@@ -864,66 +792,115 @@ export default function SingleClient({ client, unmount }) {
 	}
 
 	function uiSortArrows(column) {
-		if (main.sort.column === column) {
-			if (main.sort.isAscending) return <FontAwesomeIcon icon={faSortAmountAsc} />;
-			return <FontAwesomeIcon icon={faSortAmountDesc} />;
-		}
+		if (sort.isAscending) return <FontAwesomeIcon icon={faSortAmountAsc} />;
+		return <FontAwesomeIcon icon={faSortAmountDesc} />;
 	}
 
-	function uiToDate() {
+	function uiTopBar() {
 		return (
-			<div className="flex w-36 h-7.5 px-2.5 space-x-1 justify-start items-center rounded shadow contrast-background">
-				<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-				<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-medium-11" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={main.filter.date.to} onChange={(e) => setInputs("to", e)} peekNextMonth placeholderText="To" tabIndex={3} selected={main.filter.date.to} selectsStart startDate={main.filter.date.to} showMonthDropdown showYearDropdown />
-				<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("to", "")} icon={faMultiply} />
+			<div className="flex w-full justify-between items-center-safe">
+				<div className="flex flex-col w-1/4 justify-center-safe -space-y-1">
+					<span className="text-gray-500 text-xs">{client.id}</span>
+					<span className="view-heading text-xl!">{client.name}</span>
+				</div>
+				<div className="flex w-3/4 space-x-3 items-center-safe">
+					<div className="flex p-2.5 space-x-3 justify-center-safe items-center-safe rounded-full shadow">
+						<Tippy content={<Tooltip text={client.phoneNumber} />} placement="bottom">
+							<FontAwesomeIcon className="bg-transparent cursor-pointer text-teal-600 transition-all duration-200 hover:scale-125 focus:outline-none" icon={faWhatsapp} onClick={() => openWhatsApp(client.phoneNumber)} size="md" />
+						</Tippy>
+						<Tippy content={<Tooltip text={client.emailAddress} />} placement="bottom">
+							<FontAwesomeIcon className="bg-transparent cursor-pointer text-rose-600 transition-all duration-200 hover:scale-125 focus:outline-none" icon={faEnvelope} onClick={() => openEmailAddress(client.emailAddress)} size="md" />
+						</Tippy>
+						<Tippy content={<Tooltip text={referenceName} />} disabled={!referenceName.length} placement="bottom">
+							<FontAwesomeIcon className="bg-transparent text-sky-600 transition-all duration-200 hover:scale-125 focus:outline-none" icon={faUserTag} size="md" />
+						</Tippy>
+					</div>
+					<div className="flex p-2.5 space-x-3 justify-center-safe items-center-safe rounded-full shadow">
+						<Menu as="div" className="flex w-35 justify-center-safe items-center-safe relative">
+							<MenuButton className="flex w-full h-7.5 px-2.5 justify-between items-center-safe focus:outline-none relative z-40 rounded-full shadow contrast-background font-regular-10">
+								<div className="flex w-full space-x-2.5 items-center-safe">
+									<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+									<span className="gray-text">{filter.financialYear || "Year"}</span>
+								</div>
+								<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setFilter((s) => ({ ...s, financialYear: "" }))} icon={faMultiply} />
+							</MenuButton>
+							<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background shadow focus:outline-none z-50">{uiFinancialYearList()}</MenuItems>
+						</Menu>
+						<div className="flex w-fit h-7.5 px-2.5 space-x-1 items-center-safe rounded-full shadow contrast-background">
+							<FontAwesomeIcon className="blue-text" icon={faCalendar} size="sm" />
+							<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={filter.fromDate} onChange={(e) => setInputs("fromDate", e)} peekNextMonth placeholderText="From" tabIndex={1} selected={filter.fromDate} selectsStart startDate={filter.fromDate} showMonthDropdown showYearDropdown />
+							<FontAwesomeIcon className={showFromDateClearButton} onClick={() => setInputs("fromDate", "")} icon={faMultiply} />
+							<FontAwesomeIcon className="blue-text" icon={faCalendar} size="sm" />
+							<ReactDatePicker className="w-20 h-6 bg-transparent outline-none font-regular-10" dateFormat="dd-MM-YYYY" dropdownMode="select" endDate={filter.toDate} onChange={(e) => setInputs("toDate", e)} peekNextMonth placeholderText="To" tabIndex={2} selected={filter.toDate} selectsStart startDate={filter.toDate} showMonthDropdown showYearDropdown />
+							<FontAwesomeIcon className={showToDateClearButton} onClick={() => setInputs("toDate", "")} icon={faMultiply} />
+						</div>
+						<TextInputNative id="findBox" icon={faSearch} onChange={(e) => setInputs("find", e.target.value)} onClearButtonClick={() => setInputs("find", "")} placeholder="Find" showClearButton={showClearSearchButton} tabIndex={1} value={filter.find} width="w-[144px]" />
+					</div>
+					<div className="flex p-2.5 space-x-3 justify-center-safe items-center-safe rounded-full shadow">
+						<Tippy content={<Tooltip text="Open uploaded files" />} placement="bottom">
+							<FontAwesomeIcon className="bg-transparent cursor-pointer text-blue-600 transition-all duration-200 hover:scale-125 focus:outline-none" icon={loading.uploadedFiles ? faSpinner : faCloudUpload} onClick={() => toggleFilesView()} size="md" spin={loading.uploadedFiles} />
+						</Tippy>
+						<Tippy content={<Tooltip text="Download all clients data in Excel file." />} placement="bottom">
+							<FontAwesomeIcon className="bg-transparent cursor-pointer text-emerald-600 transition-all duration-200 hover:scale-125 focus:outline-none" icon={faDownload} onClick={() => doExcelExport()} size="md" />
+						</Tippy>
+						<Tippy content={<Tooltip text="Capture screenshot" />} placement="bottom">
+							<FontAwesomeIcon className="bg-transparent cursor-pointer text-purple-600 transition-all duration-200 hover:scale-125 focus:outline-none" icon={faCamera} onClick={() => captureScreenshot()} size="md" />
+						</Tippy>
+					</div>
+				</div>
 			</div>
 		);
 	}
 
-	function uiUploadedFiles() {
-		if (!loading.uploadedFiles) {
-			if (!api.uploadedFiles.length) return <span>Upload</span>;
-
-			const label = api.uploadedFiles.length == 1 ? "File" : "Files";
-
-			return (
-				<div>
-					{api.uploadedFiles.length} {label}
-				</div>
-			);
-		}
-	}
-
 	// Hooks
 	useEffect(() => {
-		setSupportData();
-		setUploadedFiles();
+		getSingleClientData();
+		getUploadedFiles();
 	}, []);
 
 	useEffect(() => {
-		setSelectedCompanysProjects();
-	}, [main.selectedCompany]);
-
-	useEffect(() => {
-		if (main.filter.date.from && main.filter.date.to) {
-			doFiltering("date");
-		}
-	}, [main.filter.date]);
+		if (filter.fromDate && filter.toDate) doFiltering("date");
+	}, [filter.fromDate, filter.toDate]);
 
 	useEffect(() => {
 		doFiltering();
-	}, [main.filter.find]);
+	}, [filter.find]);
+
+	useEffect(() => {
+		doFiltering(filter.financialYear ? "financialYear" : "");
+	}, [filter.financialYear]);
+
+	useEffect(() => {
+		if (filter.fromDate && filter.toDate) {
+			doFiltering("date");
+			return;
+		}
+
+		if (filter.financialYear) {
+			doFiltering("financialYear");
+			return;
+		}
+
+		if (filter.find) {
+			doFiltering();
+			return;
+		}
+
+		setSelectedCompanysProjects();
+	}, [selectedCompany]);
 
 	// Main UI
 	return (
 		<>
 			{uiMain()}
 
-			{mounted.editCompany && <EditCompany company={main.selectedCompany} mount={mounted.editCompany} reload={setSupportData} unmount={toggleEditCompanyBox} />}
+			{isOpen.editCompany && <EditCompany company={selectedCompany} mount={isOpen.editCompany} reload={getSingleClientData} unmount={toggleEditCompanyBox} />}
 
-			{mounted.uploadedFiles && <Files close={toggleFilesView} files={api.uploadedFiles} refresh={setUploadedFiles} thisClient={client} />}
+			{isOpen.deleteCompany && <DeleteCompany company={selectedCompany} mount={isOpen.deleteCompany} reload={getSingleClientData} unmount={toggleDeleteCompanyBox} />}
 
-			{mounted.singleProject && <SingleProject client={client} project={main.selectedProject} reload={setSupportData} source="Single Client => Single Project" unmount={toggleSingleProjectView} />}
+			{isOpen.uploadedFiles && <Files close={toggleFilesView} files={uploadedFiles} refresh={getUploadedFiles} thisClient={client} />}
+
+			{isOpen.singleProject && <SingleProject client={client} project={selectedProject} reload={getSingleClientData} source="Single Client => Single Project" unmount={toggleSingleProjectView} />}
 		</>
 	);
 }

@@ -2,10 +2,11 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import MyConstants from "./constants";
+import { ApiEndpoints, Messages, ToastTypes } from "./constants";
 import secureLocalStorage from "react-secure-storage";
 
 import { toast } from "react-toastify";
+import { decrypt, IsUserAdministrator } from "./myGlobal";
 
 const CryptoJS = require("crypto-js");
 const encryptionIv = CryptoJS.enc.Hex.parse("00000000000000000000000000000000");
@@ -78,55 +79,10 @@ export const MyGlobal = Object.freeze({
 	AddActivity: async (activity, module = "General") => {
 		try {
 			const body = { activity, module, type: "add-user-activity", userId };
-			await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Add Activity");
 		}
-	},
-
-	AllowOnlyAlphabetsAndSpace: (value) => {
-		return String(value).replace(/[^A-Za-z\s]/g, "");
-	},
-
-	Capitalize: (payload) => {
-		return !payload
-			? ""
-			: String(payload)
-					.toLowerCase()
-					.split(" ")
-					.map((character) => character.charAt(0).toUpperCase() + character.slice(1))
-					.join(" ");
-	},
-
-	ClearAllUserData: () => {
-		MyGlobal.Storages.Local.RemoveAll();
-		MyGlobal.Storages.Session.RemoveAll();
-	},
-
-	Decrypt: (encryptedValue) => {
-		return CryptoJS.AES.decrypt(encryptedValue, encryptionKey, { iv: encryptionIv }).toString(CryptoJS.enc.Utf8);
-	},
-
-	Encrypt: (rawValue) => {
-		return CryptoJS.AES.encrypt(rawValue, encryptionKey, { iv: encryptionIv }).toString();
-	},
-
-	EscapeString: (value) => {
-		return String(value).replace(/'/g, "''");
-	},
-
-	ExtractNumbers: (value) => {
-		return Number(String(value).replace(/[^0-9-]/g, ""));
-	},
-
-	FormatBytes: (bytes) => {
-		if (bytes === 0) return "0 Bytes";
-
-		const k = 1024;
-		const sizes = ["Bytes", "KB", "MB", "GB"];
-		const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes.at(i);
 	},
 
 	FormatCurrency: (value) => {
@@ -141,10 +97,6 @@ export const MyGlobal = Object.freeze({
 		const formattedValue = numberValue.toLocaleString("en-IN", formatOptions);
 
 		return formattedValue.includes(".00") ? formattedValue.replace(".00", "") : formattedValue;
-	},
-
-	GenerateYearForInvoiceId: () => {
-		return `${dayjs(new Date()).format("YYYY")}-${dayjs(new Date()).set("year", 1)}`;
 	},
 
 	GetAllUsers: () => {
@@ -336,7 +288,7 @@ export const MyGlobal = Object.freeze({
 		const userData = MyGlobal.Storages.Local.DoesExist(`${applicationName}UserDetails`);
 
 		if (userData) {
-			const decrypted = MyGlobal.Decrypt(userData);
+			const decrypted = decrypt(userData);
 			const parsed = JSON.parse(decrypted);
 
 			userId = parsed.id;
@@ -366,16 +318,16 @@ export const MyGlobal = Object.freeze({
 
 				switch (error.response.status) {
 					case 400:
-						message = MyConstants.Messages.BadRequest;
+						message = Messages.BadRequest;
 						break;
 					case 401:
-						message = MyConstants.Messages.InvalidUser;
+						message = Messages.InvalidUser;
 						break;
 					case 403:
-						message = MyConstants.Messages.AccessRevoked;
+						message = Messages.AccessRevoked;
 						break;
 					case 404:
-						message = MyConstants.Messages.NoDataFound;
+						message = Messages.NoDataFound;
 						break;
 					case 500:
 						message = error.response.statusText;
@@ -388,13 +340,13 @@ export const MyGlobal = Object.freeze({
 
 				if (message.length) {
 					if (source != "Single Client => Set Uploaded Files") {
-						MyGlobal.ShowToasts(MyConstants.ToastTypes.Error, message);
+						MyGlobal.ShowToasts(ToastTypes.Error, message);
 					}
 				}
 
 				if (source) {
 					try {
-						await axios.post(MyConstants.ApiEndpoints.ErrorLogger, { errorText: error.response.statusText, source, userId });
+						await axios.post(ApiEndpoints.ErrorLogger, { errorText: error.response.statusText, source, userId });
 					} catch (error) {
 						console.error(error);
 					}
@@ -414,6 +366,8 @@ export const MyGlobal = Object.freeze({
 	},
 
 	HasPermission: (permission) => {
+		if (IsUserAdministrator()) return true;
+
 		const has = permissions.filter((f) => f.name == permission);
 		const has_ = has.length;
 		const has__ = has_ > 0;
@@ -443,7 +397,7 @@ export const MyGlobal = Object.freeze({
 
 	LogErrors: async (errorText, source) => {
 		try {
-			await axios.post(MyConstants.ApiEndpoints.ErrorLogger, { errorText, source, userId });
+			await axios.post(ApiEndpoints.ErrorLogger, { errorText, source, userId });
 		} catch (error) {
 			console.error(error);
 		}
@@ -579,7 +533,7 @@ export const MyGlobal = Object.freeze({
 		const userDetails = MyGlobal.Storages.Local.DoesExist(`${applicationName}UserDetails`);
 
 		if (userDetails) {
-			const decryptedUserDetails = MyGlobal.Decrypt(userDetails);
+			const decryptedUserDetails = decrypt(userDetails);
 			const parsedUserDetails = JSON.parse(decryptedUserDetails);
 
 			userId = parsedUserDetails.id;
@@ -600,15 +554,15 @@ export const MyGlobal = Object.freeze({
 	},
 
 	ShowErrorToast: (message) => {
-		MyGlobal.ShowToasts(MyConstants.ToastTypes.Error, message);
+		MyGlobal.ShowToasts(ToastTypes.Error, message);
 	},
 
 	ShowInformationToast: (message) => {
-		MyGlobal.ShowToasts(MyConstants.ToastTypes.Information, message);
+		MyGlobal.ShowToasts(ToastTypes.Information, message);
 	},
 
 	ShowSuccessToast: (message) => {
-		MyGlobal.ShowToasts(MyConstants.ToastTypes.Success, message);
+		MyGlobal.ShowToasts(ToastTypes.Success, message);
 	},
 
 	ShowToasts: (type, message) => {
@@ -629,7 +583,7 @@ export const MyGlobal = Object.freeze({
 	},
 
 	ShowWarningToast: (message) => {
-		MyGlobal.ShowToasts(MyConstants.ToastTypes.Warning, message);
+		MyGlobal.ShowToasts(ToastTypes.Warning, message);
 	},
 
 	Storages: {
@@ -698,17 +652,17 @@ export const MyGlobal = Object.freeze({
 		const _emailAddress = String(emailAddress);
 
 		if (!_emailAddress.includes("@")) {
-			return { hasError: true, text: MyConstants.Messages.NoAtSymbolInEmailAddress };
+			return { hasError: true, text: Messages.NoAtSymbolInEmailAddress };
 		}
 
 		if (!_emailAddress.includes(".")) {
-			return { hasError: true, text: MyConstants.Messages.NoPeriodSymbolInEmailAddress };
+			return { hasError: true, text: Messages.NoPeriodSymbolInEmailAddress };
 		}
 
 		const emailRegex = /^[a-zA-Z0-9._%+-]+@(admins\.spire\.com|spire\.com)$/;
 
 		if (!emailRegex.test(_emailAddress)) {
-			return { hasError: true, text: MyConstants.Messages.SpireDomainOnly };
+			return { hasError: true, text: Messages.SpireDomainOnly };
 		}
 
 		return { hasError: false, text: "" };

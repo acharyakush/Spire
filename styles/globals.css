@@ -1,27 +1,19 @@
 @import "tailwindcss";
 
 @font-face {
-	font-family: "Source Sans 3";
-	src: url("/fonts/source-sans-3/variable.ttf") format("truetype");
+	font-family: "Inter";
+	src: url("/fonts/inter/variable.ttf") format("truetype");
 	font-weight: 200 900;
 	font-style: normal;
 	font-display: swap;
 }
 
-@font-face {
-	font-family: "Source Sans 3";
-	src: url("/fonts/source-sans-3/italic-variable.ttf") format("truetype");
-	font-weight: 200 900;
-	font-style: italic;
-	font-display: swap;
-}
-
 :root {
-	--bold: "Source Sans 3", Arial, sans-serif;
+	--bold: "Inter", Arial, sans-serif;
 	--font-family: var(--regular);
-	--medium: "Source Sans 3", Arial, sans-serif;
-	--regular: "Source Sans 3", Arial, sans-serif;
-	--semibold: "Source Sans 3", Arial, sans-serif;
+	--medium: "Inter", Arial, sans-serif;
+	--regular: "Inter", Arial, sans-serif;
+	--semibold: "Inter", Arial, sans-serif;
 }
 
 @layer base {
@@ -68,13 +60,13 @@
 	--orange-transparent-01: rgba(209, 125, 0, 0.1);
 	--orange-transparent-50: rgba(209, 125, 0, 0.5);
 
-	--primary: #193a6f;
+	--primary: #093e52;
 	--primary-background: #f4f7fc;
 	--primary-border: #d6dee8;
 	--primary-light: #ecf1fa;
-	--primary-transparent-005: rgba(25, 58, 111, 0.05);
-	--primary-transparent-01: rgba(25, 58, 111, 0.1);
-	--primary-transparent-05: rgba(25, 58, 111, 0.5);
+	--primary-transparent-005: rgba(9, 62, 82, 0.05);
+	--primary-transparent-01: rgba(9, 62, 82, 0.1);
+	--primary-transparent-05: rgba(9, 62, 82, 0.5);
 
 	--red: rgb(153, 34, 34);
 	--red-transparent-01: rgba(153, 34, 34, 0.1);
@@ -651,8 +643,7 @@ html {
 }
 
 .primary-tag-transparent-01 {
-	@apply bg-(--primary-transparent-01) border border-(--primary) p-1 rounded text-xs text-(--primary);
-	font-family: var(--regular);
+	@apply bg-(--blue-transparent-01) shadow font-normal p-1 rounded text-sm text-(--blue);
 }
 
 .red-tag {
@@ -721,12 +712,12 @@ html {
 }
 
 .dashboard-heading {
-	@apply text-white text-[16pt];
+	@apply text-white font-bold text-[16pt];
 	font-family: var(--bold);
 }
 
 .view-heading {
-	@apply text-(--primary) text-[16pt];
+	@apply text-(--primary) font-bold text-[16pt];
 	font-family: var(--bold);
 }
 

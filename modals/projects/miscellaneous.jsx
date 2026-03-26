@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages, Statuses } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -32,17 +32,17 @@ export function DeleteProject({ mount, projectId, reload, unmount }) {
 			setMain((s) => ({ ...s, isLoading: true }));
 
 			const body = { id: projectId, type: "delete-project" };
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Deleted <b>${projectId}</b>`, MyConstants.Modules.Base.Projects);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectDeleted);
+				MyGlobal.AddActivity(`Deleted <b>${projectId}</b>`, BaseModules.Projects);
+				MyGlobal.ShowSuccessToast(Messages.ProjectDeleted);
 
 				unmount();
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Delete Project");
@@ -120,7 +120,7 @@ export function EditStatus({ mount, project, reload, unmount }) {
 		reason: "",
 	});
 
-	const statuses = MyConstants.Statuses.Projects;
+	const statuses = Statuses.Projects;
 	const isNewStatusNotActive = project.new_status != statuses.Active;
 
 	const reasonBoxStyle = isNewStatusNotActive ? "flex flex-col w-full px-2.5 pt-0 pb-5 justify-center items-center" : "hidden";
@@ -172,15 +172,15 @@ export function EditStatus({ mount, project, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Projects);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectStatusEdited);
+				MyGlobal.AddActivity(activityMessage, BaseModules.Projects);
+				MyGlobal.ShowSuccessToast(Messages.ProjectStatusEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Project Status");
@@ -282,16 +282,16 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Marked project <b>${project.id}</b> completed.`, MyConstants.Modules.Base.Tasks);
+				MyGlobal.AddActivity(`Marked project <b>${project.id}</b> completed.`, BaseModules.Tasks);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.ProjectCompleted);
+				MyGlobal.ShowSuccessToast(Messages.ProjectCompleted);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Mark Project Completed");
@@ -309,7 +309,7 @@ export function ProjectStatus({ mount, project, reload, unmount }) {
 		setMain((s) => ({ ...s, isLoading: true }));
 
 		try {
-			const response = await axios.get(MyConstants.ApiEndpoints.Projects.GetStatus, MyGlobal.GetHeaders({ projectId: project.id }));
+			const response = await axios.get(ApiEndpoints.Projects.GetStatus, MyGlobal.GetHeaders({ projectId: project.id }));
 
 			if (response.status === 200) {
 				const rv = response.data.tasks;

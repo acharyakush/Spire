@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -25,13 +25,13 @@ export default function DeleteTodo({ mount, refresh, todo, unmount }) {
 		try {
 			setIsLoading(true);
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Todos.DeleteTodo, { customId: todo?.custom_id, id: todo?.id }, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Todos.DeleteTodo, { customId: todo?.custom_id, id: todo?.id }, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				refresh();
 
-				MyGlobal.AddActivity(`Deleted <b>${todo?.description}</b>`, MyConstants.Modules.Base.Todos);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.TodoDeleted);
+				MyGlobal.AddActivity(`Deleted <b>${todo?.description}</b>`, BaseModules.Todos);
+				MyGlobal.ShowSuccessToast(Messages.TodoDeleted);
 
 				unmount();
 			}

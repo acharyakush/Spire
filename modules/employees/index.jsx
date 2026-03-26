@@ -4,7 +4,7 @@
 
 import NewEmployee from "./NewEmployee";
 import EditEmployee from "./EditEmployee";
-import MyConstants from "@/utilities/constants";
+import { BaseModules, DerivedModules, EmployeesModules } from "@/utilities/constants";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -15,11 +15,10 @@ import { faChevronLeft, faPencil, faPlusCircle } from "@fortawesome/free-solid-s
 
 export default function Employees({ unmount }) {
 	// Business Logic
-	const modules = MyConstants.Modules.Other.Employees;
-	const thisView = MyConstants.Modules.Base.Employees;
+	const thisView = BaseModules.Employees;
 
 	const [main, setMain] = useState({
-		module: modules.Edit,
+		module: EmployeesModules.Edit,
 	});
 
 	// Functions
@@ -38,20 +37,20 @@ export default function Employees({ unmount }) {
 	}
 
 	function uiModules() {
-		return Object.values(modules)
+		return Object.values(EmployeesModules)
 			.filter((f) => {
 				if (MyGlobal.IsUserAdministrator()) return true;
 
-				const canEdit = MyGlobal.HasPermission(MyConstants.Modules.Derived.EditEmployee);
-				const canNew = MyGlobal.HasPermission(MyConstants.Modules.Derived.NewEmployee);
+				const canEdit = MyGlobal.HasPermission(DerivedModules.EditEmployee);
+				const canNew = MyGlobal.HasPermission(DerivedModules.NewEmployee);
 
-				if (!canEdit && f === modules.Edit) return false;
-				if (!canNew && f === modules.New) return false;
+				if (!canEdit && f === EmployeesModules.Edit) return false;
+				if (!canNew && f === EmployeesModules.New) return false;
 
 				return true;
 			})
 			.map((m, i) => {
-				const icon = m == modules.New ? faPlusCircle : faPencil;
+				const icon = m == EmployeesModules.New ? faPlusCircle : faPencil;
 
 				const selectedStyle = m == main.module ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
@@ -67,7 +66,7 @@ export default function Employees({ unmount }) {
 	}
 
 	function uiSelectedModule() {
-		if (main.module === modules.New) {
+		if (main.module === EmployeesModules.New) {
 			return (
 				<ErrorBoundary key={`ErrorBoundary`} onError={(e) => MyGlobal.LogErrors(e.message, module)} FallbackComponent={ErrorFallbackComponent}>
 					<NewEmployee />

@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages, Statuses } from "@/utilities/constants";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -21,7 +21,7 @@ export function UpdateStatus({ inquiry, mount, reload, unmount }) {
 		reason: "",
 	});
 
-	const statuses = MyConstants.Statuses.Inquiries;
+	const statuses = Statuses.Inquiries;
 	const newStatus = "new_status" in inquiry ? inquiry.new_status : "";
 
 	const isStatusCloseInquiry = newStatus == statuses.Closed;
@@ -68,24 +68,24 @@ export function UpdateStatus({ inquiry, mount, reload, unmount }) {
 			};
 
 			try {
-				const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+				const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 				if (response.status === 200) {
 					reload("update-status");
 
 					let activityMessage = `Update status of <b>${inquiry.id}</b> to <b>${newStatus}</b> from <b>${inquiry.status}</b>.`;
 
-					let successMessage = MyConstants.Messages.InquiryEdited;
+					let successMessage = Messages.InquiryEdited;
 
 					if (isStatusCloseInquiry) {
 						activityMessage = `Closed <b>${inquiry.id}</b> due to <b>${main.reason}</b>.`;
-						successMessage = MyConstants.Messages.InquiryClosed;
+						successMessage = Messages.InquiryClosed;
 					}
 
-					MyGlobal.AddActivity(activityMessage, MyConstants.Modules.Base.Inquiries);
+					MyGlobal.AddActivity(activityMessage, BaseModules.Inquiries);
 					MyGlobal.ShowSuccessToast(successMessage);
 				} else {
-					MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+					MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 				}
 			} catch (error) {
 				const errorSource = isStatusCloseInquiry ? "Close Inquiry" : "Update Inquiry Status";

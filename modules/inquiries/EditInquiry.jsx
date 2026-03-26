@@ -4,7 +4,7 @@
 
 import axios from "axios";
 import dayjs from "dayjs";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 import EditInquiryPreview from "@/modals/inquiries/EditInquiryPreview";
 
 import { MyGlobal } from "@/utilities/global";
@@ -132,20 +132,20 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 				mainProjectId: main.mainProject.id,
 				id: inquiry.id,
 				isEdited,
-				source: MyConstants.Modules.Base.Inquiries,
+				source: BaseModules.Inquiries,
 				type: "edit-inquiry",
 				userId: MyGlobal.GetUserId(),
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.EditInquiry, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Inquiries.EditInquiry, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload("edit-inquiry");
 
-				MyGlobal.AddActivity(`Edited <b>${inquiry.id}</b>.`, MyConstants.Modules.Base.Inquiries);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.InquiryEdited);
+				MyGlobal.AddActivity(`Edited <b>${inquiry.id}</b>.`, BaseModules.Inquiries);
+				MyGlobal.ShowSuccessToast(Messages.InquiryEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Inquiry");
@@ -327,7 +327,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 		try {
 			setOther((s) => ({ ...s, isLoading: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Inquiries.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
 				const _inquiry = {
@@ -397,115 +397,31 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 
 	// UI Components
 	function uiClient() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem
-				comparingValue1="name"
-				comparingValue2={main.client.name}
-				displayValue="name"
-				filteredData={getFilteredClients}
-				hasDataObject
-				icon={faUser}
-				isReadOnly={!isUserAdministrator}
-				label="Client"
-				onChange={(e) => setInputs("client", e)}
-				onClick={() => addNewClient(other.find.client.name)}
-				onInputChange={(e) => setFind("client", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.client.name}
-				tabIndex={1}
-				value={getClientName()}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.client.name} displayValue="name" filteredData={getFilteredClients} hasDataObject icon={faUser} isReadOnly={!isUserAdministrator} label="Client" onChange={(e) => setInputs("client", e)} onClick={() => addNewClient(other.find.client.name)} onInputChange={(e) => setFind("client", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.client.name} tabIndex={1} value={getClientName()} width="w-full" />;
 	}
 
 	function uiDate() {
-		return (
-			<DatePicker
-				icon={faCalendar}
-				label="Date"
-				onChange={(e) => setInputs("entryDate", e)}
-				tabIndex={7}
-				value={main.entryDate}
-				width="w-full"
-			/>
-		);
+		return <DatePicker icon={faCalendar} label="Date" onChange={(e) => setInputs("entryDate", e)} tabIndex={7} value={main.entryDate} width="w-full" />;
 	}
 
 	function uiEmailAddress() {
-		return (
-			<EmailAddress
-				isReadOnly={!isUserAdministrator}
-				onChange={(e) => setInputs("emailAddress", e.target.value)}
-				suffix=""
-				tabIndex={3}
-				value={main.emailAddress}
-				width="w-full"
-			/>
-		);
+		return <EmailAddress isReadOnly={!isUserAdministrator} onChange={(e) => setInputs("emailAddress", e.target.value)} suffix="" tabIndex={3} value={main.emailAddress} width="w-full" />;
 	}
 
 	function uiFollowUps() {
 		return (
-			<div
-				className="w-full"
-				ref={followUpsMenuRef}>
-				<ComboBoxWithChips
-					displayKey="full_name"
-					label="Follow Ups"
-					icon={faUserGroup}
-					isMenuInverted
-					onBlur={() => toggleFollowUpsMenu()}
-					onItemClick={(e) => setFollowUps(e)}
-					onSelectedItemClick={(e) => setFollowUps(e)}
-					selectedItems={main.followUps}
-					showList={showFollowUpsMenu}
-					source={MyGlobal.GetAllUsers()}
-					toggleMenu={() => toggleFollowUpsMenu()}
-				/>
+			<div className="w-full" ref={followUpsMenuRef}>
+				<ComboBoxWithChips displayKey="full_name" label="Follow Ups" icon={faUserGroup} isMenuInverted onBlur={() => toggleFollowUpsMenu()} onItemClick={(e) => setFollowUps(e)} onSelectedItemClick={(e) => setFollowUps(e)} selectedItems={main.followUps} showList={showFollowUpsMenu} source={MyGlobal.GetAllUsers()} toggleMenu={() => toggleFollowUpsMenu()} />
 			</div>
 		);
 	}
 
 	function uiMainProjects() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem={false}
-				comparingValue1="name"
-				comparingValue2={main.mainProject.name}
-				displayValue="name"
-				filteredData={getFilteredMainProjects}
-				hasDataObject
-				icon={faFile}
-				isReadOnly={false}
-				label="Main Project"
-				onChange={(e) => setInputs("mainProject", e)}
-				onClick={() => {}}
-				onInputChange={(e) => setFind("mainProject", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.mainProject.name}
-				tabIndex={4}
-				value={main.mainProject.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.mainProject.name} displayValue="name" filteredData={getFilteredMainProjects} hasDataObject icon={faFile} isReadOnly={false} label="Main Project" onChange={(e) => setInputs("mainProject", e)} onClick={() => {}} onInputChange={(e) => setFind("mainProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.mainProject.name} tabIndex={4} value={main.mainProject.name} width="w-full" />;
 	}
 
 	function uiPhoneNumber() {
-		return (
-			<TextInput
-				icon={faPhone}
-				isReadOnly={!isUserAdministrator}
-				label="Phone Number"
-				maxLength={10}
-				onChange={(e) => setInputs("phoneNumber", e.target.value)}
-				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
-				tabIndex={2}
-				value={main.phoneNumber}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faPhone} isReadOnly={!isUserAdministrator} label="Phone Number" maxLength={10} onChange={(e) => setInputs("phoneNumber", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={main.phoneNumber} width="w-full" />;
 	}
 
 	function uiPreview() {
@@ -521,65 +437,15 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 	}
 
 	function uiQuote() {
-		return (
-			<TextInput
-				icon={faIndianRupee}
-				label="Quote"
-				onChange={(e) => setInputs("quote", e.target.value)}
-				onKeyPress={() => {}}
-				tabIndex={8}
-				value={main.quote}
-				width="w-full"
-			/>
-		);
+		return <TextInput icon={faIndianRupee} label="Quote" onChange={(e) => setInputs("quote", e.target.value)} onKeyPress={() => {}} tabIndex={8} value={main.quote} width="w-full" />;
 	}
 
 	function uiReferences() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem
-				comparingValue1="name"
-				comparingValue2={main.reference.name}
-				displayValue="name"
-				filteredData={getFilteredReferences}
-				hasDataObject
-				icon={faUser}
-				isReadOnly={!isUserAdministrator}
-				label="Reference"
-				onChange={(e) => setInputs("reference", e)}
-				onClick={() => addNewReference(other.find.reference.name)}
-				onInputChange={(e) => setFind("reference", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.reference.name}
-				tabIndex={6}
-				value={getReferenceName()}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.reference.name} displayValue="name" filteredData={getFilteredReferences} hasDataObject icon={faUser} isReadOnly={!isUserAdministrator} label="Reference" onChange={(e) => setInputs("reference", e)} onClick={() => addNewReference(other.find.reference.name)} onInputChange={(e) => setFind("reference", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.reference.name} tabIndex={6} value={getReferenceName()} width="w-full" />;
 	}
 
 	function uiSubProjects() {
-		return (
-			<ComboBox2
-				allowCreatingNewItem
-				comparingValue1="name"
-				comparingValue2={main.subProject.name}
-				displayValue="name"
-				filteredData={getFilteredSubProjects}
-				hasDataObject
-				icon={faFile}
-				isReadOnly={false}
-				label="Sub Project"
-				onChange={(e) => setInputs("subProject", e)}
-				onClick={() => addNewSubProject(other.find.subProject.name)}
-				onInputChange={(e) => setFind("subProject", e.target.value)}
-				onKeyPress={() => {}}
-				searchedItem={other.find.subProject.name}
-				tabIndex={5}
-				value={main.subProject.name}
-				width="w-full"
-			/>
-		);
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.subProject.name} displayValue="name" filteredData={getFilteredSubProjects} hasDataObject icon={faFile} isReadOnly={false} label="Sub Project" onChange={(e) => setInputs("subProject", e)} onClick={() => addNewSubProject(other.find.subProject.name)} onInputChange={(e) => setFind("subProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.subProject.name} tabIndex={5} value={main.subProject.name} width="w-full" />;
 	}
 
 	// Hooks
@@ -610,11 +476,7 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 			<>
 				<div className="flex w-full px-5 py-2.5 justify-between items-center bottom-border primary-light-background">
 					<div className="flex w-full space-x-2.5 justify-start items-center">
-						<FontAwesomeIcon
-							className="pr-1 cursor-pointer black-text"
-							icon={faChevronLeft}
-							onClick={() => unmount()}
-						/>
+						<FontAwesomeIcon className="pr-1 cursor-pointer black-text" icon={faChevronLeft} onClick={() => unmount()} />
 						<div className="flex w-full justify-start items-center">
 							<span className="view-heading">Edit Inquiry</span>
 						</div>
@@ -640,21 +502,12 @@ export default function EditInquiry({ inquiry, reload, unmount }) {
 					</div>
 				</div>
 				<footer className="w-full dialog-footer">
-					<button
-						className={editButtonStyle}
-						onClick={() => togglePreviewBox("")}>
+					<button className={editButtonStyle} onClick={() => togglePreviewBox("")}>
 						{uiPreview()}
 					</button>
 				</footer>
 
-				{mounted.preview && (
-					<EditInquiryPreview
-						editInquiry={main}
-						mount={mounted.preview}
-						oldInquiry={oldData}
-						unmount={togglePreviewBox}
-					/>
-				)}
+				{mounted.preview && <EditInquiryPreview editInquiry={main} mount={mounted.preview} oldInquiry={oldData} unmount={togglePreviewBox} />}
 			</>
 		);
 	}

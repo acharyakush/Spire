@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import jsPDF from "jspdf";
 import axios from "axios";
 import html2canvas from "html2canvas";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, Messages } from "@/utilities/constants";
 
 import { useState } from "react";
 import { QRCode } from "react-qrcode-logo";
@@ -39,16 +39,16 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 				termsConditions: quotation?.firm?.termsConditions,
 			};
 
-			const response = await axios.post(MyConstants.ApiEndpoints.Inquiries.EditQuotation, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Inquiries.EditQuotation, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
 				MyGlobal.AddActivity(`Edited quotation <b>${quotation?.proposalNumber}</b> for <b>${inquiry?.id}</b>`, "Edit Quotation");
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.QuotationEdited);
+				MyGlobal.ShowSuccessToast(Messages.QuotationEdited);
 			} else {
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowSuccessToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Inquiries > Edit Quotation Preview > Edit Quotation");
@@ -176,7 +176,7 @@ export default function EditQuotaionPreview({ inquiry, quotation, reload, unmoun
 			const formData = new FormData();
 			formData.append("file", pdfBlob, `${fileName}.pdf`);
 
-			await axios.post(MyConstants.ApiEndpoints.Inquiries.UploadQuotation, formData);
+			await axios.post(ApiEndpoints.Inquiries.UploadQuotation, formData);
 
 			await editQuotation();
 

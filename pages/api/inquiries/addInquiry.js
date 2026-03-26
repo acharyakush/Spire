@@ -1,13 +1,14 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
-import MyConstants from "@/utilities/constants";
+import { BaseModules, Messages } from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { query } from "@/utilities/dbConnection";
+import { escapeString } from "@/utilities/myGlobal";
 
 export default async function handler(req, res) {
 	if (req.method !== "POST" || !MyGlobal.IsApiCallMethodValid(req)) {
-		return res.status(405).send(MyConstants.Messages.ApiCallForbidden);
+		return res.status(405).send(Messages.ApiCallForbidden);
 	}
 
 	res.setHeader("Cache-Control", "no-store, max-age=0");
@@ -62,58 +63,26 @@ export default async function handler(req, res) {
 		}
 
 		if (client.id == 0) {
-			const response = await query("INSERT INTO clients (id, reference_id, name, phone_number, email_address) VALUES (?, ?, ?, ?, ?)", [
-				newClientId,
-				newReferenceId,
-				client.name,
-				phoneNumber,
-				emailAddress,
-			]);
+			const response = await query("INSERT INTO clients (id, reference_id, name, phone_number, email_address) VALUES (?, ?, ?, ?, ?)", [newClientId, newReferenceId, client.name, phoneNumber, emailAddress]);
 
 			if (response.affectedRows == 0) {
 				return res.status(400).send("Could not add Client.");
 			}
 		}
 
-		const updateClientDetailsQueryResult = await query("UPDATE clients SET email_address=?, phone_number=? WHERE id=?", [
-			emailAddress,
-			phoneNumber,
-			newClientId,
-		]);
+		const updateClientDetailsQueryResult = await query("UPDATE clients SET email_address=?, phone_number=? WHERE id=?", [emailAddress, phoneNumber, newClientId]);
 
 		if (updateClientDetailsQueryResult.affectedRows == 0) {
 			return res.status(400).send("Could not update Client.");
 		}
 
-		const inquiryInsertResult = await query(
-			"INSERT INTO inquiries (id, client_id, reference_id, main_project_id, sub_project_id, entry_date, phone_number, email_address, follow_ups, quote, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-			[
-				inquiryResponse.new_id,
-				newClientId,
-				newReferenceId,
-				mainProjectId,
-				newSubProjectId,
-				entryDate,
-				phoneNumber,
-				emailAddress,
-				followUps,
-				quote,
-				"Open",
-				userId,
-			],
-		);
+		const inquiryInsertResult = await query("INSERT INTO inquiries (id, client_id, reference_id, main_project_id, sub_project_id, entry_date, phone_number, email_address, follow_ups, quote, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [inquiryResponse.new_id, newClientId, newReferenceId, mainProjectId, newSubProjectId, entryDate, phoneNumber, emailAddress, followUps, quote, "Open", userId]);
 
 		if (inquiryInsertResult.affectedRows == 0) {
 			return res.status(400).send("Could not add Inquiry.");
 		}
 
-		const noteInsertResult = await query("INSERT INTO notes (inquiry_id, original_entry_by_id, entry_by_id, content, source) VALUES (?, ?, ?, ?, ?)", [
-			inquiryResponse.new_id,
-			userId,
-			userId,
-			MyGlobal.EscapeString(note),
-			MyConstants.Modules.Base.Inquiries,
-		]);
+		const noteInsertResult = await query("INSERT INTO notes (inquiry_id, original_entry_by_id, entry_by_id, content, source) VALUES (?, ?, ?, ?, ?)", [inquiryResponse.new_id, userId, userId, escapeString(note), BaseModules.Inquiries]);
 
 		if (noteInsertResult.affectedRows == 0) {
 			return res.status(400).send("Could not add Note.");

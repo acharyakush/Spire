@@ -5,7 +5,7 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import SlotCounter from "react-slot-counter";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Statuses } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -24,9 +24,8 @@ export default function MySpace({ setModuleProps }) {
 	});
 
 	const today = dayjs();
-	const baseModules = MyConstants.Modules.Base;
-	const inquiriesStatus = MyConstants.Statuses.Inquiries;
-	const projectsStatus = MyConstants.Statuses.Projects;
+	const inquiriesStatus = Statuses.Inquiries;
+	const projectsStatus = Statuses.Projects;
 
 	// Functions
 	function getBackgroundAndIcon(status) {
@@ -78,7 +77,7 @@ export default function MySpace({ setModuleProps }) {
 		try {
 			setMain((s) => ({ ...s, isLoading: true }));
 
-			const response = await axios.get(MyConstants.ApiEndpoints.GetMySpace, MyGlobal.GetHeaders({ userId: MyGlobal.GetUserId() }));
+			const response = await axios.get(ApiEndpoints.GetMySpace, MyGlobal.GetHeaders({ userId: MyGlobal.GetUserId() }));
 
 			if (response.status == 200) {
 				const inquiriesCount = { closed: 0, confirmed: 0, hold: 0, my: 0, open: 0, total: response.data.inquiries.length };
@@ -176,16 +175,10 @@ export default function MySpace({ setModuleProps }) {
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div
-				className={wrapper}
-				onClick={() => setModuleProps(baseModules.Inquiries, `MySpace${key}`)}>
+			<div className={wrapper} onClick={() => setModuleProps(BaseModules.Inquiries, `MySpace${key}`)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-						<FontAwesomeIcon
-							className="text-white"
-							icon={aesthetics.icon}
-							size="xl"
-						/>
+						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
 					</div>
 					<div className="flex flex-col px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
@@ -203,7 +196,7 @@ export default function MySpace({ setModuleProps }) {
 			<div className="flex w-full p-5 justify-between items-start">
 				<div className="flex flex-col w-1/2 justify-between items-start">
 					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text anim slide-in-down">
-						<span>{baseModules.Projects}</span>
+						<span>{BaseModules.Projects}</span>
 						<BadgeLarge2>
 							<SlotCounter value={main.projects.total} />
 						</BadgeLarge2>
@@ -221,7 +214,7 @@ export default function MySpace({ setModuleProps }) {
 				</div>
 				<div className="flex flex-col w-1/2 justify-between items-end">
 					<div className="flex w-4/5 space-x-2.5 justify-start items-center font-bold-24 primary-text anim slide-in-down">
-						<span>{baseModules.Tasks}</span>
+						<span>{BaseModules.Tasks}</span>
 						<BadgeLarge2>
 							<SlotCounter value={main.tasks.total} />
 						</BadgeLarge2>
@@ -265,16 +258,10 @@ export default function MySpace({ setModuleProps }) {
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div
-				className={wrapper}
-				onClick={() => setModuleProps("projectsOrTasks", `MySpace${key}`)}>
+			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", `MySpace${key}`)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-						<FontAwesomeIcon
-							className="text-white"
-							icon={aesthetics.icon}
-							size="xl"
-						/>
+						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
 					</div>
 					<div className="flex flex-col px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
@@ -313,16 +300,10 @@ export default function MySpace({ setModuleProps }) {
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div
-				className={wrapper}
-				onClick={() => setModuleProps("projectsOrTasks", `MySpace${key}`)}>
+			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", `MySpace${key}`)}>
 				<div className={`flex w-full py-6 justify-between items-center rounded-2xl shadow-xl ${zoomRotate} ${aesthetics.background}`}>
 					<div className="py-4 px-8 rounded-r-full shadow-2xl gray-background-transparent-02">
-						<FontAwesomeIcon
-							className="text-white"
-							icon={aesthetics.icon}
-							size="xl"
-						/>
+						<FontAwesomeIcon className="text-white" icon={aesthetics.icon} size="xl" />
 					</div>
 					<div className="flex flex-col px-8 justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
@@ -344,7 +325,7 @@ export default function MySpace({ setModuleProps }) {
 		<div className="w-full h-full p-5 space-y-1 overflow-x-hidden overflow-y-auto">
 			<div className="flex flex-col w-full p-5 space-y-2.5 justify-between items-center">
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-24 primary-text anim slide-in-down">
-					<span>{baseModules.Inquiries}</span>
+					<span>{BaseModules.Inquiries}</span>
 					<BadgeLarge2>
 						<SlotCounter value={main.inquiries.total} />
 					</BadgeLarge2>

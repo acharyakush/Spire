@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import MyConstants from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 
 import { useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -30,17 +30,17 @@ export function DeleteTransaction({ mount, transaction, reload, unmount }) {
 			setMain((s) => ({ ...s, isLoading: true }));
 
 			const body = { payload: transaction.transaction, type: "delete-invoice-transaction" };
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
-				MyGlobal.AddActivity(`Deleted transaction <b>${transaction.transaction.particulars}</b> having amount <b>${transaction.transaction.amount}</b> of <b>${transaction.transaction.project_id}</b>`, MyConstants.Modules.Base.Invoices);
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.InvoiceTransactionDeleted);
+				MyGlobal.AddActivity(`Deleted transaction <b>${transaction.transaction.particulars}</b> having amount <b>${transaction.transaction.amount}</b> of <b>${transaction.transaction.project_id}</b>`, BaseModules.Invoices);
+				MyGlobal.ShowSuccessToast(Messages.InvoiceTransactionDeleted);
 
 				unmount();
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Delete Invoice Transaction");
@@ -128,18 +128,18 @@ export function EditAmount({ invoice, mount, reload, unmount }) {
 		};
 
 		try {
-			const response = await axios.post(MyConstants.ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
+			const response = await axios.post(ApiEndpoints.Setter, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				reload();
 
 				const invoiceCustomId = invoice.transaction.invoice_custom_id || "Not Generated";
 
-				MyGlobal.AddActivity(`Edited transaction amount of <b>${invoice.transaction.project_id}</b> <b>${invoice.company_name}</b> (Invoice ID - <b>${invoiceCustomId}</b>) from <b>${invoice.transaction.amount}</b> to <b>${main.amount}</b>.`, MyConstants.Modules.Base.Invoices);
+				MyGlobal.AddActivity(`Edited transaction amount of <b>${invoice.transaction.project_id}</b> <b>${invoice.company_name}</b> (Invoice ID - <b>${invoiceCustomId}</b>) from <b>${invoice.transaction.amount}</b> to <b>${main.amount}</b>.`, BaseModules.Invoices);
 
-				MyGlobal.ShowSuccessToast(MyConstants.Messages.AmountEdited);
+				MyGlobal.ShowSuccessToast(Messages.AmountEdited);
 			} else {
-				MyGlobal.ShowErrorToast(MyConstants.Messages.SomeErrorOccurred);
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
 			}
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Edit Invoice Transaction Amount");

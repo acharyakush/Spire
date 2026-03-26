@@ -3,7 +3,7 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import SlotCounter from "react-slot-counter";
-import MyConstants from "@/utilities/constants";
+import { BaseModules, Statuses } from "@/utilities/constants";
 
 import { BadgeLarge2 } from "@/components/Elements";
 import { isDevelopment } from "@/utilities/global";
@@ -11,7 +11,7 @@ import { faCheckDouble, faCirclePause, faLock, faUnlock } from "@fortawesome/fre
 
 export default function Projects({ projects, setModuleProps }) {
 	// Business Logic
-	const projectsStatus = MyConstants.Statuses.Projects;
+	const projectsStatus = Statuses.Projects;
 
 	// Functions
 	function getBackgroundAndIcon(status) {
@@ -70,9 +70,7 @@ export default function Projects({ projects, setModuleProps }) {
 		const wrapper = `flex w-full text-white cursor-pointer ${effect}`;
 
 		return (
-			<div
-				className={wrapper}
-				onClick={() => setModuleProps("projectsOrTasks", key)}>
+			<div className={wrapper} onClick={() => setModuleProps("projectsOrTasks", key)}>
 				<div className={`flex w-full py-6 justify-center items-center rounded shadow-md ${zoomRotate} ${aesthetics.background}`}>
 					<div className="flex flex-col justify-center items-center">
 						<span className="tracking-widest uppercase font-medium-8 light-gray-text">{key}</span>
@@ -92,7 +90,7 @@ export default function Projects({ projects, setModuleProps }) {
 		return (
 			<div className={wrapper}>
 				<div className="flex w-full space-x-2.5 justify-start items-center font-bold-16 primary-text">
-					<span>{MyConstants.Modules.Base.Projects}</span>
+					<span>{BaseModules.Projects}</span>
 					<BadgeLarge2>
 						<SlotCounter value={projects?.totalCount ?? 0} />
 					</BadgeLarge2>

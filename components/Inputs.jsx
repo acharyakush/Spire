@@ -346,7 +346,7 @@ export const TextInput = ({ disable = false, errorText = "", hasError = false, i
 
 export const TextInputNative = ({ id, icon, onChange, onClearButtonClick, placeholder, showClearButton, source, tabIndex, value, width }) => {
 	const background = source ? (source === "singleProject" ? "bg-white primary-bottom-border-transparent-05" : "bg-[var(--primary-transparent-01)] bottom-shadow full-border") : "contrast-background shadow";
-	const wrapper = `flex ${width} px-3 items-center-safe rounded ${background}`;
+	const wrapper = `flex ${width} px-3 items-center-safe rounded-full ${background}`;
 
 	return (
 		<div className={wrapper}>

@@ -1,13 +1,14 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
-import MyConstants from "@/utilities/constants";
+import { Messages } from "@/utilities/constants";
 
 import { MyGlobal } from "@/utilities/global";
 import { query } from "@/utilities/dbConnection";
+import { escapeString } from "@/utilities/myGlobal";
 
 export default async function handler(req, res) {
 	if (!MyGlobal.IsApiCallMethodValid(req)) {
-		res.status(403).send(MyConstants.Messages.ApiCallForbidden);
+		res.status(403).send(Messages.ApiCallForbidden);
 	} else if (req.method !== "POST") {
 		res.status(405).end();
 	} else {
@@ -47,12 +48,15 @@ export default async function handler(req, res) {
 				queryParameters = [request.status, request.reason, request.inquiryId];
 			} else if (request.type == "add-note") {
 				queryString = "INSERT INTO notes (inquiry_id, original_entry_by_id, entry_by_id, content, source, next_follow_up_on) VALUES (?, ?, ?, ?, ?, ?)";
-				queryParameters = [request.id, request.userId, request.userId, MyGlobal.EscapeString(request.content), request.source, request.nextfollowUpOn];
+				queryParameters = [request.id, request.userId, request.userId, escapeString(request.content), request.source, request.nextfollowUpOn];
 			} else if (request.type == "edit-project-status") {
 				queryString = "UPDATE projects SET reason=?, status=? WHERE id=? AND client_id=? AND company_id=? AND inquiry_id=?";
 				queryParameters = [request.reason, request.status, request.id, request.clientId, request.companyId, request.inquiryId];
 			} else if (request.type == "delete-project") {
 				queryString = "UPDATE projects SET is_deleted=1 WHERE id=?";
+				queryParameters = [request.id];
+			} else if (request.type == "delete-company") {
+				queryString = "UPDATE companies SET is_deleted=1 WHERE id=?";
 				queryParameters = [request.id];
 			} else if (request.type == "mark-task-as-completed") {
 				queryString = "UPDATE tasks SET is_completed=1, completed_on=? WHERE id=? AND project_id=?";
@@ -60,8 +64,14 @@ export default async function handler(req, res) {
 			} else if (request.type == "edit-invoice-transaction-amount") {
 				queryString = "UPDATE invoices_transactions SET amount=? WHERE id=? AND project_id=? AND amount=?";
 				queryParameters = [request.amount, request.id, request.projectId, request.old];
+			} else if (request.type == "edit-rv-transaction-amount") {
+				queryString = "UPDATE rv_transactions SET amount=? WHERE id=? AND project_id=? AND amount=?";
+				queryParameters = [request.amount, request.id, request.projectId, request.old];
 			} else if (request.type == "delete-invoice-transaction") {
 				queryString = "DELETE FROM invoices_transactions WHERE id=? AND project_id=? AND amount=?";
+				queryParameters = [request.payload.id, request.payload.project_id, request.payload.amount];
+			} else if (request.type == "delete-rv-transaction") {
+				queryString = "DELETE FROM rv_transactions WHERE id=? AND project_id=? AND amount=?";
 				queryParameters = [request.payload.id, request.payload.project_id, request.payload.amount];
 			} else if (request.type == "manage-government-id") {
 				queryString = "UPDATE projects SET government_id=? WHERE id=?";
