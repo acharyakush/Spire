@@ -19,6 +19,8 @@ import { ErrorBoundary } from "react-error-boundary";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, ErrorFallbackComponent, SpinnerBig } from "@/components/Elements";
 import { faArrowUpRightFromSquare, faStar, faTurnDown, faTurnUp } from "@fortawesome/free-solid-svg-icons";
+import InvoicesByFirm from "./invoices/InvoicesByFirm";
+import RvByFirm from "./rv/RvByFirm";
 
 export default function CashFlows({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -40,7 +42,11 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 		projects: [],
 		reimburseVouchers: [],
 		vendors: [],
+		firms: [],
 	});
+
+	const [invoiceByFirm, setInvoiceByFirm] = useState({ id: "", name: "" });
+	const [rvByFirm, setRvByFirm] = useState({ id: "", name: "" });
 
 	const [main, setMain] = useState({
 		affiliates: {
@@ -309,6 +315,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 
 				setApi((s) => ({
 					...s,
+					firms: response.data.firms,
 					invoices: response.data.invoices,
 					projects: response.data.projects,
 					reimburseVouchers: response.data.reimburseVouchers,
@@ -507,18 +514,26 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 	}
 
 	function uiInvoicesBlock() {
-		return Object.values(main.invoices).map((m, n) => {
+		return api.firms.map((m, n) => {
+			const generatedInvoices = api.invoices.filter((f) => {
+				const initials = String(f.custom_id).split("/")[0];
+				if (m.initials === "SCL" && (initials === "PS" || initials === "PSCL")) return true;
+				return initials === m.initials;
+			}).length;
+
+			const totalInvoices = api.projects.filter((f) => f.firm_id === m.id).length;
 			const aesthetics = getAesthetics(n);
 
 			return (
-				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
+				<div className={`flex flex-col w-full justify-between items-center rounded shadow cursor-pointer ${aesthetics.transparentBackground} ${aesthetics.border}`} onClick={() => setInvoiceByFirm({ id: m.id, name: m.name })}>
 					<div className={`flex flex-col w-full p-5 space-y-2.5 justify-center items-center ${aesthetics.textColour}`}>
 						<div className="flex space-x-1 justify-center items-center">
-							<span className="font-medium-18">{m.count}</span>
+							<span className="font-bold-24">
+								{generatedInvoices} / {totalInvoices}
+							</span>
 						</div>
-						<span className="font-bold-24">{MyGlobal.FormatCurrency(m.amount)}</span>
 					</div>
-					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
+					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.name}</span>
 				</div>
 			);
 		});
@@ -555,6 +570,10 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 					<SpinnerBig />
 				</div>
 			);
+		} else if (invoiceByFirm.id.length) {
+			return <InvoicesByFirm firmId={invoiceByFirm} presetStatus={presetStatus} unmount={() => setInvoiceByFirm({ id: "", name: "" })} />;
+		} else if (rvByFirm.id.length) {
+			return <RvByFirm firmId={rvByFirm} presetStatus={presetStatus} unmount={() => setRvByFirm({ id: "", name: "" })} />;
 		} else if (main.module) {
 			if (main.module == BaseModules.Affiliates) {
 				return (
@@ -702,18 +721,23 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 	}
 
 	function uiRVsBlock() {
-		return Object.values(main.rv).map((m, n) => {
+		return api.firms.map((m, n) => {
+			const totalRv = api.reimburseVouchers.filter((f) => {
+				const initials = String(f.custom_id).split("/")[0];
+				if (m.initials === "SCL" && (initials === "PS" || initials === "PSCL")) return true;
+				return initials === m.initials;
+			});
+
 			const aesthetics = getAesthetics(n);
 
 			return (
-				<div className={`flex flex-col w-full justify-between items-center rounded shadow ${aesthetics.transparentBackground} ${aesthetics.border}`}>
+				<div className={`flex flex-col w-full justify-between items-center rounded shadow cursor-pointer ${aesthetics.transparentBackground} ${aesthetics.border}`} onClick={() => setRvByFirm({ id: m.id, name: m.name })}>
 					<div className={`flex flex-col w-full p-5 space-y-2.5 justify-center items-center ${aesthetics.textColour}`}>
 						<div className="flex space-x-1 justify-center items-center">
-							<span className="font-medium-18">{m.count}</span>
+							<span className="font-bold-24">{totalRv.length}</span>
 						</div>
-						<span className="font-bold-24">{MyGlobal.FormatCurrency(m.amount)}</span>
 					</div>
-					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.label}</span>
+					<span className={`w-full p-2 text-center tracking-widest ${aesthetics.background} font-medium-10 text-white`}>{m.name}</span>
 				</div>
 			);
 		});

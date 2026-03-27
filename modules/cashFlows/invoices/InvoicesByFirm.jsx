@@ -15,7 +15,7 @@ import ReactDatePicker from "react-datepicker";
 import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, Spinner, Tooltip } from "@/components/Elements";
@@ -25,7 +25,7 @@ import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
 import { faCalendar, faCheck, faChevronRight, faCoins, faFileDownload, faFileExcel, faIndustry, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 import { InvoicesHeaders } from "@/utilities/headers";
 
-export default function Invoices({ presetStatus, unmount }) {
+export default function InvoicesByFirm({ firmId, presetStatus, unmount }) {
 	// Business Logic
 	const thisView = BaseModules.Invoices;
 
@@ -40,6 +40,7 @@ export default function Invoices({ presetStatus, unmount }) {
 		company: {},
 		filter: {
 			date: { from: "", to: "" },
+			financialYear: "",
 			find: "",
 		},
 		isLoading: false,
@@ -57,7 +58,7 @@ export default function Invoices({ presetStatus, unmount }) {
 	const allowEditInvoice = MyGlobal.HasPermission(DerivedModules.EditInvoice);
 	const allowNewInvoice = MyGlobal.HasPermission(DerivedModules.NewInvoice);
 
-	const showClearCompanyButton = Object.values(main.company).length ? "cursor-pointer primary-text visible" : "invisible";
+	const showClearCompanyButton = main.filter.financialYear ? "cursor-pointer text-gray-300" : "hidden!";
 	const showFromDateClearIcon = main.filter.from ? "cursor-pointer primary-text visible" : "invisible";
 	const showToDateClearIcon = main.filter.to ? "cursor-pointer primary-text visible" : "invisible";
 	const showFindClearIcon = main.filter.find ? "cursor-pointer primary-text visible" : "invisible";
@@ -161,6 +162,15 @@ export default function Invoices({ presetStatus, unmount }) {
 					if (createdAt >= startDate && createdAt <= endDate) {
 						return f;
 					}
+				} else if (query === "financialYear") {
+					const date = new Date(f.started_on);
+					const year = date.getFullYear();
+					const month = date.getMonth();
+
+					const startYear = month >= 3 ? year : year - 1;
+					const fy = `${startYear}-${String(startYear + 1).slice(-2)}`;
+
+					return fy === main.filter.financialYear;
 				} else if (query === "DUE") {
 					return f.invoice?.some((fe) => {
 						if (!fe?.due_date) return false;
@@ -190,6 +200,24 @@ export default function Invoices({ presetStatus, unmount }) {
 		setApi((s) => ({ ...s, projects: filteredData }));
 	}
 
+	const parseDMY = (str) => {
+		if (!str) return new Date(0);
+		const [d, m, y] = str.split("/");
+		return new Date(`${y}-${m}-${d}`);
+	};
+
+	const getNumber1 = (val) => {
+		if (!val) return Infinity; // push empty to bottom
+		const parts = val.split("/");
+		return Number(parts[2]) || Infinity;
+	};
+
+	const getNumber2 = (val) => {
+		if (!val) return -Infinity; // push empty to bottom in desc
+		const parts = val.split("/");
+		return Number(parts[2]) || -Infinity;
+	};
+
 	function doSorting() {
 		return (
 			api.projects
@@ -215,13 +243,13 @@ export default function Invoices({ presetStatus, unmount }) {
 					} else if (column == InvoicesHeaders.SubProject && !isAscending) {
 						return b.sub_project_name.localeCompare(a.sub_project_name);
 					} else if (column == InvoicesHeaders.CreatedAt && isAscending) {
-						return a.created_at - b.created_at;
+						return parseDMY(a.created_at) - parseDMY(b.created_at);
 					} else if (column == InvoicesHeaders.CreatedAt && !isAscending) {
-						return b.created_at - a.created_at;
+						return parseDMY(b.created_at) - parseDMY(a.created_at);
 					} else if (column == InvoicesHeaders.DueDate && isAscending) {
-						return a.due_date - b.due_date;
+						return parseDMY(a.invoice_due_date) - parseDMY(b.invoice_due_date);
 					} else if (column == InvoicesHeaders.DueDate && !isAscending) {
-						return b.due_date - a.due_date;
+						return parseDMY(b.invoice_due_date) - parseDMY(a.invoice_due_date);
 					} else if (column == InvoicesHeaders.Amount && isAscending) {
 						return a.amount - b.amount;
 					} else if (column == InvoicesHeaders.Amount && !isAscending) {
@@ -230,10 +258,14 @@ export default function Invoices({ presetStatus, unmount }) {
 						return a.amount_received - b.amount_received;
 					} else if (column == InvoicesHeaders.AmountReceived && !isAscending) {
 						return b.amount_received - a.amount_received;
+					} else if (column == InvoicesHeaders.AmountPending && isAscending) {
+						return a.amount_pending - b.amount_pending;
+					} else if (column == InvoicesHeaders.AmountPending && !isAscending) {
+						return b.amount_pending - a.amount_pending;
 					} else if (column == InvoicesHeaders.InvoiceId && isAscending) {
-						return a.status.localeCompare(b.status);
+						return getNumber1(a.invoice_id) - getNumber1(b.invoice_id);
 					} else if (column == InvoicesHeaders.InvoiceId && !isAscending) {
-						return b.status.localeCompare(a.status);
+						return getNumber2(b.invoice_id) - getNumber2(a.invoice_id);
 					} else {
 						return b.id.localeCompare(a.id);
 					}
@@ -298,6 +330,7 @@ export default function Invoices({ presetStatus, unmount }) {
 			if (response.status === 200) {
 				const revised = response.data.projects
 					.filter((f) => f.status !== Statuses.Projects.Cancelled)
+					.filter((f) => f.firm_id === firmId.id)
 					.map((m) => {
 						let amountPending = 0;
 						let amountReceived = 0;
@@ -520,6 +553,46 @@ export default function Invoices({ presetStatus, unmount }) {
 		});
 	}
 
+	const financialYears = useMemo(() => {
+		const set = new Set();
+
+		api.projectsCopy.forEach((fe) => {
+			const date = new Date(fe.started_on);
+			const year = date.getFullYear();
+			const month = date.getMonth();
+
+			let startYear;
+
+			if (month >= 3) {
+				startYear = year;
+			} else {
+				startYear = year - 1;
+			}
+
+			const fy = `${startYear}-${String(startYear + 1).slice(-2)}`;
+			set.add(fy);
+		});
+
+		return Array.from(set).sort();
+	}, [api.projectsCopy]);
+
+	function uiFinancialYearList() {
+		return financialYears.map((m, i) => {
+			const isSelected = m === main.filter.financialYear;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center-safe cursor-pointer ${aesthetics} font-regular-10 text-left`;
+
+			return (
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setMain((s) => ({ ...s, filter: { ...s.filter, financialYear: m } }))}>
+					<div className="flex w-full space-x-2 items-center-safe">
+						<span>{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}</span>
+						<span>{m}</span>
+					</div>
+				</MenuItem>
+			);
+		});
+	}
+
 	function uiMain() {
 		if (!mounted.newInvoice && !mounted.editInvoice) {
 			return (
@@ -530,15 +603,24 @@ export default function Invoices({ presetStatus, unmount }) {
 								{BaseModules.CashFlow}
 							</span>
 							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-							<span className="view-heading">{BaseModules.Invoices}</span>
+							<span className="view-heading">
+								{firmId.name}'s {BaseModules.Invoices}
+							</span>
 							{getIconOrBadge()}
 						</div>
 						<div className="flex w-1/2 space-x-2 justify-end items-center">
-							<div className="flex w-1/2 space-x-2 justify-end items-center">
-								{/* {uiCompanies()} */}
-								{uiFromDate()}
-								{uiToDate()}
-							</div>
+							<Menu as="div" className="flex w-36 justify-center-safe items-center-safe relative">
+								<MenuButton className="flex w-full h-7.5 px-2.5 justify-between items-center-safe focus:outline-none relative z-40 rounded-full shadow contrast-background font-regular-10">
+									<div className="flex w-full space-x-2.5 items-center-safe">
+										<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+										<span className="gray-text">{main.filter.financialYear || "Year"}</span>
+									</div>
+									<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setMain((s) => ({ ...s, filter: { ...s.filter, financialYear: "" } }))} icon={faMultiply} />
+								</MenuButton>
+								<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background shadow focus:outline-none z-50">{uiFinancialYearList()}</MenuItems>
+							</Menu>
+							{uiFromDate()}
+							{uiToDate()}
 							{uiFind()}
 							{uiExport()}
 						</div>
@@ -688,6 +770,14 @@ export default function Invoices({ presetStatus, unmount }) {
 			}
 		}
 	}, [api.projectsCopy.length]);
+
+	useEffect(() => {
+		if (main.filter.financialYear.length) {
+			doFiltering("financialYear");
+		} else {
+			doFiltering();
+		}
+	}, [main.filter.financialYear]);
 
 	useEffect(() => {
 		if (main.filter.date.from && main.filter.date.to) {

@@ -7,27 +7,27 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import axios from "axios";
 import dayjs from "dayjs";
+import NewRv from "./NewRv";
+import EditRv from "./EditRv";
 import Tippy from "@tippyjs/react";
-import NewInvoice from "./NewInvoice";
-import EditInvoice from "./EditInvoice";
 import writeXlsxFile from "write-excel-file/browser";
 import ReactDatePicker from "react-datepicker";
-import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, DerivedModules } from "@/utilities/constants";
 
 import { Virtuoso } from "react-virtuoso";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
 import { Badge, Spinner, Tooltip } from "@/components/Elements";
+import { RvList, Transactions } from "@/modals/rv/miscellaneous";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Transactions } from "../../../modals/invoices/Transactions";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
-import { faCalendar, faCheck, faChevronRight, faCoins, faFileDownload, faFileExcel, faIndustry, faMultiply, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
-import { InvoicesHeaders } from "@/utilities/headers";
+import { faCalendar, faCheck, faChevronRight, faCoins, faFileDownload, faFileExcel, faIndustry, faMultiply, faPlusCircle, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { RvHeaders } from "@/utilities/headers";
 
-export default function Invoices({ presetStatus, unmount }) {
+export default function RvByFirm({ firmId, unmount }) {
 	// Business Logic
-	const thisView = BaseModules.Invoices;
+	const thisView = BaseModules.Rv;
 
 	const [api, setApi] = useState({
 		firms: [],
@@ -41,23 +41,32 @@ export default function Invoices({ presetStatus, unmount }) {
 		filter: {
 			date: { from: "", to: "" },
 			find: "",
+			financialYear: "",
 		},
 		isLoading: false,
 		selectedProject: {},
-		sort: { column: InvoicesHeaders.Id, isAscending: false },
+		sort: { column: RvHeaders.Id, isAscending: false },
 	});
 
 	const [mounted, setMounted] = useState({
-		editInvoice: false,
-		newInvoice: false,
+		editRv: false,
+		history: false,
+		newRv: false,
+		rvList: false,
 		transactions: false,
 	});
 
-	const isUserAdministrator = MyGlobal.IsUserAdministrator();
-	const allowEditInvoice = MyGlobal.HasPermission(DerivedModules.EditInvoice);
-	const allowNewInvoice = MyGlobal.HasPermission(DerivedModules.NewInvoice);
+	const parseDMY = (str) => {
+		if (!str) return new Date(0);
+		const [d, m, y] = str.split("/");
+		return new Date(`${y}-${m}-${d}`);
+	};
 
-	const showClearCompanyButton = Object.values(main.company).length ? "cursor-pointer primary-text visible" : "invisible";
+	const isUserAdministrator = MyGlobal.IsUserAdministrator();
+	const allowEditRv = MyGlobal.HasPermission(DerivedModules.EditRv);
+	const allowNewRv = MyGlobal.HasPermission(DerivedModules.NewRv);
+
+	const showClearCompanyButton = main.filter.financialYear ? "cursor-pointer text-gray-300" : "hidden!";
 	const showFromDateClearIcon = main.filter.from ? "cursor-pointer primary-text visible" : "invisible";
 	const showToDateClearIcon = main.filter.to ? "cursor-pointer primary-text visible" : "invisible";
 	const showFindClearIcon = main.filter.find ? "cursor-pointer primary-text visible" : "invisible";
@@ -84,13 +93,13 @@ export default function Invoices({ presetStatus, unmount }) {
 		const rowHeight = 34;
 		const maximumColumnWidth = 20;
 
-		const rowHeaders = Object.values(InvoicesHeaders);
+		const rowHeaders = Object.values(RvHeaders);
 		rowHeaders.pop();
 
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
-			records.push(fe.id, fe.company_name, fe.main_project_name, fe.sub_project_name, `${fe.created_at_time}\n${fe.created_at}`, fe.invoice_due_date, fe.amount, fe.amount_received, fe.amount_pending, fe.invoice_id);
+			records.push(fe.id, fe.company_name, fe.main_project_name, fe.sub_project_name, `${fe.created_at_time}\n${fe.created_at}`, fe.amount, fe.amount_received, fe.amount_pending, fe.rv_id);
 		});
 
 		records.forEach((fe) => {
@@ -151,9 +160,7 @@ export default function Invoices({ presetStatus, unmount }) {
 				return f;
 			})
 			.filter((f) => {
-				const findText = main.filter.find.toLowerCase();
-
-				if (query === "createdAt") {
+				if (query == "createdAt") {
 					const createdAt = new Date(f.entry_date);
 					const startDate = main.filter.date.from;
 					const endDate = main.filter.date.to;
@@ -161,29 +168,19 @@ export default function Invoices({ presetStatus, unmount }) {
 					if (createdAt >= startDate && createdAt <= endDate) {
 						return f;
 					}
-				} else if (query === "DUE") {
-					return f.invoice?.some((fe) => {
-						if (!fe?.due_date) return false;
-						const dueDate = dayjs(fe.due_date);
-						return dueDate.isBefore(dayjs(), "day");
-					});
-				} else if (query === "GENERATED") {
-					return f.invoice_id && f.created_at;
-				} else if (query === "NOT GENERATED") {
-					return !f.invoice_id;
+				} else if (query === "financialYear") {
+					const date = new Date(f.created_at);
+					const year = date.getFullYear();
+					const month = date.getMonth();
+
+					const startYear = month >= 3 ? year : year - 1;
+					const fy = `${startYear}-${String(startYear + 1).slice(-2)}`;
+
+					return fy === main.filter.financialYear;
 				} else {
-					return (
-						String(f.id).toLowerCase().includes(findText) ||
-						String(f.company_name).toLowerCase().includes(findText) ||
-						String(f.main_project_name).toLowerCase().includes(findText) ||
-						String(f.sub_project_name).toLowerCase().includes(findText) ||
-						String(f.amount).includes(findText) ||
-						String(f.amount_received).includes(findText) ||
-						String(f.amount_pending).includes(findText) ||
-						String(f.invoice_id || "Generate")
-							.toLowerCase()
-							.includes(findText)
-					);
+					const findText = main.filter.find.toLowerCase();
+
+					return String(f.id).toLowerCase().includes(findText) || String(f.company_name).toLowerCase().includes(findText) || String(f.main_project_name).toLowerCase().includes(findText) || String(f.sub_project_name).toLowerCase().includes(findText) || String(f.amount).includes(findText) || String(f.amount_received).includes(findText) || String(f.amount_pending).includes(findText) || String(f.custom_id).includes(findText);
 				}
 			});
 
@@ -191,54 +188,57 @@ export default function Invoices({ presetStatus, unmount }) {
 	}
 
 	function doSorting() {
-		return (
-			api.projects
-				// .filter((f) => f.invoice_due_date)
-				// .filter((f) => f.amount_pending != 0)
-				.sort((a, b) => {
-					const { column, isAscending } = main.sort;
+		return api.projects.sort((a, b) => {
+			const { column, isAscending } = main.sort;
 
-					if (column == InvoicesHeaders.Id && isAscending) {
-						return a.id.localeCompare(b.id);
-					} else if (column == InvoicesHeaders.Id && !isAscending) {
-						return b.id.localeCompare(a.id);
-					} else if (column == InvoicesHeaders.Company && isAscending) {
-						return a.company_name.localeCompare(b.company_name);
-					} else if (column == InvoicesHeaders.Company && !isAscending) {
-						return b.company_name.localeCompare(a.company_name);
-					} else if (column == InvoicesHeaders.MainProject && isAscending) {
-						return a.main_project_name.localeCompare(b.main_project_name);
-					} else if (column == InvoicesHeaders.MainProject && !isAscending) {
-						return b.main_project_name.localeCompare(a.main_project_name);
-					} else if (column == InvoicesHeaders.SubProject && isAscending) {
-						return a.sub_project_name.localeCompare(b.sub_project_name);
-					} else if (column == InvoicesHeaders.SubProject && !isAscending) {
-						return b.sub_project_name.localeCompare(a.sub_project_name);
-					} else if (column == InvoicesHeaders.CreatedAt && isAscending) {
-						return a.created_at - b.created_at;
-					} else if (column == InvoicesHeaders.CreatedAt && !isAscending) {
-						return b.created_at - a.created_at;
-					} else if (column == InvoicesHeaders.DueDate && isAscending) {
-						return a.due_date - b.due_date;
-					} else if (column == InvoicesHeaders.DueDate && !isAscending) {
-						return b.due_date - a.due_date;
-					} else if (column == InvoicesHeaders.Amount && isAscending) {
-						return a.amount - b.amount;
-					} else if (column == InvoicesHeaders.Amount && !isAscending) {
-						return b.amount - a.amount;
-					} else if (column == InvoicesHeaders.AmountReceived && isAscending) {
-						return a.amount_received - b.amount_received;
-					} else if (column == InvoicesHeaders.AmountReceived && !isAscending) {
-						return b.amount_received - a.amount_received;
-					} else if (column == InvoicesHeaders.InvoiceId && isAscending) {
-						return a.status.localeCompare(b.status);
-					} else if (column == InvoicesHeaders.InvoiceId && !isAscending) {
-						return b.status.localeCompare(a.status);
-					} else {
-						return b.id.localeCompare(a.id);
-					}
-				})
-		);
+			if (column == RvHeaders.Id && isAscending) {
+				return a.id.localeCompare(b.id);
+			} else if (column == RvHeaders.Id && !isAscending) {
+				return b.id.localeCompare(a.id);
+			} else if (column == RvHeaders.Company && isAscending) {
+				return a.company_name.localeCompare(b.company_name);
+			} else if (column == RvHeaders.Company && !isAscending) {
+				return b.company_name.localeCompare(a.company_name);
+			} else if (column == RvHeaders.MainProject && isAscending) {
+				return a.main_project_name.localeCompare(b.main_project_name);
+			} else if (column == RvHeaders.MainProject && !isAscending) {
+				return b.main_project_name.localeCompare(a.main_project_name);
+			} else if (column == RvHeaders.SubProject && isAscending) {
+				return a.sub_project_name.localeCompare(b.sub_project_name);
+			} else if (column == RvHeaders.SubProject && !isAscending) {
+				return b.sub_project_name.localeCompare(a.sub_project_name);
+			} else if (column == RvHeaders.CreatedAt && isAscending) {
+				return parseDMY(a.created_at) - parseDMY(b.created_at);
+			} else if (column == RvHeaders.CreatedAt && !isAscending) {
+				return parseDMY(b.created_at) - parseDMY(a.created_at);
+			} else if (column == RvHeaders.Amount && isAscending) {
+				return a.amount - b.amount;
+			} else if (column == RvHeaders.Amount && !isAscending) {
+				return b.amount - a.amount;
+			} else if (column == RvHeaders.AmountReceived && isAscending) {
+				return a.amount_received - b.amount_received;
+			} else if (column == RvHeaders.AmountReceived && !isAscending) {
+				return b.amount_received - a.amount_received;
+			} else if (column == RvHeaders.RvId && isAscending) {
+				const getNumber = (val) => {
+					if (!val) return Infinity; // push empty to bottom
+					const parts = val.split("/");
+					return Number(parts[2]) || Infinity;
+				};
+
+				return getNumber(a.rv_id) - getNumber(b.rv_id);
+			} else if (column == RvHeaders.RvId && !isAscending) {
+				const getNumber = (val) => {
+					if (!val) return Infinity; // push empty to bottom
+					const parts = val.split("/");
+					return Number(parts[2]) || Infinity;
+				};
+
+				return getNumber(b.rv_id) - getNumber(a.rv_id);
+			} else {
+				return b.id.localeCompare(a.id);
+			}
+		});
 	}
 
 	function getIconOrBadge() {
@@ -262,11 +262,11 @@ export default function Invoices({ presetStatus, unmount }) {
 	}
 
 	function getTotals() {
-		let total = { amount: 0, pending: 0, received: 0 };
+		const total = { amount: 0, pending: 0, received: 0 };
 
 		for (const i of api.projects) {
-			total.amount += Number(i.amount);
-			total.pending += Number(i.amount_pending);
+			total.amount += i.amount;
+			total.pending += i.amount_pending;
 			total.received += i.amount_received;
 		}
 
@@ -293,41 +293,17 @@ export default function Invoices({ presetStatus, unmount }) {
 		try {
 			setMain((s) => ({ ...s, isLoading: true }));
 
-			const response = await axios.get(ApiEndpoints.Invoices.GetSupportData, MyGlobal.GetHeaders());
+			const response = await axios.get(ApiEndpoints.Rv.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
 				const revised = response.data.projects
-					.filter((f) => f.status !== Statuses.Projects.Cancelled)
+					.filter((f) => f.firm_id === firmId.id)
 					.map((m) => {
 						let amountPending = 0;
 						let amountReceived = 0;
 						let companyName = "";
 						let mainProjectName = "";
 						let subProjectName = "";
-
-						const invoice = response.data.invoices.filter((f) => f.project_id == m.id);
-
-						let invoiceAmount = Number(m.invoice_fees);
-						let invoiceId = "";
-						let invoiceCreatedAt = "";
-						let invoiceCreatedAtTime = "";
-						let invoiceDueDate = "";
-						let invoiceDueDateTime = "";
-
-						if (Array.isArray(invoice) && invoice.length) {
-							invoiceAmount = invoice.reduce((total, i) => total + Number(i.amount), 0);
-							invoiceId = invoice.map((m) => m.custom_id).at(0);
-							invoiceCreatedAt = invoice.map((m) => dayjs(m.created_at).format("DD/MM/YYYY")).at(0);
-							invoiceCreatedAtTime = invoice.map((m) => dayjs(m.created_at).format("hh:mm:ss a")).at(0);
-							invoiceDueDate = invoice.map((m) => (m.due_date ? dayjs(m.due_date).format("DD/MM/YYYY") : "")).at(0);
-							invoiceDueDateTime = invoice.map((m) => (m.due_date ? dayjs(m.due_date).format("hh:mm:ss a") : "")).at(0);
-						}
-
-						const company = response.data.companies.find((f) => f.id == m.company_id);
-
-						if (typeof company === "object") {
-							companyName = company.name;
-						}
 
 						const transactions = response.data.transactions.filter((f) => f.project_id == m.id);
 
@@ -337,10 +313,50 @@ export default function Invoices({ presetStatus, unmount }) {
 							}, 0);
 						}
 
-						if (amountReceived != 0) {
-							amountPending = invoiceAmount - amountReceived;
-						} else {
-							amountPending = invoiceAmount;
+						let originalAmount = 0;
+						let amount = 0;
+
+						response.data.expenses.forEach((fe) => {
+							if (fe.project_id === m.id) {
+								amount += +fe.expense;
+								originalAmount += +fe.expense;
+							}
+						});
+
+						// response.data.tasks.filter((f) => {
+						// 	if (f.project_id === m.id) {
+						// 		amount += Number(f.expense);
+						// 		originalAmount += Number(f.expense);
+						// 	}
+						// });
+
+						const sameRvs = response.data.expenses.filter((f) => f.project_id === m.id);
+
+						if (Array.isArray(sameRvs) && sameRvs.length) {
+							amount = 0;
+							amount = sameRvs.reduce((pv, cv) => pv + Number(cv.expense), 0);
+						}
+
+						amountPending = amount - amountReceived;
+
+						const rv = response.data.rv.filter((f) => f.project_id == m.id);
+
+						let rvId = "";
+						let rvDueDate = "";
+						let rvCreatedAt = "";
+						let rvCreatedAtTime = "";
+
+						if (Array.isArray(rv) && rv.length) {
+							rvId = rv.map((m) => m.custom_id).at(0);
+							rvCreatedAt = rv.map((m) => dayjs(m.created_at).format("DD/MM/YYYY")).at(0);
+							rvCreatedAtTime = rv.map((m) => dayjs(m.created_at).format("hh:mm:ss a")).at(0);
+							rvDueDate = rv.map((m) => (m.due_date ? dayjs(m.due_date).format("DD/MM/YYYY") : "")).at(0);
+						}
+
+						const company = response.data.companies.find((f) => f.id == m.company_id);
+
+						if (typeof company === "object") {
+							companyName = company.name;
 						}
 
 						const mainProject = response.data.mainProjects.find((f) => f.id == m.main_project_id);
@@ -357,18 +373,19 @@ export default function Invoices({ presetStatus, unmount }) {
 
 						return {
 							...m,
-							amount: invoiceAmount,
+							amount,
 							amount_pending: amountPending,
 							amount_received: amountReceived,
 							company_name: companyName,
-							created_at: invoiceCreatedAt,
-							created_at_time: invoiceCreatedAtTime,
-							invoice,
-							invoice_id: invoiceId,
-							invoice_due_date: invoiceDueDate,
-							invoice_due_date_time: invoiceDueDateTime,
+							created_at: rvCreatedAt,
+							created_at_time: rvCreatedAtTime,
+							invoice_id: "",
 							main_project_name: mainProjectName,
+							original_amount: originalAmount,
 							sub_project_name: subProjectName,
+							rv,
+							rv_due_date: rvDueDate,
+							rv_id: rvId,
 						};
 					});
 
@@ -396,14 +413,28 @@ export default function Invoices({ presetStatus, unmount }) {
 		}
 	}
 
-	function toggleEditInvoice(object) {
+	function toggleEditRv(object) {
 		setMain((s) => ({ ...s, selectedProject: object }));
-		setMounted((s) => ({ ...s, editInvoice: object ? true : false }));
+		setMounted((s) => ({ ...s, editRv: object ? true : false }));
 	}
 
-	function toggleNewInvoice(object) {
+	function toggleNewRV(object) {
 		setMain((s) => ({ ...s, selectedProject: object }));
-		setMounted((s) => ({ ...s, newInvoice: object ? true : false }));
+		setMounted((s) => ({ ...s, newRv: object ? true : false }));
+	}
+
+	function toggleRvList(object) {
+		if (typeof object === "object") {
+			if ("open_new_rv" in object) {
+				setMounted((s) => ({ ...s, newRv: true, rvList: false }));
+			} else {
+				setMain((s) => ({ ...s, selectedProject: object }));
+				setMounted((s) => ({ ...s, rvList: true }));
+			}
+		} else {
+			setMain((s) => ({ ...s, selectedProject: {} }));
+			setMounted((s) => ({ ...s, rvList: false }));
+		}
 	}
 
 	function toggleTransactions(object) {
@@ -411,23 +442,63 @@ export default function Invoices({ presetStatus, unmount }) {
 		setMounted((s) => ({ ...s, transactions: object ? true : false }));
 	}
 
+	const financialYears = useMemo(() => {
+		const set = new Set();
+
+		api.projectsCopy.forEach((fe) => {
+			const date = new Date(fe.started_on);
+			const year = date.getFullYear();
+			const month = date.getMonth();
+
+			let startYear;
+
+			if (month >= 3) {
+				startYear = year;
+			} else {
+				startYear = year - 1;
+			}
+
+			const fy = `${startYear}-${String(startYear + 1).slice(-2)}`;
+			set.add(fy);
+		});
+
+		return Array.from(set).sort();
+	}, [api.projectsCopy]);
+
 	// UI Components
 	function uiBody() {
 		if (main.isLoading) {
 			return <div className={blankDataWrapper}>Loading...</div>;
 		} else if (!api.projectsCopy.length) {
-			return <div className={blankDataWrapper}>No invoices generated.</div>;
+			return <div className={blankDataWrapper}>No RVs generated.</div>;
 		} else if (!api.projects.length) {
-			return <div className={blankDataWrapper}>No invoices found.</div>;
+			return <div className={blankDataWrapper}>No RVs found.</div>;
 		} else {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-start full-border">
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiHeaders()}</div>
-					<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background scrollbar-gutter" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.length} />
+					<Virtuoso className="w-full h-full overflow-y-auto bottom-border contrast-background" data={doSorting()} itemContent={(i, row) => uiRows(row, i)} totalCount={api.projects.length} />
 					<div className="flex w-full h-9 justify-center items-center primary-background">{uiFooter()}</div>
 				</div>
 			);
 		}
+	}
+
+	function uiFinancialYearList() {
+		return financialYears.map((m, i) => {
+			const isSelected = m === main.filter.financialYear;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center-safe cursor-pointer ${aesthetics} font-regular-10 text-left`;
+
+			return (
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setMain((s) => ({ ...s, filter: { ...s.filter, financialYear: m } }))}>
+					<div className="flex w-full space-x-2 items-center-safe">
+						<span>{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}</span>
+						<span>{m}</span>
+					</div>
+				</MenuItem>
+			);
+		});
 	}
 
 	function uiCompanies() {
@@ -484,12 +555,12 @@ export default function Invoices({ presetStatus, unmount }) {
 	function uiFooter() {
 		const totals = getTotals();
 
-		return Object.values(InvoicesHeaders).map((m, i) => {
+		return Object.values(RvHeaders).map((m, i) => {
 			return (
-				<span className="flex w-[9.09%] space-x-2 justify-center items-center text-white font-semibold-12" key={i}>
-					<span>{i == 6 && MyGlobal.ThousandSeparator(totals.amount)}</span>
-					<span>{i == 7 && MyGlobal.ThousandSeparator(totals.received)}</span>
-					<span>{i == 8 && MyGlobal.ThousandSeparator(totals.pending)}</span>
+				<span className="w-[11.11%] space-x-1 text-center text-white font-semibold-12" key={i}>
+					<span>{i == 5 && MyGlobal.ThousandSeparator(totals.amount)}</span>
+					<span>{i == 6 && MyGlobal.ThousandSeparator(totals.received)}</span>
+					<span>{i == 7 && MyGlobal.ThousandSeparator(totals.pending)}</span>
 				</span>
 			);
 		});
@@ -508,11 +579,11 @@ export default function Invoices({ presetStatus, unmount }) {
 	}
 
 	function uiHeaders() {
-		return Object.values(InvoicesHeaders).map((m, i) => {
+		return Object.values(RvHeaders).map((m, i) => {
 			const showSortArrow = m == main.sort.column ? "block" : "hidden";
 
 			return (
-				<span className="flex w-[9.09%] space-x-2 justify-center items-center cursor-pointer text-white font-medium-10" key={i} onClick={() => setSort(m)}>
+				<span className="flex w-[10%] space-x-2 justify-center items-center cursor-pointer text-white font-medium-10" key={i} onClick={() => setSort(m)}>
 					<span>{m}</span>
 					<span className={showSortArrow}>{uiSortArrows(m)}</span>
 				</span>
@@ -521,71 +592,80 @@ export default function Invoices({ presetStatus, unmount }) {
 	}
 
 	function uiMain() {
-		if (!mounted.newInvoice && !mounted.editInvoice) {
+		if (!mounted.editRv && !mounted.newRv) {
 			return (
 				<div className="flex flex-col w-full h-full justify-center items-center">
 					<div className="flex w-full px-5 py-2.5 justify-between items-center">
-						<div className="flex w-1/2 space-x-2 justify-start items-center">
+						<div className="flex w-1/5 space-x-2 justify-start items-center">
 							<span className="cursor-pointer hover:underline hover:underline-offset-8 hover:decoration-[--primary] view-heading" onClick={() => unmount()}>
 								{BaseModules.CashFlow}
 							</span>
 							<FontAwesomeIcon className="gray-text" icon={faChevronRight} size="xs" />
-							<span className="view-heading">{BaseModules.Invoices}</span>
+							<span className="view-heading">{thisView}</span>
 							{getIconOrBadge()}
 						</div>
-						<div className="flex w-1/2 space-x-2 justify-end items-center">
-							<div className="flex w-1/2 space-x-2 justify-end items-center">
-								{/* {uiCompanies()} */}
-								{uiFromDate()}
-								{uiToDate()}
-							</div>
+						<div className="flex w-4/5 space-x-2 justify-end items-center">
+							<Menu as="div" className="flex w-36 justify-center-safe items-center-safe relative">
+								<MenuButton className="flex w-full h-7.5 px-2.5 justify-between items-center-safe focus:outline-none relative z-40 rounded-full shadow contrast-background font-regular-10">
+									<div className="flex w-full space-x-2.5 items-center-safe">
+										<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+										<span className="gray-text">{main.filter.financialYear || "Year"}</span>
+									</div>
+									<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setMain((s) => ({ ...s, filter: { ...s.filter, financialYear: "" } }))} icon={faMultiply} />
+								</MenuButton>
+								<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background shadow focus:outline-none z-50">{uiFinancialYearList()}</MenuItems>
+							</Menu>
+							{uiFromDate()}
+							{uiToDate()}
+
 							{uiFind()}
 							{uiExport()}
 						</div>
 					</div>
 					<div className="flex w-full h-full justify-center items-center">{uiBody()}</div>
 
+					{mounted.rvList && <RvList mount={mounted.rvList} project={main.selectedProject} unmount={toggleRvList} />}
+
 					{mounted.transactions && <Transactions mount={mounted.transactions} project={main.selectedProject} reload={setSupportData} unmount={toggleTransactions} />}
 				</div>
 			);
 		}
 
-		if (mounted.editInvoice) {
-			return <EditInvoice project={main.selectedProject} reload={setSupportData} unmount={toggleEditInvoice} />;
+		if (mounted.editRv) {
+			return <EditRv project={main.selectedProject} reload={setSupportData} unmount={toggleEditRv} />;
 		}
 
-		if (mounted.newInvoice) {
-			return <NewInvoice project={main.selectedProject} reload={setSupportData} unmount={toggleNewInvoice} />;
+		if (mounted.newRv) {
+			return <NewRv project={main.selectedProject} reload={setSupportData} unmount={toggleNewRV} />;
 		}
 	}
 
 	function uiRows(row, i) {
-		const style = `flex flex-wrap w-[9.09%] min-h-9 justify-center items-center text-center`;
+		const style = `flex flex-wrap w-[10%] min-h-9 justify-center items-center text-center`;
 
 		const id = MyGlobal.HighlightText(row.id, main.filter.find);
 
-		const label = !row.invoice_id ? "Generate" : row.invoice_id;
-		const invoiceId = MyGlobal.HighlightText(label, main.filter.find);
+		const rvId = MyGlobal.HighlightText(row.rv_id, main.filter.find);
+		const _rvId = !row.rv_id ? "Generate" : rvId;
 
 		const companyName = MyGlobal.HighlightText(row.company_name, main.filter.find);
 		const mainProjectName = MyGlobal.HighlightText(row.main_project_name, main.filter.find);
 		const subProjectName = MyGlobal.HighlightText(row.sub_project_name, main.filter.find);
+
 		const amount = MyGlobal.HighlightText(row.amount, main.filter.find);
 		const amountPending = MyGlobal.HighlightText(row.amount_pending, main.filter.find);
 		const amountReceived = MyGlobal.HighlightText(row.amount_received, main.filter.find);
 
-		let generateInvoiceTooltip = "";
+		let generateRvTooltip = "";
 
-		if (!allowNewInvoice) {
-			generateInvoiceTooltip = "You do not have permission to generate invoice.";
-		} else if (invoiceId != "Generate") {
-			if (isUserAdministrator || allowEditInvoice) {
-				generateInvoiceTooltip = "Edit this invoice.";
-			}
+		if (rvId && allowEditRv) {
+			generateRvTooltip = "Edit this RV";
+		} else if (!allowNewRv) {
+			generateRvTooltip = "You do not have permission to generate RV";
 		}
 
-		const hideGenerateButton = ["PJ000018", "PJ000016", "PJ000015", "PJ000012", "PJ000011", "PJ000010", "PJ000009", "PJ000004", "PJ000003", "PJ000002", "PJ000034", "PJ000024", "PJ000026"].includes(row.id);
-		const showDownloadButton = row.invoice_id ? "cursor-pointer visible primary-text" : "invisible";
+		const showDownloadButton = row.rv_id ? "cursor-pointer visible primary-text" : "invisible";
+		const showPlusButton = row.rv_id ? "cursor-pointer visible primary-text" : "invisible";
 
 		return (
 			<div className="flex w-full justify-center items-center contrast-background bottom-border font-regular-10 black-text" key={i}>
@@ -594,58 +674,49 @@ export default function Invoices({ presetStatus, unmount }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
 				<span className={`${style} cursor-help primary-text`}>
-					<Tippy animation="shift-away" content={<Tooltip text={row.created_at_time} />} disabled={!row.created_at} placement="bottom">
+					<Tippy animation="shift-away" content={<Tooltip text={row.created_at_time} />} placement="bottom">
 						<span className={style}>{row.created_at}</span>
-					</Tippy>
-				</span>
-				<span className={`${style} cursor-help primary-text`}>
-					<Tippy animation="shift-away" content={<Tooltip text={row.invoice_due_date_time} />} disabled={!row.invoice_due_date} placement="bottom">
-						<span className={style}>{row.invoice_due_date}</span>
 					</Tippy>
 				</span>
 				<span className={style} dangerouslySetInnerHTML={{ __html: amount }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountReceived }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: amountPending }} />
-				{hideGenerateButton ? (
-					<span className={style} />
-				) : (
-					<Tippy animation="shift-away" content={<Tooltip text={generateInvoiceTooltip} />} disabled={!generateInvoiceTooltip} placement="bottom">
-						<span
-							className={`${style} cursor-pointer primary-text`}
-							dangerouslySetInnerHTML={{ __html: invoiceId }}
-							onClick={() => {
-								if (row.invoice_id) {
-									if (isUserAdministrator || allowEditInvoice) {
-										toggleEditInvoice(row);
-									}
-								} else {
-									if (allowNewInvoice) {
-										toggleNewInvoice(row);
-									}
+				<Tippy animation="shift-away" content={<Tooltip text={generateRvTooltip} />} disabled={!generateRvTooltip} placement="bottom">
+					<span
+						className={`${style} cursor-pointer primary-text`}
+						dangerouslySetInnerHTML={{ __html: _rvId }}
+						onClick={() => {
+							if (row.rv_id) {
+								if (isUserAdministrator || allowEditRv) {
+									toggleEditRv(row);
 								}
-							}}
-						/>
-					</Tippy>
-				)}
+							} else {
+								if (allowNewRv) {
+									toggleNewRV(row);
+								}
+							}
+						}}
+					/>
+				</Tippy>
 				<span className={`${style} space-x-5`}>
-					<Tippy animation="shift-away" content={<Tooltip text="Download this invoice." />} placement="bottom">
+					<FontAwesomeIcon className={showPlusButton} icon={faPlusCircle} onClick={() => toggleRvList(row)} size="lg" />
+
+					<Tippy animation="shift-away" content={<Tooltip text="Download this reimbursement voucher." />} placement="bottom">
 						<FontAwesomeIcon
 							className={showDownloadButton}
 							icon={faFileDownload}
 							onClick={() => {
 								const link = document.createElement("a");
 
-								link.href = `/invoices/${row.id}.pdf`;
+								link.href = `/rv/${row.id}.pdf`;
 								link.download = `${row.id}.pdf`;
-
 								link.click();
 							}}
 							size="lg"
 						/>
 					</Tippy>
-					<Tippy animation="shift-away" content={<Tooltip text="Add & see transactions of this invoice." />} placement="bottom">
-						<FontAwesomeIcon className="cursor-pointer primary-text" icon={faCoins} onClick={() => toggleTransactions(row)} size="lg" />
-					</Tippy>
+
+					<FontAwesomeIcon className="cursor-pointer primary-text" icon={faCoins} onClick={() => toggleTransactions(row)} size="lg" />
 				</span>
 			</div>
 		);
@@ -682,12 +753,12 @@ export default function Invoices({ presetStatus, unmount }) {
 	}, []);
 
 	useEffect(() => {
-		if (api.projectsCopy.length) {
-			if ("find" in presetStatus) {
-				doFiltering(presetStatus.find);
-			}
+		if (main.filter.financialYear.length) {
+			doFiltering("financialYear");
+		} else {
+			doFiltering();
 		}
-	}, [api.projectsCopy.length]);
+	}, [main.filter.financialYear]);
 
 	useEffect(() => {
 		if (main.filter.date.from && main.filter.date.to) {
