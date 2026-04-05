@@ -1,7 +1,6 @@
 {
 	"debug.console.fontFamily": "Consolas, monospace",
 	"debug.console.fontSize": 14,
-	"debug.console.lineHeight": 1.5,
 	"editor.acceptSuggestionOnEnter": "smart",
 	"editor.autoClosingBrackets": "always",
 	"editor.autoClosingComments": "always",
@@ -28,7 +27,6 @@
 	"editor.guides.highlightActiveIndentation": true,
 	"editor.indentSize": "tabSize",
 	"editor.insertSpaces": true,
-	"editor.lineHeight": 2,
 	"editor.linkedEditing": true,
 	"editor.parameterHints.enabled": true,
 	"editor.quickSuggestions": {
@@ -71,7 +69,6 @@
 	},
 	"terminal.integrated.fontFamily": "Consolas, monospace",
 	"terminal.integrated.fontSize": 14,
-	"terminal.integrated.lineHeight": 1.5,
 	"workbench.list.smoothScrolling": true,
 	"workbench.list.scrollByPage": true
 }

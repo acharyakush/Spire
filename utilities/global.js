@@ -403,49 +403,39 @@ export const MyGlobal = Object.freeze({
 		}
 	},
 
-	MakeNewInvoiceId: (firmName, payload, source = "") => {
-		if (payload.length) {
-			const initials = MyGlobal.GetInitials(firmName).at(0);
+	MakeNewInvoiceId: (firmName, payload, source = "", firmObj = "", financialYear = "") => {
+		if (!payload.length) return "00001";
 
-			const target = [...payload].filter((f) => {
-				const customIdInitials = String(f.custom_id).split("/").at(0);
+		const initials = firmObj.initials;
 
-				if (initials === "SCL") return customIdInitials === "PSCL";
-				if (String(initials).startsWith(customIdInitials)) {
-					return f;
-				}
-			});
+		const target = payload.filter((f) => {
+			const customIdInitials = String(f.custom_id).split("/").at(0);
+			return customIdInitials === initials;
+		});
 
-			if (!target.length) {
-				return "00001";
-			} else {
-				const extractedIds = [];
+		if (!target.length) return "00001";
 
-				target.forEach((m) => {
-					const splitCustomId = String(m.custom_id).split("/");
+		const extractedIds = [];
 
-					if (splitCustomId.at(1) === getFinancialYear()) {
-						try {
-							const extractNumber = +splitCustomId.at(2).match(/\d+$/)[0].replace(/^0+/, "");
+		target.forEach((m) => {
+			const splitCustomId = String(m.custom_id).split("/");
 
-							if (!extractedIds.includes(extractNumber)) {
-								extractedIds.push(extractNumber);
-							}
-						} catch (error) {
-							console.log(m.custom_id + " > ", error);
-						}
+			if (splitCustomId.at(1) === (financialYear || getFinancialYear())) {
+				const match = splitCustomId.at(2)?.match(/\d+$/);
+
+				if (match) {
+					const extractNumber = parseInt(match[0], 10);
+					if (!extractedIds.includes(extractNumber)) {
+						extractedIds.push(extractNumber);
 					}
-				});
-
-				const latestId = extractedIds.sort((a, b) => b - a).at(0);
-				const incrementedId = (parseInt(latestId, 10) + 1).toString();
-				const newId = incrementedId.padStart(String(latestId).length, "0");
-
-				return String(newId).padStart(5, "0");
+				}
 			}
-		} else {
-			return "00001";
-		}
+		});
+
+		if (!extractedIds.length) return "00001";
+
+		const latestId = Math.max(...extractedIds);
+		return String(latestId + 1).padStart(5, "0");
 	},
 
 	MakeNewQuotationId: (firmName, payload) => {

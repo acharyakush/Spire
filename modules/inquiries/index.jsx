@@ -8,27 +8,27 @@ import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import dynamic from "next/dynamic";
 import ReactDatePicker from "react-datepicker";
-import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 import writeXlsxFile from "write-excel-file/browser";
 import HoverPreviewWrapper from "@/components/HoverPreviewPdf";
 
 import { Virtuoso } from "react-virtuoso";
 import { MyGlobal } from "@/utilities/global";
 import { TextInputNative } from "@/components/Inputs";
+import { InquiriesHeaders } from "@/utilities/headers";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
-import { faCalendar, faCheck, faCheckCircle, faChevronDown, faDownload, faFilter, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlaneUp, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
-import { InquiriesHeaders } from "@/utilities/headers";
+import { faCalendar, faCheckCircle, faChevronDown, faDownload, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlaneUp, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
-const DynamicNotes = dynamic(() => import("./Notes"), { ssr: false });
-const DynamicNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
-const DynamicEditInquiry = dynamic(() => import("./EditInquiry"), { ssr: false });
-const DynamicNewQuotation = dynamic(() => import("./NewQuotation"), { ssr: false });
-const DynamicEditQuotation = dynamic(() => import("./EditQuotation"), { ssr: false });
-const DynamicNewProject = dynamic(() => import("../projects/NewProject"), { ssr: false });
-const DynamicUpdateStatus = dynamic(() => import("@/modals/inquiries/miscellaneous").then((t) => ({ default: t.UpdateStatus })), { ssr: false });
+const DynNotes = dynamic(() => import("./Notes"), { ssr: false });
+const DynNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
+const DynEditInquiry = dynamic(() => import("./EditInquiry"), { ssr: false });
+const DynNewQuotation = dynamic(() => import("./NewQuotation"), { ssr: false });
+const DynEditQuotation = dynamic(() => import("./EditQuotation"), { ssr: false });
+const DynNewProject = dynamic(() => import("../projects/NewProject"), { ssr: false });
+const DynUpdateStatus = dynamic(() => import("@/modals/inquiries/miscellaneous").then((t) => ({ default: t.UpdateStatus })), { ssr: false });
 
 export default function Inquiries({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -919,17 +919,17 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiMain() {
 		if (mounted.addQuotation) {
-			return <DynamicNewQuotation clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleAddQuotation} />;
+			return <DynNewQuotation clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleAddQuotation} />;
 		} else if (mounted.editQuotation) {
-			return <DynamicEditQuotation clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleEditQuotation} />;
+			return <DynEditQuotation clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleEditQuotation} />;
 		} else if (mounted.editInquiry) {
-			return <DynamicEditInquiry inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleEditInquiryView} />;
+			return <DynEditInquiry inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleEditInquiryView} />;
 		} else if (mounted.newInquiry) {
-			return <DynamicNewInquiry allInquiries={inquiries.copy} reload={getSupportData} unmount={toggleNewInquiryView} />;
+			return <DynNewInquiry allInquiries={inquiries.copy} reload={getSupportData} unmount={toggleNewInquiryView} />;
 		} else if (mounted.newProject) {
-			return <DynamicNewProject inquiry={main.selectedInquiryForStatusChange} reload={getSupportData} unmount={closeNewProjectView} />;
+			return <DynNewProject inquiry={main.selectedInquiryForStatusChange} reload={getSupportData} unmount={closeNewProjectView} />;
 		} else if (mounted.notes) {
-			return <DynamicNotes clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleNotesView} />;
+			return <DynNotes clients={api.clients} inquiry={main.selectedInquiryForNotes} reload={getSupportData} unmount={toggleNotesView} />;
 		} else {
 			return (
 				<>
@@ -1257,7 +1257,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		<div className="flex flex-col w-full h-full items-center-safe">
 			{uiMain()}
 
-			{mounted.updateStatus && <DynamicUpdateStatus inquiry={main.selectedInquiryForStatusChange} mount={mounted.updateStatus} reload={getSupportData} unmount={toggleUpdateStatus} />}
+			{mounted.updateStatus && <DynUpdateStatus inquiry={main.selectedInquiryForStatusChange} mount={mounted.updateStatus} reload={getSupportData} unmount={toggleUpdateStatus} />}
 		</div>
 	);
 }

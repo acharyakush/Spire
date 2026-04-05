@@ -1,21 +1,27 @@
 "use client";
 
-/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
-
 import axios from "axios";
-import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 import NewProjectPreview from "@/modals/projects/NewProjectPreview";
 
+import { Button, Select } from "@mantine/core";
 import { MyGlobal } from "@/utilities/global";
 import { useEffect, useRef, useState } from "react";
 import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ComboBox2, ComboBoxWithChips, DatePicker, TextArea, TextInput } from "@/components/Inputs";
-import { faBriefcase, faCalendar, faChevronLeft, faExclamationCircle, faFile, faIndianRupee, faNoteSticky, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
+import { ComboBox2, ComboBoxWithChips, TextArea, TextInput } from "@/components/Inputs";
+import { faBriefcase, faChevronLeft, faFile, faIndianRupee, faNoteSticky, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+
+const arrFinancialYears = [
+	{ key: "2024-25", value: "2024-25" },
+	{ key: "2025-26", value: "2025-26" },
+	{ key: "2026-27", value: "2026-27" },
+];
 
 export default function NewProject({ inquiry, reload, unmount }) {
 	// Business Logic
 	const teamsMenuRef = useRef(null);
+	const enteredSubProjectRef = useRef("");
 
 	const [api, setApi] = useState({
 		clients: [],
@@ -33,7 +39,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 		note: "",
 		phoneNumber: "",
 		quote: 0,
-		remarks: "",
+		financialYear: "",
 		subProject: { id: 0, name: "" },
 		teams: [],
 	});
@@ -67,11 +73,9 @@ export default function NewProject({ inquiry, reload, unmount }) {
 		setApi((s) => ({ ...s, clientsCompanies: { copy: revised, data: revised } }));
 	}
 
-	function addNewSubProject(subProject) {
+	function addNewSubProject() {
 		const copy = [...api.subProjects.copy];
-		copy.unshift({ id: 0, name: subProject });
-
-		setFind("subProject", "");
+		copy.unshift({ id: 0, key: enteredSubProjectRef.current?.value, name: enteredSubProjectRef.current?.value, value: enteredSubProjectRef.current?.value });
 
 		setMain((s) => ({ ...s, subProject: copy.at(0) }));
 		setApi((s) => ({ ...s, subProjects: { copy, data: copy } }));
@@ -222,9 +226,11 @@ export default function NewProject({ inquiry, reload, unmount }) {
 			const response = await axios.get(ApiEndpoints.Projects.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const firms = response.data.firms;
+				const firms = response.data.firms.map((m) => ({ ...m, key: m.id, value: m.name }));
 
 				const companiesByClient = response.data.companies.filter((f) => f.client_id == inquiry.client_id);
+				const mainProjects = response.data.mainProjects.map((m) => ({ ...m, key: m.id, value: m.name }));
+				const subProjects = response.data.subProjects.filter((f) => f.name).map((m) => ({ ...m, key: m.id, value: m.name }));
 
 				setApi({
 					clients: response.data.clients,
@@ -233,13 +239,13 @@ export default function NewProject({ inquiry, reload, unmount }) {
 						data: companiesByClient,
 					},
 					mainProjects: {
-						copy: response.data.mainProjects,
-						data: response.data.mainProjects,
+						copy: mainProjects,
+						data: mainProjects,
 					},
 					firms,
 					subProjects: {
-						copy: response.data.subProjects,
-						data: response.data.subProjects,
+						copy: subProjects,
+						data: subProjects,
 					},
 				});
 
@@ -308,14 +314,6 @@ export default function NewProject({ inquiry, reload, unmount }) {
 		return <TextInput icon={faIndianRupee} id="newProjectFees" label={`${main.invoiceFirm.name} Fees`} onChange={(e) => setInputs("invoiceFees", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={7} value={main.invoiceFees} width="w-full" />;
 	}
 
-	function uiInvoiceFirm() {
-		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.invoiceFirm.name} displayValue="name" filteredData={api.firms} hasDataObject icon={faBriefcase} isMenuInverted isReadOnly={false} label="Invoice Firm" onChange={(e) => setInputs("invoiceFirm", e)} onClick={() => {}} onInputChange={() => {}} onKeyPress={() => {}} searchedItem={{}} tabIndex={9} value={main.invoiceFirm.name} width="w-full" />;
-	}
-
-	function uiMainProjects() {
-		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.mainProject.name} displayValue="name" filteredData={getFilteredMainProjects} hasDataObject icon={faFile} isReadOnly={false} label="Main Project" onChange={(e) => setInputs("mainProject", e)} onClick={() => {}} onInputChange={(e) => setFind("mainProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.mainProject.name} tabIndex={4} value={main.mainProject.name} width="w-full" />;
-	}
-
 	function uiNotes() {
 		return <TextArea icon={faNoteSticky} key={1} label="Notes" onChange={(e) => setInputs("note", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={main.note} width="w-full" />;
 	}
@@ -344,10 +342,6 @@ export default function NewProject({ inquiry, reload, unmount }) {
 		}
 
 		return <TextInput icon={faIndianRupee} isReadOnly label={label} onChange={() => {}} onKeyPress={() => {}} tabIndex="8" value={MyGlobal.ThousandSeparator(main.quote)} width="w-full" />;
-	}
-
-	function uiRemarks() {
-		return <TextInput icon={faExclamationCircle} label="Remarks" onChange={(e) => setInputs("remarks", e.target.value)} tabIndex={6} value={main.remarks} width="w-full" />;
 	}
 
 	function uiSubProjects() {
@@ -409,9 +403,28 @@ export default function NewProject({ inquiry, reload, unmount }) {
 							{uiPhoneNumber()}
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
-							{uiMainProjects()}
-							{uiSubProjects()}
-							{uiRemarks()}
+							<Select checkIconPosition="right" comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }} data={api.mainProjects.copy} label="Main Projects" onChange={(_, o) => setMain((s) => ({ ...s, mainProject: { id: o.id, name: o.value } }))} searchable styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "100%" } }} value={main.mainProject.name} variant="filled" />
+							<Select
+								checkIconPosition="right"
+								comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }}
+								data={api.subProjects.copy}
+								label="Sub Projects"
+								nothingFoundMessage={
+									<Button onClick={() => addNewSubProject()} size="xs" variant="light">
+										Not found. Add this now
+									</Button>
+								}
+								onChange={(input, obj) => {
+									enteredSubProjectRef.current = input;
+									setMain((s) => ({ ...s, subProject: { id: obj.id, name: obj.value } }));
+								}}
+								ref={enteredSubProjectRef}
+								searchable
+								styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "100%" } }}
+								value={main.subProject.name}
+								variant="filled"
+							/>
+							<Select checkIconPosition="right" comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }} data={arrFinancialYears} label="Financial Year" onChange={(o) => setMain((s) => ({ ...s, financialYear: o }))} styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "100%" } }} value={main.financialYear} variant="filled" />
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
 							{uiInvoiceFees()}
@@ -419,7 +432,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiTeams()}</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-start">
-							{uiInvoiceFirm()}
+							<Select checkIconPosition="right" comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }} data={api.firms} label="Invoice Firm" onChange={(_, o) => setMain((s) => ({ ...s, invoiceFirm: { id: o.id, name: o.value } }))} styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "90%" } }} value={main.invoiceFirm.name} variant="filled" />
 							{uiNotes()}
 						</div>
 					</div>

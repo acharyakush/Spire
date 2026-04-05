@@ -1,8 +1,9 @@
 import axios from "axios";
-import { ApiEndpoints, Messages, ToastTypes } from "./constants";
 import dayjs from "dayjs";
-import { toast } from "react-toastify";
 import secureLocalStorage from "react-secure-storage";
+
+import { toast } from "react-toastify";
+import { ApiEndpoints, Messages, ToastTypes } from "./constants";
 
 const CryptoJS = require("crypto-js");
 const encryptionIv = CryptoJS.enc.Hex.parse("00000000000000000000000000000000");
@@ -181,6 +182,29 @@ export function getChangedValues(obj1, obj2, path = "") {
 
 	return changes;
 }
+
+export function getFinancialYearByDate(dateInput) {
+	const date = new Date(dateInput);
+	const year = date.getFullYear();
+	const month = date.getMonth(); // 0 = Jan, 2 = Mar, 3 = Apr
+
+	let startYear;
+
+	// If month is before April (0–2 → Jan–Mar)
+	if (month < 3) {
+		startYear = year - 1;
+	} else {
+		startYear = year;
+	}
+
+	const endYearShort = String((startYear + 1) % 100).padStart(2, "0");
+
+	return `${startYear}-${endYearShort}`;
+}
+
+// Example usage:
+console.log(getFinancialYear("Mon Mar 30 2026 17:27:17 GMT+0530"));
+// Output: "2025-26"
 
 export function getFullDetailsFromIds(ids) {
 	if (typeof ids !== "string") return [];

@@ -543,9 +543,10 @@ export default function InvoicesByFirm({ firmId, presetStatus, unmount }) {
 	function uiHeaders() {
 		return Object.values(InvoicesHeaders).map((m, i) => {
 			const showSortArrow = m == main.sort.column ? "block" : "hidden";
+			const width = m == "Invoice ID" ? "w-[20%]" : "w-[9.09%]";
 
 			return (
-				<span className="flex w-[9.09%] space-x-2 justify-center items-center cursor-pointer text-white font-medium-10" key={i} onClick={() => setSort(m)}>
+				<span className={`flex ${width} space-x-2 justify-center items-center cursor-pointer text-white font-medium-10`} key={i} onClick={() => setSort(m)}>
 					<span>{m}</span>
 					<span className={showSortArrow}>{uiSortArrows(m)}</span>
 				</span>
@@ -693,7 +694,7 @@ export default function InvoicesByFirm({ firmId, presetStatus, unmount }) {
 				) : (
 					<Tippy animation="shift-away" content={<Tooltip text={generateInvoiceTooltip} />} disabled={!generateInvoiceTooltip} placement="bottom">
 						<span
-							className={`${style} cursor-pointer primary-text`}
+							className={`${style} w-[20%]! cursor-pointer primary-text`}
 							dangerouslySetInnerHTML={{ __html: invoiceId }}
 							onClick={() => {
 								if (row.invoice_id) {

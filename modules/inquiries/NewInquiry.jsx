@@ -3,17 +3,17 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
+import dayjs from "dayjs";
 import NewInquiryPreview from "@/modals/inquiries/NewInquiryPreview";
 
 import { MyGlobal } from "@/utilities/global";
+import { escapeString } from "@/utilities/myGlobal";
 import { useEffect, useRef, useState } from "react";
 import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 import { ComboBox2, ComboBoxWithChips, DatePicker, EmailAddress, TextArea, TextInput } from "@/components/Inputs";
 import { faCalendar, faChevronLeft, faFile, faIndianRupee, faNoteSticky, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
-import dayjs from "dayjs";
-import { escapeString } from "@/utilities/myGlobal";
 
 export default function NewInquiry({ allInquiries, reload, unmount }) {
 	// Business Logic
@@ -471,13 +471,7 @@ export default function NewInquiry({ allInquiries, reload, unmount }) {
 					</div>
 				</div>
 				<footer className="w-full dialog-footer">
-					<button
-						className={addButtonStyle}
-						onClick={() => {
-							if (checkIfNewInquiryAlreadyExists()) {
-								togglePreviewBox("");
-							}
-						}}>
+					<button className={addButtonStyle} onClick={() => togglePreviewBox("")}>
 						{uiPreview()}
 					</button>
 				</footer>

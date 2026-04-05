@@ -6,13 +6,14 @@ import { AccountMenu, ApiEndpoints, BaseModules, DerivedModules, Messages } from
 
 import { useRouter } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ErrorFallbackComponent } from "@/components/Elements";
 import { applicationName, MyGlobal } from "@/utilities/global";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { faSignOut, faSun, faUserCircle, faUserClock, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import { clearAllUserData } from "@/utilities/myGlobal";
+import Projects from "@/modules/projects/Index2";
 
 const DynamicMySpace = dynamic(() => import("./mySpace"), { ssr: false });
 const DynamicTodos = dynamic(() => import("@/modules/todo/Index"), { ssr: false });
@@ -239,19 +240,16 @@ export default function Home() {
 
 	function setModule(index, module) {
 		if (index === main.selectedModule.index && module.name === main.selectedModule.name) {
-			setMain((s) => ({ ...s, selectedModule: { index: "", name: "" } }));
-
-			setTimeout(() => {
-				setMain((s) => ({ ...s, selectedModule: { index, name: module.name } }));
-			}, 0);
-		} else {
-			setMain((s) => ({ ...s, selectedModule: { index, name: module.name } }));
+			unmountChildViews();
+			return;
 		}
+
+		setMain((s) => ({ ...s, selectedModule: { index, name: module.name } }));
 
 		unmountChildViews();
 	}
 
-	function setModuleProps(key, value) {
+	const setModuleProps = useCallback((key, value) => {
 		const _key = String(key).toLowerCase();
 
 		if (key === BaseModules.Invoices || key === BaseModules.Rv) {
@@ -263,7 +261,7 @@ export default function Home() {
 		} else {
 			setMain((s) => ({ ...s, status: { ...s.status, [_key]: value } }));
 		}
-	}
+	}, []);
 
 	function toggleActivitiesView() {
 		setMounted((s) => ({ ...s, activities: !s.activities }));
@@ -396,6 +394,7 @@ export default function Home() {
 			case BaseModules.Projects:
 				return (
 					<ErrorBoundary key={`ErrorBoundary_${BaseModules.Projects}`} onError={(e) => MyGlobal.LogErrors(e.message, BaseModules.Projects)} FallbackComponent={ErrorFallbackComponent}>
+						{/* {process.env.NODE_ENV === "development" ? <Projects presetStatus={main.status.projectsOrTasks} setModuleProps={setModuleProps} /> : <DynamicProjects presetStatus={main.status.projectsOrTasks} setModuleProps={setModuleProps} />} */}
 						<DynamicProjects presetStatus={main.status.projectsOrTasks} setModuleProps={setModuleProps} />
 					</ErrorBoundary>
 				);

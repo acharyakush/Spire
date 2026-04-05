@@ -360,3 +360,23 @@ export const FirmsModules = Object.freeze({
 	EditBanks: "Edit Bank",
 	EditFirm: "Edit Firm",
 });
+
+export const ProjectStatusesBasic = Object.freeze({
+	active: "Active",
+	cancelled: "Cancelled",
+	closed: "Closed",
+	completed: "Completed",
+	hold: "Hold",
+});
+
+export const ProjectStatusesFull = Object.freeze({
+	active: "Active",
+	cancelled: "Cancelled",
+	closed: "Closed",
+	completed: "Completed",
+	hold: "Hold",
+	overdue: "Overdue",
+	today: "Today",
+	tomorrow: "Tomorrow",
+	upcoming: "Upcoming",
+});

@@ -16,6 +16,7 @@ import { Badge, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
 import { faBank, faCalendar, faChevronLeft, faCircleMinus, faHashtag, faIndianRupee, faListCheck, faMinusCircle, faPlusCircle, faTasks } from "@fortawesome/free-solid-svg-icons";
+import { getFinancialYearByDate } from "@/utilities/myGlobal";
 
 export default function NewInvoice({ project, reload, unmount }) {
 	// Business Logic
@@ -30,6 +31,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 	const [api, setApi] = useState({
 		clients: [],
 		companies: [],
+		invoices: [],
 	});
 
 	const [loading, setLoading] = useState({
@@ -58,6 +60,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 			id: "",
 			name: "",
 			termsConditions: "",
+			initials: "",
 		},
 		particulars: [
 			{
@@ -84,7 +87,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 	// Functions
 	async function addInvoice() {
 		try {
-			const customId = `${MyGlobal.GetInitials(main.firm.name)}/${main.financialYear}/${main.invoiceId}`;
+			const customId = `${main.firm.initials}/${main.financialYear}/${main.invoiceId}`;
 
 			const body = {
 				amount: totalParticularsAmount,
@@ -286,6 +289,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 					id: "",
 					name: "",
 					termsConditions: "",
+					initials: "",
 				};
 
 				const bankObj = {
@@ -304,6 +308,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 					firmObj.id = firm.id;
 					firmObj.name = firm.name;
 					firmObj.termsConditions = firm.terms_conditions;
+					firmObj.initials = firm.initials;
 				}
 
 				const bank = response.data.banks.find((f) => f.firm_id == firmObj.id);
@@ -342,6 +347,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				setApi({
 					clients: response.data.clients,
 					companies: response.data.companies,
+					invoices: response.data.invoices,
 				});
 
 				setMain((s) => ({
@@ -355,7 +361,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 						name: bankObj.name,
 						upiId: bankObj.upiId,
 					},
-					invoiceId: MyGlobal.MakeNewInvoiceId(firmObj.name, response.data.invoices, DerivedModules.NewInvoice),
+					invoiceId: MyGlobal.MakeNewInvoiceId(firmObj.name, response.data.invoices, DerivedModules.NewInvoice, firmObj),
 					transactions,
 					firm: firmObj,
 					totalAmountReceived,
@@ -404,11 +410,37 @@ export default function NewInvoice({ project, reload, unmount }) {
 	}
 
 	function uiInputFinancialYear() {
-		return <TextInput icon={faCalendar} label="Financial Year" maxLength={7} onChange={(e) => setInputs("financialYear", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={1} value={main.financialYear} width="w-full" />;
+		return (
+			<TextInput
+				icon={faCalendar}
+				label="Financial Year"
+				maxLength={7}
+				onChange={(e) => {
+					setMain((s) => ({ ...s, invoiceId: MyGlobal.MakeNewInvoiceId(main.firm.name, api.invoices, DerivedModules.NewInvoice, main.firm, e.target.value) }));
+					setInputs("financialYear", e.target.value);
+				}}
+				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
+				tabIndex={1}
+				value={main.financialYear}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiInputInvoiceDate() {
-		return <DatePicker icon={faCalendar} label="Invoice Date" onChange={(e) => setInputs("invoiceDate", e)} tabIndex={1} value={main.invoiceDate} width="w-full" />;
+		return (
+			<DatePicker
+				icon={faCalendar}
+				label="Invoice Date"
+				onChange={(e) => {
+					setMain((s) => ({ ...s, invoiceId: MyGlobal.MakeNewInvoiceId(main.firm.name, api.invoices, DerivedModules.NewInvoice, main.firm, getFinancialYearByDate(e)) }));
+					setInputs("invoiceDate", e);
+				}}
+				tabIndex={1}
+				value={main.invoiceDate}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiInputInvoiceDueDate() {
@@ -558,7 +590,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				<div className="flex w-full justify-start items-center">
 					<span className="w-2/5 font-regular-10 gray-text">Invoice</span>
 					<div className="flex w-3/5 space-x-1 font-medium-10 black-text">
-						<span>{MyGlobal.GetInitials(main.firm.name)}</span>
+						<span>{main.firm.initials}</span>
 						<span>/</span>
 						<span>{main.financialYear}</span>
 						<span>/</span>
