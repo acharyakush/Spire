@@ -52,7 +52,7 @@ export default async function handler(req, res) {
 			}
 		}
 
-		const response = await query(`INSERT INTO projects (id, client_id, company_id, inquiry_id, firm_id, main_project_id, sub_project_id, quote, remarks, invoice_fees, teams, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [projectResponse.new_id, clientId, newCompanyId, inquiryId, invoiceFirm.id, mainProject.id, newSubProjectId, quote, remarks, invoiceFees, teams, Statuses.Projects.Active, userId]);
+		const response = await query(`INSERT INTO projects (id, client_id, company_id, inquiry_id, firm_id, main_project_id, sub_project_id, quote, remarks, invoice_fees, teams, status, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [projectResponse.new_id, clientId, newCompanyId, inquiryId, invoiceFirm.id, mainProject.id, newSubProjectId, quote, remarks ?? "Need to add financial year later on.", invoiceFees, teams, Statuses.Projects.Active, userId]);
 
 		const clientQuery = `UPDATE clients SET company_id=?, is_confirmed=1 WHERE id=?`;
 		const clientParameters = [newCompanyId, clientId];

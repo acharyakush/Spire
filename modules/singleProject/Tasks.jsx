@@ -199,6 +199,8 @@ export default function Tasks({ project }) {
 				return { ...m, entry_by_name: MyGlobal.GetAnyDataFromId(m.entry_by_id, "full_name") };
 			});
 
+			console.log(notes);
+
 			setApi((s) => ({ ...s, notes: { copy: notes, data: notes } }));
 		} catch (error) {
 			MyGlobal.HandleErrors(error, "Get Single Project Notes");
@@ -621,8 +623,8 @@ export default function Tasks({ project }) {
 
 		return (
 			<div className="flex w-full px-4 py-2 justify-center items-center contrast-background bottom-border font-regular-11" key={i}>
-				<Tippy animation="shift-away" content={<Tooltip text={dayjs(row.entry_at).format("hh:mm:ss a")} />} placement="bottom">
-					<span className={`${style} cursor-help`}>{dayjs(row.entry_at).format("DD MMM, YYYY")}</span>
+				<Tippy animation="shift-away" content={<Tooltip text={dayjs(row.entry_date).format("hh:mm:ss a")} />} placement="bottom">
+					<span className={`${style} cursor-help`}>{dayjs(row.entry_date).format("DD MMM, YYYY")}</span>
 				</Tippy>
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.content, main.findText) }} />
