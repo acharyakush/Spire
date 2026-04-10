@@ -226,11 +226,13 @@ export default function NewProject({ inquiry, reload, unmount }) {
 			const response = await axios.get(ApiEndpoints.Projects.GetSupportData, MyGlobal.GetHeaders());
 
 			if (response.status == 200) {
-				const firms = response.data.firms.map((m) => ({ ...m, key: m.id, value: m.name }));
+				const firms = response.data.firms.map((m) => ({ ...m, key: m.id, value: String(m.id), label: m.name }));
 
 				const companiesByClient = response.data.companies.filter((f) => f.client_id == inquiry.client_id);
 				const mainProjects = response.data.mainProjects.map((m) => ({ ...m, key: m.id, value: m.name }));
 				const subProjects = response.data.subProjects.filter((f) => f.name).map((m) => ({ ...m, key: m.id, value: m.name }));
+
+				console.log(firms);
 
 				setApi({
 					clients: response.data.clients,
@@ -362,6 +364,10 @@ export default function NewProject({ inquiry, reload, unmount }) {
 	}, []);
 
 	useEffect(() => {
+		console.log(main);
+	}, [main]);
+
+	useEffect(() => {
 		calculateQuote();
 	}, [main.invoiceFees]);
 
@@ -432,7 +438,18 @@ export default function NewProject({ inquiry, reload, unmount }) {
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiTeams()}</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-start">
-							<Select checkIconPosition="right" comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }} data={api.firms} label="Invoice Firm" onChange={(_, o) => setMain((s) => ({ ...s, invoiceFirm: { id: o.id, name: o.value } }))} styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "90%" } }} value={main.invoiceFirm.name} variant="filled" />
+							<Select
+								checkIconPosition="right"
+								comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }}
+								data={api.firms}
+								label="Invoice Firm"
+								onChange={(_, o) => {
+									setMain((s) => ({ ...s, invoiceFirm: { id: o.value, name: o.label } }));
+								}}
+								styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "90%" } }}
+								value={main.invoiceFirm.id}
+								variant="filled"
+							/>
 							{uiNotes()}
 						</div>
 					</div>
