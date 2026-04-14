@@ -9,7 +9,7 @@ import Others from "./others";
 import Vendors from "./vendors";
 import Invoices from "./invoices";
 import Affiliates from "./affiliates";
-import { ApiEndpoints, BaseModules, CashFlowMain, CashFlowSubModules } from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, CashFlowMain, CashFlowSubModules, Statuses } from "@/utilities/constants";
 import AllTransactions from "./allTransactions";
 import Transactions from "./pettyCash/Transactions";
 
@@ -189,6 +189,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 
 			if (response.status == 200) {
 				const today = dayjs().startOf("day");
+				const activeProjects = response.data.projects.filter((f) => String(f.status).trim() !== Statuses.Projects.Cancelled);
 
 				// ========== //
 				// Affiliates //
@@ -265,7 +266,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 				});
 
 				const invoiceProjectIds = new Set(response.data.invoices.map((m) => m.project_id));
-				const notGeneratedInvoices = response.data.projects.filter((f) => !invoiceProjectIds.has(f.id));
+				const notGeneratedInvoices = activeProjects.filter((f) => !invoiceProjectIds.has(f.id));
 
 				notGeneratedInvoices.forEach((fe, i) => {
 					_invoices.notGenerated.amount += Number(fe.quote);
@@ -297,7 +298,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 					rvIds.push(fe.project_id);
 				});
 
-				response.data.projects.forEach((fe) => {
+				activeProjects.forEach((fe) => {
 					if (!rvIds.includes(fe.id)) {
 						_rv.notGenerated.count += 1;
 					}
@@ -317,7 +318,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 					...s,
 					firms: response.data.firms,
 					invoices: response.data.invoices,
-					projects: response.data.projects,
+					projects: activeProjects,
 					reimburseVouchers: response.data.reimburseVouchers,
 				}));
 
@@ -515,13 +516,10 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 
 	function uiInvoicesBlock() {
 		return api.firms.map((m, n) => {
-			const generatedInvoices = api.invoices.filter((f) => {
-				const initials = String(f.custom_id).split("/")[0];
-				if (m.initials === "SCL" && (initials === "PS" || initials === "PSCL")) return true;
-				return initials === m.initials;
-			}).length;
+			const generatedInvoiceProjectIds = api.invoices.filter((f) => f.custom_id).map((m) => m.project_id);
+			const generatedInvoices = api.projects.filter((f) => generatedInvoiceProjectIds.includes(f.id)).filter((f) => f.firm_id === m.id).length;
 
-			const totalInvoices = api.projects.filter((f) => f.firm_id === m.id).length;
+			const totalInvoices = api.projects.filter((f) => f.status !== Statuses.Projects.Cancelled).filter((f) => f.firm_id === m.id).length;
 			const aesthetics = getAesthetics(n);
 
 			return (
@@ -724,7 +722,7 @@ export default function CashFlows({ presetStatus, setModuleProps }) {
 		return api.firms.map((m, n) => {
 			const totalRv = api.reimburseVouchers.filter((f) => {
 				const initials = String(f.custom_id).split("/")[0];
-				if (m.initials === "SCL" && (initials === "PS" || initials === "PSCL")) return true;
+				if (m.initials === "SDS") return true;
 				return initials === m.initials;
 			});
 

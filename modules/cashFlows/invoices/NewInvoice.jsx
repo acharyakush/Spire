@@ -148,7 +148,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 	function downloadPdf() {
 		setLoading((s) => ({ ...s, downloadPdf: true }));
 
-		const fileName = `${MyGlobal.GetInitials(main.firm.name)}_${main.financialYear}_${main.invoiceId}_${getCompanyDetails().name}`;
+		const fileName = `${main.firm.initials}_${main.financialYear}_${main.invoiceId}_${getCompanyDetails().name}`;
 
 		const pdf = new jsPDF("p", "mm", "a4", true);
 		const invoiceBody = document.getElementById("invoiceBody");
@@ -434,6 +434,7 @@ export default function NewInvoice({ project, reload, unmount }) {
 				label="Invoice Date"
 				onChange={(e) => {
 					setMain((s) => ({ ...s, invoiceId: MyGlobal.MakeNewInvoiceId(main.firm.name, api.invoices, DerivedModules.NewInvoice, main.firm, getFinancialYearByDate(e)) }));
+					setInputs("financialYear", getFinancialYearByDate(e));
 					setInputs("invoiceDate", e);
 				}}
 				tabIndex={1}

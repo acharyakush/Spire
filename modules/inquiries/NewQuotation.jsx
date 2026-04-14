@@ -38,6 +38,7 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 		phoneNumber: "",
 		selectedBank: [],
 		termsConditions: "",
+		initials: "",
 	});
 
 	const [main, setMain] = useState({
@@ -57,7 +58,7 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 		},
 	]);
 
-	const proposalNumber = "QTN/" + MyGlobal.GetInitials(firm.name)[0] + "/" + MyGlobal.MakeNewQuotationId(firm.name, api.quotations);
+	const proposalNumber = "QTN/" + firm.initials + "/" + MyGlobal.MakeNewQuotationId(firm.name, api.quotations);
 
 	// Functions
 	function addRow() {
@@ -164,6 +165,7 @@ export default function NewQuotation({ clients, inquiry, reload, unmount }) {
 				phoneNumber: value.phone_number,
 				selectedBank,
 				termsConditions: value.terms_conditions,
+				initials: value.initials,
 			});
 		}
 	}

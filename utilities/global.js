@@ -24,6 +24,31 @@ export function getFinancialYear() {
 	return `${startYear}-${String(startYear + 1).slice(-2)}`;
 }
 
+export function getFinancialYearForRv() {
+	const today = dayjs();
+	const fyStart = dayjs().month(3).date(1); // April 1
+
+	const startYear = today.isBefore(fyStart) ? today.year() - 1 : today.year();
+
+	return `${String(startYear).slice(-2)}-${String(startYear + 1).slice(-2)}`;
+}
+
+export function getFinancialYearByDateForRv(dateInput) {
+	const date = new Date(dateInput);
+	const year = date.getFullYear();
+	const month = date.getMonth(); // 0 = Jan, 2 = Mar, 3 = Apr
+
+	let startYear;
+
+	if (month < 3) {
+		startYear = year - 1;
+	} else {
+		startYear = year;
+	}
+
+	return `${String(startYear).slice(-2)}-${String(startYear + 1).slice(-2)}`;
+}
+
 let allUsers = [];
 let fullName = "";
 let permissions = [];

@@ -359,8 +359,6 @@ export default function SingleClient({ client, unmount }) {
 
 				const visibleProjects = nextSelectedCompany.id == 0 ? normalizedProjects : normalizedProjects.filter((f) => f.company_id == nextSelectedCompany.id);
 
-				console.log(visibleProjects);
-
 				setCompanies(companies);
 				setAllProjects({ copy: normalizedProjects, data: visibleProjects });
 				setReferenceName(response.data.referenceName || "");

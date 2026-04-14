@@ -1,26 +1,22 @@
 "use client";
 
-/* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
-
 import axios from "axios";
 import dayjs from "dayjs";
 import jsPDF from "jspdf";
 import Tippy from "@tippyjs/react";
 import html2canvas from "html2canvas";
-import { ApiEndpoints, DerivedModules, Messages } from "@/utilities/constants";
 
 import { QRCode } from "react-qrcode-logo";
 import { useEffect, useState } from "react";
-import { getFinancialYear, MyGlobal } from "@/utilities/global";
 import { Badge, Tooltip } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ApiEndpoints, DerivedModules, Messages } from "@/utilities/constants";
 import { ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
+import { getFinancialYearByDateForRv, getFinancialYearForRv, MyGlobal } from "@/utilities/global";
 import { faBank, faCalendar, faChevronLeft, faCircleMinus, faHashtag, faIndianRupee, faListCheck, faMinusCircle, faPlusCircle, faTasks } from "@fortawesome/free-solid-svg-icons";
 
 export default function NewRv({ project, reload, unmount }) {
 	// Business Logic
-	const financialYear = `${dayjs(new Date()).format("YYYY")}-${dayjs(new Date()).add(1, "y").format("YY")}`;
-
 	const today = new Date();
 	const rvDueDate = new Date(today);
 	rvDueDate.setDate(rvDueDate.getDate() + 7);
@@ -28,6 +24,7 @@ export default function NewRv({ project, reload, unmount }) {
 	const [api, setApi] = useState({
 		clients: [],
 		companies: [],
+		rv: [],
 	});
 
 	const [loading, setLoading] = useState({
@@ -46,7 +43,7 @@ export default function NewRv({ project, reload, unmount }) {
 			name: "",
 			upiId: "",
 		},
-		financialYear: getFinancialYear(),
+		financialYear: getFinancialYearForRv(),
 		rvDate: new Date(),
 		rvDueDate: rvDueDate,
 		rvId: 0,
@@ -56,6 +53,7 @@ export default function NewRv({ project, reload, unmount }) {
 			id: "",
 			name: "",
 			termsConditions: "",
+			initials: "",
 		},
 		particulars: [
 			{
@@ -80,7 +78,7 @@ export default function NewRv({ project, reload, unmount }) {
 	// Functions
 	async function addRv() {
 		try {
-			const customId = `${MyGlobal.GetInitials(main.firm.name)}/${main.financialYear}/${main.rvId}`;
+			const customId = `R${main.firm.initials}/${main.financialYear}/${main.rvId}`;
 
 			const body = {
 				amount: totalParticularsAmount,
@@ -146,7 +144,7 @@ export default function NewRv({ project, reload, unmount }) {
 		} else {
 			setLoading((s) => ({ ...s, downloadPdf: true }));
 
-			const fileName = `${MyGlobal.GetInitials(main.firm.name)}_${main.financialYear}_${main.rvId}_${getCompanyDetails().name}`;
+			const fileName = `R${main.firm.initials}_${main.financialYear}_${main.rvId}_${getCompanyDetails().name}`;
 
 			const pdf = new jsPDF("p", "mm", "a4", true);
 			const rvBody = document.getElementById("rvBody");
@@ -285,6 +283,7 @@ export default function NewRv({ project, reload, unmount }) {
 					id: "",
 					name: "",
 					termsConditions: "",
+					initials: "",
 				};
 
 				const bankObj = {
@@ -303,6 +302,7 @@ export default function NewRv({ project, reload, unmount }) {
 					firmObj.id = firm.id;
 					firmObj.name = firm.name;
 					firmObj.termsConditions = firm.terms_conditions;
+					firmObj.initials = "R" + firm.initials;
 				}
 
 				const bank = response.data.banks.find((f) => f.firm_id == firmObj.id);
@@ -347,6 +347,7 @@ export default function NewRv({ project, reload, unmount }) {
 				setApi({
 					clients: response.data.clients,
 					companies: response.data.companies,
+					rv: response.data.rv,
 				});
 
 				let particulars = response.data.tasks.map((m, i) => {
@@ -380,7 +381,7 @@ export default function NewRv({ project, reload, unmount }) {
 					},
 					firm: firmObj,
 					particulars,
-					rvId: MyGlobal.MakeNewInvoiceId(firmObj.name, response.data.rv),
+					rvId: MyGlobal.MakeNewInvoiceId(firmObj.name, response.data.rv, DerivedModules.NewRv, firmObj),
 					totalAmountReceived,
 					totalExpenses,
 					transactions,
@@ -421,11 +422,40 @@ export default function NewRv({ project, reload, unmount }) {
 	}
 
 	function uiInputFinancialYear() {
-		return <TextInput icon={faCalendar} label="Financial Year" maxLength={7} onChange={(e) => setInputs("financialYear", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={1} value={main.financialYear} width="w-full" />;
+		return (
+			<TextInput
+				icon={faCalendar}
+				label="Financial Year"
+				maxLength={7}
+				onChange={(e) => {
+					setMain((s) => ({ ...s, rvId: MyGlobal.MakeNewInvoiceId(main.firm.name, api.rv, DerivedModules.NewRv, main.firm, e.target.value), financialYear: e.target.value }));
+				}}
+				onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()}
+				tabIndex={1}
+				value={main.financialYear}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiInputRvDate() {
-		return <DatePicker icon={faCalendar} label="RV Date" onChange={(e) => setInputs("rvDate", e)} tabIndex={1} value={main.rvDate} width="w-full" />;
+		return (
+			<DatePicker
+				icon={faCalendar}
+				label="RV Date"
+				onChange={(e) => {
+					setMain((s) => ({
+						...s,
+						rvId: MyGlobal.MakeNewInvoiceId(main.firm.name, api.rv, DerivedModules.NewRv, main.firm, getFinancialYearByDateForRv(e)),
+						financialYear: getFinancialYearByDateForRv(e),
+						rvDate: e,
+					}));
+				}}
+				tabIndex={1}
+				value={main.rvDate}
+				width="w-full"
+			/>
+		);
 	}
 
 	function uiInputRvDueDate() {
@@ -611,7 +641,7 @@ export default function NewRv({ project, reload, unmount }) {
 				<div className="flex w-full justify-start items-center">
 					<span className="w-2/5 font-regular-10 gray-text">RV</span>
 					<div className="flex w-3/5 space-x-1 font-medium-10 black-text">
-						<span>{MyGlobal.GetInitials(main.firm.name)}</span>
+						<span>{main.firm.initials}</span>
 						<span>/</span>
 						<span>{main.financialYear}</span>
 						<span>/</span>

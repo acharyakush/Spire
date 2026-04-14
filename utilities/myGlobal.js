@@ -202,10 +202,6 @@ export function getFinancialYearByDate(dateInput) {
 	return `${startYear}-${endYearShort}`;
 }
 
-// Example usage:
-console.log(getFinancialYear("Mon Mar 30 2026 17:27:17 GMT+0530"));
-// Output: "2025-26"
-
 export function getFullDetailsFromIds(ids) {
 	if (typeof ids !== "string") return [];
 	if (!ids.length) return [];

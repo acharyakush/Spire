@@ -51,6 +51,7 @@ export default async function handler(req, res) {
 				[clientId],
 			),
 			query("SELECT name FROM the_references WHERE client_id=? LIMIT 1", [clientId]),
+			query("SELECT * FROM firms", []),
 		]);
 
 		return res.status(200).json({

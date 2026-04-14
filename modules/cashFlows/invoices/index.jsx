@@ -90,7 +90,7 @@ export default function Invoices({ presetStatus, unmount }) {
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		doSorting().forEach((fe) => {
-			records.push(fe.id, fe.company_name, fe.main_project_name, fe.sub_project_name, `${fe.created_at_time}\n${fe.created_at}`, fe.invoice_due_date, fe.amount, fe.amount_received, fe.amount_pending, fe.invoice_id);
+			records.push(fe.id, fe.company_name, fe.main_project_name, fe.sub_project_name, `${fe.receipt_date_time}\n${fe.receipt_date}`, fe.invoice_due_date, fe.amount, fe.amount_received, fe.amount_pending, fe.invoice_id);
 		});
 
 		records.forEach((fe) => {
@@ -168,7 +168,7 @@ export default function Invoices({ presetStatus, unmount }) {
 						return dueDate.isBefore(dayjs(), "day");
 					});
 				} else if (query === "GENERATED") {
-					return f.invoice_id && f.created_at;
+					return f.invoice_id && f.receipt_date;
 				} else if (query === "NOT GENERATED") {
 					return !f.invoice_id;
 				} else {
@@ -215,9 +215,9 @@ export default function Invoices({ presetStatus, unmount }) {
 					} else if (column == InvoicesHeaders.SubProject && !isAscending) {
 						return b.sub_project_name.localeCompare(a.sub_project_name);
 					} else if (column == InvoicesHeaders.CreatedAt && isAscending) {
-						return a.created_at - b.created_at;
+						return a.receipt_date - b.receipt_date;
 					} else if (column == InvoicesHeaders.CreatedAt && !isAscending) {
-						return b.created_at - a.created_at;
+						return b.receipt_date - a.receipt_date;
 					} else if (column == InvoicesHeaders.DueDate && isAscending) {
 						return a.due_date - b.due_date;
 					} else if (column == InvoicesHeaders.DueDate && !isAscending) {
@@ -317,8 +317,8 @@ export default function Invoices({ presetStatus, unmount }) {
 						if (Array.isArray(invoice) && invoice.length) {
 							invoiceAmount = invoice.reduce((total, i) => total + Number(i.amount), 0);
 							invoiceId = invoice.map((m) => m.custom_id).at(0);
-							invoiceCreatedAt = invoice.map((m) => dayjs(m.created_at).format("DD/MM/YYYY")).at(0);
-							invoiceCreatedAtTime = invoice.map((m) => dayjs(m.created_at).format("hh:mm:ss a")).at(0);
+							invoiceCreatedAt = invoice.map((m) => dayjs(m.receipt_date).format("DD/MM/YYYY")).at(0);
+							invoiceCreatedAtTime = invoice.map((m) => dayjs(m.receipt_date).format("hh:mm:ss a")).at(0);
 							invoiceDueDate = invoice.map((m) => (m.due_date ? dayjs(m.due_date).format("DD/MM/YYYY") : "")).at(0);
 							invoiceDueDateTime = invoice.map((m) => (m.due_date ? dayjs(m.due_date).format("hh:mm:ss a") : "")).at(0);
 						}
@@ -361,8 +361,8 @@ export default function Invoices({ presetStatus, unmount }) {
 							amount_pending: amountPending,
 							amount_received: amountReceived,
 							company_name: companyName,
-							created_at: invoiceCreatedAt,
-							created_at_time: invoiceCreatedAtTime,
+							receipt_date: invoiceCreatedAt,
+							receipt_date_time: invoiceCreatedAtTime,
 							invoice,
 							invoice_id: invoiceId,
 							invoice_due_date: invoiceDueDate,
@@ -594,8 +594,8 @@ export default function Invoices({ presetStatus, unmount }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: mainProjectName }} />
 				<span className={style} dangerouslySetInnerHTML={{ __html: subProjectName }} />
 				<span className={`${style} cursor-help primary-text`}>
-					<Tippy animation="shift-away" content={<Tooltip text={row.created_at_time} />} disabled={!row.created_at} placement="bottom">
-						<span className={style}>{row.created_at}</span>
+					<Tippy animation="shift-away" content={<Tooltip text={row.receipt_date_time} />} disabled={!row.receipt_date} placement="bottom">
+						<span className={style}>{row.receipt_date}</span>
 					</Tippy>
 				</span>
 				<span className={`${style} cursor-help primary-text`}>
