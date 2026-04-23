@@ -56,7 +56,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 
 	const showTeamsMenu = mounted.teamsMenu ? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border" : "hidden";
 
-	const disableAddButton = other.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	const disableAddButton = other.isLoading || !main.financialYear.length || !main.invoiceFirm.name.length ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
 
 	// Functions
@@ -232,8 +232,6 @@ export default function NewProject({ inquiry, reload, unmount }) {
 				const mainProjects = response.data.mainProjects.map((m) => ({ ...m, key: m.id, value: m.name }));
 				const subProjects = response.data.subProjects.filter((f) => f.name).map((m) => ({ ...m, key: m.id, value: m.name }));
 
-				console.log(firms);
-
 				setApi({
 					clients: response.data.clients,
 					clientsCompanies: {
@@ -253,10 +251,6 @@ export default function NewProject({ inquiry, reload, unmount }) {
 
 				setMain((s) => ({
 					...s,
-					invoiceFirm: {
-						id: firms.at(0).id,
-						name: firms.at(0).name,
-					},
 					mainProject: {
 						id: inquiry.main_project_id,
 						name: inquiry.main_project,

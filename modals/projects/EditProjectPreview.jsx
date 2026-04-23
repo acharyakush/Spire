@@ -75,6 +75,7 @@ export default function EditProjectPreview({ mount, newProject, oldProject, unmo
 							{uiRow("old", "Phone Number", oldProject.phoneNumber)}
 							{uiRow("old", "Main Project", oldProject.mainProject.name)}
 							{uiRow("old", "Sub Project", oldProject.subProject.name)}
+							{uiRow("old", "Financial Year", oldProject?.financialYear)}
 							{uiRow("old", "Due On", dayjs(oldProject.dueOn).format("DD MMMM, YYYY").toString())}
 							{uiRow("old", "Invoice", MyGlobal.ThousandSeparator(oldProject.invoiceFees))}
 							{uiRow("old", "Teams", oldProject.teams.map((m) => m.full_name).join(", "))}
@@ -87,6 +88,7 @@ export default function EditProjectPreview({ mount, newProject, oldProject, unmo
 							{uiRow("new", "Phone Number", newProject.phoneNumber)}
 							{uiRow("new", "Main Project", newProject.mainProject.name)}
 							{uiRow("new", "Sub Project", newProject.subProject.name)}
+							{uiRow("old", "Financial Year", newProject?.financialYear)}
 							{uiRow("new", "Due On", dayjs(newProject.dueOn).format("DD MMMM, YYYY").toString())}
 							{uiRow("new", "Invoice", MyGlobal.ThousandSeparator(newProject.invoiceFees))}
 							{uiRow("new", "Teams", newProject.teams.map((m) => m.full_name).join(", "))}

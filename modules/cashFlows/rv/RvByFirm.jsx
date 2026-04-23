@@ -169,14 +169,7 @@ export default function RvByFirm({ firmId, unmount }) {
 						return f;
 					}
 				} else if (query === "financialYear") {
-					const date = new Date(f.created_at);
-					const year = date.getFullYear();
-					const month = date.getMonth();
-
-					const startYear = month >= 3 ? year : year - 1;
-					const fy = `${startYear}-${String(startYear + 1).slice(-2)}`;
-
-					return fy === main.filter.financialYear;
+					return getFinancialYear(f) === main.filter.financialYear;
 				} else {
 					const findText = main.filter.find.toLowerCase();
 
@@ -287,6 +280,19 @@ export default function RvByFirm({ firmId, unmount }) {
 
 	function setSort(column) {
 		setMain((s) => ({ ...s, sort: { column, isAscending: !main.sort.isAscending } }));
+	}
+
+	function getFinancialYear(project) {
+		const sourceDate = project.rv?.[0]?.created_at || project.started_on;
+		const date = new Date(sourceDate);
+
+		if (Number.isNaN(date.getTime())) return "";
+
+		const year = date.getFullYear();
+		const month = date.getMonth();
+		const startYear = month >= 3 ? year : year - 1;
+
+		return `${startYear}-${String(startYear + 1).slice(-2)}`;
 	}
 
 	async function setSupportData() {
@@ -446,20 +452,11 @@ export default function RvByFirm({ firmId, unmount }) {
 		const set = new Set();
 
 		api.projectsCopy.forEach((fe) => {
-			const date = new Date(fe.started_on);
-			const year = date.getFullYear();
-			const month = date.getMonth();
+			const fy = getFinancialYear(fe);
 
-			let startYear;
-
-			if (month >= 3) {
-				startYear = year;
-			} else {
-				startYear = year - 1;
+			if (fy) {
+				set.add(fy);
 			}
-
-			const fy = `${startYear}-${String(startYear + 1).slice(-2)}`;
-			set.add(fy);
 		});
 
 		return Array.from(set).sort();

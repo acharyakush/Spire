@@ -6,21 +6,21 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Tippy from "@tippyjs/react";
 import EditProject from "./EditProject";
-import writeXlsxFile from "write-excel-file/browser";
 import SingleProject from "../singleProject";
-import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 import ProjectTodos from "@/modals/projects/Todo";
+import writeXlsxFile from "write-excel-file/browser";
 
 import { Virtuoso } from "react-virtuoso";
+import { ProjectsHeaders } from "@/utilities/headers";
 import { TextInputNative } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
+import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { MyGlobal } from "@/utilities/global";
-import { faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faListUl, faPencil, faPlaneUp, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
-import { ProjectsHeaders } from "@/utilities/headers";
+import { faCalendar, faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faListUl, faMultiply, faPencil, faPlaneUp, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -51,6 +51,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		sort: { column: "ID", isAscending: false },
 	});
 
+	const [filters, setFilters] = useState({ financialYear: "" });
+
 	const [mounted, setMounted] = useState({
 		deleteProject: false,
 		editProject: false,
@@ -69,6 +71,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const allowDeletingProject = useMemo(() => MyGlobal.HasPermission(DerivedModules.DeleteProject), []);
 	const allowEditingProject = useMemo(() => MyGlobal.HasPermission(DerivedModules.EditProject), []);
 
+	const showClearCompanyButton = filters.financialYear ? "cursor-pointer text-gray-300" : "hidden!";
 	const showFindBoxClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
@@ -76,6 +79,30 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const [debouncedFindText, setDebouncedFindText] = useState("");
 
 	// Functions
+	const getFinancialYearFromDate = useCallback((dateValue) => {
+		const normalizedValue = String(dateValue || "").trim();
+		const matches = normalizedValue.match(/^(\d{4})-(\d{2})/);
+
+		if (!matches) return "";
+
+		const year = Number(matches[1]);
+		const month = Number(matches[2]);
+		const startYear = month >= 4 ? year : year - 1;
+
+		return `${startYear}-${String(startYear + 1).slice(-2)}`;
+	}, []);
+
+	const financialYears = useMemo(() => {
+		const set = new Set();
+
+		api.projects.copy.forEach((fe) => {
+			const fy = getFinancialYearFromDate(fe.started_on);
+			if (fy) set.add(fy);
+		});
+
+		return Array.from(set).sort();
+	}, [api.projects.copy, getFinancialYearFromDate]);
+
 	const autoFocusFindBox = useCallback((event) => {
 		if (event.ctrlKey && event.key == "f") {
 			event.preventDefault();
@@ -125,7 +152,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	);
 
 	const clearFilter = useCallback(() => {
-		const source = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items;
+		const baseSource = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items;
+		const source = filters.financialYear ? baseSource.filter((project) => getFinancialYearFromDate(project.started_on) === filters.financialYear) : baseSource;
 
 		// Apply only text filter if it exists to get accurate status counts
 		if (main.findText) {
@@ -166,7 +194,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				selectedStaff: { fullName: "", id: "", type: "" },
 			}));
 		}
-	}, [api.projects.copy, main.activeModule, main.findText, calculateStatusCounts]);
+	}, [api.projects.copy, main.activeModule, main.findText, filters.financialYear, calculateStatusCounts, getFinancialYearFromDate]);
 
 	const setMouseEnter = useCallback(
 		(projectId) => {
@@ -262,7 +290,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				setMain((s) => ({ ...s, filter: value }));
 			}
 		},
-		[main.filter, main.findText, main.activeModule, api.projects.copy, calculateStatusCounts],
+		[main.filter, main.findText, filters.financialYear, main.activeModule, api.projects.copy, calculateStatusCounts],
 	);
 
 	const setInputs = useCallback((key, value) => {
@@ -507,6 +535,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			let matchesTextFilter = true;
 			let matchesStatusFilter = true;
 			let matchesTeamFilter = true;
+			let matchesFinancialYearFilter = true;
 
 			// Text filter logic
 			if (main.findText) {
@@ -565,12 +594,16 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				}
 			}
 
+			if (filters.financialYear) {
+				matchesFinancialYearFilter = getFinancialYearFromDate(f.started_on) === filters.financialYear;
+			}
+
 			// Both filters must match
-			return matchesTextFilter && matchesStatusFilter && matchesTeamFilter;
+			return matchesTextFilter && matchesStatusFilter && matchesTeamFilter && matchesFinancialYearFilter;
 		});
 
 		return filtered;
-	}, [api.projects.copy, main.activeModule.name, main.filter, main.findText, statuses, main.selectedStaff, aggregatedProjects]);
+	}, [api.projects.copy, main.activeModule.name, main.filter, main.findText, statuses, main.selectedStaff, aggregatedProjects, filters.financialYear, getFinancialYearFromDate]);
 
 	const filteredProjects = useMemo(() => {
 		return getSelectedProjectData();
@@ -762,6 +795,23 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			);
 		});
 	}, [main.revisedStatuses, main.filter, setFilter]);
+
+	function uiFinancialYearList() {
+		return financialYears.map((m, i) => {
+			const isSelected = m === filters.financialYear;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center-safe cursor-pointer ${aesthetics} font-regular-10 text-left`;
+
+			return (
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setFilters((s) => ({ ...s, financialYear: m }))}>
+					<div className="flex w-full space-x-2 items-center-safe">
+						<span>{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}</span>
+						<span>{m}</span>
+					</div>
+				</MenuItem>
+			);
+		});
+	}
 
 	const uiFilter = useCallback(() => {
 		return (
@@ -1413,11 +1463,12 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			// For "Overdue" filter specifically, we need to make sure the source is filtered for tasks_overdue
 			// before we apply further filtering
 			const source = main.activeModule.name === "All" ? api.projects.copy : main.activeModule.items || [];
+			const sourceWithFinancialYear = filters.financialYear ? source.filter((project) => getFinancialYearFromDate(project.started_on) === filters.financialYear) : source;
 
 			// First, calculate status counts based on text filter ONLY
 			// This updates the counts shown in the status filter menu
 			if (debouncedFindText) {
-				const textFilteredData = source.filter(
+				const textFilteredData = sourceWithFinancialYear.filter(
 					(project) => {
 						if (Object.values(statuses).includes(debouncedFindText)) {
 							return project.status.includes(debouncedFindText);
@@ -1456,12 +1507,12 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				setMain((s) => ({ ...s, revisedStatuses }));
 			} else {
 				// If no text filter, update counts based on module data
-				const revisedStatuses = calculateStatusCounts(source);
+				const revisedStatuses = calculateStatusCounts(sourceWithFinancialYear);
 				setMain((s) => ({ ...s, revisedStatuses }));
 			}
 
 			// Now, apply both filters for the actual displayed data
-			const filteredData = source.filter((f) => {
+			const filteredData = sourceWithFinancialYear.filter((f) => {
 				let matchesTextFilter = true;
 				let matchesStatusFilter = true;
 				let matchesTeamFilter = true;
@@ -1534,7 +1585,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				},
 			}));
 		}
-	}, [debouncedFindText, main.selectedStaff, main.filter, main.activeModule, api.projects.copy, mounted.mainComponent, statuses, calculateStatusCounts]);
+	}, [debouncedFindText, main.selectedStaff, main.filter, main.activeModule, api.projects.copy, mounted.mainComponent, statuses, calculateStatusCounts, filters.financialYear, getFinancialYearFromDate]);
 
 	useEffect(() => {
 		const scrollElements = document.querySelectorAll(".overflow-y-auto");
@@ -1562,6 +1613,16 @@ export default function Projects({ presetStatus, setModuleProps }) {
 						</div>
 						<div className="flex w-3/5 space-x-5 justify-center items-center">
 							{uiFind()}
+							<Menu as="div" className="flex w-35 justify-center-safe items-center-safe relative">
+								<MenuButton className="flex w-full h-7.5 px-2.5 justify-between items-center-safe focus:outline-none relative z-40 rounded-full shadow contrast-background font-regular-10">
+									<div className="flex w-full space-x-2.5 items-center-safe">
+										<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+										<span className="gray-text">{filters.financialYear || "Year"}</span>
+									</div>
+									<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setFilters((s) => ({ ...s, financialYear: "" }))} icon={faMultiply} />
+								</MenuButton>
+								<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background shadow focus:outline-none z-50">{uiFinancialYearList()}</MenuItems>
+							</Menu>
 							{uiFilter()}
 							{uiStaff()}
 							{uiStaffAdvanced()}

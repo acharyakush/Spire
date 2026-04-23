@@ -3,15 +3,22 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 import EditProjectPreview from "@/modals/projects/EditProjectPreview";
 
+import { Select } from "@mantine/core";
 import { MyGlobal } from "@/utilities/global";
 import { useEffect, useRef, useState } from "react";
 import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 import { ComboBox2, ComboBoxWithChips, TextInput } from "@/components/Inputs";
 import { faBriefcase, faChevronLeft, faExclamationCircle, faFile, faIndianRupee, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+
+const arrFinancialYears = [
+	{ key: "2024-25", value: "2024-25" },
+	{ key: "2025-26", value: "2025-26" },
+	{ key: "2026-27", value: "2026-27" },
+];
 
 export default function EditProject({ project, reload, unmount }) {
 	// Business Logic
@@ -28,6 +35,7 @@ export default function EditProject({ project, reload, unmount }) {
 	const [main, setMain] = useState({
 		client: { id: 0, name: "" },
 		company: { id: 0, name: "" },
+		financialYear: "",
 		generatedInvoice: {},
 		generatedInvoiceTransaction: {},
 		invoiceFees: 0,
@@ -57,7 +65,7 @@ export default function EditProject({ project, reload, unmount }) {
 
 	const showTeamsMenu = mounted.teamsMenu ? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border" : "hidden";
 
-	const disableAddButton = other.isLoading ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
+	const disableAddButton = other.isLoading || !main.financialYear.length ? "pointer-events-none opacity-50" : "pointer-events-auto opacity-100";
 	const addButtonStyle = `primary-button-condensed ${disableAddButton}`;
 
 	// Functions
@@ -110,6 +118,7 @@ export default function EditProject({ project, reload, unmount }) {
 				client: main.client,
 				company: main.company,
 				remarks: main.remarks,
+				financialYear: main.financialYear,
 				generatedInvoice: main.generatedInvoice,
 				id: project.id,
 				invoiceFees: MyGlobal.GetNumbers(main.invoiceFees),
@@ -224,6 +233,7 @@ export default function EditProject({ project, reload, unmount }) {
 						id: project.company_id,
 						name: project.company_name,
 					},
+					financialYear: project.financial_year || "",
 					phoneNumber: inquiry.phone_number,
 					remarks: project.remarks,
 					generatedInvoice: isInvoiceGenerated,
@@ -377,7 +387,7 @@ export default function EditProject({ project, reload, unmount }) {
 	}
 
 	function uiReimburseVoucher() {
-		return <TextInput icon={faIndianRupee} id="newProjectReimburseVoucher" label="Reimbursement Voucher" onChange={(e) => setInputs("reimburseVoucher", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={8} value={main.reimburseVoucher} width="w-full" />;
+		return <TextInput icon={faIndianRupee} id="newProjectReimburseVoucher" isReadOnly label="Reimbursement Voucher" onChange={(e) => setInputs("reimburseVoucher", e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={8} value={main.reimburseVoucher} width="w-full" />;
 	}
 
 	function uiSubProjects() {
@@ -443,7 +453,7 @@ export default function EditProject({ project, reload, unmount }) {
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
 							{uiMainProjects()}
 							{uiSubProjects()}
-							{uiRemarks()}
+							<Select checkIconPosition="right" comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }} data={arrFinancialYears} label="Financial Year" onChange={(o) => setMain((s) => ({ ...s, financialYear: o }))} styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "100%" } }} value={main.financialYear} variant="filled" />
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
 							{uiInvoiceFees()}

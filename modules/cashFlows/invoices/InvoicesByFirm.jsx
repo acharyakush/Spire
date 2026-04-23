@@ -163,14 +163,7 @@ export default function InvoicesByFirm({ firmId, presetStatus, unmount }) {
 						return f;
 					}
 				} else if (query === "financialYear") {
-					const date = new Date(f.started_on);
-					const year = date.getFullYear();
-					const month = date.getMonth();
-
-					const startYear = month >= 3 ? year : year - 1;
-					const fy = `${startYear}-${String(startYear + 1).slice(-2)}`;
-
-					return fy === main.filter.financialYear;
+					return getFinancialYear(f) === main.filter.financialYear;
 				} else if (query === "DUE") {
 					return f.invoice?.some((fe) => {
 						if (!fe?.due_date) return false;
@@ -217,6 +210,19 @@ export default function InvoicesByFirm({ firmId, presetStatus, unmount }) {
 		const parts = val.split("/");
 		return Number(parts[2]) || -Infinity;
 	};
+
+	function getFinancialYear(project) {
+		const sourceDate = project.invoice?.[0]?.receipt_date || project.started_on;
+		const date = new Date(sourceDate);
+
+		if (Number.isNaN(date.getTime())) return "";
+
+		const year = date.getFullYear();
+		const month = date.getMonth();
+		const startYear = month >= 3 ? year : year - 1;
+
+		return `${startYear}-${String(startYear + 1).slice(-2)}`;
+	}
 
 	function doSorting() {
 		return (
@@ -557,20 +563,11 @@ export default function InvoicesByFirm({ firmId, presetStatus, unmount }) {
 		const set = new Set();
 
 		api.projectsCopy.forEach((fe) => {
-			const date = new Date(fe.started_on);
-			const year = date.getFullYear();
-			const month = date.getMonth();
+			const fy = getFinancialYear(fe);
 
-			let startYear;
-
-			if (month >= 3) {
-				startYear = year;
-			} else {
-				startYear = year - 1;
+			if (fy) {
+				set.add(fy);
 			}
-
-			const fy = `${startYear}-${String(startYear + 1).slice(-2)}`;
-			set.add(fy);
 		});
 
 		return Array.from(set).sort();

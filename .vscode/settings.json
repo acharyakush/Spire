@@ -1,5 +1,5 @@
 {
-	"debug.console.fontFamily": "Consolas, monospace",
+	"debug.console.fontFamily": "'Fira Code', Consolas, monospace",
 	"debug.console.fontSize": 14,
 	"editor.acceptSuggestionOnEnter": "smart",
 	"editor.autoClosingBrackets": "always",
@@ -18,7 +18,7 @@
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.foldingImportsByDefault": true,
 	"editor.foldingStrategy": "indentation",
-	"editor.fontFamily": "Consolas, monospace",
+	"editor.fontFamily": "'Fira Code', Consolas, monospace",
 	"editor.fontSize": 14,
 	"editor.formatOnSave": true,
 	"editor.formatOnSaveMode": "file",
@@ -67,7 +67,7 @@
 		"javascript": "html",
 		"javascriptreact": "html"
 	},
-	"terminal.integrated.fontFamily": "Consolas, monospace",
+	"terminal.integrated.fontFamily": "'Fira Code', Consolas, monospace",
 	"terminal.integrated.fontSize": 14,
 	"workbench.list.smoothScrolling": true,
 	"workbench.list.scrollByPage": true

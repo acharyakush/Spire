@@ -55,7 +55,7 @@ export default function NewProjectPreview({ mount, project, unmount }) {
 						{uiRow("Phone Number", project.phoneNumber)}
 						{uiRow("Main Project", project.mainProject.name)}
 						{uiRow("Sub Project", project.subProject.name)}
-						{uiRow("Due On", dayjs(project.dueOn).format("DD-MM-YYYY"))}
+						{uiRow("Financial Year", project.financialYear)}
 						{uiRow("Invoice", MyGlobal.ThousandSeparator(project.invoiceFees))}
 						{uiRow("Teams", project.teams.map((m) => m.full_name).join(", "))}
 						{uiRow("Invoice Firm", project.invoiceFirm.name)}
