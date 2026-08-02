@@ -255,6 +255,41 @@ export const MyGlobal = Object.freeze({
 		return result;
 	},
 
+	GetInitials2: (payload) => {
+		let result = [];
+		const ignoreList = ["&", "AND", "CO", "LLP", "LTD", "PVT", "INC", "CORP"];
+
+		String(payload)
+			.split(",")
+			.forEach((fe) => {
+				const names = fe
+					.trim()
+					.split(/\s+/)
+					.filter((word) => {
+						const cleaned = word.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+						return cleaned && !ignoreList.includes(cleaned);
+					});
+
+				let initials = "";
+
+				// If only ONE meaningful word remains (e.g. "SDS"), use the whole word
+				if (names.length === 1) {
+					initials = names[0].replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+				} else {
+					// If MULTIPLE words remain (e.g. "Patel Sharma Consulting"), take first letter of each
+					initials = names
+						.map((m) => m.charAt(0))
+						.join("")
+						.replace(/[^A-Za-z0-9]/g, "")
+						.toUpperCase();
+				}
+
+				result.push(initials || "GEN");
+			});
+
+		return result;
+	},
+
 	GetMultipleInitials: (payload) => {
 		if (!payload) return "";
 
@@ -465,7 +500,7 @@ export const MyGlobal = Object.freeze({
 
 	MakeNewQuotationId: (firmName, payload) => {
 		if (payload.length) {
-			const initials = MyGlobal.GetInitials(firmName).at(0); // e.g., SA
+			const initials = MyGlobal.GetInitials2(firmName).at(0); // e.g., SA
 			const prefix = `QTN/${initials}`; // e.g., QTN/SA
 
 			const target = payload.filter((f) => {

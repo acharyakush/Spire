@@ -4,7 +4,7 @@ Server Details
 Root Username:				root
 Root Password:				SpireCrmBySigniixAdvisors#2024
 SSH VPS Access:				ssh root@145.223.23.76
-Hostname:				srv797550.hstgr.cloud
+Hostname:					srv797550.hstgr.cloud
 IPv4 Address:				145.223.23.76
 IPv6 Address:				2a02:4780:12:f2d9::1
 
@@ -12,8 +12,8 @@ IPv6 Address:				2a02:4780:12:f2d9::1
 ===================
 OpenLiteSpeed Panel
 ===================
-Username:				admin
-Password:				ino4uvSjNEcjMNRl
+Username:					admin
+Password:					ino4uvSjNEcjMNRl
 
 
 ==============
@@ -39,27 +39,27 @@ Sa@Connect@2024
 WordPress
 =========
 Email Address:				admin@signiixadvisors.com
-Password:				Vj%%CuzSbPWszuJd6B
+Password:					Vj%%CuzSbPWszuJd6B
 
 
 ==========
 PhpMyAdmin
 ==========
-Username:				spire
-Password:				SpireCrmBySigniixAdvisors#2024
+Username:					spire
+Password:					SpireCrmBySigniixAdvisors#2024
 
 
 =======================
 Remote MySql Connection
 =======================
 Hostname / IP				145.223.23.76
-User					spire
-Password				SpireCrmBySigniixAdvisors#2024
-Port					3306
+User						spire
+Password					SpireCrmBySigniixAdvisors#2024
+Port						3306
 
 
 =======
 Account
 =======
 Email Address:				signiixadvisors@gmail.com
-Password:				Signiix@24
+Password:					Signiix@24

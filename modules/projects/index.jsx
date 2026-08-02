@@ -676,7 +676,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				.sort((a, b) => b.id - a.id)
 				.at(0);
 
-			records.push(dayjs(project.started_on).format("DD MMM, YYYY"), project.client_name, project.sub_project_name + "\n" + project.main_project_name, project.team_names, MyGlobal.FormatCurrency(project.quote), project.status);
+			records.push(dayjs(project.started_on).format("DD MMM, YYYY"), project.client_name, project.sub_project_name + "\n" + project.main_project_name, project.team_names, project.quote, project.status);
 		});
 
 		// Batch process records into _records

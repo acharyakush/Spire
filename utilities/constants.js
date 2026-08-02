@@ -109,6 +109,7 @@ export const ApiEndpoints = Object.freeze({
 	SingleProject: Object.freeze({
 		GetSupportData: "api/singleProject/getSupportData",
 		MapAffiliate: "api/singleProject/mapAffiliates",
+		UpdateAffiliateFees: "api/singleProject/updateAffiliateFees",
 	}),
 	Tasks: Object.freeze({
 		AddTask: "api/tasks/addTask",
@@ -246,6 +247,7 @@ export const Gender = Object.freeze({
 export const Messages = Object.freeze({
 	AccessRevoked: "Your access has been revoked.",
 	AffiliateAdded: "Affiliate(s) added.",
+	AffiliateFeesUpdated: "Affiliate fees updated.",
 	AffiliateUnmapped: "Affiliate unmapped.",
 	AllSubTasksMarkedCompleted: "All sub tasks marked completed.",
 	AmountEdited: "Amount edited.",

@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, Spinner, SpinnerBig } from "@/components/Elements";
 import { ComboBox2, TextArea, TextInput } from "@/components/Inputs";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { faCirclePlus, faIdCardClip, faIndianRupee, faIndianRupeeSign, faLinkSlash, faNoteSticky, faStickyNote, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCirclePlus, faIdCardClip, faIndianRupee, faIndianRupeeSign, faLinkSlash, faMultiply, faNoteSticky, faPencil, faStickyNote, faUserGroup, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { MappedAffiliatesHeaders } from "@/utilities/headers";
 
 export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
@@ -344,6 +344,10 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 		selectedAffiliate: {},
 	});
 
+	const [isEditingFees, setIsEditingFees] = useState(false);
+	const [isUpdatingFees, setIsUpdatingFees] = useState(false);
+	const [newFees, setNewFees] = useState(0);
+
 	const [mounted, setMounted] = useState({
 		unmapAffiliate: false,
 	});
@@ -444,6 +448,29 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 				});
 	}
 
+	async function updateFees(affiliateId, affiliateName, oldFees) {
+		setIsUpdatingFees(true);
+
+		try {
+			const body = { id: affiliateId, fees: newFees };
+			const response = await axios.post(ApiEndpoints.SingleProject.UpdateAffiliateFees, body, MyGlobal.GetHeaders());
+
+			if (response.status === 200) {
+				reload(project.id);
+
+				MyGlobal.AddActivity(`Updated affiliate fees of <b>${affiliateName}</b> from <b>${oldFees}</b> to <b>${newFees}</b>.`, BaseModules.Affiliates);
+				MyGlobal.ShowSuccessToast(Messages.AffiliateFeesUpdated);
+				setIsEditingFees(false);
+			} else {
+				MyGlobal.ShowErrorToast(Messages.SomeErrorOccurred);
+			}
+		} catch (error) {
+			console.log(error);
+		} finally {
+			setIsUpdatingFees(false);
+		}
+	}
+
 	async function doMapping() {
 		setMain((s) => ({ ...s, isMapping: true }));
 
@@ -539,7 +566,17 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 			<div className="flex w-full px-4 py-2 justify-center items-center rounded bottom-shadow contrast-background bottom-border font-regular-11" key={i}>
 				<span className={style}>{row.name}</span>
 				<span className={style}>{row.paid}</span>
-				<span className={style}>{row.fees}</span>
+				<div className={style}>
+					{isEditingFees ? <TextInput width="w-full" onChange={(e) => setNewFees(e.target.value)} /> : <span className={style}>{row.fees}</span>}
+					{isEditingFees ? (
+						<div className="flex space-x-2 justify-center-safe items-center-safe">
+							<FontAwesomeIcon className="cursor-pointer text-green-600 hover:underline hover:underline-offset-8" icon={faCheck} onClick={() => updateFees(row.id, row.name, row.fees)} />
+							<FontAwesomeIcon className="cursor-pointer text-red-600 hover:underline hover:underline-offset-8" icon={faMultiply} onClick={() => setIsEditingFees(false)} />
+						</div>
+					) : (
+						<FontAwesomeIcon className="cursor-pointer text-green-600 hover:underline hover:underline-offset-8" icon={faPencil} onClick={() => setIsEditingFees(true)} />
+					)}
+				</div>
 				<div className={`${style} cursor-pointer red-text space-x-2.5 hover:underline hover:underline-offset-8 hover:decoration-[--red]`} onClick={() => toggleUnmapAffiliate(row)}>
 					<FontAwesomeIcon icon={faLinkSlash} />
 					<span>Unmap</span>

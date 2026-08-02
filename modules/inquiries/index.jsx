@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
-import { faCalendar, faCheckCircle, faChevronDown, faDownload, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlaneUp, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faCheckCircle, faChevronDown, faDownload, faFileDownload, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlaneUp, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 const DynNotes = dynamic(() => import("./Notes"), { ssr: false });
 const DynNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
@@ -194,7 +194,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 		const blankRows = [{ span: rowHeaders.length, height: rowHeight, colSpan: 2 }];
 
 		sortedInquiries.forEach((fe) => {
-			records.push(fe.client_name + "\n" + fe.entry_date, fe.phone_number + "\n" + fe.email_address, fe.sub_project + "\n" + fe.main_project, fe.follow_ups, MyGlobal.FormatCurrency(fe.quote), fe.next_follow_up_on, fe.status + " (" + getTotalNotesByInquiry(fe.id) + ")", fe.reference_name + "\n" + fe.entry_by_name);
+			records.push(fe.client_name + "\n" + fe.entry_date, fe.phone_number + "\n" + fe.email_address, fe.sub_project + "\n" + fe.main_project, fe.follow_ups, fe.quote, fe.next_follow_up_on, fe.status + " (" + getTotalNotesByInquiry(fe.id)?.total + ")", fe.reference_name + "\n" + fe.entry_by_name);
 		});
 
 		records.forEach((fe) => {
@@ -945,6 +945,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 							{uiFilter()}
 							<Tippy content={<Tooltip text="Clear filters" />} placement="bottom">
 								{uiClearFilter()}
+							</Tippy>
+							<Tippy content={<Tooltip text="Download in Excel" />} placement="bottom">
+								<FontAwesomeIcon className="cursor-pointer text-green-600" icon={faDownload} onClick={() => doExcelExport()} />
 							</Tippy>
 						</div>
 					</div>
