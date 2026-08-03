@@ -1,6 +1,13 @@
-==============
-Server Details
-==============
+=======
+Account
+=======
+Email Address:				signiixadvisors@gmail.com
+Password:					Signiix@24
+
+
+======
+Server
+======
 Root Username:				root
 Root Password:				SpireCrmBySigniixAdvisors#2024
 SSH VPS Access:				ssh root@145.223.23.76
@@ -56,10 +63,3 @@ Hostname / IP				145.223.23.76
 User						spire
 Password					SpireCrmBySigniixAdvisors#2024
 Port						3306
-
-
-=======
-Account
-=======
-Email Address:				signiixadvisors@gmail.com
-Password:					Signiix@24
