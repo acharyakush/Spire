@@ -500,7 +500,7 @@ export const MyGlobal = Object.freeze({
 
 	MakeNewQuotationId: (firmName, payload) => {
 		if (payload.length) {
-			const initials = MyGlobal.GetInitials2(firmName).at(0); // e.g., SA
+			const initials = firmName === "Branchitects LLP" ? "BCT" : MyGlobal.GetInitials2(firmName).at(0); // e.g., SA
 			const prefix = `QTN/${initials}`; // e.g., QTN/SA
 
 			const target = payload.filter((f) => {

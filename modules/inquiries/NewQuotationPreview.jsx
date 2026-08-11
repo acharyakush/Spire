@@ -36,7 +36,7 @@ export default function NewQuotaionPreview({ inquiry, quotation, reload, unmount
 				customId: quotation?.proposalNumber,
 				inquiryId: inquiry?.id,
 				remarks: quotation?.main?.remarks,
-				services: quotation?.services?.filter((f) => f.services && f.inclusions && f.professionalFees && f.governmentFees),
+				services: quotation?.services?.filter((f) => f.services?.trim()),
 				termsConditions: quotation?.firm?.termsConditions,
 				userId: MyGlobal.GetUserId(),
 			};

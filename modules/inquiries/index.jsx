@@ -339,6 +339,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 					let phoneNumber = obj.phone_number;
 
+					if (obj.client_id === "CN000237") debugger;
+
 					const client = supportData.clients.find((f) => f.id === obj.client_id);
 					const quotation = response.data.quotations_services.find((f) => f.quotation_id === obj.quotation_id);
 

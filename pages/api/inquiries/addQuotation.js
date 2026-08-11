@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 	try {
 		const { customId, firmId, clientId, inquiryId, clientAddress, services, remarks, date, termsConditions, userId } = req.body;
 
-		await query("INSERT INTO inquiries_quotations (custom_id, firm_id, client_id, client_address, remarks, date, terms_conditions, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [customId, firmId, clientId, clientAddress, remarks, date, termsConditions, userId]);
+		await query("INSERT INTO inquiries_quotations (custom_id, firm_id, client_id, client_address, remarks, date, terms_conditions, entry_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [customId, firmId, clientId, clientAddress ?? "", remarks ?? "", date, termsConditions, userId]);
 
 		await query("UPDATE inquiries SET quotation_id=? WHERE id=?", [customId, inquiryId]);
 
