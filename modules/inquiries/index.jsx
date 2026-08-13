@@ -13,14 +13,14 @@ import HoverPreviewWrapper from "@/components/HoverPreviewPdf";
 
 import { Virtuoso } from "react-virtuoso";
 import { MyGlobal } from "@/utilities/global";
-import { TextInputNative } from "@/components/Inputs";
+import { TextInputNative, TextInputNative2 } from "@/components/Inputs";
 import { InquiriesHeaders } from "@/utilities/headers";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
 import { AvatarCircle, Badge, BadgeSmall, BadgeSmallWithBackground, Tooltip } from "@/components/Elements";
-import { faCalendar, faCheckCircle, faChevronDown, faDownload, faFileDownload, faFilterCircleXmark, faIndianRupee, faMultiply, faPen, faPlaneUp, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faCheckCircle, faChevronDown, faDownload, faFileDownload, faFilterCircleXmark, faIndianRupee, faInfoCircle, faMultiply, faPen, faPlaneUp, faPlus, faReceipt, faSearch, faSortAmountAsc, faSortAmountDesc } from "@fortawesome/free-solid-svg-icons";
 
 const DynNotes = dynamic(() => import("./Notes"), { ssr: false });
 const DynNewInquiry = dynamic(() => import("./NewInquiry"), { ssr: false });
@@ -141,9 +141,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	const isAdministrator = useMemo(() => MyGlobal.IsUserAdministrator(), []);
 
-	const showFromDateClearButton = useMemo(() => (filter.from ? "cursor-pointer primary-text" : "hidden"), [filter.from]);
-	const showToDateClearButton = useMemo(() => (filter.to ? "cursor-pointer primary-text" : "hidden"), [filter.to]);
-	const showFindClearButton = useMemo(() => (filter.search ? "cursor-pointer primary-text" : "hidden"), [filter.search]);
+	const showFromDateClearButton = useMemo(() => (filter.from ? "cursor-pointer primary-text" : "hidden!"), [filter.from]);
+	const showToDateClearButton = useMemo(() => (filter.to ? "cursor-pointer primary-text" : "hidden!"), [filter.to]);
+	const showFindClearButton = useMemo(() => (filter.search ? "cursor-pointer primary-text" : "hidden!"), [filter.search]);
 
 	const blankDataWrapper = "flex w-full h-full justify-center items-center font-regular-12 gray-text contrast-background full-border";
 
@@ -797,12 +797,15 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiFilter(source) {
 		const topPosition = source === "orb" ? "bottom-full" : "top-full";
-		const style = `absolute w-full ${topPosition} mb-2 rounded shadow contrast-background bottom-shadow focus:outline-none z-50`;
+		const style = `absolute w-full ${topPosition} mb-2 rounded z-50 contrast-background shadow`;
 
 		return (
 			<Menu as="div" className="flex w-40 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
-				<MenuButton className="flex w-full h-7.5 px-2 justify-between items-center font-regular-10 gray-text">
-					<span>{filter.status || "Status"}</span>
+				<MenuButton className="flex w-full h-7.5 px-2 justify-between items-center font-regular-10 gray-text cursor-pointer">
+					<div className="flex space-x-2 items-center">
+						<FontAwesomeIcon className="primary-text" icon={faInfoCircle} />
+						<span>{filter.status || "Status"}</span>
+					</div>
 					<FontAwesomeIcon icon={faChevronDown} />
 				</MenuButton>
 				<MenuItems className={style}>{uiFilterMenuList()}</MenuItems>
@@ -813,8 +816,8 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	function uiFilterMenuList() {
 		return Object.entries(main.revisedStatuses).map(([key, value], i) => {
 			const isSelected = key === filter.status;
-			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "hover:bg-gray-300 contrast-background black-text";
-			const wrapper = `flex w-full justify-between items-center cursor-pointer border-y border-y-gray-300`;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} hovered-rows-white-1`;
 
 			return (
 				<MenuItem
@@ -825,9 +828,9 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 						setFilter((s) => ({ ...s, status: key }));
 						setMain((s) => ({ ...s, isStatus: true }));
 					}}>
-					<span className={`flex w-full p-3 justify-between items-center font-regular-11 ${aesthetics}`}>
+					<span className="flex w-full justify-between items-center font-regular-10">
 						<span>{key}</span>
-						{isSelected ? <FontAwesomeIcon className="primary-text" icon={faCheckCircle} size="xl" /> : value > 0 && <BadgeSmall value={value} />}
+						{isSelected ? <FontAwesomeIcon className="primary-text" icon={faCheckCircle} /> : value > 0 && <BadgeSmall value={value} />}
 					</span>
 				</MenuItem>
 			);
@@ -1078,7 +1081,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 
 	function uiSearch() {
 		if (inquiriesCopySize) {
-			return <TextInputNative id="searchBox" icon={faSearch} onChange={(e) => setInputs("search", e.target.value)} onClearButtonClick={() => setInputs("search", "")} placeholder="Find" showClearButton={showFindClearButton} tabIndex={3} value={filter.search} width="w-36" />;
+			return <TextInputNative2 id="searchBox" icon={faSearch} onChange={(e) => setInputs("search", e.target.value)} onClearButtonClick={() => setInputs("search", "")} placeholder="Find" showClearButton={showFindClearButton} tabIndex={3} value={filter.search} width="w-36" />;
 		}
 	}
 
@@ -1176,7 +1179,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 				const label = m === statuses.Closed ? "Close" : m === statuses.Confirmed ? "Confirm" : m;
 
 				return (
-					<MenuItem as="div" className="p-2 space-x-2.5 cursor-pointer border-y font-regular-10 black-text text-left hovered-rows" key={i} onClick={() => prepareInquiryStatusChangeData(row, m)}>
+					<MenuItem as="div" className="p-2 space-x-2.5 cursor-pointer border-y border-gray-300 font-regular-10 black-text text-left hovered-rows" key={i} onClick={() => prepareInquiryStatusChangeData(row, m)}>
 						<span>{label}</span>
 					</MenuItem>
 				);

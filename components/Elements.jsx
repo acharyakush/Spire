@@ -118,19 +118,19 @@ export const BadgeLarge2 = ({ children }) => {
 };
 
 export const BadgeSmall = ({ value }) => {
-	return <span className="flex h-5 px-2 justify-center items-center rounded-full font-regular-9 primary-text primary-background-transparent-01">{value}</span>;
+	return <span className="flex h-5 px-2 justify-center items-center rounded-full font-regular-9 primary-text primary-background-transparent-01 font-mono!">{value}</span>;
 };
 
 export const BadgeSmallGreen = ({ value }) => {
-	return <span className="flex h-5 px-1 justify-center items-center rounded-full font-regular-7 green-text green-border green-background-transparent-01">{value}</span>;
+	return <span className="flex h-5 px-1 justify-center items-center rounded-full font-regular-7 green-text green-border green-background-transparent-01 font-mono!">{value}</span>;
 };
 
 export const BadgeSmallWithBackground = ({ style, value }) => {
-	return <span className={`flex min-w-6 h-6 px-2 justify-center items-center rounded-full font-regular-10 ${style.text} ${style.border} ${style.background}`}>{value}</span>;
+	return <span className={`flex min-w-6 h-6 px-2 justify-center items-center rounded-full font-regular-10 font-mono! ${style.text} ${style.border} ${style.background}`}>{value}</span>;
 };
 
 export const BadgeSmallWithBackground2 = ({ style, value }) => {
-	return <span className={`flex h-5 px-2 justify-center items-center rounded-full font-regular-9 ${style.text} ${style.background}`}>{value}</span>;
+	return <span className={`flex h-5 px-2 justify-center items-center rounded-full font-regular-9 font-mono! ${style.text} ${style.background}`}>{value}</span>;
 };
 
 export const Spinner = () => {

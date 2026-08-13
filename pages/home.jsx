@@ -445,7 +445,7 @@ export default function Home() {
 			})
 			.map((m, i) => {
 				return (
-					<MenuItem as="div" className="p-3 space-x-3 cursor-pointer border-y font-medium-12 black-text hovered-rows" key={i} onClick={() => getUserMenuClickAction(m)}>
+					<MenuItem as="div" className="p-3 space-x-3 cursor-pointer border-y border-gray-300 font-medium-12 black-text hovered-rows" key={i} onClick={() => getUserMenuClickAction(m)}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={getUserMenuIcons(m)} />
 						<span>{m}</span>
 					</MenuItem>

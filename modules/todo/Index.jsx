@@ -615,7 +615,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		return MyGlobal.GetAllUsers().map((m, i) => {
 			const isSelected = m.id === main.selectedStaff.id;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y border-gray-300 ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
 				<MenuItem as="div" className={wrapper} key={i} onClick={() => setStaff(m)}>
@@ -643,7 +643,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		return ["Assigned alone", "Assigned with team"].map((m, i) => {
 			const isSelected = m === main.selectedStaff.type;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y border-gray-300 ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
 				<MenuItem as="div" className={wrapper} key={i} onClick={() => setStaffType(m)}>
@@ -671,7 +671,7 @@ export default function Todos({ presetStatus, setModuleProps }) {
 		return statuses.map((m, i) => {
 			const isSelected = m.label === main.status;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
 				<MenuItem as="div" className={wrapper} key={i} onClick={() => setStatus(m.label)}>

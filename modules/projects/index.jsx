@@ -11,16 +11,16 @@ import ProjectTodos from "@/modals/projects/Todo";
 import writeXlsxFile from "write-excel-file/browser";
 
 import { Virtuoso } from "react-virtuoso";
-import { ProjectsHeaders } from "@/utilities/headers";
-import { TextInputNative } from "@/components/Inputs";
+import { ProjectsHeaders, ProjectsHeaders2 } from "@/utilities/headers";
+import { TextInput, TextInputNative, TextInputNative2 } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
-import { ApiEndpoints, BaseModules, DerivedModules, Statuses } from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, DerivedModules, InquiriesWorkFrequency, Statuses } from "@/utilities/constants";
 import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { MyGlobal } from "@/utilities/global";
-import { faCalendar, faCheck, faCheckCircle, faChevronDown, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faListUl, faMultiply, faPencil, faPlaneUp, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faCalendarDays, faCalendarWeek, faCheck, faCheckCircle, faChevronDown, faClock, faDiceOne, faDownload, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faInfoCircle, faListUl, faMultiply, faPencil, faPlaneUp, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -49,6 +49,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		selectedStaff: { fullName: "", id: "", type: "" },
 		showIconButton: { deleteProject: 0, editProject: 0 },
 		sort: { column: "ID", isAscending: false },
+		workFrequency: "",
 	});
 
 	const [filters, setFilters] = useState({ financialYear: "" });
@@ -65,6 +66,13 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const today = useMemo(() => dayjs(), []);
 	const statuses = Statuses.Projects;
+	const projectFilterStatuses = {
+		...statuses,
+		Overdue: "Overdue",
+		Today: "Today",
+		Tomorrow: "Tomorrow",
+		Upcoming: "Upcoming",
+	};
 	const thisView = BaseModules.Projects;
 	const isUserAdministrator = MyGlobal.IsUserAdministrator();
 
@@ -72,7 +80,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const allowEditingProject = useMemo(() => MyGlobal.HasPermission(DerivedModules.EditProject), []);
 
 	const showClearCompanyButton = filters.financialYear ? "cursor-pointer text-gray-300" : "hidden!";
-	const showFindBoxClearButton = main.findText ? "cursor-pointer primary-text" : "hidden";
+	const showFindBoxClearButton = main.findText ? "cursor-pointer primary-text" : "hidden!";
 	const blankDataWrapper = "flex w-full h-full justify-center items-center contrast-background full-border";
 
 	// Add debounce for search function
@@ -118,10 +126,10 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				[statuses.Closed]: 0,
 				[statuses.Completed]: 0,
 				[statuses.Hold]: 0,
-				[statuses.Overdue]: 0,
-				[statuses.Today]: 0,
-				[statuses.Tomorrow]: 0,
-				[statuses.Upcoming]: 0,
+				[projectFilterStatuses.Overdue]: 0,
+				[projectFilterStatuses.Today]: 0,
+				[projectFilterStatuses.Tomorrow]: 0,
+				[projectFilterStatuses.Upcoming]: 0,
 			};
 
 			projectsList.forEach((fe) => {
@@ -182,6 +190,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				filter: "",
 				revisedStatuses,
 				selectedStaff: { fullName: "", id: "", type: "" },
+				workFrequency: "",
 			}));
 		} else {
 			// If no text filter, just use the entire source
@@ -192,6 +201,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				filter: "",
 				revisedStatuses,
 				selectedStaff: { fullName: "", id: "", type: "" },
+				workFrequency: "",
 			}));
 		}
 	}, [api.projects.copy, main.activeModule, main.findText, filters.financialYear, calculateStatusCounts, getFinancialYearFromDate]);
@@ -461,7 +471,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 		// Apply any text/filter criteria from dashboard before grouping
 		if (main.findText) {
-			if (Object.values(statuses).includes(main.findText)) {
+			if (Object.values(projectFilterStatuses).includes(main.findText)) {
 				// Handle status filters
 				filteredCopy = filteredCopy.filter((project) => project.status.includes(main.findText));
 			} else if (main.findText === "Overdue" || presetStatus === "Overdue") {
@@ -536,10 +546,11 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			let matchesStatusFilter = true;
 			let matchesTeamFilter = true;
 			let matchesFinancialYearFilter = true;
+			let matchesWorkFrequency = true;
 
 			// Text filter logic
 			if (main.findText) {
-				if (Object.values(statuses).includes(main.findText)) {
+				if (Object.values(projectFilterStatuses).includes(main.findText)) {
 					matchesTextFilter = f.status.includes(main.findText);
 				} else if (main.findText === "Overdue" || presetStatus === "Overdue") {
 					// Important: This filter is coming from the dashboard
@@ -570,14 +581,14 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 			// Status filter logic
 			if (main.filter) {
-				if ([statuses.Overdue, statuses.Today, statuses.Tomorrow, statuses.Upcoming].includes(main.filter)) {
-					if (main.filter === statuses.Overdue) {
+				if ([projectFilterStatuses.Overdue, projectFilterStatuses.Today, projectFilterStatuses.Tomorrow, projectFilterStatuses.Upcoming].includes(main.filter)) {
+					if (main.filter === projectFilterStatuses.Overdue) {
 						matchesStatusFilter = f.has_tasks_overdue;
-					} else if (main.filter === statuses.Today) {
+					} else if (main.filter === projectFilterStatuses.Today) {
 						matchesStatusFilter = f.has_tasks_due_today;
-					} else if (main.filter === statuses.Tomorrow) {
+					} else if (main.filter === projectFilterStatuses.Tomorrow) {
 						matchesStatusFilter = f.has_tasks_due_tomorrow;
-					} else if (main.filter === statuses.Upcoming) {
+					} else if (main.filter === projectFilterStatuses.Upcoming) {
 						matchesStatusFilter = f.has_tasks_upcoming;
 					}
 				} else {
@@ -598,12 +609,16 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				matchesFinancialYearFilter = getFinancialYearFromDate(f.started_on) === filters.financialYear;
 			}
 
+			if (main.workFrequency) {
+				matchesWorkFrequency = f.work_frequency === main.workFrequency
+			}
+
 			// Both filters must match
-			return matchesTextFilter && matchesStatusFilter && matchesTeamFilter && matchesFinancialYearFilter;
+			return matchesTextFilter && matchesStatusFilter && matchesTeamFilter && matchesFinancialYearFilter && matchesWorkFrequency;
 		});
 
 		return filtered;
-	}, [api.projects.copy, main.activeModule.name, main.filter, main.findText, statuses, main.selectedStaff, aggregatedProjects, filters.financialYear, getFinancialYearFromDate]);
+	}, [api.projects.copy, main.activeModule.name, main.filter, main.findText, statuses, main.selectedStaff, aggregatedProjects, filters.financialYear, getFinancialYearFromDate, main.workFrequency]);
 
 	const filteredProjects = useMemo(() => {
 		return getSelectedProjectData();
@@ -666,17 +681,17 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		const headerHeight = 44;
 		const maximumColumnWidth = 20;
 
-		const headers = Object.values(ProjectsHeaders);
+		const headers = Object.values(ProjectsHeaders2);
 		const blankRows = [{ span: headers.length, height: rowHeight, colSpan: 2 }];
 
 		// Use the already sorted data to avoid re-sorting
 		sortedProjects.forEach((project) => {
-			const lastNote = api.notes
-				.filter((f) => f.project_id == project.id)
-				.sort((a, b) => b.id - a.id)
-				.at(0);
+			// const lastNote = api.notes
+			// 	.filter((f) => f.project_id == project.id)
+			// 	.sort((a, b) => b.id - a.id)
+			// 	.at(0);
 
-			records.push(dayjs(project.started_on).format("DD MMM, YYYY"), project.client_name, project.sub_project_name + "\n" + project.main_project_name, project.team_names, project.quote, project.status);
+			records.push(dayjs(project.started_on).format("DD MMM, YYYY"), project.client_name, project.sub_project_name + "\n" + project.main_project_name, project.team_names, project.quote, project.status, project.work_frequency || "");
 		});
 
 		// Batch process records into _records
@@ -773,7 +788,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const uiFind = useCallback(() => {
 		if (api.projects.copy.length) {
-			return <TextInputNative id="findBox" icon={faSearch} onChange={(e) => setInputs("findText", e.target.value)} onClearButtonClick={() => setInputs("findText", "")} placeholder="Find" showClearButton={showFindBoxClearButton} tabIndex={1} value={main.findText} width="w-40" />;
+			return <TextInputNative2 id="findBox" icon={faSearch} onChange={(e) => setInputs("findText", e.target.value)} onClearButtonClick={() => setInputs("findText", "")} placeholder="Find" showClearButton={showFindBoxClearButton} tabIndex={1} value={main.findText} width="w-40" />;
 		}
 		return null;
 	}, [api.projects.copy.length, main.findText, setInputs, showFindBoxClearButton]);
@@ -783,11 +798,11 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		return Object.entries(main.revisedStatuses).map(([key, value], i) => {
 			const isSelected = key == main.filter;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} hovered-rows-white-1`;
 
 			return (
 				<MenuItem as="div" className={wrapper} key={i} onClick={() => setFilter(key)}>
-					<span className="flex w-full justify-between items-center font-regular-11">
+					<span className="flex w-full justify-between items-center font-regular-10">
 						<span>{key}</span>
 						{value > 0 && <BadgeSmall value={value} />}
 					</span>
@@ -800,14 +815,12 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		return financialYears.map((m, i) => {
 			const isSelected = m === filters.financialYear;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center-safe cursor-pointer ${aesthetics} font-regular-10 text-left`;
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} hovered-rows-white-1`;
 
 			return (
 				<MenuItem as="div" className={wrapper} key={i} onClick={() => setFilters((s) => ({ ...s, financialYear: m }))}>
-					<div className="flex w-full space-x-2 items-center-safe">
-						<span>{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} />}</span>
-						<span>{m}</span>
-					</div>
+					<span className="font-regular-10">{m}</span>
+					{isSelected && <FontAwesomeIcon className="primary-text" icon={faCheck} size="xs" />}
 				</MenuItem>
 			);
 		});
@@ -816,14 +829,46 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const uiFilter = useCallback(() => {
 		return (
 			<Menu as="div" className="flex w-40 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
-				<MenuButton className="flex w-full h-7.5 px-2 justify-between items-center font-regular-10 gray-text">
-					<span>{main.filter || "Status"}</span>
+				<MenuButton className="flex w-full h-7.5 px-2 justify-between items-center font-regular-10 gray-text cursor-pointer">
+					<div className="flex space-x-2 items-center">
+						<FontAwesomeIcon className="primary-text" icon={faInfoCircle} />
+						<span>{main.filter || "Status"}</span>
+					</div>
 					<FontAwesomeIcon icon={faChevronDown} />
 				</MenuButton>
-				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded z-50 contrast-background bottom-shadow full-border">{uiFilterMenuList}</MenuItems>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded z-50 contrast-background shadow">{uiFilterMenuList}</MenuItems>
 			</Menu>
 		);
 	}, [main.filter, uiFilterMenuList]);
+
+	const uiWorkFrequencyMenuList = useMemo(() => {
+		return Object.values(InquiriesWorkFrequency).map((m, i) => {
+			const isSelected = m == main.workFrequency;
+			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} hovered-rows-white-1`;
+
+			return (
+				<MenuItem as="div" className={wrapper} key={i} onClick={() => setMain((s) => ({ ...s, workFrequency: m }))}>
+					<span className="font-regular-10">{m}</span>
+				</MenuItem>
+			);
+		});
+	}, [main.workFrequency]);
+
+	const uiWorkFrequency = useCallback(() => {
+		return (
+			<Menu as="div" className="flex w-40 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
+				<MenuButton className="flex w-full h-7.5 px-2 justify-between items-center font-regular-10 gray-text cursor-pointer">
+					<div className="flex space-x-2 items-center">
+						<FontAwesomeIcon className="primary-text" icon={faClock} />
+						<span>{main.workFrequency || "Frequency"}</span>
+					</div>
+					<FontAwesomeIcon className="ml-auto" icon={faChevronDown} />
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded z-50 contrast-background shadow">{uiWorkFrequencyMenuList}</MenuItems>
+			</Menu>
+		);
+	}, [main.workFrequency, uiWorkFrequencyMenuList]);
 
 	const uiHeaders = useCallback(() => {
 		return Object.values(ProjectsHeaders).map((header, i) => {
@@ -847,7 +892,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		return aggregatedProjects.map((module, i) => {
 			const style = module.key == main.activeModule.name ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
-			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${style} font-regular-10 hovered-rows`;
+			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${style} font-regular-10 hovered-rows-white cursor-pointer`;
 
 			return (
 				<button className={wrapper} key={i} onClick={() => setModule(module)}>
@@ -963,15 +1008,16 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}
 
 	function uiStaff() {
-		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+		const wrapper = "flex w-full h-7.5 px-2 space-x-2 items-center font-regular-10 gray-text cursor-pointer";
 
 		return (
-			<Menu as="div" className="flex max-w-full min-w-40 justify-center items-center relative">
+			<Menu as="div" className="flex w-40 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
 				<MenuButton className={wrapper}>
 					<FontAwesomeIcon className="primary-text" icon={faUserAlt} />
 					<span className="gray-text">{main.selectedStaff.fullName || "Team"}</span>
+					<FontAwesomeIcon className="ml-auto" icon={faChevronDown} />
 				</MenuButton>
-				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStaffList()}</MenuItems>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded z-50 contrast-background shadow">{uiStaffList()}</MenuItems>
 			</Menu>
 		);
 	}
@@ -980,26 +1026,27 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		return MyGlobal.GetAllUsers().map((m, i) => {
 			const isSelected = m.id === main.selectedStaff.id;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} hovered-rows-white-1`;
 
 			return (
 				<MenuItem as="div" className={wrapper} key={i} onClick={() => setStaff(m)}>
-					<span>{m.full_name}</span>
+					<span className="font-regular-10">{m.full_name}</span>
 				</MenuItem>
 			);
 		});
 	}
 
 	function uiStaffAdvanced() {
-		const wrapper = "flex max-w-full min-w-40 h-[30px] px-2.5 space-x-2 justify-start items-center focus:outline-none relative z-40 rounded bottom-shadow contrast-background full-border font-regular-10";
+		const wrapper = "flex w-full h-7.5 px-2 space-x-2 items-center font-regular-10 gray-text cursor-pointer";
 
 		return (
-			<Menu as="div" className="flex max-w-full min-w-40 justify-center items-center relative">
+			<Menu as="div" className="flex w-40 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
 				<MenuButton className={wrapper}>
 					<FontAwesomeIcon className="primary-text" icon={faFilter} />
 					<span className="gray-text">{main.selectedStaff.type || "Type"}</span>
+					<FontAwesomeIcon className="ml-auto" icon={faChevronDown} />
 				</MenuButton>
-				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background bottom-shadow focus:outline-none z-50 full-border">{uiStaffListAdvanced()}</MenuItems>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded z-50 contrast-background shadow">{uiStaffListAdvanced()}</MenuItems>
 			</Menu>
 		);
 	}
@@ -1008,11 +1055,11 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		return ["Assigned alone", "Assigned with team"].map((m, i) => {
 			const isSelected = m === main.selectedStaff.type;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-start items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} hovered-rows-white-1`;
 
 			return (
 				<MenuItem as="div" className={wrapper} key={i} onClick={() => setStaffType(m)}>
-					<span>{m}</span>
+					<span className="font-regular-10">{m}</span>
 				</MenuItem>
 			);
 		});
@@ -1054,15 +1101,15 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				{!teams
 					? "No teams involved"
 					: splitted.map((m, i) => {
-							const bottomBorder = i != splitted.length - 1 ? "bottom-border" : "border-transparent";
-							const wrapper = `flex w-full justify-start items-center ${bottomBorder}`;
+						const bottomBorder = i != splitted.length - 1 ? "bottom-border" : "border-transparent";
+						const wrapper = `flex w-full justify-start items-center ${bottomBorder}`;
 
-							return (
-								<div className={wrapper} key={i}>
-									{i + 1}. {m}
-								</div>
-							);
-						})}
+						return (
+							<div className={wrapper} key={i}>
+								{i + 1}. {m}
+							</div>
+						);
+					})}
 			</div>
 		);
 	}, []);
@@ -1125,7 +1172,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			return Object.values(Statuses.Projects).map((status, i) => {
 				const isSelected = status == row.status;
 				const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-				const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
+				const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} hovered-rows`;
 
 				return (
 					<MenuItem as="div" className={wrapper} key={i} onClick={() => editStatus(row, status)}>
@@ -1247,7 +1294,12 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							theme="light"
 							trigger="mouseenter"
 							appendTo={() => document.body}>
-							<span>{dayjs(row.started_on).format("DD MMM, YYYY")}</span>
+							<div className="flex space-x-1.5 justify-center-safe items-center-safe">
+								<span>{dayjs(row.started_on).format("DD MMM, YYYY")}</span>
+								{row.work_frequency && <Tippy content={<Tooltip text={`Work Frequency :: ${row.work_frequency}`} />} placement="bottom" trigger="mouseenter" appendTo={() => document.body}>
+									<FontAwesomeIcon icon={faClock} />
+								</Tippy>}
+							</div>
 						</Tippy>
 					</div>
 
@@ -1470,7 +1522,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			if (debouncedFindText) {
 				const textFilteredData = sourceWithFinancialYear.filter(
 					(project) => {
-						if (Object.values(statuses).includes(debouncedFindText)) {
+						if (Object.values(projectFilterStatuses).includes(debouncedFindText)) {
 							return project.status.includes(debouncedFindText);
 						} else if (debouncedFindText === "Overdue") {
 							// Important: This filter is coming from the dashboard
@@ -1519,7 +1571,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 				// Text filter logic
 				if (debouncedFindText) {
-					if (Object.values(statuses).includes(debouncedFindText)) {
+						if (Object.values(projectFilterStatuses).includes(debouncedFindText)) {
 						matchesTextFilter = f.status.includes(debouncedFindText);
 					} else if (debouncedFindText === "Overdue") {
 						matchesTextFilter = f.has_tasks_overdue;
@@ -1549,14 +1601,14 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 				// Status filter logic
 				if (main.filter) {
-					if ([statuses.Overdue, statuses.Today, statuses.Tomorrow, statuses.Upcoming].includes(main.filter)) {
-						if (main.filter === statuses.Overdue) {
+					if ([projectFilterStatuses.Overdue, projectFilterStatuses.Today, projectFilterStatuses.Tomorrow, projectFilterStatuses.Upcoming].includes(main.filter)) {
+						if (main.filter === projectFilterStatuses.Overdue) {
 							matchesStatusFilter = f.has_tasks_overdue;
-						} else if (main.filter === statuses.Today) {
+						} else if (main.filter === projectFilterStatuses.Today) {
 							matchesStatusFilter = f.has_tasks_due_today;
-						} else if (main.filter === statuses.Tomorrow) {
+						} else if (main.filter === projectFilterStatuses.Tomorrow) {
 							matchesStatusFilter = f.has_tasks_due_tomorrow;
-						} else if (main.filter === statuses.Upcoming) {
+						} else if (main.filter === projectFilterStatuses.Upcoming) {
 							matchesStatusFilter = f.has_tasks_upcoming;
 						}
 					} else {
@@ -1606,31 +1658,38 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		<div className="flex flex-col w-full h-full justify-start items-center">
 			<>
 				{!mounted.editProject && !mounted.singleProject && (
-					<div className="flex w-full px-5 py-2.5 justify-between items-center">
-						<div className="flex w-1/5 space-x-2 justify-start items-center">
+					<div className="flex w-full px-5 py-2.5 items-center">
+						<div className="flex w-[12%] space-x-2 justify-start items-center">
 							<span className="view-heading">{thisView}</span>
 							{getIconOrBadge()}
 						</div>
-						<div className="flex w-3/5 space-x-5 justify-center items-center">
+						<div className="flex w-[88%] space-x-2 justify-center items-center">
 							{uiFind()}
 							<Menu as="div" className="flex w-35 justify-center-safe items-center-safe relative">
-								<MenuButton className="flex w-full h-7.5 px-2.5 justify-between items-center-safe focus:outline-none relative z-40 rounded-full shadow contrast-background font-regular-10">
-									<div className="flex w-full space-x-2.5 items-center-safe">
+								<MenuButton className="flex w-full h-7.5 px-2.5 justify-between items-center-safe focus:outline-none relative z-40 cursor-pointer rounded shadow contrast-background font-regular-10">
+									<div className="flex space-x-2.5 items-center-safe">
 										<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
 										<span className="gray-text">{filters.financialYear || "Year"}</span>
 									</div>
-									<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setFilters((s) => ({ ...s, financialYear: "" }))} icon={faMultiply} />
+									<div className="flex space-x-2 items-center">
+										<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setFilters((s) => ({ ...s, financialYear: "" }))} icon={faMultiply} />
+										<FontAwesomeIcon icon={faChevronDown} />
+									</div>
 								</MenuButton>
 								<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background shadow focus:outline-none z-50">{uiFinancialYearList()}</MenuItems>
 							</Menu>
 							{uiFilter()}
+							{uiWorkFrequency()}
 							{uiStaff()}
 							{uiStaffAdvanced()}
 							<Tippy content={<Tooltip text={`Clear filters of ${main.activeModule.name}`} />} placement="bottom">
 								{uiClearFilter()}
 							</Tippy>
+							{filteredProjects.length > 0 && api.projects.copy.length > 0 && <Tippy content={<Tooltip text="Download in Excel" />} placement="bottom">
+								<FontAwesomeIcon className="cursor-pointer text-green-600" icon={faDownload} onClick={doExcelExport} />
+							</Tippy>}
 						</div>
-						<div className="flex w-1/5 justify-end items-center">{uiExport()}</div>
+
 					</div>
 				)}
 				{uiMain()}

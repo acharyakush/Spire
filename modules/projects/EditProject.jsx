@@ -10,7 +10,7 @@ import { MyGlobal } from "@/utilities/global";
 import { useEffect, useRef, useState } from "react";
 import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
+import { ApiEndpoints, BaseModules, InquiriesWorkFrequency, Messages } from "@/utilities/constants";
 import { ComboBox2, ComboBoxWithChips, TextInput } from "@/components/Inputs";
 import { faBriefcase, faChevronLeft, faExclamationCircle, faFile, faIndianRupee, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
@@ -19,6 +19,8 @@ const arrFinancialYears = [
 	{ key: "2025-26", value: "2025-26" },
 	{ key: "2026-27", value: "2026-27" },
 ];
+
+const workFrequencies = Object.values(InquiriesWorkFrequency).map((m) => ({ label: m, value: m }));
 
 export default function EditProject({ project, reload, unmount }) {
 	// Business Logic
@@ -49,6 +51,7 @@ export default function EditProject({ project, reload, unmount }) {
 		remarks: "",
 		subProject: { id: 0, name: "" },
 		teams: [],
+		workFrequency: { id: workFrequencies[0].value, name: workFrequencies[0].label }
 	});
 
 	const [mounted, setMounted] = useState({
@@ -132,6 +135,7 @@ export default function EditProject({ project, reload, unmount }) {
 				subProject: main.subProject,
 				teams: getTeamsIds(),
 				userId: MyGlobal.GetUserId(),
+				workFrequency: main.workFrequency.name,
 			};
 
 			const response = await axios.post(ApiEndpoints.Projects.EditProject, body, MyGlobal.GetHeaders());
@@ -255,6 +259,7 @@ export default function EditProject({ project, reload, unmount }) {
 						name: project.sub_project_name,
 					},
 					teams: project.teams_data,
+					workFrequency: { id: project.work_frequency, name: project.work_frequency }
 				};
 
 				const clientsCompanies = response.data.companies.filter((f) => f.client_id === project.client_id);
@@ -343,11 +348,11 @@ export default function EditProject({ project, reload, unmount }) {
 
 	// UI Components
 	function uiClient() {
-		return <TextInput icon={faUser} id="editProjectClientName" isReadOnly label="Client" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={main.client.name} width="w-full" />;
+		return <TextInput icon={faUser} id="editProjectClientName" isReadOnly label="Client" onChange={() => { }} onKeyPress={() => { }} tabIndex={1} value={main.client.name} width="w-full" />;
 	}
 
 	function uiCompany() {
-		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.company.name} displayValue="name" filteredData={getFilteredCompanies} hasDataObject icon={faBriefcase} isReadOnly={false} label="Company" onChange={(e) => setInputs("company", e)} onClick={() => addNewCompany(other.find.company.name)} onInputChange={(e) => setFind("company", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.company.name} tabIndex={2} value={main.company.name} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.company.name} displayValue="name" filteredData={getFilteredCompanies} hasDataObject icon={faBriefcase} isReadOnly={false} label="Company" onChange={(e) => setInputs("company", e)} onClick={() => addNewCompany(other.find.company.name)} onInputChange={(e) => setFind("company", e.target.value)} onKeyPress={() => { }} searchedItem={other.find.company.name} tabIndex={2} value={main.company.name} width="w-full" />;
 	}
 
 	function uiRemarks() {
@@ -359,15 +364,15 @@ export default function EditProject({ project, reload, unmount }) {
 	}
 
 	function uiInvoiceFirm() {
-		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.invoiceFirm.name} displayValue="name" filteredData={api.firms} hasDataObject icon={faBriefcase} isReadOnly={false} label="Invoice Firm" onChange={(e) => setInputs("invoiceFirm", e)} onClick={() => {}} onInputChange={() => {}} onKeyPress={() => {}} searchedItem={{}} tabIndex={9} value={main.invoiceFirm.name} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.invoiceFirm.name} displayValue="name" filteredData={api.firms} hasDataObject icon={faBriefcase} isReadOnly={false} label="Invoice Firm" onChange={(e) => setInputs("invoiceFirm", e)} onClick={() => { }} onInputChange={() => { }} onKeyPress={() => { }} searchedItem={{}} tabIndex={9} value={main.invoiceFirm.name} width="w-full" />;
 	}
 
 	function uiMainProjects() {
-		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.mainProject.name} displayValue="name" filteredData={getFilteredMainProjects} hasDataObject icon={faFile} isReadOnly={false} label="Main Project" onChange={(e) => setInputs("mainProject", e)} onClick={() => {}} onInputChange={(e) => setFind("mainProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.mainProject.name} tabIndex={4} value={main.mainProject.name} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.mainProject.name} displayValue="name" filteredData={getFilteredMainProjects} hasDataObject icon={faFile} isReadOnly={false} label="Main Project" onChange={(e) => setInputs("mainProject", e)} onClick={() => { }} onInputChange={(e) => setFind("mainProject", e.target.value)} onKeyPress={() => { }} searchedItem={other.find.mainProject.name} tabIndex={4} value={main.mainProject.name} width="w-full" />;
 	}
 
 	function uiPhoneNumber() {
-		return <TextInput icon={faPhone} isReadOnly label="Phone Number" onChange={() => {}} onKeyPress={() => {}} tabIndex={3} value={main.phoneNumber} width="w-full" />;
+		return <TextInput icon={faPhone} isReadOnly label="Phone Number" onChange={() => { }} onKeyPress={() => { }} tabIndex={3} value={main.phoneNumber} width="w-full" />;
 	}
 
 	function uiPreview() {
@@ -383,7 +388,7 @@ export default function EditProject({ project, reload, unmount }) {
 	}
 
 	function uiQuote() {
-		return <TextInput icon={faIndianRupee} isReadOnly label={`Quote (Original ${project.quote})`} onChange={() => {}} onKeyPress={() => {}} tabIndex={9} value={MyGlobal.ThousandSeparator(main.quote)} width="w-full" />;
+		return <TextInput icon={faIndianRupee} isReadOnly label={`Quote (Original ${project.quote})`} onChange={() => { }} onKeyPress={() => { }} tabIndex={9} value={MyGlobal.ThousandSeparator(main.quote)} width="w-full" />;
 	}
 
 	function uiReimburseVoucher() {
@@ -391,7 +396,7 @@ export default function EditProject({ project, reload, unmount }) {
 	}
 
 	function uiSubProjects() {
-		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.subProject.name} displayValue="name" filteredData={getFilteredSubProjects} hasDataObject icon={faFile} isReadOnly={false} label="Sub Project" onChange={(e) => setInputs("subProject", e)} onClick={() => addNewSubProject(other.find.subProject.name)} onInputChange={(e) => setFind("subProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.subProject.name} tabIndex={5} value={main.subProject.name} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.subProject.name} displayValue="name" filteredData={getFilteredSubProjects} hasDataObject icon={faFile} isReadOnly={false} label="Sub Project" onChange={(e) => setInputs("subProject", e)} onClick={() => addNewSubProject(other.find.subProject.name)} onInputChange={(e) => setFind("subProject", e.target.value)} onKeyPress={() => { }} searchedItem={other.find.subProject.name} tabIndex={5} value={main.subProject.name} width="w-full" />;
 	}
 
 	function uiTeams() {
@@ -461,7 +466,22 @@ export default function EditProject({ project, reload, unmount }) {
 							{uiQuote()}
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiTeams()}</div>
-						<div className="flex w-full px-3 space-x-6 justify-between items-start">{uiInvoiceFirm()}</div>
+						<div className="flex w-full px-3 space-x-6 justify-between items-center">
+							<Select
+								checkIconPosition="right"
+								comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }}
+								data={workFrequencies}
+								label="Work Frequency"
+								onChange={(_, o) => {
+									if (!o || o.value === main.workFrequency.id) return;
+									setMain((s) => ({ ...s, workFrequency: { id: o.value, name: o.label } }));
+								}}
+								styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "90%" } }}
+								value={main.workFrequency.id}
+								variant="filled"
+							/>
+							{uiInvoiceFirm()}
+						</div>
 					</div>
 				</div>
 				<footer className="w-full dialog-footer">

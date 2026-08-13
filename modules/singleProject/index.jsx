@@ -148,7 +148,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 	}
 
 	function uiHamburgerMenu() {
-		const style = "w-full p-3 space-x-3 cursor-pointer border-y font-regular-11 black-text hovered-rows";
+		const style = "w-full p-3 space-x-3 cursor-pointer border-y border-gray-300 font-regular-11 black-text hovered-rows";
 
 		return (
 			<Menu as="div" className="w-max relative text-left">

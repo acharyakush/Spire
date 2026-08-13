@@ -6,6 +6,14 @@ export const AccountMenu = Object.freeze({
 	Logout: "Logout",
 });
 
+export const InquiriesWorkFrequency = Object.freeze({
+	once: "Once",
+	monthly: "Monthly",
+	quartely: "Quarterly",
+	semiAnnually: "Semi Annually",
+	annually: "Annually"
+})
+
 export const ApiEndpoints = Object.freeze({
 	Activities: "/api/activities",
 	Affiliates: Object.freeze({

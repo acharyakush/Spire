@@ -21,7 +21,7 @@ export const ComboBox = ({ allowCreatingNewItem, comparisonValue, filteredData, 
 	const mainWrapper = `flex flex-col ${width} p-2 space-y-1 ${aesthetics} ${cursor}`;
 	const childWrapper = `flex w-full justify-start items-center ${clickEvent}`;
 	const noItemFound = allowCreatingNewItem ? `Create ${searchedItem}` : "Nothing found.";
-	const noItemFoundClickAction = allowCreatingNewItem ? onClick : () => {};
+	const noItemFoundClickAction = allowCreatingNewItem ? onClick : () => { };
 
 	let _filteredData;
 
@@ -67,7 +67,7 @@ export const ComboBox = ({ allowCreatingNewItem, comparisonValue, filteredData, 
 				const isSelected = comparisonValue == m;
 
 				const nameStyle = isSelected ? `font-regular-10 primary-text` : "font-regular-10 black-text";
-				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y hovered-rows ${isSelected && "primary-background-transparent-01"}`;
+				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y border-gray-300 hovered-rows ${isSelected && "primary-background-transparent-01"}`;
 
 				return (
 					<ComboboxOption className={wrapper} key={n} value={m}>
@@ -90,7 +90,7 @@ export const ComboBox2 = ({ allowCreatingNewItem, comparingValue1, comparingValu
 	const wrapper = `flex flex-col ${width} p-2 space-y-1 ${aesthetics}`;
 	const inputWrapper = `relative w-full ${clickEvent}`;
 	const noItemFound = allowCreatingNewItem ? `Create ${searchedItem}` : "Nothing found.";
-	const noItemFoundClickAction = allowCreatingNewItem ? onClick : () => {};
+	const noItemFoundClickAction = allowCreatingNewItem ? onClick : () => { };
 
 	let _filteredData;
 
@@ -145,7 +145,7 @@ export const ComboBox2 = ({ allowCreatingNewItem, comparingValue1, comparingValu
 
 				const nameStyle = isSelected ? "font-regular-10 primary-text" : "font-regular-10 black-text";
 
-				const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y hovered-rows ${isSelected && `primary-background-transparent-01`}`;
+			const wrapper = `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y border-gray-300 hovered-rows ${isSelected && `primary-background-transparent-01`}`;
 
 				return (
 					<ComboboxOption className={wrapper} key={n} value={dataObject}>
@@ -199,7 +199,7 @@ export const ComboBoxWithChips = ({ background = "primary-background-transparent
 			const isSelected = selectedItems?.filter((f) => f.id == m.id)?.length > 0;
 			const _background = isSelected && "primary-background-transparent-01";
 			const _colour = isSelected ? "primary-text" : "black-text";
-			const wrapper = `flex w-full p-2 justify-between items-center cursor-pointer border-y font-regular-10 ${_colour} ${_background} hovered-rows`;
+			const wrapper = `flex w-full p-2 justify-between items-center cursor-pointer border-y border-gray-300 font-regular-10 ${_colour} ${_background} hovered-rows`;
 
 			return (
 				<span className={wrapper} key={n} onClick={() => onItemClick(m)}>
@@ -347,6 +347,19 @@ export const TextInput = ({ disable = false, errorText = "", hasError = false, i
 export const TextInputNative = ({ id, icon, onChange, onClearButtonClick, placeholder, showClearButton, source, tabIndex, value, width }) => {
 	const background = source ? (source === "singleProject" ? "bg-white primary-bottom-border-transparent-05" : "bg-[var(--primary-transparent-01)] bottom-shadow full-border") : "contrast-background shadow";
 	const wrapper = `flex ${width} px-3 items-center-safe rounded-full ${background}`;
+
+	return (
+		<div className={wrapper}>
+			<FontAwesomeIcon className="primary-text" icon={icon} size="sm" />
+			<input autoComplete="off" autoFocus className="inputs h-7.5! text-[13px]!" id={id} onChange={onChange} placeholder={placeholder} tabIndex={tabIndex} type="text" value={value} />
+			<FontAwesomeIcon className={showClearButton} icon={faMultiply} onClick={onClearButtonClick} />
+		</div>
+	);
+};
+
+export const TextInputNative2 = ({ id, icon, onChange, onClearButtonClick, placeholder, showClearButton, source, tabIndex, value, width }) => {
+	const background = source ? (source === "singleProject" ? "bg-white primary-bottom-border-transparent-05" : "bg-[var(--primary-transparent-01)] bottom-shadow full-border") : "contrast-background shadow";
+	const wrapper = `flex ${width} px-3 items-center-safe rounded ${background}`;
 
 	return (
 		<div className={wrapper}>

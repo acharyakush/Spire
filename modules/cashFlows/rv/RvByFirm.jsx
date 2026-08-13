@@ -519,7 +519,7 @@ export default function RvByFirm({ firmId, unmount }) {
 		return api.firms.map((m, i) => {
 			const isSelected = m.id == main.company?.id;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
 				<MenuItem as="div" className={wrapper} key={i} onClick={() => setCompany(m)}>

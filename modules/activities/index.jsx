@@ -308,7 +308,7 @@ export default function Activities({ source = "", unmount }) {
 	function uiModulesMenuList() {
 		return main.modules.list.map((m, i) => {
 			return (
-				<MenuItem as="div" className="flex w-full justify-between items-center p-2 cursor-pointer border-y font-regular-9 black-text hovered-rows" key={i} onClick={() => setInputs("module", m)}>
+				<MenuItem as="div" className="flex w-full justify-between items-center p-2 cursor-pointer border-y border-gray-300 font-regular-9 black-text hovered-rows" key={i} onClick={() => setInputs("module", m)}>
 					<span className="text-left">{m.name}</span>
 					<span className="font-regular-9 gray-text">{m.count}</span>
 				</MenuItem>

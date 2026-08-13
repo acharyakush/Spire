@@ -25,6 +25,7 @@
 		"axios": "^1.13.5",
 		"crypto-js": "^4.2.0",
 		"dayjs": "^1.11.20",
+		"dotenv": "^17.4.2",
 		"dragula": "^3.7.3",
 		"html2canvas": "^1.4.1",
 		"html2canvas-pro": "^2.0.2",
@@ -59,5 +60,9 @@
 		"standard": "^17.1.2",
 		"tailwindcss": "^4.2.1",
 		"typescript": "^6.0.2"
+	},
+	"allowScripts": {
+		"core-js@3.43.0": true,
+		"sharp@0.34.5": true
 	}
 }

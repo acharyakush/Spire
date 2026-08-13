@@ -360,7 +360,7 @@ export default function NewInquiry({ allInquiries, reload, unmount }) {
 
 	// UI Components
 	function uiClient() {
-		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.client.name} displayValue="name" filteredData={getFilteredClients} hasDataObject icon={faUser} isReadOnly={false} label="Client" onChange={(e) => setHeavyInputs("client", e)} onClick={() => addNewClient(other.find.client.name)} onInputChange={(e) => setFind("client", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.client.name} tabIndex={1} value={getClientName()} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.client.name} displayValue="name" filteredData={getFilteredClients} hasDataObject icon={faUser} isReadOnly={false} label="Client" onChange={(e) => setHeavyInputs("client", e)} onClick={() => addNewClient(other.find.client.name)} onInputChange={(e) => setFind("client", e.target.value)} onKeyPress={() => { }} searchedItem={other.find.client.name} tabIndex={1} value={getClientName()} width="w-full" />;
 	}
 
 	function uiDate() {
@@ -380,11 +380,11 @@ export default function NewInquiry({ allInquiries, reload, unmount }) {
 	}
 
 	function uiMainProjects() {
-		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.mainProject.name} displayValue="name" filteredData={getFilteredMainProjects} hasDataObject icon={faFile} isReadOnly={false} label="Main Project" onChange={(e) => setHeavyInputs("mainProject", e)} onClick={() => {}} onInputChange={(e) => setFind("mainProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.mainProject.name} tabIndex={4} value={main.mainProject.name} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.mainProject.name} displayValue="name" filteredData={getFilteredMainProjects} hasDataObject icon={faFile} isReadOnly={false} label="Main Project" onChange={(e) => setHeavyInputs("mainProject", e)} onClick={() => { }} onInputChange={(e) => setFind("mainProject", e.target.value)} onKeyPress={() => { }} searchedItem={other.find.mainProject.name} tabIndex={4} value={main.mainProject.name} width="w-full" />;
 	}
 
 	function uiNotes() {
-		return <TextArea icon={faNoteSticky} key={1} label="Notes" onChange={(e) => setLightInputs("note", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={main.note} width="w-full" />;
+		return <TextArea icon={faNoteSticky} key={1} label="Notes" onChange={(e) => setLightInputs("note", e.target.value)} onKeyDown={() => { }} rows={2} tabIndex={10} value={main.note} width="w-full" />;
 	}
 
 	function uiPhoneNumber() {
@@ -408,11 +408,11 @@ export default function NewInquiry({ allInquiries, reload, unmount }) {
 	}
 
 	function uiReferences() {
-		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.reference.name} displayValue="name" filteredData={getFilteredReferences} hasDataObject icon={faUser} isReadOnly={false} label="Reference" onChange={(e) => setHeavyInputs("reference", e)} onClick={() => addNewReference(other.find.reference.name)} onInputChange={(e) => setFind("reference", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.reference.name} tabIndex={6} value={getReferenceName()} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.reference.name} displayValue="name" filteredData={getFilteredReferences} hasDataObject icon={faUser} isReadOnly={false} label="Reference" onChange={(e) => setHeavyInputs("reference", e)} onClick={() => addNewReference(other.find.reference.name)} onInputChange={(e) => setFind("reference", e.target.value)} onKeyPress={() => { }} searchedItem={other.find.reference.name} tabIndex={6} value={getReferenceName()} width="w-full" />;
 	}
 
 	function uiSubProjects() {
-		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.subProject.name} displayValue="name" filteredData={getFilteredSubProjects} hasDataObject icon={faFile} isReadOnly={false} label="Sub Project" onChange={(e) => setHeavyInputs("subProject", e)} onClick={() => addNewSubProject(other.find.subProject.name)} onInputChange={(e) => setFind("subProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.subProject.name} tabIndex={5} value={main.subProject.name} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.subProject.name} displayValue="name" filteredData={getFilteredSubProjects} hasDataObject icon={faFile} isReadOnly={false} label="Sub Project" onChange={(e) => setHeavyInputs("subProject", e)} onClick={() => addNewSubProject(other.find.subProject.name)} onInputChange={(e) => setFind("subProject", e.target.value)} onKeyPress={() => { }} searchedItem={other.find.subProject.name} tabIndex={5} value={main.subProject.name} width="w-full" />;
 	}
 
 	// Hooks

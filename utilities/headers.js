@@ -72,6 +72,16 @@ export const ProjectsHeaders = Object.freeze({
 	Status: "Status",
 });
 
+export const ProjectsHeaders2 = Object.freeze({
+	Started: "Started On",
+	Client: "Client",
+	Projects: "Projects",
+	Teams: "Teams",
+	Quote: "Quote",
+	Status: "Status",
+	WorkFrequency: "Work Frequency"
+});
+
 export const RvHeaders = Object.freeze({
 	Id: "ID",
 	Company: "Company",

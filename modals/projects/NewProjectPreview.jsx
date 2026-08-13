@@ -49,7 +49,7 @@ export default function NewProjectPreview({ mount, project, unmount }) {
 			<div className="flex w-full justify-center items-center fixed inset-0 overflow-y-auto">
 				<DialogPanel className="w-3/5 transform overflow-hidden rounded shadow contrast-background">
 					{uiTitleBar()}
-					<div className="flex flex-col w-full h-[410px] py-3 space-y-3 justify-between items-center overflow-y-auto primary-light-background">
+					<div className="flex flex-col w-full h-102.5 py-3 space-y-3 justify-between items-center overflow-y-auto primary-light-background">
 						{uiRow("Client", project.inquiry.client_name)}
 						{uiRow("Company", project.company.name)}
 						{uiRow("Phone Number", project.phoneNumber)}
@@ -59,6 +59,7 @@ export default function NewProjectPreview({ mount, project, unmount }) {
 						{uiRow("Invoice", MyGlobal.ThousandSeparator(project.invoiceFees))}
 						{uiRow("Teams", project.teams.map((m) => m.full_name).join(", "))}
 						{uiRow("Invoice Firm", project.invoiceFirm.name)}
+						{uiRow("Work Frequency", project.workFrequency.name)}
 						{uiRow("Note", project.note || "")}
 					</div>
 					<footer className="dialog-footer">

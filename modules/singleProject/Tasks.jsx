@@ -16,7 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDragAndDrop } from "@/utilities/useDragAndDrop";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { ComboBoxWithChips, DatePicker, TextInputNative } from "@/components/Inputs";
+import { ComboBoxWithChips, DatePicker, TextInputNative, TextInputNative2 } from "@/components/Inputs";
 import { AvatarCircle, SpinnerBig, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { AddParticularRemark, AddRVExpense, AddTask, DeleteParticularRemark, DeleteTask, EditParticularRemark, EditRVExpense, EditTask, EditTaskStatus, MarkSubTaskCompleted } from "@/modals/singleProject/tasks";
 import { faBan, faBars, faBolt, faCalendar, faCheck, faCheckCircle, faCircleCheck, faCircleExclamation, faClipboardCheck, faClock, faListAlt, faPen, faPencil, faPlusCircle, faSortAmountAsc, faSortAmountDesc, faStickyNote, faTrash, faUserGroup } from "@fortawesome/free-solid-svg-icons";
@@ -581,7 +581,7 @@ export default function Tasks({ project }) {
 	}
 
 	function uiNotesButton() {
-		const showTotalNotes = api.notes.data.length > 0 ? "font-regular-10 gray-text" : "hidden";
+		const showTotalNotes = api.notes.data.length > 0 ? "font-regular-10 gray-text font-mono!" : "hidden";
 
 		const selectedAesthetics = main.selectedModuleId == -1 ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
@@ -647,7 +647,7 @@ export default function Tasks({ project }) {
 
 	function uiAddRemarkTaskButton() {
 		return (
-			<button className="primary-button-condensed !text-sm" onClick={() => addRemark()}>
+			<button className="primary-button-condensed bg-white! text-(--primary)! text-sm!" onClick={() => addRemark()}>
 				{loading.remark ? <SpinnerSmall /> : "Add"}
 			</button>
 		);
@@ -672,7 +672,7 @@ export default function Tasks({ project }) {
 		return api.tasks.copy.map((m, i) => {
 			const isSelected = m.id == addRemarksTask?.id;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} font-regular-10 text-left hovered-rows`;
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} font-regular-10 text-left hovered-rows`;
 
 			return (
 				<MenuItem as="div" className={wrapper} key={i} onClick={() => setAddRemarkTask(m)}>
@@ -684,7 +684,7 @@ export default function Tasks({ project }) {
 	}
 
 	function uiAddRemarkTaskRemark() {
-		return <TextInputNative id="findBox" icon={faStickyNote} onChange={(e) => setAddRemarksRemark(e.target.value)} onClearButtonClick={() => setAddRemarksRemark("")} placeholder="Remark" showClearButton="invisible" tabIndex="2" value={addRemarksRemark} source="singleProject" width="w-60" />;
+		return <TextInputNative2 id="findBox" icon={faStickyNote} onChange={(e) => setAddRemarksRemark(e.target.value)} onClearButtonClick={() => setAddRemarksRemark("")} placeholder="Remark" showClearButton="invisible" tabIndex="2" value={addRemarksRemark} source="singleProject" width="w-60" />;
 	}
 
 	function uiAddRemarkTaskDueDate() {
@@ -697,7 +697,7 @@ export default function Tasks({ project }) {
 				<div className="flex w-full px-4 justify-center items-center primary-background">{uiRemarksHeaders()}</div>
 				<div className="flex flex-col w-full h-[calc(100vh-156px)] justify-between items-center">
 					<div className="flex flex-col w-full h-full justify-start items-center overflow-y-auto shadow-md">{sortRemarks().map((m, i) => uiRemarksRows(m, i))}</div>
-					<div className="flex w-full p-5 space-x-5 justify-around items-center gray-background-transparent-02">
+					<div className="flex w-full p-5 space-x-5 justify-around items-center primary-background">
 						{uiAddRemarkTaskMenu()}
 						{uiAddRemarkTaskRemark()}
 						{uiAddRemarkTaskDueDate()}
@@ -710,7 +710,7 @@ export default function Tasks({ project }) {
 	}
 
 	function uiRemarksButton() {
-		const showTotalRemarks = api.remarks.data.length > 0 ? "font-regular-10 gray-text" : "hidden";
+		const showTotalRemarks = api.remarks.data.length > 0 ? "font-regular-10 gray-text font-mono!" : "hidden";
 
 		const selectedAesthetics = main.selectedModuleId == 1 ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
 
@@ -758,7 +758,7 @@ export default function Tasks({ project }) {
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.remark, main.findText) }} />
 
 				<span className={style}>{row.due_date ? dayjs(row.due_date).format("DD MMM, YYYY") : "NA"}</span>
-				<span className={`${style} !flex-row space-x-1`}>{row.alloted_to && <AvatarCircle names={String(allotedTo).split(",")} />}</span>
+				<span className={`${style} flex-row! space-x-1`}>{row.alloted_to && <AvatarCircle names={String(allotedTo).split(",")} />}</span>
 
 				<span className={style} dangerouslySetInnerHTML={{ __html: MyGlobal.HighlightText(row.entry_by, main.findText) }} />
 			</div>
@@ -863,7 +863,7 @@ export default function Tasks({ project }) {
 
 	function uiTaskActions(isCompleted, task) {
 		if (!isCompleted) {
-			const style = "flex w-full py-2 space-x-2.5 justify-start items-center cursor-pointer border-y hovered-rows";
+			const style = "flex w-full py-2 space-x-2.5 justify-start items-center cursor-pointer border-y border-gray-300 hovered-rows";
 
 			const noClickAndHalfOpacity = "pointer-events-none opacity-25";
 			const clickAndFullOpacity = "pointer-events-auto opacity-100";
@@ -1007,9 +1007,9 @@ export default function Tasks({ project }) {
 						/>
 						<span className="font-regular-10">{expense}</span>
 					</div> */}
-					<div className="flex !pl-2 space-x-2 justify-between items-center primary-tag-transparent-01">
+					<div className="flex pl-2! space-x-2 justify-between items-center primary-tag-transparent-01">
 						<FontAwesomeIcon icon={faClock} size="lg" />
-						<span className="w-[80px] font-regular-10">{entryAt}</span>
+						<span className="w-20 font-regular-10">{entryAt}</span>
 					</div>
 				</div>
 			</div>
@@ -1026,7 +1026,7 @@ export default function Tasks({ project }) {
 		const markSubTaskCompletedStyle = allowMarkingSubTaskCompleted && row.is_completed == 0 ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-25";
 
 		return (
-			<div className={`flex w-full px-4 py-2 justify-center items-center contrast-background border-y font-regular-11 transition-all duration-200 `} key={row.id} data-id={row.id}>
+			<div className={`flex w-full px-4 py-2 justify-center items-center contrast-background border-y border-gray-300 font-regular-11 transition-all duration-200 `} key={row.id} data-id={row.id}>
 				<span className="drag-handle cursor-grab px-2">
 					<FontAwesomeIcon icon={faBars} className="text-gray-500" />
 				</span>

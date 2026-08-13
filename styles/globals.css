@@ -736,6 +736,10 @@ html {
 	padding-inline: 1px;
 }
 
+.hovered-rows-white-1:hover {
+	@apply bg-(--primary-light) text-(--primary);
+}
+
 .hovered-rows-white:hover {
 	@apply bg-(--primary-light) rounded-sm text-(--primary);
 }

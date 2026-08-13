@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { client, company, phoneNumber, remarks, financialYear, generatedInvoice, id, invoiceFees, invoiceFirmId, isInvoiceGenerated, isInvoiceTransactionDone, mainProjectId, quote, reimburseVoucher, subProject, teams, userId } = req.body;
+		const { client, company, phoneNumber, remarks, financialYear, generatedInvoice, id, invoiceFees, invoiceFirmId, isInvoiceGenerated, isInvoiceTransactionDone, mainProjectId, quote, reimburseVoucher, subProject, teams, userId, workFrequency } = req.body;
 
 		// New Client ID
 		let newClientId = client.id;
@@ -63,7 +63,7 @@ export default async function handler(req, res) {
 			}
 		}
 
-		const projectQueryResult = await query("UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, financial_year=?, quote=?, remarks=?, invoice_fees=?, firm_id=?, teams=? WHERE id=?", [newClientId, newCompanyId, mainProjectId, newSubProjectId, financialYear, quote, remarks, invoiceFees, invoiceFirmId, teams, id]);
+		const projectQueryResult = await query("UPDATE projects SET client_id=?, company_id=?, main_project_id=?, sub_project_id=?, financial_year=?, quote=?, remarks=?, invoice_fees=?, firm_id=?, teams=?, work_frequency=? WHERE id=?", [newClientId, newCompanyId, mainProjectId, newSubProjectId, financialYear, quote, remarks, invoiceFees, invoiceFirmId, teams, workFrequency, id]);
 
 		if (client.id == 0) {
 			const queryResult = await query(`UPDATE clients SET company_id=?, is_confirmed=1 WHERE id=?`, [newCompanyId, newClientId]);

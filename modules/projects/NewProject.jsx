@@ -8,8 +8,8 @@ import { MyGlobal } from "@/utilities/global";
 import { useEffect, useRef, useState } from "react";
 import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ApiEndpoints, BaseModules, Messages } from "@/utilities/constants";
 import { ComboBox2, ComboBoxWithChips, TextArea, TextInput } from "@/components/Inputs";
+import { ApiEndpoints, BaseModules, InquiriesWorkFrequency, Messages } from "@/utilities/constants";
 import { faBriefcase, faChevronLeft, faFile, faIndianRupee, faNoteSticky, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 const arrFinancialYears = [
@@ -17,6 +17,8 @@ const arrFinancialYears = [
 	{ key: "2025-26", value: "2025-26" },
 	{ key: "2026-27", value: "2026-27" },
 ];
+
+const workFrequencies = Object.values(InquiriesWorkFrequency).map((m) => ({ label: m, value: m }));
 
 export default function NewProject({ inquiry, reload, unmount }) {
 	// Business Logic
@@ -42,6 +44,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 		financialYear: "",
 		subProject: { id: 0, name: "" },
 		teams: [],
+		workFrequency: { id: workFrequencies[0].value, name: workFrequencies[0].label }
 	});
 
 	const [mounted, setMounted] = useState({
@@ -299,11 +302,11 @@ export default function NewProject({ inquiry, reload, unmount }) {
 
 	// UI Components
 	function uiClient() {
-		return <TextInput icon={faUser} id="newProjectClientName" isReadOnly label="Client" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={inquiry.client_name} width="w-full" />;
+		return <TextInput icon={faUser} id="newProjectClientName" isReadOnly label="Client" onChange={() => { }} onKeyPress={() => { }} tabIndex={1} value={inquiry.client_name} width="w-full" />;
 	}
 
 	function uiCompany() {
-		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.company.name} displayValue="name" filteredData={getFilteredCompanies} hasDataObject icon={faBriefcase} isReadOnly={false} label="Company" onChange={(e) => setInputs("company", e)} onClick={() => addNewCompany(other.find.company.name)} onInputChange={(e) => setFind("company", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.company.name} tabIndex={2} value={main.company.name} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.company.name} displayValue="name" filteredData={getFilteredCompanies} hasDataObject icon={faBriefcase} isReadOnly={false} label="Company" onChange={(e) => setInputs("company", e)} onClick={() => addNewCompany(other.find.company.name)} onInputChange={(e) => setFind("company", e.target.value)} onKeyPress={() => { }} searchedItem={other.find.company.name} tabIndex={2} value={main.company.name} width="w-full" />;
 	}
 
 	function uiInvoiceFees() {
@@ -311,11 +314,11 @@ export default function NewProject({ inquiry, reload, unmount }) {
 	}
 
 	function uiNotes() {
-		return <TextArea icon={faNoteSticky} key={1} label="Notes" onChange={(e) => setInputs("note", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={main.note} width="w-full" />;
+		return <TextArea icon={faNoteSticky} key={1} label="Notes" onChange={(e) => setInputs("note", e.target.value)} onKeyDown={() => { }} rows={2} tabIndex={10} value={main.note} width="w-full" />;
 	}
 
 	function uiPhoneNumber() {
-		return <TextInput icon={faPhone} isReadOnly label="Phone Number" onChange={() => {}} onKeyPress={() => {}} tabIndex={3} value={main.phoneNumber} width="w-full" />;
+		return <TextInput icon={faPhone} isReadOnly label="Phone Number" onChange={() => { }} onKeyPress={() => { }} tabIndex={3} value={main.phoneNumber} width="w-full" />;
 	}
 
 	function uiPreview() {
@@ -337,11 +340,11 @@ export default function NewProject({ inquiry, reload, unmount }) {
 			label = `Quote (Original ${inquiry.quote})`;
 		}
 
-		return <TextInput icon={faIndianRupee} isReadOnly label={label} onChange={() => {}} onKeyPress={() => {}} tabIndex="8" value={MyGlobal.ThousandSeparator(main.quote)} width="w-full" />;
+		return <TextInput icon={faIndianRupee} isReadOnly label={label} onChange={() => { }} onKeyPress={() => { }} tabIndex="8" value={MyGlobal.ThousandSeparator(main.quote)} width="w-full" />;
 	}
 
 	function uiSubProjects() {
-		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.subProject.name} displayValue="name" filteredData={getFilteredSubProjects} hasDataObject icon={faFile} isReadOnly={false} label="Sub Project" onChange={(e) => setInputs("subProject", e)} onClick={() => addNewSubProject(other.find.subProject.name)} onInputChange={(e) => setFind("subProject", e.target.value)} onKeyPress={() => {}} searchedItem={other.find.subProject.name} tabIndex={5} value={main.subProject.name} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem comparingValue1="name" comparingValue2={main.subProject.name} displayValue="name" filteredData={getFilteredSubProjects} hasDataObject icon={faFile} isReadOnly={false} label="Sub Project" onChange={(e) => setInputs("subProject", e)} onClick={() => addNewSubProject(other.find.subProject.name)} onInputChange={(e) => setFind("subProject", e.target.value)} onKeyPress={() => { }} searchedItem={other.find.subProject.name} tabIndex={5} value={main.subProject.name} width="w-full" />;
 	}
 
 	function uiTeams() {
@@ -431,7 +434,7 @@ export default function NewProject({ inquiry, reload, unmount }) {
 							{uiQuote()}
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiTeams()}</div>
-						<div className="flex w-full px-3 space-x-6 justify-between items-start">
+						<div className="flex w-full px-3 space-x-6 justify-between items-center">
 							<Select
 								checkIconPosition="right"
 								comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }}
@@ -442,6 +445,19 @@ export default function NewProject({ inquiry, reload, unmount }) {
 								}}
 								styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "90%" } }}
 								value={main.invoiceFirm.id}
+								variant="filled"
+							/>
+							<Select
+								checkIconPosition="right"
+								comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }}
+								data={workFrequencies}
+								label="Work Frequency"
+								onChange={(_, o) => {
+									if (!o || o.value === main.workFrequency.id) return;
+									setMain((s) => ({ ...s, workFrequency: { id: o.value, name: o.label } }));
+								}}
+								styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "90%" } }}
+								value={main.workFrequency.id}
 								variant="filled"
 							/>
 							{uiNotes()}

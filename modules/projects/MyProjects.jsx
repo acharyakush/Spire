@@ -591,7 +591,7 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 		return Object.entries(main.revisedStatuses).map(([key, value], i) => {
 			const isSelected = key == main.filter;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} hovered-rows`;
 
 			return (
 				<MenuItem as="div" className={wrapper} key={i} onClick={() => setFilter(key)}>
@@ -760,7 +760,7 @@ export default function MyProjects({ presetStatus, setModuleProps, unmount }) {
 		return Object.values(statuses).map((m, i) => {
 			const isSelected = m == row.status;
 			const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
-			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y ${aesthetics} hovered-rows`;
+			const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} hovered-rows`;
 
 			return (
 				<MenuItem as="div" className={wrapper} key={i} onClick={() => editStatus(row, m)}>
