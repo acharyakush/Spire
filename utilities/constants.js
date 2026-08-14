@@ -226,6 +226,7 @@ export const DerivedModules = Object.freeze({
 	NewVendor: "New Vendor",
 	PaymentReceived: "Payment Received",
 	Quotation: "Quotation",
+	EditQuotation: "Edit Quotation"
 });
 
 export const Designations = Object.freeze({

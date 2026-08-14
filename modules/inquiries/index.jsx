@@ -75,6 +75,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 	const allowQuotation = useMemo(() => MyGlobal.HasPermission(DerivedModules.Quotation), []);
 	const allowConvertingToProject = useMemo(() => MyGlobal.HasPermission(DerivedModules.NewProject), []);
 	const allowNewInquiry = useMemo(() => MyGlobal.HasPermission(DerivedModules.NewInquiry), []);
+	const allowEditQuotation = useMemo(() => MyGlobal.HasPermission(DerivedModules.EditQuotation), []);
 
 	const thisView = useMemo(() => BaseModules.Inquiries, []);
 	const statuses = useMemo(() => Statuses.Inquiries, []);
@@ -997,7 +998,7 @@ export default function Inquiries({ presetStatus, setModuleProps }) {
 							<FontAwesomeIcon className="w-5 text-blue-600 cursor-pointer scale-100 hover:scale-150 duration-200" icon={faReceipt} onClick={() => toggleAddQuotation(row, true)} size="1x" />
 						</Tippy>
 					)}
-					{isAdministrator && row.quotation_id && (
+					{(isAdministrator || allowEditQuotation) && row.quotation_id && (
 						<Tippy content={<Tooltip text="Edit Quotation" />} placement="bottom">
 							<FontAwesomeIcon className="w-5 text-emerald-600 cursor-pointer scale-100 hover:scale-150 duration-200" onClick={() => toggleEditQuotation(row, true)} icon={faPen} size="1x" />
 						</Tippy>
