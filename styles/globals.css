@@ -108,27 +108,88 @@ html {
 /*******************/
 
 .dashboard-blue-1 {
-	@apply bg-[#11224D];
+	background-color: #11224d;
+	background-image: linear-gradient(to bottom, #4265a1 0%, #294a84 48%, #11224d 100%);
 }
 
 .dashboard-blue-2 {
-	@apply bg-[#193A6F];
+	background-color: #193a6f;
+	background-image: linear-gradient(to bottom, #5788c9 0%, #3268ad 48%, #193a6f 100%);
 }
 
 .dashboard-blue-3 {
-	@apply bg-[#2C599D];
+	background-color: #2c599d;
+	background-image: linear-gradient(to bottom, #78a6df 0%, #4e7fc3 48%, #2c599d 100%);
 }
 
 .dashboard-blue-4 {
-	@apply bg-[#5B84C4];
+	background-color: #5b84c4;
+	background-image: linear-gradient(to bottom, #9bc3ec 0%, #78a6d9 48%, #5b84c4 100%);
 }
 
 .dashboard-orange-1 {
-	@apply bg-[#F98125];
+	background-color: #f98125;
+	background-image: linear-gradient(to bottom, #ffb56f 0%, #fb963f 48%, #f98125 100%);
 }
 
 .dashboard-orange-2 {
-	@apply bg-[#FB9B50];
+	background-color: #fb9b50;
+	background-image: linear-gradient(to bottom, #ffca8e 0%, #ffb368 48%, #fb9b50 100%);
+}
+
+.project-status-closed {
+	background-color: #334155;
+	background-image: linear-gradient(to bottom, #64748b 0%, #475569 48%, #334155 100%);
+}
+
+.project-status-active {
+	background-color: #047857;
+	background-image: linear-gradient(to bottom, #34d399 0%, #10b981 48%, #047857 100%);
+}
+
+.inquiry-status-open {
+	background-color: #1d4ed8;
+	background-image: linear-gradient(to bottom, #60a5fa 0%, #3b82f6 48%, #1d4ed8 100%);
+}
+
+.staff-project-1 {
+	background-color: #3730a3;
+	background-image: linear-gradient(to bottom, #818cf8 0%, #4f46e5 48%, #3730a3 100%);
+}
+
+.staff-project-2 {
+	background-color: #0f766e;
+	background-image: linear-gradient(to bottom, #5eead4 0%, #14b8a6 48%, #0f766e 100%);
+}
+
+.staff-project-3 {
+	background-color: #c2410c;
+	background-image: linear-gradient(to bottom, #fb923c 0%, #ea580c 48%, #c2410c 100%);
+}
+
+.staff-project-4 {
+	background-color: #9d174d;
+	background-image: linear-gradient(to bottom, #f472b6 0%, #db2777 48%, #9d174d 100%);
+}
+
+.staff-project-5 {
+	background-color: #0369a1;
+	background-image: linear-gradient(to bottom, #38bdf8 0%, #0284c7 48%, #0369a1 100%);
+}
+
+.staff-project-6 {
+	background-color: #a16207;
+	background-image: linear-gradient(to bottom, #facc15 0%, #ca8a04 48%, #a16207 100%);
+}
+
+.project-status-completed {
+	background-color: #15803d;
+	background-image: linear-gradient(to bottom, #4ade80 0%, #22c55e 48%, #15803d 100%);
+}
+
+.project-status-hold {
+	background-color: #b45309;
+	background-image: linear-gradient(to bottom, #fbbf24 0%, #f59e0b 48%, #b45309 100%);
 }
 
 .blue-background {

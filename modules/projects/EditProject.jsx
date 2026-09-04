@@ -5,8 +5,8 @@
 import axios from "axios";
 import EditProjectPreview from "@/modals/projects/EditProjectPreview";
 
-import { Select } from "@mantine/core";
 import { MyGlobal } from "@/utilities/global";
+import HeadlessSelect from "@/components/ui/HeadlessSelect";
 import { useEffect, useRef, useState } from "react";
 import { Spinner, SpinnerBig } from "@/components/Elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -458,7 +458,7 @@ export default function EditProject({ project, reload, unmount }) {
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
 							{uiMainProjects()}
 							{uiSubProjects()}
-							<Select checkIconPosition="right" comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }} data={arrFinancialYears} label="Financial Year" onChange={(o) => setMain((s) => ({ ...s, financialYear: o }))} styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "100%" } }} value={main.financialYear} variant="filled" />
+							<HeadlessSelect data={arrFinancialYears} label="Financial Year" onChange={(value) => setMain((s) => ({ ...s, financialYear: value }))} value={main.financialYear} />
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
 							{uiInvoiceFees()}
@@ -467,19 +467,10 @@ export default function EditProject({ project, reload, unmount }) {
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiTeams()}</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
-							<Select
-								checkIconPosition="right"
-								comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }}
-								data={workFrequencies}
-								label="Work Frequency"
-								onChange={(_, o) => {
-									if (!o || o.value === main.workFrequency.id) return;
-									setMain((s) => ({ ...s, workFrequency: { id: o.value, name: o.label } }));
-								}}
-								styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "90%" } }}
-								value={main.workFrequency.id}
-								variant="filled"
-							/>
+							<HeadlessSelect className="w-[90%]" data={workFrequencies} label="Work Frequency" onChange={(value, option) => {
+								if (option.value === main.workFrequency.id) return;
+								setMain((s) => ({ ...s, workFrequency: { id: value, name: option.label } }));
+							}} value={main.workFrequency.id} />
 							{uiInvoiceFirm()}
 						</div>
 					</div>

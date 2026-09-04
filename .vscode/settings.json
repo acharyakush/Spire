@@ -1,5 +1,5 @@
 {
-	"debug.console.fontFamily": "monospace",
+	"debug.console.fontFamily": "'Anthropic Mono Web Light', monospace",
 	"debug.console.fontSize": 14,
 	"editor.acceptSuggestionOnEnter": "smart",
 	"editor.autoClosingBrackets": "always",
@@ -18,7 +18,7 @@
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.foldingImportsByDefault": true,
 	"editor.foldingStrategy": "indentation",
-	"editor.fontFamily": "monospace",
+	"editor.fontFamily": "'Anthropic Mono Web Light', monospace",
 	"editor.fontSize": 14,
 	"editor.formatOnSave": true,
 	"editor.formatOnSaveMode": "file",
@@ -67,8 +67,9 @@
 		"javascript": "html",
 		"javascriptreact": "html"
 	},
-	"terminal.integrated.fontFamily": "monospace",
+	"terminal.integrated.fontFamily": "'Anthropic Mono Web Light', monospace",
 	"terminal.integrated.fontSize": 14,
+	"window.zoomLevel": 1,
 	"workbench.list.smoothScrolling": true,
 	"workbench.list.scrollByPage": true,
 	"[javascript]": {

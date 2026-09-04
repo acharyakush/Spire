@@ -113,7 +113,7 @@ export function EditStatus({ mount, reloadTasks, selectedTask, unmount }) {
 					{uiTitleBar()}
 					<span className="block w-full p-5 whitespace-pre-line font-regular-11 black-text" dangerouslySetInnerHTML={{ __html: messageBody }} />
 					<div className={reasonBoxStyle}>
-						<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows={3} tabIndex={1} value={state.reason} width="w-full" />
+						<TextArea icon={faNoteSticky} key={1} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => { }} rows={3} tabIndex={1} value={state.reason} width="w-full" />
 					</div>
 					<footer className="dialog-footer">
 						<button className={disableButtonStyle} onClick={() => editStatus()}>
@@ -210,7 +210,7 @@ export function EditQuote({ mount, project, reload, unmount }) {
 				<DialogPanel className="w-100 transform overflow-hidden rounded shadow contrast-background">
 					{uiTitleBar()}
 					<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
-						<TextInput icon={faIndianRupeeSign} isReadOnly key={1} label="Current Quote" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={project.quote} width="w-full" />
+						<TextInput icon={faIndianRupeeSign} isReadOnly key={1} label="Current Quote" onChange={() => { }} onKeyPress={() => { }} tabIndex={1} value={project.quote} width="w-full" />
 						<TextInput icon={faIndianRupeeSign} key={2} label="New Quote" onChange={(e) => setQuote(e.target.value)} onKeyPress={(e) => !MyGlobal.HasNumbers(e.key) && e.preventDefault()} tabIndex={2} value={main.quote} width="w-full" />
 					</div>
 					<footer className="dialog-footer">
@@ -314,8 +314,8 @@ export function ManageGovernmentId({ mount, project, reload, unmount }) {
 				<DialogPanel className="w-100 transform overflow-hidden rounded contrast-background shadow">
 					{uiTitleBar()}
 					<div className="flex flex-col w-full p-5 space-y-2.5 justify-center items-center">
-						{!isTypeAdd && <TextInput icon={faIdCardClip} isReadOnly label="Current Government ID" onChange={() => {}} onKeyPress={() => {}} tabIndex={1} value={project.government_id} width="w-full" />}
-						<TextInput icon={faIdCardClip} label="New Government ID" onChange={(e) => setInput(e.target.value)} onKeyPress={() => {}} tabIndex={2} value={main.id} width="w-full" />
+						{!isTypeAdd && <TextInput icon={faIdCardClip} isReadOnly label="Current Government ID" onChange={() => { }} onKeyPress={() => { }} tabIndex={1} value={project.government_id} width="w-full" />}
+						<TextInput icon={faIdCardClip} label="New Government ID" onChange={(e) => setInput(e.target.value)} onKeyPress={() => { }} tabIndex={2} value={main.id} width="w-full" />
 					</div>
 					<footer className="dialog-footer">
 						<button className={buttonStyle} onClick={() => doIdManagement()}>
@@ -443,16 +443,16 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 		return !api.affiliates.copy.length
 			? []
 			: api.affiliates.copy.filter((f) => {
-					const isSelected = main.selected.some((_f) => _f.id === f.id);
-					return !isSelected;
-				});
+				const isSelected = main.selected.some((_f) => _f.id === f.id);
+				return !isSelected;
+			});
 	}
 
 	async function updateFees(affiliateId, affiliateName, oldFees) {
 		setIsUpdatingFees(true);
 
 		try {
-			const body = { id: affiliateId, fees: newFees };
+			const body = { id: affiliateId, fees: newFees, projectId: project.id };
 			const response = await axios.post(ApiEndpoints.SingleProject.UpdateAffiliateFees, body, MyGlobal.GetHeaders());
 
 			if (response.status === 200) {
@@ -540,7 +540,7 @@ export function ManageAffiliates({ mount, project, reload, unmount }) {
 
 	// UI Components
 	function uiAffiliates() {
-		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.affiliate.name} displayValue="name" filteredData={getFilteredList} hasDataObject icon={faUserGroup} isReadOnly={false} label="Affiliates" onChange={(e) => setAffiliate(e)} onClick={() => {}} onInputChange={(e) => setInputs("find", e.target.value)} onKeyPress={() => {}} searchedItem={main.affiliate.name} tabIndex={1} value={main.affiliate.name} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.affiliate.name} displayValue="name" filteredData={getFilteredList} hasDataObject icon={faUserGroup} isReadOnly={false} label="Affiliates" onChange={(e) => setAffiliate(e)} onClick={() => { }} onInputChange={(e) => setInputs("find", e.target.value)} onKeyPress={() => { }} searchedItem={main.affiliate.name} tabIndex={1} value={main.affiliate.name} width="w-full" />;
 	}
 
 	function uiFees() {
@@ -781,7 +781,7 @@ export function UnmapAffiliate({ mount, affiliate, project, reload, unmount }) {
 					{uiTitleBar()}
 					<div className="flex flex-col w-full p-5 space-y-2 justify-center items-center">
 						<span className="block w-full pl-2.5 font-regular-11 black-text">Are you sure you want to unmap this affiliate? You are required to write a reason below.</span>
-						<TextArea icon={faStickyNote} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => {}} rows="3" tabIndex="1" value={main.reason} width="w-full" />
+						<TextArea icon={faStickyNote} label="Reason" onChange={(e) => setReason(e.target.value)} onKeyDown={() => { }} rows="3" tabIndex="1" value={main.reason} width="w-full" />
 					</div>
 					<footer className="dialog-footer">
 						<button className={unmapButtonStyle} onClick={() => doUnmapping()}>

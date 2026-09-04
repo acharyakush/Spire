@@ -6,7 +6,7 @@ import Tippy from "@tippyjs/react";
 
 import { MyGlobal } from "@/utilities/global";
 import { AvatarCircle } from "@/components/Elements";
-import { Badge, Select, TextInput } from "@mantine/core";
+import HeadlessSelect from "@/components/ui/HeadlessSelect";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { faMultiply, faPencil, faPlaneUp, faSpinner, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -351,7 +351,7 @@ export default function Projects({ presetStatus = "", setModuleProps = () => {} 
 
 				<span className={`${style} font-bold-12`}>{MyGlobal.FormatCurrency(row.quote)}</span>
 				<span className={style}>
-					<Select placeholder={row.status} data={arrProjectStatuses} />
+					<HeadlessSelect data={arrProjectStatuses} placeholder={row.status} value={row.status} />
 				</span>
 			</div>
 		);
@@ -376,18 +376,21 @@ export default function Projects({ presetStatus = "", setModuleProps = () => {} 
 				<div className="flex w-full px-5 py-2.5 justify-between items-center-safe">
 					<div className="flex w-1/5 space-x-2 justify-start items-center-safe">
 						<span className="view-heading">{thisView}</span>
-						<Badge className="font-medium! text-base!" color="dark" size="lg" variant="filled">
+						<span className="rounded bg-(--text) px-2 font-medium-12 text-white">
 							{getTotalRecordsCount()}
-						</Badge>
+						</span>
 					</div>
 					<div className="flex w-4/5 space-x-3 justify-center-safe items-center-safe">
-						<TextInput onChange={(e) => setSearch(e.currentTarget.value)} placeholder="Search" rightSection={search.length ? <FontAwesomeIcon className="cursor-pointer text-gray-400" icon={faMultiply} onClick={() => setSearch("")} /> : <></>} styles={{ input: { fontSize: "10pt" } }} value={search} />
+						<div className="flex w-full h-9 px-3 space-x-1 justify-start items-center rounded primary-background-transparent-01 primary-bottom-border-transparent-05">
+							<input className="inputs text-[10pt]!" onChange={(e) => setSearch(e.currentTarget.value)} placeholder="Search" value={search} />
+							{search.length > 0 && <FontAwesomeIcon className="cursor-pointer text-gray-400" icon={faMultiply} onClick={() => setSearch("")} />}
+						</div>
 
-						<Select checkIconPosition="right" clearable comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }} data={arrStatuses} onClear={() => setActiveStatus("")} onChange={(o) => setActiveStatus(o)} placeholder="Status" styles={{ option: { fontSize: "10pt" } }} value={activeStatus} />
+						<HeadlessSelect clearable data={arrStatuses} onClear={() => setActiveStatus("")} onChange={(value) => setActiveStatus(value)} placeholder="Status" value={activeStatus} />
 
-						<Select checkIconPosition="right" clearable comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }} data={arrTeams} onClear={() => setActiveStaff((s) => ({ ...s, fullName: "", id: "" }))} onChange={(_, o) => setActiveStaff((s) => ({ ...s, fullName: o.fullName, id: o.id }))} placeholder="Team" styles={{ option: { fontSize: "10pt" } }} value={activeStaff.id} />
+						<HeadlessSelect clearable data={arrTeams} onClear={() => setActiveStaff((s) => ({ ...s, fullName: "", id: "" }))} onChange={(_, option) => setActiveStaff((s) => ({ ...s, fullName: option.fullName, id: option.id }))} placeholder="Team" value={activeStaff.id} />
 
-						<Select checkIconPosition="right" clearable comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }} data={arrTeamTypes} onClear={() => setActiveStaff((s) => ({ ...s, type: "" }))} onChange={(o) => setActiveStaff((s) => ({ ...s, type: o }))} placeholder="Allotment" styles={{ option: { fontSize: "10pt" } }} value={activeStaff.type} />
+						<HeadlessSelect clearable data={arrTeamTypes} onClear={() => setActiveStaff((s) => ({ ...s, type: "" }))} onChange={(value) => setActiveStaff((s) => ({ ...s, type: value }))} placeholder="Allotment" value={activeStaff.type} />
 					</div>
 				</div>
 			)}

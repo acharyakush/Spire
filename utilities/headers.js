@@ -73,6 +73,7 @@ export const ProjectsHeaders = Object.freeze({
 });
 
 export const ProjectsHeaders2 = Object.freeze({
+	Id: "ID",
 	Started: "Started On",
 	Client: "Client",
 	Projects: "Projects",

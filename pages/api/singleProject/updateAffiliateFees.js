@@ -13,9 +13,9 @@ export default async function handler(req, res) {
 	res.setHeader("Cache-Control", "no-store, max-age=0");
 
 	try {
-		const { id, fees } = req.body;
+		const { id, fees, projectId } = req.body;
 
-		const updateQueryResult = await query("UPDATE affiliates_projects set total_fees=? WHERE affiliate_id=?", [fees, id]);
+		const updateQueryResult = await query("UPDATE affiliates_projects set total_fees=? WHERE affiliate_id=? AND project_id=?", [fees, id, projectId]);
 
 		if (updateQueryResult.affectedRows > 0) {
 			res.status(200).end();

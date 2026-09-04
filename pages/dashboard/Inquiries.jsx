@@ -19,19 +19,19 @@ export default function Inquiries({ inquiries, setModuleProps }) {
 
 		switch (true) {
 			case status == inquiriesStatus.Closed:
-				object.background = "dashboard-blue-2";
+				object.background = "project-status-closed";
 				object.icon = faLock;
 				break;
 			case status == inquiriesStatus.Open:
-				object.background = "dashboard-orange-1";
+				object.background = "inquiry-status-open";
 				object.icon = faUnlock;
 				break;
 			case status == inquiriesStatus.Confirmed:
-				object.background = "dashboard-blue-3";
+				object.background = "project-status-completed";
 				object.icon = faCheckDouble;
 				break;
 			case status == inquiriesStatus.Hold:
-				object.background = "dashboard-blue-4";
+				object.background = "project-status-hold";
 				object.icon = faCirclePause;
 				break;
 		}

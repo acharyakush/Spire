@@ -13,7 +13,7 @@ import { Virtuoso } from "react-virtuoso";
 import { MyGlobal } from "@/utilities/global";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge, BadgeSmallWithBackground, Spinner, Tooltip } from "@/components/Elements";
-import { DatePicker, TextArea, TextInputNative } from "@/components/Inputs";
+import { DatePicker, TextArea, TextInputNative, TextInputNative2 } from "@/components/Inputs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar, faChevronLeft, faFileDownload, faMultiply, faNoteSticky, faReceipt, faSearch } from "@fortawesome/free-solid-svg-icons";
 
@@ -245,7 +245,7 @@ export default function Notes({ clients, inquiry, reload, unmount }) {
 				<div className="flex flex-col w-3/4 h-full justify-between items-center">
 					<Virtuoso className="w-full h-full mb-5 overflow-y-auto" data={api.notes.data.sort((a, b) => b.id - a.id)} itemContent={(i, row) => uiRows(row, i)} totalCount={api.notes.data.length} />
 					<div className="flex flex-col w-full h-[187px] p-2.5 justify-center items-center rounded shadow contrast-background">
-						<TextArea icon={faNoteSticky} key={1} label="Note" onChange={(e) => setInputs("note", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={1} value={main.note} width="w-full" />
+						<TextArea icon={faNoteSticky} key={1} label="Note" onChange={(e) => setInputs("note", e.target.value)} onKeyDown={() => { }} rows={2} tabIndex={1} value={main.note} width="w-full" />
 						{uiNextFollowUpDate()}
 					</div>
 				</div>
@@ -342,7 +342,7 @@ export default function Notes({ clients, inquiry, reload, unmount }) {
 	}
 
 	function uiFind() {
-		return <TextInputNative id="" icon={faSearch} onChange={(e) => setInputs("findText", e.target.value)} onClearButtonClick={() => setInputs("findText", "")} placeholder="Find" showClearButton={showSearchClearButton} tabIndex={3} value={main.findText} width="w-36" />;
+		return <TextInputNative2 id="" icon={faSearch} onChange={(e) => setInputs("findText", e.target.value)} onClearButtonClick={() => setInputs("findText", "")} placeholder="Find" showClearButton={showSearchClearButton} tabIndex={3} value={main.findText} width="w-36" />;
 	}
 
 	function uiFromDate() {

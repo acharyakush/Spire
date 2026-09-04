@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import axios from "axios";
 import Tasks from "./Tasks";
 import Tippy from "@tippyjs/react";
-import { ApiEndpoints } from "@/utilities/constants";
+import { ApiEndpoints, DerivedModules } from "@/utilities/constants";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
@@ -156,16 +156,14 @@ export default function SingleProject({ client, project, reload, source, unmount
 					<FontAwesomeIcon className="primary-text" icon={faBars} />
 				</MenuButton>
 				<MenuItems anchor="bottom" className="absolute w-max mt-2 rounded bottom-shadow focus:outline-none contrast-background full-border black-text">
-					<MenuItem as="div" className={style} onClick={() => {}}>
+					<MenuItem as="div" className={style} onClick={() => { }}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={faFileExcel} />
 						<span>Export to Excel</span>
 					</MenuItem>
-
 					<MenuItem as="div" className={style} onClick={() => toggleGovernmentId()}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={faIdCardClip} />
 						<span>Manage Government ID</span>
 					</MenuItem>
-
 					<MenuItem as="div" className={style} onClick={() => toggleManageAffiliates()}>
 						<FontAwesomeIcon className="w-5 primary-text" icon={faUserGroup} />
 						<span>Manage Affiliates</span>
@@ -188,11 +186,7 @@ export default function SingleProject({ client, project, reload, source, unmount
 
 	function uiProjectInformationBlock() {
 		const wrapperSansAesthetics = "flex w-full space-x-1.5 justify-start items-center";
-
 		const columnWrapper = "flex flex-col justify-center items-center cursor-pointer primary-tag-transparent-01";
-
-
-		// const dueOnTimeLeft = dayjs(project.due_on).format("DD-MM-YYYY") == dayjs().format("DD-MM-YYYY") ? "Today" : dayjs(project.due_on).fromNow();
 
 		const quote = Number(project.invoice_fees);
 		const companyName = String(project.company_name).length > 25 ? String(project.company_name).substring(0, 25) + "..." : String(project.company_name) + "'s";
@@ -206,27 +200,17 @@ export default function SingleProject({ client, project, reload, source, unmount
 							<span className="view-heading">{project.sub_project_name}</span>
 						</Tippy>
 					</div>
-					{/* <div className={redColumnWrapper}>
-						<span className={wrapperSansAesthetics}>
-							<FontAwesomeIcon className="w-4 red-text" icon={faCalendarXmark} />
-							<span>{dayjs(project.due_on).format("DD MMM, YYYY")}</span>
-						</span>
-						<span className={wrapperSansAesthetics}>
-							<FontAwesomeIcon className="w-4 red-text" icon={faStopwatch} />
-							<span>{dueOnTimeLeft}</span>
-						</span>
-					</div> */}
 					<div className={columnWrapper}>
 						<span className={wrapperSansAesthetics}>
 							<FontAwesomeIcon className="w-4 primary-text" icon={faBriefcase} />
 							<span>{companyName}</span>
 						</span>
-						<Tippy className="w-full" content={uiFeesBifurcationTooltip()} disabled={!isSourceSingleClient} placement="bottom">
+						{MyGlobal.HasPermission(DerivedModules.ShowProjectQuote) && <Tippy className="w-full" content={uiFeesBifurcationTooltip()} disabled={!isSourceSingleClient} placement="bottom">
 							<span className={wrapperSansAesthetics}>
 								<FontAwesomeIcon className="w-4 primary-text" icon={faIndianRupeeSign} />
 								<span>{quote}</span>
 							</span>
-						</Tippy>
+						</Tippy>}
 					</div>
 					<div className={columnWrapper}>
 						<span className={wrapperSansAesthetics}>

@@ -3,14 +3,15 @@
 import axios from "axios";
 import NewProjectPreview from "@/modals/projects/NewProjectPreview";
 
-import { Button, Select } from "@mantine/core";
 import { MyGlobal } from "@/utilities/global";
 import { useEffect, useRef, useState } from "react";
 import { Spinner, SpinnerBig } from "@/components/Elements";
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, ComboBoxWithChips, TextArea, TextInput } from "@/components/Inputs";
 import { ApiEndpoints, BaseModules, InquiriesWorkFrequency, Messages } from "@/utilities/constants";
-import { faBriefcase, faChevronLeft, faFile, faIndianRupee, faNoteSticky, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { faAngleDown, faBriefcase, faCheck, faChevronLeft, faFile, faIndianRupee, faNoteSticky, faPhone, faUser, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 const arrFinancialYears = [
 	{ key: "2024-25", value: "2024-25" },
@@ -56,6 +57,8 @@ export default function NewProject({ inquiry, reload, unmount }) {
 		find: { affiliate: {}, company: {}, mainProject: {}, subProject: {} },
 		isLoading: false,
 	});
+	const [mainProjectSearch, setMainProjectSearch] = useState("");
+	const [subProjectSearch, setSubProjectSearch] = useState("");
 
 	const showTeamsMenu = mounted.teamsMenu ? "flex flex-col w-[98%] max-h-[220px] justify-start items-center absolute rounded overflow-y-auto bottom-shadow primary-light-background full-border" : "hidden";
 
@@ -406,28 +409,82 @@ export default function NewProject({ inquiry, reload, unmount }) {
 							{uiPhoneNumber()}
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
-							<Select checkIconPosition="right" comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }} data={api.mainProjects.copy} label="Main Projects" onChange={(_, o) => setMain((s) => ({ ...s, mainProject: { id: o.id, name: o.value } }))} searchable styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "100%" } }} value={main.mainProject.name} variant="filled" />
-							<Select
-								checkIconPosition="right"
-								comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }}
-								data={api.subProjects.copy}
-								label="Sub Projects"
-								nothingFoundMessage={
-									<Button onClick={() => addNewSubProject()} size="xs" variant="light">
-										Not found. Add this now
-									</Button>
-								}
-								onChange={(input, obj) => {
-									enteredSubProjectRef.current = input;
-									setMain((s) => ({ ...s, subProject: { id: obj.id, name: obj.value } }));
-								}}
-								ref={enteredSubProjectRef}
-								searchable
-								styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "100%" } }}
-								value={main.subProject.name}
-								variant="filled"
-							/>
-							<Select checkIconPosition="right" comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }} data={arrFinancialYears} label="Financial Year" onChange={(o) => setMain((s) => ({ ...s, financialYear: o }))} styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "100%" } }} value={main.financialYear} variant="filled" />
+							<div className="flex flex-col w-full p-2 space-y-1 justify-center items-center">
+								<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">Main Projects</span>
+								<Combobox
+									value={api.mainProjects.copy.find((project) => project.value === main.mainProject.name) ?? null}
+									onChange={(project) => {
+										if (!project) return;
+										setMain((s) => ({ ...s, mainProject: { id: project.id, name: project.value } }));
+										setMainProjectSearch("");
+									}}
+								>
+									<div className="relative w-full">
+										<ComboboxInput autoComplete="off" className="flex w-full h-9 px-3 pr-9 justify-start items-center rounded primary-background-transparent-01 primary-bottom-border-transparent-05 outline-none font-regular-11 black-text" displayValue={(project) => project?.value ?? ""} onChange={(event) => setMainProjectSearch(event.target.value)} placeholder="Main Projects" />
+										<ComboboxButton className="flex absolute inset-y-0 right-0 pr-3 items-center outline-none">
+											<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
+										</ComboboxButton>
+										<ComboboxOptions className="absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded bottom-shadow outline-none full-border primary-light-background">
+											{api.mainProjects.copy.filter((project) => project.value.toLowerCase().includes(mainProjectSearch.toLowerCase())).map((project) => (
+												<ComboboxOption className={({ active }) => `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y border-gray-300 hovered-rows ${active ? "primary-background-transparent-01" : ""}`} key={project.id} value={project}>
+													<span className="font-regular-10 black-text">{project.value}</span>
+													{main.mainProject.id === project.id && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
+												</ComboboxOption>
+											))}
+										</ComboboxOptions>
+									</div>
+								</Combobox>
+							</div>
+							<div className="flex flex-col w-full p-2 space-y-1 justify-center items-center">
+								<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">Sub Projects</span>
+								<Combobox
+									value={api.subProjects.copy.find((project) => project.value === main.subProject.name) ?? null}
+									onChange={(project) => {
+										if (!project) return;
+										setMain((s) => ({ ...s, subProject: { id: project.id, name: project.value } }));
+										setSubProjectSearch("");
+									}}
+								>
+									<div className="relative w-full">
+										<ComboboxInput autoComplete="off" className="flex w-full h-9 px-3 pr-9 justify-start items-center rounded primary-background-transparent-01 primary-bottom-border-transparent-05 outline-none font-regular-11 black-text" displayValue={(project) => project?.value ?? ""} onChange={(event) => setSubProjectSearch(event.target.value)} placeholder="Sub Projects" ref={enteredSubProjectRef} />
+										<ComboboxButton className="flex absolute inset-y-0 right-0 pr-3 items-center outline-none">
+											<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
+										</ComboboxButton>
+										<ComboboxOptions className="absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded bottom-shadow outline-none full-border primary-light-background">
+											{api.subProjects.copy.filter((project) => project.value.toLowerCase().includes(subProjectSearch.toLowerCase())).map((project) => (
+												<ComboboxOption className={({ active }) => `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y border-gray-300 hovered-rows ${active ? "primary-background-transparent-01" : ""}`} key={project.id} value={project}>
+													<span className="font-regular-10 black-text">{project.value}</span>
+													{main.subProject.id === project.id && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
+												</ComboboxOption>
+											))}
+											{!api.subProjects.copy.some((project) => project.value.toLowerCase().includes(subProjectSearch.toLowerCase())) && subProjectSearch && (
+												<button className="flex w-full p-2 justify-start items-center cursor-pointer font-regular-10 black-text" onClick={addNewSubProject} type="button">
+													Not found. Add this now
+												</button>
+											)}
+										</ComboboxOptions>
+									</div>
+								</Combobox>
+							</div>
+							<div className="flex flex-col w-full p-2 space-y-1 justify-center items-center">
+								<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">Financial Year</span>
+								<Listbox value={main.financialYear} onChange={(financialYear) => setMain((s) => ({ ...s, financialYear }))}>
+									<div className="relative w-full">
+										<ListboxButton className="flex w-full h-9 px-3 justify-between items-center rounded primary-background-transparent-01 primary-bottom-border-transparent-05 outline-none font-regular-11 black-text">
+											<span>{main.financialYear}</span>
+											<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
+										</ListboxButton>
+										<ListboxOptions className="absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded bottom-shadow outline-none full-border primary-light-background">
+											{arrFinancialYears.map((financialYear) => (
+												<ListboxOption className={({ active }) => `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y border-gray-300 hovered-rows ${active ? "primary-background-transparent-01" : ""}`} key={financialYear.key} value={financialYear.value}>
+													<span className="font-regular-10 black-text">{financialYear.value}</span>
+													{main.financialYear === financialYear.value && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
+												</ListboxOption>
+											))}
+										</ListboxOptions>
+									</div>
+								</Listbox>
+							</div>
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
 							{uiInvoiceFees()}
@@ -435,31 +492,44 @@ export default function NewProject({ inquiry, reload, unmount }) {
 						</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">{uiTeams()}</div>
 						<div className="flex w-full px-3 space-x-6 justify-between items-center">
-							<Select
-								checkIconPosition="right"
-								comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }}
-								data={api.firms}
-								label="Invoice Firm"
-								onChange={(_, o) => {
-									setMain((s) => ({ ...s, invoiceFirm: { id: o.value, name: o.label } }));
-								}}
-								styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "90%" } }}
-								value={main.invoiceFirm.id}
-								variant="filled"
-							/>
-							<Select
-								checkIconPosition="right"
-								comboboxProps={{ offset: 0, transitionProps: { duration: 200, shadow: "md", transition: "fade-down" } }}
-								data={workFrequencies}
-								label="Work Frequency"
-								onChange={(_, o) => {
-									if (!o || o.value === main.workFrequency.id) return;
-									setMain((s) => ({ ...s, workFrequency: { id: o.value, name: o.label } }));
-								}}
-								styles={{ label: { color: "#bbb", fontWeight: "500" }, option: { fontSize: "10pt" }, root: { width: "90%" } }}
-								value={main.workFrequency.id}
-								variant="filled"
-							/>
+							<div className="flex flex-col w-[90%] p-2 space-y-1 justify-center items-center">
+								<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">Invoice Firm</span>
+								<Listbox value={api.firms.find((firm) => firm.value === main.invoiceFirm.id) ?? null} onChange={(firm) => firm && setMain((s) => ({ ...s, invoiceFirm: { id: firm.value, name: firm.label } }))}>
+									<div className="relative w-full">
+										<ListboxButton className="flex w-full h-9 px-3 justify-between items-center rounded primary-background-transparent-01 primary-bottom-border-transparent-05 outline-none font-regular-11 black-text">
+											<span>{main.invoiceFirm.name}</span>
+											<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
+										</ListboxButton>
+										<ListboxOptions className="absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded bottom-shadow outline-none full-border primary-light-background">
+											{api.firms.map((firm) => (
+												<ListboxOption className={({ active }) => `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y border-gray-300 hovered-rows ${active ? "primary-background-transparent-01" : ""}`} key={firm.value} value={firm}>
+													<span className="font-regular-10 black-text">{firm.label}</span>
+													{main.invoiceFirm.id === firm.value && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
+												</ListboxOption>
+											))}
+										</ListboxOptions>
+									</div>
+								</Listbox>
+							</div>
+							<div className="flex flex-col w-[90%] p-2 space-y-1 justify-center items-center">
+								<span className="flex w-full justify-start items-center font-regular-10 light-slate-gray-text">Work Frequency</span>
+								<Listbox value={workFrequencies.find((frequency) => frequency.value === main.workFrequency.id) ?? null} onChange={(frequency) => frequency && setMain((s) => ({ ...s, workFrequency: { id: frequency.value, name: frequency.label } }))}>
+									<div className="relative w-full">
+										<ListboxButton className="flex w-full h-9 px-3 justify-between items-center rounded primary-background-transparent-01 primary-bottom-border-transparent-05 outline-none font-regular-11 black-text">
+											<span>{main.workFrequency.name}</span>
+											<FontAwesomeIcon className="gray-text" icon={faAngleDown} />
+										</ListboxButton>
+										<ListboxOptions className="absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded bottom-shadow outline-none full-border primary-light-background">
+											{workFrequencies.map((frequency) => (
+												<ListboxOption className={({ active }) => `flex w-full p-2 justify-between items-center select-none cursor-pointer border-y border-gray-300 hovered-rows ${active ? "primary-background-transparent-01" : ""}`} key={frequency.value} value={frequency}>
+													<span className="font-regular-10 black-text">{frequency.label}</span>
+													{main.workFrequency.id === frequency.value && <FontAwesomeIcon className="primary-text" icon={faCheck} />}
+												</ListboxOption>
+											))}
+										</ListboxOptions>
+									</div>
+								</Listbox>
+							</div>
 							{uiNotes()}
 						</div>
 					</div>

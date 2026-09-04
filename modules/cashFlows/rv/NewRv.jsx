@@ -398,7 +398,7 @@ export default function NewRv({ project, reload, unmount }) {
 
 	// UI Input Fields
 	function uiInputBank() {
-		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.bank.name} displayValue="name" filteredData={main.bank.list} hasDataObject icon={faBank} isReadOnly={false} label="Bank" onChange={(e) => setBank(e)} onClick={() => {}} onInputChange={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex={5} value={main.bank.name} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={main.bank.name} displayValue="name" filteredData={main.bank.list} hasDataObject icon={faBank} isReadOnly={false} label="Bank" onChange={(e) => setBank(e)} onClick={() => { }} onInputChange={() => { }} onKeyPress={() => { }} searchedItem="" tabIndex={5} value={main.bank.name} width="w-full" />;
 	}
 
 	function uiInputFields() {
@@ -467,7 +467,7 @@ export default function NewRv({ project, reload, unmount }) {
 	}
 
 	function uiInputParticulars(object) {
-		return <TextInput icon={faTasks} id={`particulars${object.rowId}`} label="Particulars" onChange={(e) => setParticulars("particulars", object.rowId, e.target.value)} onKeyPress={() => {}} tabIndex={object.rowId} value={object.particulars} width="w-full" />;
+		return <TextInput icon={faTasks} id={`particulars${object.rowId}`} label="Particulars" onChange={(e) => setParticulars("particulars", object.rowId, e.target.value)} onKeyPress={() => { }} tabIndex={object.rowId} value={object.particulars} width="w-full" />;
 	}
 
 	function uiInputAmount(object) {
@@ -516,7 +516,7 @@ export default function NewRv({ project, reload, unmount }) {
 			termsConditionsLength = termsConditions.split("\n").length;
 		}
 
-		return <TextArea icon={faListCheck} label="Terms & Conditions" onChange={(e) => setInputs("termsConditions", e.target.value)} onKeyDown={() => {}} rows={termsConditionsLength + termsConditionsLength} tabIndex={9} value={termsConditions} width="w-full" />;
+		return <TextArea icon={faListCheck} label="Terms & Conditions" onChange={(e) => setInputs("termsConditions", e.target.value)} onKeyDown={() => { }} rows={termsConditionsLength + termsConditionsLength} tabIndex={9} value={termsConditions} width="w-full" />;
 	}
 
 	// UI RV Sheet
@@ -667,7 +667,7 @@ export default function NewRv({ project, reload, unmount }) {
 	function uiRvSheet() {
 		let imageSource = "../logo.png";
 
-		if (main.firm.name === "SDS & Co LLP") {
+		if (main.firm.id === "AC03") {
 			imageSource = "../cs.png";
 		}
 

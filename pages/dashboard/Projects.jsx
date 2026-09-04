@@ -3,10 +3,10 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import SlotCounter from "react-slot-counter";
-import { BaseModules, Statuses } from "@/utilities/constants";
 
-import { BadgeLarge2 } from "@/components/Elements";
 import { isDevelopment } from "@/utilities/global";
+import { BadgeLarge2 } from "@/components/Elements";
+import { BaseModules, Statuses } from "@/utilities/constants";
 import { faCheckDouble, faCirclePause, faLock, faUnlock } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ projects, setModuleProps }) {
@@ -19,19 +19,19 @@ export default function Projects({ projects, setModuleProps }) {
 
 		switch (true) {
 			case status == projectsStatus.Closed:
-				object.background = "dashboard-blue-2";
+				object.background = "project-status-closed";
 				object.icon = faLock;
 				break;
 			case status == projectsStatus.Active:
-				object.background = "dashboard-orange-1";
+				object.background = "project-status-active";
 				object.icon = faUnlock;
 				break;
 			case status == projectsStatus.Completed:
-				object.background = "dashboard-blue-3";
+				object.background = "project-status-completed";
 				object.icon = faCheckDouble;
 				break;
 			case status == projectsStatus.Hold:
-				object.background = "dashboard-blue-4";
+				object.background = "project-status-hold";
 				object.icon = faCirclePause;
 				break;
 		}

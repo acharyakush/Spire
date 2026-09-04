@@ -11,16 +11,16 @@ import ProjectTodos from "@/modals/projects/Todo";
 import writeXlsxFile from "write-excel-file/browser";
 
 import { Virtuoso } from "react-virtuoso";
-import { ProjectsHeaders, ProjectsHeaders2 } from "@/utilities/headers";
-import { TextInput, TextInputNative, TextInputNative2 } from "@/components/Inputs";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
-import { ApiEndpoints, BaseModules, DerivedModules, InquiriesWorkFrequency, Statuses } from "@/utilities/constants";
-import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
 import { MyGlobal } from "@/utilities/global";
-import { faCalendar, faCalendarDays, faCalendarWeek, faCheck, faCheckCircle, faChevronDown, faClock, faDiceOne, faDownload, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faInfoCircle, faListUl, faMultiply, faPencil, faPlaneUp, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
+import { TextInputNative2 } from "@/components/Inputs";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ProjectsHeaders, ProjectsHeaders2 } from "@/utilities/headers";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { EditStatus, DeleteProject, ProjectStatus } from "@/modals/projects/miscellaneous";
+import { AvatarCircle, Badge, BadgeSmall, Spinner, SpinnerSmall, Tooltip } from "@/components/Elements";
+import { ApiEndpoints, BaseModules, DerivedModules, InquiriesWorkFrequency, Statuses } from "@/utilities/constants";
+import { faCalendar, faCheck, faCheckCircle, faChevronDown, faChevronLeft, faClock, faDownload, faFileExcel, faFilter, faFilterCircleXmark, faIndianRupee, faInfoCircle, faListUl, faMultiply, faPencil, faPlaneUp, faSearch, faSortAmountAsc, faSortAmountDesc, faTrash, faUserAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default function Projects({ presetStatus, setModuleProps }) {
 	// Business Logic
@@ -30,11 +30,9 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	const currentTopIndexReference = useRef(0);
 	const showGoToTopReference = useRef(false);
 
-	const [api, setApi] = useState({
-		notes: [],
-		projects: { data: [], copy: [] },
-	});
 	const [showGoToTopOrb, setShowGoToTopOrb] = useState(false);
+	const [showRetainershipMenu, setShowRetainershipMenu] = useState(false);
+	const [api, setApi] = useState({ notes: [], projects: { data: [], copy: [] } });
 	const [shouldRestoreScrollPosition, setShouldRestoreScrollPosition] = useState(false);
 
 	const [main, setMain] = useState({
@@ -66,6 +64,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 	const today = useMemo(() => dayjs(), []);
 	const statuses = Statuses.Projects;
+	const projectCategories = useMemo(() => ["All", "Types"], []);
 	const projectFilterStatuses = {
 		...statuses,
 		Overdue: "Overdue",
@@ -691,7 +690,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 			// 	.sort((a, b) => b.id - a.id)
 			// 	.at(0);
 
-			records.push(dayjs(project.started_on).format("DD MMM, YYYY"), project.client_name, project.sub_project_name + "\n" + project.main_project_name, project.team_names, project.quote, project.status, project.work_frequency || "");
+			records.push(project.id, dayjs(project.started_on).format("DD MMM, YYYY"), project.client_name, project.sub_project_name + "\n" + project.main_project_name, project.team_names, project.quote, project.status, project.work_frequency || "");
 		});
 
 		// Batch process records into _records
@@ -771,8 +770,13 @@ export default function Projects({ presetStatus, setModuleProps }) {
 	}, [main.isLoading.supportData, filteredProjects.length, getRowsCount]);
 
 	// Memoized UI components
-	const uiClearFilter = useCallback(() => {
-		return <FontAwesomeIcon className="cursor-pointer outline-none focus:outline-none red-text" icon={faFilterCircleXmark} onClick={clearFilter} />;
+	const uiClearFilter = useCallback((showLabel = false) => {
+		return (
+			<button className="flex px-2 py-1 space-x-2 items-center rounded hovered-rows-white" onClick={clearFilter}>
+				<FontAwesomeIcon className="red-text" icon={faFilterCircleXmark} />
+				{showLabel && <span className="font-regular-10 gray-text">Clear</span>}
+			</button>
+		);
 	}, [clearFilter]);
 
 	const uiExport = useCallback(() => {
@@ -886,22 +890,99 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		});
 	}, [main.sort.column, main.sort.isAscending, setSort]);
 
-	const uiList = useCallback(() => {
+	const uiProjectTypes = useMemo(() => {
+		return aggregatedProjects
+			.filter((module) => module.key != "All")
+			.map((module) => {
+				const isSelected = module.key == main.activeModule.name;
+				const aesthetics = isSelected ? "primary-background-transparent-01 primary-text" : "contrast-background black-text";
+				const wrapper = `flex w-full p-2 space-x-2.5 justify-between items-center cursor-pointer border-y border-gray-300 ${aesthetics} hovered-rows-white-1`;
+
+				return (
+					<MenuItem as="div" className={wrapper} key={module.key} onClick={() => setModule(module)}>
+						<span className="font-regular-10">{module.key}</span>
+						{module.items.length > 0 && <BadgeSmall value={module.items.length} />}
+					</MenuItem>
+				);
+			});
+	}, [aggregatedProjects, main.activeModule.name, setModule]);
+
+	const setAllWorkFrequency = useCallback(
+		(workFrequency) => {
+			const allProjects = aggregatedProjects.find((module) => module.key == "All");
+
+			if (allProjects) setModule(allProjects);
+			setMain((s) => ({ ...s, workFrequency }));
+		},
+		[aggregatedProjects, setModule],
+	);
+
+	const toggleAllWorkFrequency = useCallback(
+		(workFrequency) => {
+			setAllWorkFrequency(main.workFrequency == workFrequency ? "" : workFrequency);
+		},
+		[main.workFrequency, setAllWorkFrequency],
+	);
+
+	const retainershipWorkFrequencies = useMemo(() => Object.values(InquiriesWorkFrequency).filter((frequency) => frequency != InquiriesWorkFrequency.once), []);
+
+	const uiCategories = useCallback(() => {
 		if (!api.projects.copy.length) return null;
 
-		return aggregatedProjects.map((module, i) => {
-			const style = module.key == main.activeModule.name ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+		return projectCategories.map((category) => {
+			const isAll = category == "All";
+			const isSelected = isAll ? main.activeModule.name == "All" : main.activeModule.name != "All";
+			const style = isSelected ? "primary-border primary-background-transparent-01 primary-text" : "full-border bg-white black-text";
+			const wrapper = `flex w-fit h-7.5 px-4 space-x-2 justify-between items-center rounded shadow ${style} font-regular-10 hovered-rows-white cursor-pointer`;
 
-			const wrapper = `flex w-full px-4 py-2 justify-between items-center rounded shadow ${style} font-regular-10 hovered-rows-white cursor-pointer`;
+			if (isAll) {
+				return (
+					<Menu as="div" className="relative" key={category}>
+						{({ close }) => (
+							<>
+								<MenuButton className={wrapper} onClick={() => setShowRetainershipMenu(false)}>
+									<FontAwesomeIcon icon={faListUl} />
+									<span>{category}</span>
+									<FontAwesomeIcon icon={faChevronDown} />
+								</MenuButton>
+								<MenuItems className="absolute w-40 top-8 left-0 origin-top-left rounded z-50 contrast-background shadow focus:outline-none">
+									<MenuItem as="button" className="flex w-full p-2 space-x-2 justify-between items-center cursor-pointer border-y border-gray-300 contrast-background black-text hovered-rows-white-1" onClick={() => { toggleAllWorkFrequency(InquiriesWorkFrequency.once); setShowRetainershipMenu(false); }}>
+										<span className="font-regular-10">One-Time</span>
+										{main.workFrequency == InquiriesWorkFrequency.once && <FontAwesomeIcon className="primary-text" icon={faCheck} size="xs" />}
+									</MenuItem>
+									<div className="relative" onMouseEnter={() => setShowRetainershipMenu(true)} onMouseLeave={() => setShowRetainershipMenu(false)}>
+										<div className="flex w-full p-2 space-x-2 justify-between items-center cursor-pointer border-y border-gray-300 contrast-background black-text hovered-rows-white-1">
+											<span className="font-regular-10">Retainership</span>
+											<FontAwesomeIcon className="rotate-180" icon={faChevronLeft} size="xs" />
+										</div>
+										{showRetainershipMenu && <div className="absolute w-40 top-0 left-full origin-top-left rounded z-50 contrast-background shadow">
+											{retainershipWorkFrequencies.map((frequency) => (
+												<button type="button" className="flex w-full p-2 space-x-2 justify-between items-center cursor-pointer border-y border-gray-300 contrast-background black-text hovered-rows-white-1" key={frequency} onClick={() => { toggleAllWorkFrequency(frequency); setShowRetainershipMenu(false); close(); }}>
+													<span className="font-regular-10">{frequency}</span>
+													{main.workFrequency == frequency && <FontAwesomeIcon className="primary-text" icon={faCheck} size="xs" />}
+												</button>
+											))}
+										</div>}
+									</div>
+								</MenuItems>
+							</>
+						)}
+					</Menu>
+				);
+			}
 
 			return (
-				<button className={wrapper} key={i} onClick={() => setModule(module)}>
-					<span className="text-left">{module.key}</span>
-					{module.key != "All" && module?.items?.length > 0 && <span className="font-regular-10 gray-text">{module.items.length}</span>}
-				</button>
+				<Menu as="div" className="relative" key={category}>
+					<MenuButton className={wrapper}>
+						<FontAwesomeIcon icon={faFilter} />
+						<span>{category}</span>
+						<FontAwesomeIcon icon={faChevronDown} />
+					</MenuButton>
+					<MenuItems className="absolute w-52 top-8 left-0 origin-top-left rounded z-50 contrast-background shadow focus:outline-none">{uiProjectTypes}</MenuItems>
+				</Menu>
 			);
 		});
-	}, [api.projects.copy.length, aggregatedProjects, main.activeModule.name, setModule]);
+	}, [api.projects.copy.length, main.activeModule.name, main.workFrequency, projectCategories, retainershipWorkFrequencies, showRetainershipMenu, toggleAllWorkFrequency, uiProjectTypes]);
 
 	// Toggle functions optimized with batched updates
 	const toggleDeleteProjectBox = useCallback((project) => {
@@ -1011,7 +1092,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		const wrapper = "flex w-full h-7.5 px-2 space-x-2 items-center font-regular-10 gray-text cursor-pointer";
 
 		return (
-			<Menu as="div" className="flex w-40 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
+			<Menu as="div" className="flex w-41 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
 				<MenuButton className={wrapper}>
 					<FontAwesomeIcon className="primary-text" icon={faUserAlt} />
 					<span className="gray-text">{main.selectedStaff.fullName || "Team"}</span>
@@ -1040,7 +1121,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 		const wrapper = "flex w-full h-7.5 px-2 space-x-2 items-center font-regular-10 gray-text cursor-pointer";
 
 		return (
-			<Menu as="div" className="flex w-40 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
+			<Menu as="div" className="flex w-47 h-7.5 justify-center items-center relative rounded shadow contrast-background full-border">
 				<MenuButton className={wrapper}>
 					<FontAwesomeIcon className="primary-text" icon={faFilter} />
 					<span className="gray-text">{main.selectedStaff.type || "Type"}</span>
@@ -1063,6 +1144,57 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				</MenuItem>
 			);
 		});
+	}
+
+	function uiFinancialYear() {
+		return (
+			<Menu as="div" className="flex w-35 justify-center-safe items-center-safe relative">
+				<MenuButton className="flex w-full h-7.5 px-2.5 justify-between items-center-safe focus:outline-none relative z-40 cursor-pointer rounded shadow contrast-background font-regular-10">
+					<div className="flex space-x-2.5 items-center-safe">
+						<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
+						<span className="gray-text">{filters.financialYear || "Year"}</span>
+					</div>
+					<div className="flex space-x-2 items-center">
+						<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setFilters((s) => ({ ...s, financialYear: "" }))} icon={faMultiply} />
+						<FontAwesomeIcon icon={faChevronDown} />
+					</div>
+				</MenuButton>
+				<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background shadow focus:outline-none z-50">{uiFinancialYearList()}</MenuItems>
+			</Menu>
+		);
+	}
+
+	function uiFiltersMenu() {
+		return (
+			<Popover className="relative">
+				<PopoverButton className="flex w-fit h-7.5 px-3 space-x-2 justify-center items-center rounded shadow contrast-background full-border font-regular-10 gray-text cursor-pointer">
+					<FontAwesomeIcon className="primary-text" icon={faFilter} />
+					<span>Filters</span>
+					<FontAwesomeIcon icon={faChevronDown} />
+				</PopoverButton>
+				<PopoverPanel className="fixed w-fit top-24 left-1/2 -translate-x-1/2 p-2 origin-top rounded z-50 contrast-background shadow focus:outline-none">
+					<div className="flex w-fit space-x-2 justify-start items-center">
+						{uiFind()}
+						<div onClick={(event) => event.stopPropagation()}>{uiFinancialYear()}</div>
+						<div onClick={(event) => event.stopPropagation()}>{uiFilter()}</div>
+						<div onClick={(event) => event.stopPropagation()}>{uiWorkFrequency()}</div>
+						<div onClick={(event) => event.stopPropagation()}>{uiStaff()}</div>
+						<div onClick={(event) => event.stopPropagation()}>{uiStaffAdvanced()}</div>
+						<Tippy content={<Tooltip text={`Clear filters of ${main.activeModule.name}`} />} placement="bottom">
+							{uiClearFilter(true)}
+						</Tippy>
+						{filteredProjects.length > 0 && api.projects.copy.length > 0 && (
+							<Tippy content={<Tooltip text="Download in Excel" />} placement="bottom">
+								<button className="flex px-2 py-1 space-x-2 items-center rounded hovered-rows-white" onClick={doExcelExport}>
+									<FontAwesomeIcon className="text-green-600" icon={faDownload} />
+									<span className="font-regular-10 gray-text">Export</span>
+								</button>
+							</Tippy>
+						)}
+					</div>
+				</PopoverPanel>
+			</Popover>
+		);
 	}
 
 	// Optimized row rendering logic
@@ -1418,8 +1550,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 		return (
 			<div className="flex w-full h-full justify-center items-start">
-				<div className="flex flex-col w-[10%] space-y-2.5 mx-5 justify-start items-center">{uiList()}</div>
-				<div className="flex flex-col w-[90%] h-full mr-5 justify-start items-center">
+				<div className="flex flex-col w-full h-full mx-5 justify-start items-center">
 					{!filteredProjects.length && api.projects.copy.length ? (
 						<div className={blankDataWrapper}>
 							<span className="font-regular-12 gray-text">No projects found.</span>
@@ -1437,7 +1568,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 				</div>
 			</div>
 		);
-	}, [uiList, uiHeaders, sortedProjects, uiRows, showGoToTopOrb, shouldRestoreScrollPosition]);
+	}, [uiHeaders, sortedProjects, uiRows, showGoToTopOrb, shouldRestoreScrollPosition]);
 
 	function uiTotalQuote() {
 		return (
@@ -1571,7 +1702,7 @@ export default function Projects({ presetStatus, setModuleProps }) {
 
 				// Text filter logic
 				if (debouncedFindText) {
-						if (Object.values(projectFilterStatuses).includes(debouncedFindText)) {
+					if (Object.values(projectFilterStatuses).includes(debouncedFindText)) {
 						matchesTextFilter = f.status.includes(debouncedFindText);
 					} else if (debouncedFindText === "Overdue") {
 						matchesTextFilter = f.has_tasks_overdue;
@@ -1664,30 +1795,8 @@ export default function Projects({ presetStatus, setModuleProps }) {
 							{getIconOrBadge()}
 						</div>
 						<div className="flex w-[88%] space-x-2 justify-center items-center">
-							{uiFind()}
-							<Menu as="div" className="flex w-35 justify-center-safe items-center-safe relative">
-								<MenuButton className="flex w-full h-7.5 px-2.5 justify-between items-center-safe focus:outline-none relative z-40 cursor-pointer rounded shadow contrast-background font-regular-10">
-									<div className="flex space-x-2.5 items-center-safe">
-										<FontAwesomeIcon className="primary-text" icon={faCalendar} size="sm" />
-										<span className="gray-text">{filters.financialYear || "Year"}</span>
-									</div>
-									<div className="flex space-x-2 items-center">
-										<FontAwesomeIcon className={showClearCompanyButton} onClick={() => setFilters((s) => ({ ...s, financialYear: "" }))} icon={faMultiply} />
-										<FontAwesomeIcon icon={faChevronDown} />
-									</div>
-								</MenuButton>
-								<MenuItems className="absolute w-full top-8 right-0 origin-top-right rounded contrast-background shadow focus:outline-none z-50">{uiFinancialYearList()}</MenuItems>
-							</Menu>
-							{uiFilter()}
-							{uiWorkFrequency()}
-							{uiStaff()}
-							{uiStaffAdvanced()}
-							<Tippy content={<Tooltip text={`Clear filters of ${main.activeModule.name}`} />} placement="bottom">
-								{uiClearFilter()}
-							</Tippy>
-							{filteredProjects.length > 0 && api.projects.copy.length > 0 && <Tippy content={<Tooltip text="Download in Excel" />} placement="bottom">
-								<FontAwesomeIcon className="cursor-pointer text-green-600" icon={faDownload} onClick={doExcelExport} />
-							</Tippy>}
+							{uiCategories()}
+							{uiFiltersMenu()}
 						</div>
 
 					</div>

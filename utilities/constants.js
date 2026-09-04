@@ -1,8 +1,6 @@
 export const AccountMenu = Object.freeze({
 	Activity: "Activities",
 	Employees: "Employees",
-	// Profile: "Profile",
-	// Settings: "Settings",
 	Logout: "Logout",
 });
 
@@ -57,6 +55,7 @@ export const ApiEndpoints = Object.freeze({
 		UploadFiles: "api/clients/uploadFiles",
 	}),
 	Dashboard: "api/dashboard/getSupportData",
+	GetStaffsActiveProjects: "api/dashboard/getStaffsActiveProjects",
 	GetMySpace: "api/dashboard/getMySpaceData",
 	Employees: Object.freeze({
 		AddEmployee: "api/employees/addEmployee",
@@ -188,11 +187,11 @@ export const DerivedModules = Object.freeze({
 	DeleteInquiry: "Delete Inquiry",
 	DeleteInvoice: "Delete Invoice",
 	DeleteInvoiceTransaction: "Delete Invoice Transaction",
-	DeleteSubTask: "Delete Sub Task",
 	DeleteProject: "Delete Project",
 	DeleteReference: "Delete Reference",
 	DeleteRv: "Delete RV",
 	DeleteRvTransaction: "Delete RV Transaction",
+	DeleteSubTask: "Delete Sub Task",
 	DeleteTask: "Delete Task",
 	DeleteTaskFromReimburseVoucher: "Delete Task From Reimburse Voucher",
 	DisableTask: "Disable Task",
@@ -201,11 +200,12 @@ export const DerivedModules = Object.freeze({
 	EditClient: "Edit Client",
 	EditCompany: "Edit Company",
 	EditEmployee: "Edit Employee",
+	EditFirm: "Edit Firm",
 	EditInquiry: "Edit Inquiry",
 	EditInvoice: "Edit Invoice",
 	EditInvoiceTransaction: "Edit Invoice Transaction",
-	EditFirm: "Edit Firm",
 	EditProject: "Edit Project",
+	EditQuotation: "Edit Quotation",
 	EditReference: "Edit Reference",
 	EditRv: "Edit RV",
 	EditRvTransaction: "Edit RV Transaction",
@@ -216,17 +216,22 @@ export const DerivedModules = Object.freeze({
 	MarkTaskCompleted: "Mark Task Completed",
 	NewAffiliate: "New Affiliate",
 	NewEmployee: "New Employee",
+	NewFirm: "New Firm",
 	NewInquiry: "New Inquiry",
 	NewInvoice: "New Invoice",
-	NewFirm: "New Firm",
 	NewProject: "New Project",
-	NewRv: "New RV",
 	NewQuotation: "New Quotation",
+	NewRv: "New RV",
 	NewTask: "New Task",
 	NewVendor: "New Vendor",
 	PaymentReceived: "Payment Received",
 	Quotation: "Quotation",
-	EditQuotation: "Edit Quotation"
+	ShowInquiriesInDashboard: "Show Inquiries",
+	ShowInvoicesInDashboard: "Show Invoices",
+	ShowProjectQuote: "Show Quote",
+	ShowProjectsInDashboard: "Show Projects",
+	ShowRvInDashboard: "Show RV",
+
 });
 
 export const Designations = Object.freeze({
