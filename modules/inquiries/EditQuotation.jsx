@@ -3,12 +3,12 @@
 /* eslint eqeqeq: "off", no-tabs: "off", indent: "off", react/jsx-indent: "off", semi: "off", comma-dangle: "off", quotes: "off", space-before-function-paren: "off", jsx-quotes: "off", react/jsx-indent-props: "off", react/jsx-closing-bracket-location: "off", array-callback-return: "off", object-shorthand: "off", multiline-ternary: "off", camelcase: "off" */
 
 import axios from "axios";
-import { ApiEndpoints } from "@/utilities/constants";
 import EditQuotaionPreview from "./EditQuotationPreview";
 
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Badge } from "@/components/Elements";
+import { ApiEndpoints } from "@/utilities/constants";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
 import { faCalendar, faChevronLeft, faHashtag, faHome, faIndianRupee, faListCheck, faMinusCircle, faPhone, faPlusCircle, faStickyNote, faTasks, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -146,7 +146,13 @@ export default function EditQuotation({ clients, inquiry, reload, unmount }) {
 
 				const services = [];
 
-				objQtnServices.forEach((fe) => services.push({ governmentFees: fe.government_fees, inclusions: fe.inclusions, professionalFees: fe.professional_fees, rowId: objQtnServices.length + 1, services: fe.services }));
+				objQtnServices.forEach((fe, i) => services.push({
+					governmentFees: fe.government_fees,
+					inclusions: fe.inclusions,
+					professionalFees: fe.professional_fees,
+					rowId: i + 1,
+					services: fe.services
+				}));
 
 				setServices(services);
 			}
@@ -199,20 +205,28 @@ export default function EditQuotation({ clients, inquiry, reload, unmount }) {
 	}
 
 	function setServicesValue(key, rowId, value) {
-		const copy = [...services];
-		const obj = copy.filter((f) => f.rowId == rowId);
+		// const copy = [...services];
+		// const obj = copy.filter((f) => f.rowId == rowId);
 
-		if (obj.length) {
-			const idx = copy.findIndex((f) => f.rowId === rowId);
-			const _obj = copy.at(idx);
+		// if (obj.length) {
+		// 	const idx = copy.findIndex((f) => f.rowId === rowId);
+		// 	const _obj = copy.at(idx);
 
-			_obj[key] = key == "amount" ? +value : value;
+		// 	_obj[key] = key == "amount" ? +value : value;
 
-			const revised = copy.filter((f) => f.rowId != rowId);
-			revised.push(_obj);
+		// 	const revised = copy.filter((f) => f.rowId != rowId);
+		// 	revised.push(_obj);
 
-			setServices(revised);
-		}
+		// 	setServices(revised);
+		// }
+
+		setServices((s) =>
+			s.map((row) =>
+				row.rowId === rowId
+					? { ...row, [key]: value }
+					: row
+			)
+		);
 	}
 
 	function setValues(key, value) {
@@ -230,19 +244,19 @@ export default function EditQuotation({ clients, inquiry, reload, unmount }) {
 
 	// UI Components
 	function uiClient() {
-		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={client.name} displayValue="name" filteredData={getFilteredClients} hasDataObject={false} icon={faUser} isReadOnly={false} label="Client" onChange={(e) => setClientObject(e)} onClick={() => {}} onInputChange={(e) => setValues("find", e.target.value)} onKeyPress={() => {}} searchedItem={main.find} tabIndex={2} value={getClientName()} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={client.name} displayValue="name" filteredData={getFilteredClients} hasDataObject={false} icon={faUser} isReadOnly={false} label="Client" onChange={(e) => setClientObject(e)} onClick={() => { }} onInputChange={(e) => setValues("find", e.target.value)} onKeyPress={() => { }} searchedItem={main.find} tabIndex={2} value={getClientName()} width="w-full" />;
 	}
 
 	function uiClientAddress() {
-		return <TextArea icon={faHome} label="Client's Address" onChange={(e) => setClientValue("address", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={client.address} width="w-full" />;
+		return <TextArea icon={faHome} label="Client's Address" onChange={(e) => setClientValue("address", e.target.value)} onKeyDown={() => { }} rows={2} tabIndex={10} value={client.address} width="w-full" />;
 	}
 
 	function uiClientPhoneNumber() {
-		return <TextInput icon={faPhone} id="clientPhoneNumber" isReadOnly label="Client's Phone Number" onChange={(e) => setClientValue("phoneNumber", e.target.value)} onKeyPress={() => {}} tabIndex={8} value={client.phoneNumber} width="w-full" />;
+		return <TextInput icon={faPhone} id="clientPhoneNumber" isReadOnly label="Client's Phone Number" onChange={(e) => setClientValue("phoneNumber", e.target.value)} onKeyPress={() => { }} tabIndex={8} value={client.phoneNumber} width="w-full" />;
 	}
 
 	function uiFirm() {
-		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={firm.name} displayValue="name" filteredData={api.firms} hasDataObject={false} icon={faUser} isReadOnly={false} label="Firm" onChange={(e) => setFirmValue(e)} onClick={() => {}} onInputChange={() => {}} onKeyPress={() => {}} searchedItem="" tabIndex={1} value={firm.name} width="w-full" />;
+		return <ComboBox2 allowCreatingNewItem={false} comparingValue1="name" comparingValue2={firm.name} displayValue="name" filteredData={api.firms} hasDataObject={false} icon={faUser} isReadOnly={false} label="Firm" onChange={(e) => setFirmValue(e)} onClick={() => { }} onInputChange={() => { }} onKeyPress={() => { }} searchedItem="" tabIndex={1} value={firm.name} width="w-full" />;
 	}
 
 	function uiDate() {
@@ -272,15 +286,15 @@ export default function EditQuotation({ clients, inquiry, reload, unmount }) {
 	}
 
 	function uiProposalNumber() {
-		return <TextInput icon={faHashtag} id="proposalNumber" isReadOnly label="Proposal Number" onChange={(e) => setValues("proposalNumber", e.target.value)} onKeyPress={() => {}} tabIndex={8} value={firm.id ? firm.proposalNumber : ""} width="w-full" />;
+		return <TextInput icon={faHashtag} id="proposalNumber" isReadOnly label="Proposal Number" onChange={(e) => setValues("proposalNumber", e.target.value)} onKeyPress={() => { }} tabIndex={8} value={firm.id ? firm.proposalNumber : ""} width="w-full" />;
 	}
 
 	function uiRemarks() {
-		return <TextArea icon={faStickyNote} label="Remarks" onChange={(e) => setValues("remarks", e.target.value)} onKeyDown={() => {}} rows={2} tabIndex={10} value={main.remarks} width="w-full" />;
+		return <TextArea icon={faStickyNote} label="Remarks" onChange={(e) => setValues("remarks", e.target.value)} onKeyDown={() => { }} rows={2} tabIndex={10} value={main.remarks} width="w-full" />;
 	}
 
 	function uiServices(row) {
-		return <TextInput icon={faTasks} id={`services${row.rowId}`} label="Services" onChange={(e) => setServicesValue("services", row.rowId, e.target.value)} onKeyPress={() => {}} tabIndex={row.rowId} value={row.services} width="w-full" />;
+		return <TextInput icon={faTasks} id={`services${row.rowId}`} label="Services" onChange={(e) => setServicesValue("services", row.rowId, e.target.value)} onKeyPress={() => { }} tabIndex={row.rowId} value={row.services} width="w-full" />;
 	}
 
 	function uiServicesGovernmentFees(row) {
@@ -288,7 +302,7 @@ export default function EditQuotation({ clients, inquiry, reload, unmount }) {
 	}
 
 	function uiServicesInclusions(row) {
-		return <TextInput icon={faTasks} id={`inclusions${row.rowId}`} label="Inclusions" onChange={(e) => setServicesValue("inclusions", row.rowId, e.target.value)} onKeyPress={() => {}} tabIndex={row.rowId} value={row.inclusions} width="w-full" />;
+		return <TextInput icon={faTasks} id={`inclusions${row.rowId}`} label="Inclusions" onChange={(e) => setServicesValue("inclusions", row.rowId, e.target.value)} onKeyPress={() => { }} tabIndex={row.rowId} value={row.inclusions} width="w-full" />;
 	}
 
 	function uiServicesProfessionalFees(row) {
@@ -341,7 +355,7 @@ export default function EditQuotation({ clients, inquiry, reload, unmount }) {
 			termsConditionsLength = termsConditions.split("\n").length;
 		}
 
-		return <TextArea icon={faListCheck} label="Terms & Conditions" onChange={(e) => setFirmSingleValue("termsConditions", e.target.value)} onKeyDown={() => {}} rows={termsConditionsLength + 1} tabIndex={9} value={termsConditions} width="w-full" />;
+		return <TextArea icon={faListCheck} label="Terms & Conditions" onChange={(e) => setFirmSingleValue("termsConditions", e.target.value)} onKeyDown={() => { }} rows={termsConditionsLength + 1} tabIndex={9} value={termsConditions} width="w-full" />;
 	}
 
 	// Hooks

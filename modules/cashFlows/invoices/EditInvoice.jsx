@@ -7,16 +7,16 @@ import dayjs from "dayjs";
 import jsPDF from "jspdf";
 import Tippy from "@tippyjs/react";
 import html2canvas from "html2canvas";
-import { ApiEndpoints, DerivedModules, Messages } from "@/utilities/constants";
 
 import { QRCode } from "react-qrcode-logo";
 import { useEffect, useState } from "react";
 import { MyGlobal } from "@/utilities/global";
 import { Badge, Tooltip } from "@/components/Elements";
+import { getFinancialYearByDate } from "@/utilities/myGlobal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ApiEndpoints, DerivedModules, Messages } from "@/utilities/constants";
 import { ComboBox2, DatePicker, TextArea, TextInput } from "@/components/Inputs";
 import { faBank, faCalendar, faChevronLeft, faCircleMinus, faHashtag, faIndianRupee, faListCheck, faMinusCircle, faPlusCircle, faTasks } from "@fortawesome/free-solid-svg-icons";
-import { getFinancialYearByDate } from "@/utilities/myGlobal";
 
 export default function EditInvoice({ project, reload, unmount }) {
 	// Business Logic
@@ -54,6 +54,8 @@ export default function EditInvoice({ project, reload, unmount }) {
 			name: "",
 			termsConditions: "",
 			initials: "",
+			gstin: "",
+			pan: "",
 		},
 		particulars: [
 			{
@@ -211,11 +213,13 @@ export default function EditInvoice({ project, reload, unmount }) {
 
 	function getCompanyDetails() {
 		const company = api.companies.find((f) => f.id == project.company_id);
-		let object = { address: "", name: "" };
+		let object = { address: "", name: "", gstin: "", pan: "" };
 
 		if (typeof company === "object") {
 			object.address = company.address;
 			object.name = company.name;
+			object.gstin = company.gstin;
+			object.pan = company.pan;
 		} else {
 			const client = api.clients.find((f) => f.id == project.client_id);
 
@@ -284,6 +288,8 @@ export default function EditInvoice({ project, reload, unmount }) {
 					name: "",
 					termsConditions: "",
 					initials: "",
+					gstin: "",
+					pan: "",
 				};
 
 				const bankObj = {
@@ -303,6 +309,8 @@ export default function EditInvoice({ project, reload, unmount }) {
 					firmObj.name = firm.name;
 					firmObj.termsConditions = firm.terms_conditions;
 					firmObj.initials = firm.initials;
+					firmObj.gstin = firm.gstin || "";
+					firmObj.pan = firm.pan || "";
 				}
 
 				const bank = response.data.banks.find((f) => f.firm_id == firmObj.id);
@@ -538,7 +546,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 	}
 
 	function uiBilledBy() {
-		const { address, name } = main.firm;
+		const { address, name, gstin, pan } = main.firm;
 
 		let _address = "";
 
@@ -547,20 +555,22 @@ export default function EditInvoice({ project, reload, unmount }) {
 		}
 
 		return (
-			<div className="flex flex-col w-full h-[135px] p-3 justify-start items-center rounded logo-green-border logo-green-background-transparent-01 text-black">
+			<div className="flex flex-col w-full h-fit p-3 justify-start items-center rounded logo-green-border logo-green-background-transparent-01 text-black">
 				<span className="w-full text-left font-medium-12 logo-green-text">Billed By</span>
 				<span className="w-full text-left font-medium-14">{name}</span>
-				<span className="w-full text-left font-regular-10">
+				<div className="w-full text-left font-regular-10">
 					<Tippy content={<Tooltip text={address} />} placement="bottom">
 						<span>{_address}</span>
 					</Tippy>
-				</span>
+				</div>
+				{gstin && <span className="w-full text-left font-regular-10">GSTIN: {gstin}</span>}
+				{pan && <span className="w-full text-left font-regular-10">PAN: {pan}</span>}
 			</div>
 		);
 	}
 
 	function uiBilledTo() {
-		const { address, name } = getCompanyDetails();
+		const { address, name, gstin, pan } = getCompanyDetails();
 
 		let _address = "";
 
@@ -569,7 +579,7 @@ export default function EditInvoice({ project, reload, unmount }) {
 		}
 
 		return (
-			<div className="flex flex-col w-full h-[135px] p-3 justify-start items-center rounded logo-green-border logo-green-background-transparent-01">
+			<div className="flex flex-col w-full h-fit p-3 justify-start items-center rounded logo-green-border logo-green-background-transparent-01">
 				<span className="w-full text-left font-medium-12 logo-green-text">Billed To</span>
 				<span className="w-full text-left font-medium-14">{name === "null" ? "" : name}</span>
 				<span className="w-full text-left font-regular-10">
@@ -577,6 +587,8 @@ export default function EditInvoice({ project, reload, unmount }) {
 						<span>{_address}</span>
 					</Tippy>
 				</span>
+				{gstin && <span className="w-full text-left font-regular-10">GSTIN: {gstin}</span>}
+				{pan && <span className="w-full text-left font-regular-10">PAN: {pan}</span>}
 			</div>
 		);
 	}
